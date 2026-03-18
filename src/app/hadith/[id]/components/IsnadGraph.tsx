@@ -27,7 +27,7 @@ interface IsnadGraphProps {
 }
 
 export function IsnadGraph({ nodes, edges, onNodeClick, onChainClick }: IsnadGraphProps) {
-    const fgRef = useRef<any>();
+    const fgRef = useRef<any>(null);
 
     // Reliability color mapping
     const getNodeColor = (reliability: string) => {

@@ -28,6 +28,36 @@ export interface HadithData {
   primary_topic: string;
 }
 
+export interface HistoricalEventData {
+  title: string;
+  title_arabic?: string;
+  description: string;
+  year_hijri?: number;
+  year_gregorian?: number;
+  category: string;
+  significance?: string;
+  location_name?: string;
+}
+
+export interface CommentaryData {
+  source_work: string;
+  author: string;
+  text: string;
+  text_arabic?: string;
+  type: string;
+  reference?: string;
+  hadith_id?: string;
+  narrator_id?: string;
+}
+
+export interface LocationData {
+  name: string;
+  modern_country?: string;
+  region?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
 // ============ DUAL GRADING SYSTEM ============
 
 /**
@@ -42,7 +72,7 @@ export async function addScholarVerdict(
   const verdictId = randomUUID();
   const dateAssessed = new Date().toISOString();
 
-  const queries = [
+  const queries: Array<{ query: string; params?: Record<string, any> }> = [
     {
       query: `
         CREATE (v:ScholarVerdict {
@@ -430,7 +460,7 @@ export async function createChain(
 ): Promise<string> {
   const chainId = randomUUID();
 
-  const queries = [
+  const queries: Array<{ query: string; params?: Record<string, any> }> = [
     {
       query: `
         CREATE (c:Chain {
@@ -534,4 +564,429 @@ export async function validateChainOrder(narratorIds: string[]): Promise<{
   }
 
   return { valid: true };
+}
+
+// ============ HISTORICAL EVENTS ============
+
+/**
+ * Create a historical event node
+ */
+export async function createHistoricalEvent(data: HistoricalEventData): Promise<string> {
+  const id = randomUUID();
+  await runWrite(`
+    CREATE (e:HistoricalEvent {
+      id: $id,
+      title: $title,
+      title_arabic: $title_arabic,
+      description: $description,
+      year_hijri: $year_hijri,
+      year_gregorian: $year_gregorian,
+      category: $category,
+      significance: $significance,
+      location_name: $location_name,
+      created_at: datetime()
+    })
+  `, {
+    id,
+    title: data.title,
+    title_arabic: data.title_arabic || null,
+    description: data.description,
+    year_hijri: data.year_hijri || null,
+    year_gregorian: data.year_gregorian || null,
+    category: data.category,
+    significance: data.significance || null,
+    location_name: data.location_name || null,
+  });
+  return id;
+}
+
+/**
+ * Get all historical events with optional filters
+ */
+export async function getAllHistoricalEvents(filters?: {
+  category?: string;
+  yearRange?: [number, number];
+}) {
+  let query = 'MATCH (e:HistoricalEvent)';
+  const params: Record<string, any> = {};
+  const conditions: string[] = [];
+
+  if (filters?.category) {
+    conditions.push('e.category = $category');
+    params.category = filters.category;
+  }
+  if (filters?.yearRange) {
+    conditions.push('e.year_hijri >= $minYear AND e.year_hijri <= $maxYear');
+    params.minYear = filters.yearRange[0];
+    params.maxYear = filters.yearRange[1];
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  query += ' RETURN e ORDER BY e.year_hijri';
+  const result = await runQuery(query, params);
+  return result.map((r) => r.e.properties);
+}
+
+export async function deleteHistoricalEvent(eventId: string): Promise<void> {
+  await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) DETACH DELETE e`, { eventId });
+}
+
+export async function updateHistoricalEvent(eventId: string, data: Partial<HistoricalEventData>): Promise<void> {
+  const setClause = Object.keys(data).map((key) => `e.${key} = $${key}`).join(', ');
+  if (!setClause) return;
+  await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) SET ${setClause}`, { eventId, ...data });
+}
+
+/**
+ * Get historical events during a narrator's lifetime
+ */
+export async function getHistoricalEventsForNarrator(narratorId: string) {
+  const result = await runQuery(`
+    MATCH (n:Narrator {id: $narratorId})
+    MATCH (e:HistoricalEvent)
+    WHERE (n.birth_year_hijri IS NULL OR e.year_hijri >= n.birth_year_hijri)
+      AND (n.death_year_hijri IS NULL OR e.year_hijri <= n.death_year_hijri)
+    RETURN DISTINCT e
+    ORDER BY e.year_hijri
+  `, { narratorId });
+  return result.map((r) => r.e.properties);
+}
+
+/**
+ * Link a narrator to a historical event with optional role
+ */
+export async function linkNarratorToEvent(
+  narratorId: string,
+  eventId: string,
+  role?: string
+): Promise<void> {
+  await runWrite(`
+    MATCH (n:Narrator {id: $narratorId})
+    MATCH (e:HistoricalEvent {id: $eventId})
+    MERGE (n)-[:INVOLVED_IN {role: $role}]->(e)
+  `, { narratorId, eventId, role: role || 'Participant' });
+}
+
+/**
+ * Get full timeline for a narrator (birth, contextual events, involved events, death)
+ */
+export async function getTimelineForNarrator(narratorId: string) {
+  const narrator = await getNarratorById(narratorId);
+  const contextualEvents = await getHistoricalEventsForNarrator(narratorId);
+
+  const involvedEvents = await runQuery(`
+    MATCH (n:Narrator {id: $narratorId})-[r:INVOLVED_IN]->(e:HistoricalEvent)
+    RETURN e, r.role as role
+    ORDER BY e.year_hijri
+  `, { narratorId });
+
+  return {
+    narrator,
+    birth_year_hijri: narrator?.birth_year_hijri,
+    death_year_hijri: narrator?.death_year_hijri,
+    events: involvedEvents.map((r) => ({ ...r.e.properties, role: r.role })),
+    contextual_events: contextualEvents,
+  };
+}
+
+// ============ COMMENTARIES ============
+
+/**
+ * Create a commentary linked to a hadith and/or narrator
+ */
+export async function createCommentary(data: CommentaryData): Promise<string> {
+  const id = randomUUID();
+  const queries: Array<{ query: string; params?: Record<string, any> }> = [
+    {
+      query: `
+        CREATE (c:Commentary {
+          id: $id,
+          source_work: $source_work,
+          author: $author,
+          text: $text,
+          text_arabic: $text_arabic,
+          type: $type,
+          reference: $reference,
+          created_at: datetime()
+        })
+      `,
+      params: {
+        id,
+        source_work: data.source_work,
+        author: data.author,
+        text: data.text,
+        text_arabic: data.text_arabic || null,
+        type: data.type,
+        reference: data.reference || null,
+      },
+    },
+  ];
+
+  if (data.hadith_id) {
+    queries.push({
+      query: `
+        MATCH (c:Commentary {id: $id})
+        MATCH (h:Hadith {id: $hadith_id})
+        CREATE (c)-[:COMMENTS_ON]->(h)
+      `,
+      params: { id, hadith_id: data.hadith_id },
+    });
+  }
+
+  if (data.narrator_id) {
+    queries.push({
+      query: `
+        MATCH (c:Commentary {id: $id})
+        MATCH (n:Narrator {id: $narrator_id})
+        CREATE (c)-[:DISCUSSES]->(n)
+      `,
+      params: { id, narrator_id: data.narrator_id },
+    });
+  }
+
+  await runTransaction(queries);
+  return id;
+}
+
+export async function getAllCommentaries() {
+  const result = await runQuery(`
+    MATCH (c:Commentary)
+    OPTIONAL MATCH (c)-[:COMMENTS_ON]->(h:Hadith)
+    OPTIONAL MATCH (c)-[:DISCUSSES]->(n:Narrator)
+    RETURN c, h, n
+    ORDER BY c.created_at DESC
+  `);
+  return result.map((r) => ({
+    ...r.c.properties,
+    hadith: r.h?.properties || null,
+    narrator: r.n?.properties || null,
+  }));
+}
+
+/**
+ * Get all commentaries for a hadith
+ */
+export async function getCommentariesForHadith(hadithId: string) {
+  const result = await runQuery(`
+    MATCH (c:Commentary)-[:COMMENTS_ON]->(h:Hadith {id: $hadithId})
+    RETURN c
+    ORDER BY c.created_at DESC
+  `, { hadithId });
+  return result.map((r) => r.c.properties);
+}
+
+/**
+ * Get all commentaries for a narrator
+ */
+export async function getCommentariesForNarrator(narratorId: string) {
+  const result = await runQuery(`
+    MATCH (c:Commentary)-[:DISCUSSES]->(n:Narrator {id: $narratorId})
+    RETURN c
+    ORDER BY c.created_at DESC
+  `, { narratorId });
+  return result.map((r) => r.c.properties);
+}
+
+export async function updateCommentary(commentaryId: string, data: Partial<CommentaryData>): Promise<void> {
+  const updateData = { ...data };
+  delete (updateData as any).hadith_id;
+  delete (updateData as any).narrator_id;
+
+  const setClause = Object.keys(updateData).map((key) => `c.${key} = $${key}`).join(', ');
+  if (!setClause) return;
+  await runWrite(`MATCH (c:Commentary {id: $commentaryId}) SET ${setClause}`, { commentaryId, ...updateData });
+}
+
+export async function deleteCommentary(commentaryId: string): Promise<void> {
+  await runWrite(`MATCH (c:Commentary {id: $commentaryId}) DETACH DELETE c`, { commentaryId });
+}
+
+// ============ LOCATIONS ============
+
+/**
+ * Create a location node
+ */
+export async function createLocation(data: LocationData): Promise<string> {
+  const id = randomUUID();
+  await runWrite(`
+    CREATE (l:Location {
+      id: $id,
+      name: $name,
+      name_arabic: $name_arabic,
+      modern_country: $modern_country,
+      region: $region,
+      latitude: $latitude,
+      longitude: $longitude,
+      description: $description,
+      created_at: datetime()
+    })
+  `, {
+    id,
+    name: data.name,
+    name_arabic: (data as any).name_arabic || null,
+    modern_country: data.modern_country || null,
+    region: data.region || null,
+    latitude: data.latitude || null,
+    longitude: data.longitude || null,
+    description: (data as any).description || null,
+  });
+  return id;
+}
+
+export async function getAllLocations() {
+  const result = await runQuery(`MATCH (l:Location) RETURN l ORDER BY l.name`);
+  return result.map((r) => r.l.properties);
+}
+
+export async function deleteLocation(locationId: string): Promise<void> {
+  await runWrite(`MATCH (l:Location {id: $locationId}) DETACH DELETE l`, { locationId });
+}
+
+export async function updateLocation(locationId: string, data: Partial<LocationData>): Promise<void> {
+  const setClause = Object.keys(data).map((key) => `l.${key} = $${key}`).join(', ');
+  if (!setClause) return;
+  await runWrite(`MATCH (l:Location {id: $locationId}) SET ${setClause}`, { locationId, ...data });
+}
+
+/**
+ * Link a narrator to a location
+ */
+export async function linkNarratorToLocation(
+  narratorId: string,
+  locationId: string,
+  relType: 'BORN_IN' | 'DIED_IN' | 'RESIDED_IN'
+): Promise<void> {
+  await runWrite(`
+    MATCH (n:Narrator {id: $narratorId})
+    MATCH (l:Location {id: $locationId})
+    MERGE (n)-[:${relType}]->(l)
+  `, { narratorId, locationId });
+}
+
+// ============ ENHANCED QUERIES ============
+
+/**
+ * Get enhanced narrator details with commentaries, events, locations, and teacher-student network
+ */
+export async function getEnhancedNarratorDetails(narratorId: string) {
+  const narrator = await getNarratorById(narratorId);
+  if (!narrator) return null;
+
+  const hadiths = await runQuery(`
+    MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)
+          <-[:TRANSMITTED_VIA]-(m:MatnVariation)<-[:HAS_VARIATION]-(h:Hadith)
+    RETURN DISTINCT h
+    ORDER BY h.title
+    LIMIT 100
+  `, { narratorId });
+
+  const locations = await runQuery(`
+    MATCH (n:Narrator {id: $narratorId})-[r]->(l:Location)
+    RETURN l, type(r) as relationType
+  `, { narratorId });
+
+  const network = await runQuery(`
+    MATCH (n:Narrator {id: $narratorId})
+    OPTIONAL MATCH (n)-[:HEARD_FROM]->(teacher:Narrator)
+    OPTIONAL MATCH (student:Narrator)-[:HEARD_FROM]->(n)
+    RETURN
+      collect(DISTINCT teacher {.id, .name_english, .name_arabic, .reliability, .tabaqah}) as teachers,
+      collect(DISTINCT student {.id, .name_english, .name_arabic, .reliability, .tabaqah}) as students
+  `, { narratorId });
+
+  return {
+    ...narrator,
+    other_hadiths: hadiths.map((r) => r.h.properties),
+    locations: locations.map((r) => ({ ...r.l.properties, relationship: r.relationType })),
+    teacher_student_network: network[0] || { teachers: [], students: [] },
+  };
+}
+
+/**
+ * Get enhanced hadith details with commentaries and chain info
+ */
+export async function getEnhancedHadithDetails(hadithId: string) {
+  const hadith = await getHadithById(hadithId);
+  const commentaries = await getCommentariesForHadith(hadithId);
+
+  const chains = await runQuery(`
+    MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(m:MatnVariation)
+          -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n:Narrator)
+    RETURN DISTINCT c.id as chainId, collect(DISTINCT n {.id, .name_english, .name_arabic, .reliability, .tabaqah}) as narrators
+  `, { hadithId });
+
+  return { ...hadith, commentaries, transmission_chains: chains };
+}
+
+/**
+ * Get teacher-student network for graph visualization
+ */
+export async function getNarratorNetwork(narratorId: string, depth: number = 2) {
+  const teachers = await runQuery(`
+    MATCH (n:Narrator {id: $narratorId})-[:HEARD_FROM]->(teacher:Narrator)
+    RETURN DISTINCT teacher
+  `, { narratorId });
+
+  const students = await runQuery(`
+    MATCH (student:Narrator)-[:HEARD_FROM]->(n:Narrator {id: $narratorId})
+    RETURN DISTINCT student
+  `, { narratorId });
+
+  return {
+    teachers: teachers.map((r) => ({ ...r.teacher.properties, relationship: 'teacher' })),
+    students: students.map((r) => ({ ...r.student.properties, relationship: 'student' })),
+  };
+}
+
+/**
+ * Get statistics per hadith source
+ */
+export async function getSourceStats() {
+  const result = await runQuery(`
+    MATCH (s:Source)
+    OPTIONAL MATCH (h:Hadith)-[:FROM_SOURCE]->(s)
+    RETURN s.name as source, s.compiler as compiler, count(h) as hadith_count
+    ORDER BY hadith_count DESC
+  `);
+  return result;
+}
+
+/**
+ * Search hadiths by text or filters
+ */
+export async function searchHadiths(
+  searchTerm: string = '',
+  filters?: { source?: string; grade?: string; chapter?: string }
+) {
+  let query = 'MATCH (h:Hadith)';
+  const params: Record<string, any> = {};
+  const conditions: string[] = [];
+
+  if (searchTerm) {
+    conditions.push('(toLower(h.title) CONTAINS toLower($searchTerm) OR toLower(h.primary_topic) CONTAINS toLower($searchTerm) OR toLower(h.text_english) CONTAINS toLower($searchTerm))');
+    params.searchTerm = searchTerm;
+  }
+  if (filters?.source) {
+    conditions.push('h.source = $source');
+    params.source = filters.source;
+  }
+  if (filters?.grade) {
+    conditions.push('h.display_grade = $grade');
+    params.grade = filters.grade;
+  }
+  if (filters?.chapter) {
+    conditions.push('h.primary_topic = $chapter');
+    params.chapter = filters.chapter;
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  query += ' RETURN h ORDER BY h.title LIMIT 100';
+  const result = await runQuery(query, params);
+  return result.map((r) => r.h.properties);
 }
