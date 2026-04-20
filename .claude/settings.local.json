@@ -81,7 +81,12 @@
       "Bash(railway version:*)",
       "Bash(railway --version)",
       "Bash(railway whoami:*)",
-      "Bash(railway link:*)"
+      "Bash(railway link:*)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm -r --cached --ignore-unmatch .omc/backups/' --prune-empty -- HEAD~4..HEAD)",
+      "Bash(git reset:*)",
+      "Bash(git rm:*)",
+      "Bash(git stash:*)",
+      "Bash(git push:*)"
     ]
   }
 }

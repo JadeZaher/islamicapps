@@ -1,0 +1,54 @@
+HADITH DATASET CONSOLIDATION AUDIT
+Generated: 2026-04-20 08:01:13
+================================================================================
+1. GOLD STANDARD (all_hadiths_clean.csv) - PRIMARY REFERENCE
+   Records: 34441
+   Columns: id, hadith_id, source, chapter_no, hadith_no, chapter, chain_indx, text_ar, text_en
+   Completeness:
+     ✓ id: 34441/34441 (100.0%)
+     ✓ hadith_id: 34441/34441 (100.0%)
+     ✓ source: 34441/34441 (100.0%)
+     ✓ hadith_no: 34441/34441 (100.0%)
+     ✓ text_ar: 34433/34441 (100.0%)
+     ✓ text_en: 33588/34441 (97.5%)
+     ✓ chain_indx: 34318/34441 (99.6%)
+
+2. SHIA DATASET (all_hadiths_shia.csv)
+   Records: 33190
+   Columns: id, hadith_id, source, volume, chapter_no, hadith_no, chapter, category, chain_indx, text_ar, text_en, sanad, matn_en, grading_majlisi, grading_mohseni, grading_behbudi, gradings_full, url
+   Key fields:
+     ✓ hadith_id: 33190/33190 (100.0%)
+     ✓ source: 33190/33190 (100.0%)
+     ✓ text_ar: 33190/33190 (100.0%)
+     ✓ text_en: 33190/33190 (100.0%)
+     ⚠ sanad: 27863/33190 (83.9%)
+     ⚠ chain_indx: 27863/33190 (83.9%)
+
+3. CLASSICAL COLLECTIONS (classical_canon_translated.csv)
+   Records: 29917
+   Columns: id, source, source_canonical, hadith_no, topics, ruling, chain, text_ar, text_en, shelf_no, row_no
+   Key fields:
+     ✓ source: 29917/29917 (100.0%)
+     ✓ hadith_no: 27863/29917 (93.1%)
+     ✓ text_ar: 29917/29917 (100.0%)
+     ✓ text_en: 29882/29917 (99.9%)
+     ✓ chain: 27861/29917 (93.1%)
+
+4. JSONL INTERMEDIARY FILES
+   ✓ classical_collections_translated.jsonl: 67233 records
+   ✓ classical_sanad_parsed.jsonl: 27815 records
+   ✓ classical_translations_clean.jsonl: 27390 records
+   ✓ Shia volumes: 34 JSON files
+
+================================================================================
+COMPLETENESS SUMMARY
+Gold Standard completeness: Excellent (core fields 96-99%)
+Shia Dataset: Good (text fields 95%+, sanads need enhancement)
+Classical Collections: Good (text fields 85%+, chains need enrichment)
+Total unique records across all sources: 97,548
+
+PRIORITY ACTIONS
+1. Build cross-reference mapping (source + hadith_no)
+2. Enhance classical sanad chains from JSONL files
+3. Fill missing translations using JSONL intermediaries
+4. Consolidate into unified structure
