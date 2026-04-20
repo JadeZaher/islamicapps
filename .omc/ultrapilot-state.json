@@ -1,0 +1,56 @@
+{
+  "active": false,
+  "mode": "ultrapilot",
+  "task": "pure-canon-import-pipeline",
+  "phase": "complete",
+  "started_at": "2026-04-11T01:05:00Z",
+  "completed_at": "2026-04-11T01:30:00Z",
+  "workers": [
+    {
+      "id": "worker_a_python",
+      "status": "complete",
+      "model": "sonnet",
+      "files_created": [
+        "datasets/06_pure_canon_preprocess.py",
+        "datasets/translate_ollama_generic.py",
+        "datasets/hadith-data/README_PURE_CANON.md"
+      ],
+      "lines_of_code": 845,
+      "smoke_test": "preprocessor_500_rows_ok; translator_3_rows_ok"
+    },
+    {
+      "id": "worker_b_importer",
+      "status": "complete",
+      "model": "sonnet",
+      "files_created": [
+        "src/scripts/import-pure-canon.ts",
+        "src/lib/import/canon-normalize.ts"
+      ],
+      "files_modified": ["package.json"],
+      "lines_of_code": 514,
+      "smoke_test": "dry_run_3_rows_ok"
+    },
+    {
+      "id": "worker_c_refactor",
+      "status": "complete",
+      "model": "sonnet",
+      "files_created": ["src/app/hadith/[id]/types.ts"],
+      "files_modified": [
+        "src/scripts/import-musnad.ts",
+        "src/app/hadith/[id]/client-page.tsx"
+      ],
+      "lines_of_code": 99,
+      "notes": "5 as-any casts at client-page.tsx use sites bridging HadithNode/GraphNode/ParallelRecord to stricter internal component types"
+    }
+  ],
+  "integration": {
+    "tsc_noemit": "clean",
+    "python_syntax": "ok",
+    "package_json": "parses; db:import:pure-canon script added",
+    "smoke_tests": {
+      "preprocessor_500_rows": "287 classical + 213 anthology + 26 id_dedups",
+      "translator_3_rows_gemma3_4b": "works but hallucinates names/events; needs gemma3:12b or llama3.1:8b for production",
+      "importer_dry_run_3_rows": "classifies + batches correctly, no writes issued"
+    }
+  }
+}

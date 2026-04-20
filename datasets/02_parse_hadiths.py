@@ -85,11 +85,12 @@ DIGIT_MAP = {d: str(i) for i, d in enumerate(ARABIC_DIGITS)}
 
 PART_RANGES = {
     1: (1, 391),
-    2: (392, 742),
+    2: (392, 742),  
     3: (743, 882),
     4: (883, 1005),
 }
 
+## based on C:\Users\atooz\Programming\experiments\islamicapps\datasets\hadith-data\all_hadiths_clean.csv
 KNOWN_NARRATORS = {
     'الربيع بن حبيب': 60003,
     'أبو عبيدة': 60002,

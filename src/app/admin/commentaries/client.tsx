@@ -16,11 +16,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { PaginationControls } from '@/components/PaginationControls';
+import { SearchFilterBar } from '@/components/SearchFilterBar';
+
+interface PaginationInfo {
+    page: number;
+    totalPages: number;
+    total: number;
+    pageSize: number;
+}
 
 interface CommentariesManagerClientProps {
     commentaries: any[];
     hadiths: any[];
     narrators: any[];
+    pagination: PaginationInfo;
+    filterType?: string;
 }
 
 const COMMENTARY_TYPES = ['Explanation', 'Critique', 'Translation', 'Historical Context', 'Legal Ruling'];
@@ -29,9 +40,13 @@ export function CommentariesManagerClient({
     commentaries: initialCommentaries,
     hadiths,
     narrators,
+    pagination,
+    filterType = '',
 }: CommentariesManagerClientProps) {
     const router = useRouter();
-    const [commentaries, setCommentaries] = useState(initialCommentaries);
+    const [commentaries, setCommentaries] = useState(
+        filterType ? initialCommentaries.filter((c) => c.type === filterType) : initialCommentaries
+    );
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [hadithSearch, setHadithSearch] = useState('');
@@ -56,7 +71,7 @@ export function CommentariesManagerClient({
             if (hadithSearch.trim()) {
                 setIsSearching(true);
                 const results = await searchHadiths(hadithSearch);
-                setHadithResults(results);
+                setHadithResults(results.items);
                 setIsSearching(false);
             } else {
                 setHadithResults([]);
@@ -160,7 +175,7 @@ export function CommentariesManagerClient({
             Explanation: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
             Critique: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
             Translation: 'bg-green-500/20 text-green-400 border-green-500/30',
-            'Historical Context': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+            'Historical Context': 'bg-teal-500/20 text-teal-400 border-teal-500/30',
             'Legal Ruling': 'bg-red-500/20 text-red-400 border-red-500/30',
         };
         return colors[type] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
@@ -415,6 +430,21 @@ export function CommentariesManagerClient({
                 </Card>
             )}
 
+            <SearchFilterBar
+                showSearch={false}
+                filters={[
+                    {
+                        key: 'type',
+                        label: 'Type',
+                        options: [
+                            { label: 'All Types', value: '' },
+                            ...COMMENTARY_TYPES.map((t) => ({ label: t, value: t })),
+                        ],
+                    },
+                ]}
+                totalResults={pagination.total}
+            />
+
             {/* Commentaries List */}
             <div className="space-y-4">
                 {commentaries.map((commentary) => (
@@ -444,7 +474,7 @@ export function CommentariesManagerClient({
                                         </span>
                                     )}
                                     {commentary.reference && (
-                                        <span className="bg-purple-500/10 px-2 py-1 rounded">
+                                        <span className="bg-slate-600/15 px-2 py-1 rounded">
                                             📍 {commentary.reference}
                                         </span>
                                     )}
@@ -480,6 +510,13 @@ export function CommentariesManagerClient({
                         </p>
                     </Card>
                 )}
+
+                <PaginationControls
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    pageSize={pagination.pageSize}
+                />
             </div>
         </div>
     );

@@ -19,24 +19,24 @@ export function NarratorCard({ narrator, onClick }: NarratorCardProps) {
     const content = (
         <div
             className="group relative bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 
-                hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300 cursor-pointer
-                hover:shadow-xl hover:shadow-purple-500/20 hover:-translate-y-1"
+                hover:bg-white/10 hover:border-cyan-500/50 transition-all duration-300 cursor-pointer
+                hover:shadow-xl hover:shadow-cyan-500/20 hover:-translate-y-1"
             onClick={onClick}
         >
             <div className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">
+                        <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
                             {narrator.name_english}
                         </h3>
-                        <p className="text-lg text-purple-200/80 font-arabic mt-1">
+                        <p className="text-lg text-cyan-200/80 font-arabic mt-1">
                             {narrator.name_arabic}
                         </p>
                     </div>
                     {narrator.death_year_hijri && (
                         <div className="flex flex-col items-end">
                             <span className="text-sm text-white/60">Died</span>
-                            <span className="text-lg font-semibold text-purple-300">
+                            <span className="text-lg font-semibold text-cyan-300">
                                 {narrator.death_year_hijri} AH
                             </span>
                         </div>
@@ -45,15 +45,15 @@ export function NarratorCard({ narrator, onClick }: NarratorCardProps) {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <ReliabilityBadge reliability={narrator.reliability} />
-                    <div className="px-3 py-1 rounded-md bg-purple-500/20 border border-purple-500/30">
-                        <span className="text-sm text-purple-200">{narrator.tabaqah}</span>
+                    <div className="px-3 py-1 rounded-md bg-cyan-500/15 border border-cyan-500/25">
+                        <span className="text-sm text-cyan-200">{narrator.tabaqah}</span>
                     </div>
                 </div>
             </div>
 
             {/* Hover indicator */}
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-purple-400">→</span>
+                <span className="text-cyan-400">→</span>
             </div>
         </div>
     );

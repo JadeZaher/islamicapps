@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Users, Calendar, MessageSquare, MapPin, Upload } from 'lucide-react';
+import { BookOpen, Users, Calendar, MessageSquare, MapPin, Upload, Globe } from 'lucide-react';
 
 export default function AdminPage() {
     const router = useRouter();
@@ -21,7 +21,7 @@ export default function AdminPage() {
             description: 'Create and validate transmission chains for hadiths',
             icon: Users,
             href: '/admin/chain-builder',
-            color: 'bg-purple-500/10 border-purple-500/30 hover:border-purple-500/50',
+            color: 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50',
         },
         {
             title: 'Historical Events',
@@ -43,6 +43,13 @@ export default function AdminPage() {
             icon: MapPin,
             href: '/admin/locations',
             color: 'bg-red-500/10 border-red-500/30 hover:border-red-500/50',
+        },
+        {
+            title: 'Comparative Studies',
+            description: 'Manage cross-cultural parallels with Jewish, Christian, and Zoroastrian sources (Isra\'iliyyat)',
+            icon: Globe,
+            href: '/admin/comparative',
+            color: 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50',
         },
     ];
 

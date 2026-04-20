@@ -8,16 +8,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { PaginationControls } from '@/components/PaginationControls';
+import { SearchFilterBar } from '@/components/SearchFilterBar';
+
+interface PaginationInfo {
+    page: number;
+    totalPages: number;
+    total: number;
+    pageSize: number;
+}
 
 interface LocationsManagerClientProps {
     locations: any[];
+    pagination: PaginationInfo;
+    searchQuery?: string;
 }
 
-export function LocationsManagerClient({ locations }: LocationsManagerClientProps) {
+export function LocationsManagerClient({ locations, pagination, searchQuery = '' }: LocationsManagerClientProps) {
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         modern_country: '',
@@ -26,10 +36,12 @@ export function LocationsManagerClient({ locations }: LocationsManagerClientProp
         longitude: '',
     });
 
-    const filteredLocations = locations.filter((location) =>
-        location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (location.modern_country && location.modern_country.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const filteredLocations = searchQuery
+        ? locations.filter((location) =>
+              location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              (location.modern_country && location.modern_country.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+        : locations;
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -127,20 +139,10 @@ export function LocationsManagerClient({ locations }: LocationsManagerClientProp
                 </Button>
             </div>
 
-            {/* Search Bar */}
-            <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
-                <Label htmlFor="search" className="text-slate-300 block mb-3">
-                    Search Locations
-                </Label>
-                <Input
-                    id="search"
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search by location name or country..."
-                    className="bg-slate-800 border-slate-700 text-white"
-                />
-            </Card>
+            <SearchFilterBar
+                searchPlaceholder="Search by location name or country..."
+                totalResults={pagination.total}
+            />
 
             {/* Create/Edit Form */}
             {(isCreating || editingId) && (
@@ -301,6 +303,13 @@ export function LocationsManagerClient({ locations }: LocationsManagerClientProp
                         </p>
                     </Card>
                 )}
+
+                <PaginationControls
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    pageSize={pagination.pageSize}
+                />
             </div>
         </div>
     );

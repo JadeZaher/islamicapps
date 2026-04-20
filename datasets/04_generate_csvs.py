@@ -123,7 +123,7 @@ def generate_hadith_csv(hadiths, output_path):
         if not text_en:
             text_en = (f"Hadith {h_no} — Part {part} — "
                        f"{chapter_label} — "
-                       f"Chain: al-Rabīʿ → Abū ʿUbayda → Jābir b. Zayd")
+                       f"Chain: al-Rabīʿ -> Abū ʿUbayda -> Jābir b. Zayd")
 
         row = {
             'id': f"musnad_{h_no:04d}",
@@ -146,7 +146,7 @@ def generate_hadith_csv(hadiths, output_path):
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Wrote {len(rows)} hadiths → {output_path}")
+    print(f"Wrote {len(rows)} hadiths -> {output_path}")
     return rows
 
 
@@ -445,7 +445,7 @@ def generate_narrator_csv(output_path):
             row = {field: narrator.get(field, '') for field in NARRATOR_FIELDS}
             writer.writerow(row)
 
-    print(f"Wrote {len(NARRATORS)} narrators → {output_path}")
+    print(f"Wrote {len(NARRATORS)} narrators -> {output_path}")
 
 
 def main():

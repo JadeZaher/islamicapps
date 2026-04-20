@@ -14,11 +14,27 @@ export async function initializeSchema(): Promise<void> {
         { label: 'MatnVariation', prop: 'id' },
         { label: 'Chain', prop: 'id' },
         { label: 'Scholar', prop: 'id' },
+        { label: 'Scholar', prop: 'pipeline_key' },
         { label: 'ScholarVerdict', prop: 'id' },
+        { label: 'ScholarVerdict', prop: 'pipeline_key' },
         { label: 'HistoricalEvent', prop: 'id' },
         { label: 'Location', prop: 'id' },
         { label: 'Commentary', prop: 'id' },
+        { label: 'Commentary', prop: 'pipeline_key' },
         { label: 'Source', prop: 'id' },
+        // Comparative studies nodes
+        { label: 'ReligiousTradition', prop: 'id' },
+        { label: 'ReligiousTradition', prop: 'name' },
+        { label: 'SourceText', prop: 'id' },
+        { label: 'CrossCulturalParallel', prop: 'id' },
+        { label: 'CrossCulturalParallel', prop: 'pipeline_key' },
+        { label: 'MotifTag', prop: 'id' },
+        { label: 'MotifTag', prop: 'name' },
+        // Scholarship-layer nodes
+        { label: 'SchoolOfThought', prop: 'id' },
+        { label: 'SchoolOfThought', prop: 'name' },
+        { label: 'Practice', prop: 'id' },
+        { label: 'Practice', prop: 'name' },
     ];
 
     for (const { label, prop } of constraints) {
@@ -50,11 +66,25 @@ export async function initializeSchema(): Promise<void> {
         { label: 'Hadith', prop: 'transmission_type' },
         { label: 'Hadith', prop: 'source' },
         { label: 'Hadith', prop: 'hadith_no' },
+        { label: 'Hadith', prop: 'dataset_row_id' },
         { label: 'Scholar', prop: 'authority_rank' },
+        { label: 'Scholar', prop: 'name_english' },
+        { label: 'Scholar', prop: 'death_year_hijri' },
+        { label: 'ScholarVerdict', prop: 'ruling' },
         { label: 'HistoricalEvent', prop: 'year_hijri' },
         { label: 'HistoricalEvent', prop: 'category' },
         { label: 'Location', prop: 'name' },
         { label: 'Commentary', prop: 'source_work' },
+        // Comparative studies indexes
+        { label: 'CrossCulturalParallel', prop: 'parallel_type' },
+        { label: 'CrossCulturalParallel', prop: 'isra_iliyyat_status' },
+        { label: 'CrossCulturalParallel', prop: 'confidence_level' },
+        { label: 'SourceText', prop: 'tradition_name' },
+        { label: 'SourceText', prop: 'canonical_reference' },
+        { label: 'MotifTag', prop: 'category' },
+        // Scholarship-layer indexes
+        { label: 'SchoolOfThought', prop: 'category' },
+        { label: 'Practice', prop: 'category' },
     ];
 
     for (const { label, prop } of indexes) {
@@ -80,16 +110,16 @@ export async function initializeSchema(): Promise<void> {
  */
 export async function clearDatabase(): Promise<void> {
     // Delete in batches to avoid memory issues with large datasets
-    let deleted = 1;
-    while (deleted > 0) {
-        const result = await runWrite(`
-            MATCH (n)
-            WITH n LIMIT 10000
-            DETACH DELETE n
-            RETURN count(*) as deleted
-        `);
-        deleted = result[0]?.deleted || 0;
-        if (deleted > 0) console.log(`  🗑️  Deleted ${deleted} nodes...`);
-    }
-    console.log('🗑️  Database cleared');
+    // let deleted = 1;
+    // while (deleted > 0) {
+    //     const result = await runWrite(`
+    //         MATCH (n)
+    //         WITH n LIMIT 10000
+    //         DETACH DELETE n
+    //         RETURN count(*) as deleted
+    //     `);
+    //     deleted = result[0]?.deleted || 0;
+    //     if (deleted > 0) console.log(`  🗑️  Deleted ${deleted} nodes...`);
+    // }
+    // console.log('🗑️  Database cleared');
 }

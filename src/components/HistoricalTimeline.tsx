@@ -33,9 +33,9 @@ const CATEGORY_COLORS = {
         label: 'Scientific',
     },
     CULTURAL: {
-        bg: 'bg-purple-500/20',
-        border: 'border-purple-500/40',
-        dot: 'bg-purple-500',
+        bg: 'bg-teal-500/20',
+        border: 'border-teal-500/40',
+        dot: 'bg-teal-500',
         label: 'Cultural',
     },
     RELIGIOUS: {
@@ -108,7 +108,7 @@ export function HistoricalTimeline({
             {/* Timeline */}
             <div className="relative">
                 {/* Horizontal timeline line */}
-                <div className="absolute top-16 left-0 right-0 h-1 bg-gradient-to-r from-white/10 via-purple-500/30 to-white/10" />
+                <div className="absolute top-16 left-0 right-0 h-1 bg-white/10" />
 
                 {/* Life period indicators */}
                 {narratorBirthYear && narratorDeathYear && (
@@ -206,7 +206,7 @@ export function HistoricalTimeline({
                                                     </span>
                                                 )}
                                             </div>
-                                            <h4 className="font-semibold text-white text-sm group-hover:text-purple-300">
+                                            <h4 className="font-semibold text-white text-sm group-hover:text-cyan-300">
                                                 {event.title}
                                             </h4>
                                         </div>

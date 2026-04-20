@@ -9,13 +9,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, BarChart3, Award } from 'lucide-react';
+import { Plus, BarChart3 } from 'lucide-react';
+import { PaginationControls } from '@/components/PaginationControls';
+import { SearchFilterBar } from '@/components/SearchFilterBar';
+import { getSourceFilterOptions } from '@/lib/constants/sources';
+
+interface PaginationInfo {
+    page: number;
+    totalPages: number;
+    total: number;
+    pageSize: number;
+}
 
 interface HadithManagerClientProps {
     hadiths: any[];
+    pagination: PaginationInfo;
 }
 
-export function HadithManagerClient({ hadiths }: HadithManagerClientProps) {
+export function HadithManagerClient({ hadiths, pagination }: HadithManagerClientProps) {
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [formData, setFormData] = useState({
@@ -112,6 +123,29 @@ export function HadithManagerClient({ hadiths }: HadithManagerClientProps) {
                 </Card>
             )}
 
+            <SearchFilterBar
+                searchPlaceholder="Search hadiths by title, topic, or text..."
+                totalResults={pagination.total}
+                filters={[
+                    {
+                        key: 'source',
+                        label: 'Source',
+                        options: getSourceFilterOptions(),
+                    },
+                    {
+                        key: 'grade',
+                        label: 'Grade',
+                        options: [
+                            { label: 'All Grades', value: '' },
+                            { label: 'Sahih', value: 'SAHIH' },
+                            { label: 'Hasan', value: 'HASAN' },
+                            { label: 'Daif', value: 'DAIF' },
+                            { label: 'Mawdu', value: 'MAWDU' },
+                        ],
+                    },
+                ]}
+            />
+
             {/* Hadith List */}
             <div className="space-y-4">
                 {hadiths.map((hadith) => (
@@ -139,7 +173,7 @@ export function HadithManagerClient({ hadiths }: HadithManagerClientProps) {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleRunAutoAnalysis(hadith.id)}
-                                    className="border-slate-600 text-slate-300"
+                                    className="border-slate-600 text-black"
                                 >
                                     <BarChart3 className="w-4 h-4 mr-2" />
                                     Auto-Analysis
@@ -163,6 +197,14 @@ export function HadithManagerClient({ hadiths }: HadithManagerClientProps) {
                         </p>
                     </Card>
                 )}
+
+                <PaginationControls
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    pageSize={pagination.pageSize}
+                    onPageChange={(p) => router.push(`?page=${p}`)}
+                />
             </div>
         </div>
     );

@@ -10,9 +10,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { PaginationControls } from '@/components/PaginationControls';
+import { SearchFilterBar } from '@/components/SearchFilterBar';
+
+interface PaginationInfo {
+    page: number;
+    totalPages: number;
+    total: number;
+    pageSize: number;
+}
 
 interface EventsManagerClientProps {
     events: any[];
+    pagination: PaginationInfo;
 }
 
 const EVENT_CATEGORIES = [
@@ -25,13 +35,10 @@ const EVENT_CATEGORIES = [
     'Social',
 ];
 
-export function EventsManagerClient({ events }: EventsManagerClientProps) {
+export function EventsManagerClient({ events, pagination }: EventsManagerClientProps) {
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [filterCategory, setFilterCategory] = useState<string>('');
-    const [filterYearMin, setFilterYearMin] = useState<number | ''>('');
-    const [filterYearMax, setFilterYearMax] = useState<number | ''>('');
     const [formData, setFormData] = useState({
         title: '',
         title_arabic: '',
@@ -43,14 +50,7 @@ export function EventsManagerClient({ events }: EventsManagerClientProps) {
         location_name: '',
     });
 
-    const filteredEvents = events.filter((event) => {
-        if (filterCategory && event.category !== filterCategory) return false;
-        if (filterYearMin && event.year_gregorian && event.year_gregorian < filterYearMin) return false;
-        if (filterYearMax && event.year_gregorian && event.year_gregorian > filterYearMax) return false;
-        return true;
-    });
-
-    const groupedEvents = filteredEvents.reduce((acc, event) => {
+    const groupedEvents = events.reduce((acc, event) => {
         const category = event.category || 'Uncategorized';
         if (!acc[category]) acc[category] = [];
         acc[category].push(event);
@@ -142,7 +142,7 @@ export function EventsManagerClient({ events }: EventsManagerClientProps) {
             Religious: 'bg-green-500/20 text-green-400 border-green-500/30',
             Military: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
             Scientific: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-            Cultural: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+            Cultural: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
             Economic: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
             Social: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
         };
@@ -178,56 +178,20 @@ export function EventsManagerClient({ events }: EventsManagerClientProps) {
                 </Button>
             </div>
 
-            {/* Filters */}
-            <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Filters</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <Label htmlFor="category-filter" className="text-slate-300">
-                            Category
-                        </Label>
-                        <select
-                            id="category-filter"
-                            value={filterCategory}
-                            onChange={(e) => setFilterCategory(e.target.value)}
-                            className="w-full mt-2 bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
-                        >
-                            <option value="">All Categories</option>
-                            {EVENT_CATEGORIES.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <Label htmlFor="year-min" className="text-slate-300">
-                            Year From
-                        </Label>
-                        <Input
-                            id="year-min"
-                            type="number"
-                            value={filterYearMin}
-                            onChange={(e) => setFilterYearMin(e.target.value ? parseInt(e.target.value) : '')}
-                            placeholder="Start year"
-                            className="mt-2 bg-slate-800 border-slate-700 text-white"
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="year-max" className="text-slate-300">
-                            Year To
-                        </Label>
-                        <Input
-                            id="year-max"
-                            type="number"
-                            value={filterYearMax}
-                            onChange={(e) => setFilterYearMax(e.target.value ? parseInt(e.target.value) : '')}
-                            placeholder="End year"
-                            className="mt-2 bg-slate-800 border-slate-700 text-white"
-                        />
-                    </div>
-                </div>
-            </Card>
+            <SearchFilterBar
+                showSearch={false}
+                filters={[
+                    {
+                        key: 'category',
+                        label: 'Category',
+                        options: [
+                            { label: 'All Categories', value: '' },
+                            ...EVENT_CATEGORIES.map((cat) => ({ label: cat, value: cat })),
+                        ],
+                    },
+                ]}
+                totalResults={pagination.total}
+            />
 
             {/* Create/Edit Form */}
             {(isCreating || editingId) && (
@@ -434,13 +398,20 @@ export function EventsManagerClient({ events }: EventsManagerClientProps) {
                     </div>
                 ))}
 
-                {filteredEvents.length === 0 && (
+                {events.length === 0 && (
                     <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
                         <p className="text-center text-slate-400">
                             No events found. Click "New Event" to create one.
                         </p>
                     </Card>
                 )}
+
+                <PaginationControls
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    pageSize={pagination.pageSize}
+                />
             </div>
         </div>
     );

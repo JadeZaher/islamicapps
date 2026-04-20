@@ -1,8 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { loadEnv } from './lib/env';
 import { runWrite, runQuery, closeDriver } from '../lib/db/neo4j';
 import { initializeSchema, clearDatabase } from '../lib/db/schema';
+import { CANONICAL_SOURCES, getCanonicalName } from '../lib/constants/sources';
+
+loadEnv();
 
 const uuidv4 = randomUUID;
 
@@ -165,6 +169,7 @@ interface HadithData {
   auto_calculated_grade: string;
   display_grade: string;
   transmission_type: string;
+  dataset_row_id: number | null;
   chain_indx: number[]; // narrator scholar_indx values forming the isnad
 }
 
@@ -228,56 +233,20 @@ async function readCSV(filePath: string, callback: (row: CSVRow) => Promise<void
 async function createSources() {
   console.log('\n📚 Creating hadith collection sources...');
 
-  const sources: SourceData[] = [
-    {
+  // Only create Source nodes for the 6 kutub al-sittah (main CSV sources)
+  const csvSourceSlugs = ['bukhari', 'muslim', 'nasai', 'ibnmajah', 'abudawud', 'tirmidhi'];
+
+  const sources: SourceData[] = csvSourceSlugs.map((slug) => {
+    const entry = CANONICAL_SOURCES[slug];
+    return {
       id: uuidv4(),
-      name: 'Sahih Bukhari',
-      name_arabic: 'صحيح البخاري',
-      compiler: 'Muhammad ibn Ismail al-Bukhari',
-      total_hadiths: 7563,
-      description: 'One of the most authentic hadith collections in Islam',
-    },
-    {
-      id: uuidv4(),
-      name: 'Sahih Muslim',
-      name_arabic: 'صحيح مسلم',
-      compiler: 'Muslim ibn al-Hajjaj',
-      total_hadiths: 7275,
-      description: 'Second most authentic hadith collection',
-    },
-    {
-      id: uuidv4(),
-      name: 'Sunan an-Nasa\'i',
-      name_arabic: 'سنن النسائي',
-      compiler: 'Ahmad ibn Shuaib an-Nasa\'i',
-      total_hadiths: 5761,
-      description: 'Collection of Sunan hadiths',
-    },
-    {
-      id: uuidv4(),
-      name: 'Sunan Ibn Majah',
-      name_arabic: 'سنن ابن ماجه',
-      compiler: 'Muhammad ibn Yazid Ibn Majah',
-      total_hadiths: 4341,
-      description: 'Collection of Sunan hadiths',
-    },
-    {
-      id: uuidv4(),
-      name: 'Sunan Abi Da\'ud',
-      name_arabic: 'سنن أبي داود',
-      compiler: 'Sulaiman ibn al-Ash\'ath as-Sijistani',
-      total_hadiths: 5274,
-      description: 'Collection of Sunan hadiths',
-    },
-    {
-      id: uuidv4(),
-      name: 'Jami\' al-Tirmidhi',
-      name_arabic: 'جامع الترمذي',
-      compiler: 'Muhammad ibn Isa at-Tirmidhi',
-      total_hadiths: 3956,
-      description: 'Comprehensive hadith collection',
-    },
-  ];
+      name: entry.canonical,
+      name_arabic: entry.arabic,
+      compiler: entry.compiler,
+      total_hadiths: 0, // Will be updated by import
+      description: '',
+    };
+  });
 
   for (const source of sources) {
     const cypher = `
@@ -520,7 +489,14 @@ async function importHadiths(filePath: string, narrators: Map<number, NarratorDa
     const chainIndices = parseIndices(row.chain_indx);
     const hadith: HadithData = {
       id: uuidv4(),
-      title: `${row.source || 'Unknown'} ${row.hadith_no || ''}`.trim(),
+      title: (() => {
+        const src = row.source?.trim() || 'Unknown';
+        const hno = row.hadith_no?.trim();
+        if (!hno || hno === '0') {
+          return `${src} - ${row.chapter?.trim() || 'Introduction'}`;
+        }
+        return `${src} ${hno}`;
+      })(),
       primary_topic: row.chapter || 'General',
       source: row.source?.trim() || 'Unknown',
       chapter: row.chapter || '',
@@ -531,6 +507,7 @@ async function importHadiths(filePath: string, narrators: Map<number, NarratorDa
       auto_calculated_grade: '',
       display_grade: '',
       transmission_type: '',
+      dataset_row_id: parseInt(row.hadith_id?.trim() || '0', 10) || null,
       chain_indx: chainIndices,
     };
 
@@ -578,6 +555,7 @@ async function importHadithBatch(
           h.auto_calculated_grade = $auto_calculated_grade,
           h.display_grade = $display_grade,
           h.transmission_type = $transmission_type,
+          h.dataset_row_id = $dataset_row_id,
           h.created_at = datetime()
         RETURN h.id
       `,

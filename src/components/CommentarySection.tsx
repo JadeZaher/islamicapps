@@ -35,9 +35,9 @@ const COMMENTARY_TYPE_COLORS = {
         text: 'text-blue-300',
     },
     NARRATOR_BIOGRAPHY: {
-        bg: 'bg-purple-500/20',
-        border: 'border-purple-500/40',
-        text: 'text-purple-300',
+        bg: 'bg-teal-500/20',
+        border: 'border-teal-500/40',
+        text: 'text-teal-300',
     },
     CHAIN_ANALYSIS: {
         bg: 'bg-orange-500/20',
@@ -136,7 +136,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                 </div>
                 <Button
                     onClick={() => setShowForm(!showForm)}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                    className="bg-cyan-700 hover:bg-cyan-800 text-white"
                 >
                     {showForm ? 'Cancel' : '+ Add Commentary'}
                 </Button>
@@ -158,7 +158,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                         value={formData.author}
                                         onChange={handleInputChange}
                                         placeholder="Scholar name"
-                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
                                         required
                                     />
                                 </div>
@@ -170,7 +170,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                         value={formData.source_work}
                                         onChange={handleInputChange}
                                         placeholder="Book or manuscript title"
-                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
                                         required
                                     />
                                 </div>
@@ -181,7 +181,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                         name="type"
                                         value={formData.type}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 bg-white/5 border border-white/20 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="w-full px-3 py-2 bg-white/5 border border-white/20 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                     >
                                         {Object.entries(COMMENTARY_TYPE_LABELS).map(([key, label]) => (
                                             <option key={key} value={key} className="bg-slate-900">
@@ -198,7 +198,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                         value={formData.reference}
                                         onChange={handleInputChange}
                                         placeholder="Page number, volume, etc."
-                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
+                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
                                     />
                                 </div>
                             </div>
@@ -210,7 +210,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                     value={formData.text}
                                     onChange={handleInputChange}
                                     placeholder="Commentary details..."
-                                    className="bg-white/5 border-white/20 text-white placeholder:text-white/40 min-h-32"
+                                    className="bg-white/5 border-white/20 text-white placeholder:text-white/50 min-h-32"
                                     required
                                 />
                             </div>
@@ -226,7 +226,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                                    className="bg-cyan-700 hover:bg-cyan-800 text-white"
                                 >
                                     {isSubmitting ? 'Submitting...' : 'Add Commentary'}
                                 </Button>
@@ -243,7 +243,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                         onClick={() => setFilterType('ALL')}
                         className={`px-4 py-2 rounded-lg border transition-all ${
                             filterType === 'ALL'
-                                ? 'bg-purple-600 border-purple-500 text-white'
+                                ? 'bg-cyan-700 border-cyan-600 text-white'
                                 : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
                         }`}
                     >
@@ -257,7 +257,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                                 onClick={() => setFilterType(type)}
                                 className={`px-4 py-2 rounded-lg border transition-all ${
                                     filterType === type
-                                        ? 'bg-purple-600 border-purple-500 text-white'
+                                        ? 'bg-cyan-700 border-cyan-600 text-white'
                                         : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
                                 }`}
                             >
@@ -280,7 +280,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
 
                         return (
                             <div key={source} className="space-y-3">
-                                <h3 className="text-lg font-semibold text-purple-300 px-1">{source}</h3>
+                                <h3 className="text-lg font-semibold text-cyan-300 px-1">{source}</h3>
                                 <div className="space-y-3">
                                     {filtered.map((commentary) => {
                                         const typeColors =
@@ -338,7 +338,7 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                             </p>
                             <Button
                                 onClick={() => setShowForm(true)}
-                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                                className="bg-cyan-700 hover:bg-cyan-800 text-white"
                             >
                                 Be the first to add a commentary
                             </Button>

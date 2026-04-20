@@ -18,7 +18,7 @@ export default function ChainBuilderPage() {
 
     // Load hadiths on mount
     useEffect(() => {
-        getAllHadiths().then(setHadithList);
+        getAllHadiths({ pageSize: 50 }).then((r) => setHadithList(r.items));
     }, []);
 
     // Search narrators with debounce
@@ -98,7 +98,7 @@ export default function ChainBuilderPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4">
+        <div className="min-h-screen bg-slate-950 py-12 px-4">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -117,22 +117,22 @@ export default function ChainBuilderPage() {
                             <div key={s.num} className="flex items-center flex-1">
                                 <div
                                     className={`flex items-center justify-center w-12 h-12 rounded-full border-2 font-bold transition-all ${step >= s.num
-                                            ? 'bg-purple-600 border-purple-400 text-white'
-                                            : 'bg-white/5 border-white/20 text-white/40'
+                                            ? 'bg-cyan-700 border-cyan-500 text-white'
+                                            : 'bg-white/5 border-white/20 text-white/50'
                                         }`}
                                 >
                                     {s.num}
                                 </div>
                                 <div className="ml-3">
                                     <p
-                                        className={`font-semibold ${step >= s.num ? 'text-white' : 'text-white/40'}`}
+                                        className={`font-semibold ${step >= s.num ? 'text-white' : 'text-white/50'}`}
                                     >
                                         {s.label}
                                     </p>
                                 </div>
                                 {idx < 2 && (
                                     <div
-                                        className={`flex-1 h-1 mx-4 rounded ${step > s.num ? 'bg-purple-600' : 'bg-white/10'}`}
+                                        className={`flex-1 h-1 mx-4 rounded ${step > s.num ? 'bg-cyan-700' : 'bg-white/10'}`}
                                     />
                                 )}
                             </div>
@@ -159,10 +159,10 @@ export default function ChainBuilderPage() {
                                         setSelectedHadith(hadith);
                                         setStep(2);
                                     }}
-                                    className="text-left p-6 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 
+                                    className="text-left p-6 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50
                                         rounded-xl transition-all duration-300 group"
                                 >
-                                    <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors mb-2">
+                                    <h3 className="text-xl font-semibold text-white group-hover:text-cyan-300 transition-colors mb-2">
                                         {hadith.title}
                                     </h3>
                                     <p className="text-sm text-white/60">{hadith.primary_topic}</p>
@@ -191,12 +191,12 @@ export default function ChainBuilderPage() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Search by name..."
                                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white 
-                                    placeholder-white/40 focus:outline-none focus:border-purple-500 mb-4"
+                                    placeholder-white/50 focus:outline-none focus:border-cyan-500 mb-4"
                             />
 
                             {isSearching && (
                                 <div className="text-center py-8">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto"></div>
                                 </div>
                             )}
 
@@ -231,8 +231,8 @@ export default function ChainBuilderPage() {
                             </div>
 
                             {selectedHadith && (
-                                <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                                    <p className="text-sm text-purple-200 mb-1">Selected Hadith:</p>
+                                <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/25 rounded-lg">
+                                    <p className="text-sm text-cyan-200 mb-1">Selected Hadith:</p>
                                     <p className="text-white font-semibold">{selectedHadith.title}</p>
                                 </div>
                             )}
@@ -246,11 +246,11 @@ export default function ChainBuilderPage() {
                             <div className="space-y-4">
                                 {selectedChain.map((narrator, index) => (
                                     <div key={index} className="relative">
-                                        <div className="absolute -left-4 top-6 w-8 h-8 bg-purple-600 rounded-full 
+                                        <div className="absolute -left-4 top-6 w-8 h-8 bg-cyan-700 rounded-full
                                             flex items-center justify-center text-white font-bold text-sm z-10">
                                             {index + 1}
                                         </div>
-                                        <div className="ml-6 p-4 bg-white/10 border border-white/20 rounded-lg group hover:border-purple-500/50 transition-all">
+                                        <div className="ml-6 p-4 bg-white/10 border border-white/20 rounded-lg group hover:border-cyan-500/50 transition-all">
                                             <div className="flex items-start justify-between">
                                                 <div>
                                                     <p className="font-semibold text-white">{narrator.name_english}</p>
@@ -265,7 +265,7 @@ export default function ChainBuilderPage() {
                                             </div>
                                         </div>
                                         {index < selectedChain.length - 1 && (
-                                            <div className="ml-10 h-6 w-0.5 bg-purple-500/30"></div>
+                                            <div className="ml-10 h-6 w-0.5 bg-cyan-500/30"></div>
                                         )}
                                     </div>
                                 ))}
@@ -281,7 +281,7 @@ export default function ChainBuilderPage() {
                             {selectedChain.length >= 2 && !validationError && (
                                 <button
                                     onClick={() => setStep(3)}
-                                    className="w-full mt-6 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white 
+                                    className="w-full mt-6 px-6 py-3 bg-cyan-700 hover:bg-cyan-800 text-white
                                         rounded-lg transition-colors font-semibold"
                                 >
                                     Continue to Review →
@@ -296,8 +296,8 @@ export default function ChainBuilderPage() {
                     <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
                         <h2 className="text-2xl font-bold text-white mb-6">Review Chain</h2>
 
-                        <div className="mb-6 p-6 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                            <p className="text-sm text-purple-200 mb-2">Hadith:</p>
+                        <div className="mb-6 p-6 bg-cyan-500/10 border border-cyan-500/25 rounded-lg">
+                            <p className="text-sm text-cyan-200 mb-2">Hadith:</p>
                             <p className="text-xl text-white font-semibold mb-1">{selectedHadith?.title}</p>
                             <p className="text-white/60">{selectedHadith?.primary_topic}</p>
                         </div>
@@ -309,7 +309,7 @@ export default function ChainBuilderPage() {
                             <div className="space-y-2">
                                 {selectedChain.map((narrator, index) => (
                                     <div key={index} className="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
-                                        <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center 
+                                        <div className="w-8 h-8 bg-cyan-700 rounded-full flex items-center justify-center
                                             text-white font-bold text-sm">
                                             {index + 1}
                                         </div>

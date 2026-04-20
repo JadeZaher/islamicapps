@@ -1,0 +1,19 @@
+{
+  "track_id": "import_musnad_ahmad_20260418",
+  "title": "Import Classical Musnad & Sunan Collections (non-Kutub al-Sittah)",
+  "type": "feature",
+  "status": "planned",
+  "priority": "P1",
+  "created": "2026-04-18",
+  "phases": 3,
+  "estimated_tasks": 13,
+  "dependencies": ["fix_hadith_data_integrity_20260418", "translate_classical_collections_20260418"],
+  "description": "Extract 4 classical collections (Ahmad, Darimi, Shafi'i, Muwatta — ~30k hadiths) from pure_canon.jsonl into a clean CSV, map sanad to existing narrator IDs, merge translations, then import via existing pipeline. Anthologies (Albani, Talidi, Ghumari) deferred to a separate scholarly analysis track.",
+  "key_files": [
+    "datasets/hadith-data/extract_classical_musnad.py",
+    "datasets/hadith-data/hadith_classical_musnad.csv",
+    "src/lib/constants/sources.ts",
+    "src/scripts/import-datasets.ts",
+    "datasets/hadith-data/sheikahmad/pure_canon.jsonl"
+  ]
+}

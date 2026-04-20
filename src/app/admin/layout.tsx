@@ -1,17 +1,16 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Book, Users, Award, GitBranch, Home } from 'lucide-react';
+import { Book, Users, GitBranch, Home } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const navItems = [
         { href: '/admin/hadith', label: 'Hadith Manager', icon: Book },
         { href: '/admin/narrator', label: 'Narrators', icon: Users },
-        { href: '/admin/scholar', label: 'Scholars', icon: Award },
         { href: '/admin/chain', label: 'Chain Builder', icon: GitBranch },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pattern-islamic">
+        <div className="min-h-screen bg-slate-950 pattern-islamic">
             <div className="flex">
                 {/* Refined Sidebar */}
                 <aside className="w-72 min-h-screen bg-slate-900/80 backdrop-blur-sm border-r border-slate-800/50 p-6 border-islamic">
@@ -37,8 +36,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                                     href={item.href}
                                     className="group flex items-center gap-3 px-4 py-3.5 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition-all duration-300 relative overflow-hidden"
                                 >
-                                    {/* Hover gradient overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    {/* Hover overlay */}
+                                    <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                                     {/* Icon with animation */}
                                     <div className="relative w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 group-hover:bg-emerald-500/20 transition-all duration-300 group-hover:scale-110">
@@ -57,7 +56,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
                     {/* Footer Stats */}
                     <div className="mt-auto pt-8 border-t border-slate-800">
-                        <div className="text-xs text-slate-500 space-y-1">
+                        <div className="text-xs text-slate-400 space-y-1">
                             <p>Neo4j Connected ●</p>
                             <p className="text-emerald-400">System: Online</p>
                         </div>

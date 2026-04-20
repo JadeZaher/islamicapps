@@ -1,18 +1,19 @@
 import { getHadithById, getFullChainGraph } from '@/app/actions/graph-actions';
+import { getParallelsForHadith } from '@/app/actions/comparative-actions';
 import { HadithClientPage } from './client-page';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default async function HadithPage({ params }: PageProps) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         // Fetch hadith and graph data with error handling
-        const [hadith, graphData] = await Promise.all([
+        const [hadith, graphData, parallels] = await Promise.all([
             getHadithById(id).catch(err => {
                 console.error('Error fetching hadith:', err);
                 return null;
@@ -21,6 +22,7 @@ export default async function HadithPage({ params }: PageProps) {
                 console.error('Error fetching graph data:', err);
                 return { nodes: [], edges: [] };
             }),
+            getParallelsForHadith(id).catch(() => []),
         ]);
 
         // Create a default hadith object with null values if not found
@@ -32,7 +34,6 @@ export default async function HadithPage({ params }: PageProps) {
             auto_calculated_grade: null,
             transmission_type: null,
             variations: [],
-            verdicts: [],
         };
 
         // Calculate chain health score (percentage of THIQA narrators)
@@ -48,12 +49,13 @@ export default async function HadithPage({ params }: PageProps) {
                 nodes={graphData.nodes || []}
                 edges={graphData.edges || []}
                 chainHealthScore={chainHealthScore}
+                parallels={parallels}
             />
         );
     } catch (error) {
         console.error('Unexpected error in HadithPage:', error);
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-8">
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-8">
                 <div className="max-w-2xl w-full bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center">
                     <div className="text-6xl mb-4">⚠️</div>
                     <h1 className="text-3xl font-bold text-white mb-4">Error Loading Hadith</h1>
@@ -65,7 +67,7 @@ export default async function HadithPage({ params }: PageProps) {
                     </p>
                     <a
                         href="/"
-                        className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                        className="inline-block px-6 py-3 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg transition-colors"
                     >
                         Return Home
                     </a>

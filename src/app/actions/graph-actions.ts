@@ -2,15 +2,24 @@
 
 import { runQuery, runWrite, runTransaction } from '@/lib/db/neo4j';
 import { randomUUID } from 'crypto';
+import { type PaginationParams, type PaginatedResult, toSkipLimit, paginate } from '@/lib/pagination';
+
+// ============ HELPERS ============
+
+/** Filter object keys to only allowed property names, preventing Cypher injection via dynamic SET. */
+function safeKeys<T extends Record<string, unknown>>(data: T, allowed: readonly string[]): Partial<T> {
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(data)) {
+    if (allowed.includes(key)) out[key] = data[key];
+  }
+  return out as Partial<T>;
+}
+
+function buildSetClause(alias: string, data: Record<string, unknown>): string {
+  return Object.keys(data).map((key) => `${alias}.${key} = $${key}`).join(', ');
+}
 
 // ============ TYPES ============
-
-export interface ScholarVerdictData {
-  grade: 'SAHIH' | 'HASAN' | 'DAIF' | 'MAWDU';
-  reasoning: string;
-  confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW';
-  citedNarratorIds?: string[]; // For CITES_DEFECT relationships
-}
 
 export interface NarratorData {
   name_arabic: string;
@@ -58,101 +67,7 @@ export interface LocationData {
   longitude?: number;
 }
 
-// ============ DUAL GRADING SYSTEM ============
-
-/**
- * Adds a scholar verdict to a Hadith
- * Automatically updates the display_grade after creation
- */
-export async function addScholarVerdict(
-  scholarId: string,
-  hadithId: string,
-  verdictData: ScholarVerdictData
-): Promise<string> {
-  const verdictId = randomUUID();
-  const dateAssessed = new Date().toISOString();
-
-  const queries: Array<{ query: string; params?: Record<string, any> }> = [
-    {
-      query: `
-        CREATE (v:ScholarVerdict {
-          id: $id,
-          grade: $grade,
-          reasoning: $reasoning,
-          date_assessed: $dateAssessed,
-          confidence_level: $confidenceLevel
-        })
-      `,
-      params: {
-        id: verdictId,
-        grade: verdictData.grade,
-        reasoning: verdictData.reasoning,
-        dateAssessed,
-        confidenceLevel: verdictData.confidenceLevel,
-      },
-    },
-    {
-      query: `
-        MATCH (s:Scholar {id: $scholarId})
-        MATCH (v:ScholarVerdict {id: $verdictId})
-        MATCH (h:Hadith {id: $hadithId})
-        CREATE (s)-[:ISSUED]->(v)
-        CREATE (v)-[:GRADES]->(h)
-      `,
-      params: { scholarId, verdictId, hadithId },
-    },
-  ];
-
-  // Add CITES_DEFECT relationships if provided
-  if (verdictData.citedNarratorIds && verdictData.citedNarratorIds.length > 0) {
-    for (const narratorId of verdictData.citedNarratorIds) {
-      queries.push({
-        query: `
-          MATCH (v:ScholarVerdict {id: $verdictId})
-          MATCH (n:Narrator {id: $narratorId})
-          CREATE (v)-[:CITES_DEFECT {
-            type: 'Weakness in chain',
-            explanation: 'Referenced in verdict reasoning'
-          }]->(n)
-        `,
-        params: { verdictId, narratorId },
-      });
-    }
-  }
-
-  await runTransaction(queries);
-
-  // Update the display grade
-  await updateDisplayGrade(hadithId);
-
-  return verdictId;
-}
-
-/**
- * Updates the display_grade based on scholar verdicts
- * Priority: Highest authority_rank scholar verdict > auto_calculated_grade
- */
-export async function updateDisplayGrade(hadithId: string): Promise<void> {
-  const result = await runQuery<{ grade: string; rank: number }>(`
-    MATCH (h:Hadith {id: $hadithId})
-    OPTIONAL MATCH (v:ScholarVerdict)-[:GRADES]->(h)
-    OPTIONAL MATCH (s:Scholar)-[:ISSUED]->(v)
-    WITH h, v, s
-    ORDER BY s.authority_rank DESC
-    LIMIT 1
-    RETURN 
-      COALESCE(v.grade, h.auto_calculated_grade, 'UNGRADED') as grade,
-      COALESCE(s.authority_rank, 0) as rank
-  `, { hadithId });
-
-  if (result.length > 0) {
-    const displayGrade = result[0].grade;
-    await runWrite(`
-      MATCH (h:Hadith {id: $hadithId})
-      SET h.display_grade = $displayGrade
-    `, { hadithId, displayGrade });
-  }
-}
+// ============ GRADING SYSTEM ============
 
 /**
  * Calculates auto_calculated_grade based on chain analysis
@@ -203,8 +118,11 @@ export async function calculateAutoGrade(hadithId: string): Promise<string> {
     SET h.auto_calculated_grade = $grade
   `, { hadithId, grade });
 
-  // Update display grade (will use this if no scholar verdicts exist)
-  await updateDisplayGrade(hadithId);
+  // Set display_grade to match auto-calculated
+  await runWrite(`
+    MATCH (h:Hadith {id: $hadithId})
+    SET h.display_grade = $grade
+  `, { hadithId, grade });
 
   return grade;
 }
@@ -271,14 +189,19 @@ export async function getNarratorById(id: string) {
   return result[0]?.n.properties || null;
 }
 
-export async function getAllNarrators() {
-  const result = await runQuery(`
-    MATCH (n:Narrator)
-    WHERE n.is_prophet IS NULL OR n.is_prophet = false
-    RETURN n
-    ORDER BY n.name_english
-  `);
-  return result.map((r) => r.n.properties);
+export async function getAllNarrators(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+  const { skip, limit, page, pageSize } = toSkipLimit(pagination);
+  const [countResult, result] = await Promise.all([
+    runQuery<{ total: number }>(`MATCH (n:Narrator) WHERE n.is_prophet IS NULL OR n.is_prophet = false RETURN count(n) as total`),
+    runQuery(`
+      MATCH (n:Narrator)
+      WHERE n.is_prophet IS NULL OR n.is_prophet = false
+      RETURN n
+      ORDER BY n.name_english
+      SKIP $skip LIMIT $limit
+    `, { skip, limit }),
+  ]);
+  return paginate(result.map((r) => r.n.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
 
 // --- HADITH ---
@@ -301,10 +224,7 @@ export async function getHadithById(id: string) {
   const result = await runQuery(`
     MATCH (h:Hadith {id: $id})
     OPTIONAL MATCH (h)-[:HAS_VARIATION]->(m:MatnVariation)
-    OPTIONAL MATCH (v:ScholarVerdict)-[:GRADES]->(h)
-    OPTIONAL MATCH (s:Scholar)-[:ISSUED]->(v)
-    RETURN h, collect(DISTINCT m) as variations, 
-           collect(DISTINCT {verdict: v, scholar: s}) as verdicts
+    RETURN h, collect(DISTINCT m) as variations
   `, { id });
 
   if (result.length === 0) return null;
@@ -312,51 +232,21 @@ export async function getHadithById(id: string) {
   return {
     ...result[0].h.properties,
     variations: result[0].variations.map((v: any) => v.properties),
-    verdicts: result[0].verdicts
-      .filter((v: any) => v.verdict)
-      .map((v: any) => ({
-        ...v.verdict.properties,
-        scholar: v.scholar.properties,
-      })),
   };
 }
 
-export async function getAllHadiths() {
-  const result = await runQuery(`
-    MATCH (h:Hadith)
-    RETURN h
-    ORDER BY h.title
-  `);
-  return result.map((r) => r.h.properties);
-}
-
-// --- SCHOLAR ---
-export async function createScholar(data: {
-  name: string;
-  era: string;
-  school: string;
-  authority_rank: number;
-}): Promise<string> {
-  const id = randomUUID();
-  await runWrite(`
-    CREATE (s:Scholar {
-      id: $id,
-      name: $name,
-      era: $era,
-      school: $school,
-      authority_rank: $authority_rank
-    })
-  `, { id, ...data });
-  return id;
-}
-
-export async function getScholars() {
-  const result = await runQuery(`
-    MATCH (s:Scholar)
-    RETURN s
-    ORDER BY s.authority_rank DESC
-  `);
-  return result.map((r) => r.s.properties);
+export async function getAllHadiths(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+  const { skip, limit, page, pageSize } = toSkipLimit(pagination);
+  const [countResult, result] = await Promise.all([
+    runQuery<{ total: number }>(`MATCH (h:Hadith) RETURN count(h) as total`),
+    runQuery(`
+      MATCH (h:Hadith)
+      RETURN h
+      ORDER BY h.source, toInteger(h.hadith_no)
+      SKIP $skip LIMIT $limit
+    `, { skip, limit }),
+  ]);
+  return paginate(result.map((r) => r.h.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
 
 // --- GRAPH QUERIES ---
@@ -606,9 +496,10 @@ export async function createHistoricalEvent(data: HistoricalEventData): Promise<
 export async function getAllHistoricalEvents(filters?: {
   category?: string;
   yearRange?: [number, number];
-}) {
-  let query = 'MATCH (e:HistoricalEvent)';
-  const params: Record<string, any> = {};
+}, pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+  const { skip, limit, page, pageSize } = toSkipLimit(pagination);
+  let whereClause = '';
+  const params: Record<string, any> = { skip, limit };
   const conditions: string[] = [];
 
   if (filters?.category) {
@@ -622,22 +513,27 @@ export async function getAllHistoricalEvents(filters?: {
   }
 
   if (conditions.length > 0) {
-    query += ' WHERE ' + conditions.join(' AND ');
+    whereClause = ' WHERE ' + conditions.join(' AND ');
   }
 
-  query += ' RETURN e ORDER BY e.year_hijri';
-  const result = await runQuery(query, params);
-  return result.map((r) => r.e.properties);
+  const [countResult, result] = await Promise.all([
+    runQuery<{ total: number }>(`MATCH (e:HistoricalEvent)${whereClause} RETURN count(e) as total`, params),
+    runQuery(`MATCH (e:HistoricalEvent)${whereClause} RETURN e ORDER BY e.year_hijri SKIP $skip LIMIT $limit`, params),
+  ]);
+  return paginate(result.map((r) => r.e.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
 
 export async function deleteHistoricalEvent(eventId: string): Promise<void> {
   await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) DETACH DELETE e`, { eventId });
 }
 
+const HISTORICAL_EVENT_KEYS = ['title', 'title_arabic', 'description', 'year_hijri', 'year_gregorian', 'category', 'significance', 'location_name'] as const;
+
 export async function updateHistoricalEvent(eventId: string, data: Partial<HistoricalEventData>): Promise<void> {
-  const setClause = Object.keys(data).map((key) => `e.${key} = $${key}`).join(', ');
+  const safe = safeKeys(data, HISTORICAL_EVENT_KEYS);
+  const setClause = buildSetClause('e', safe);
   if (!setClause) return;
-  await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) SET ${setClause}`, { eventId, ...data });
+  await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) SET ${setClause}`, { eventId, ...safe });
 }
 
 /**
@@ -751,19 +647,27 @@ export async function createCommentary(data: CommentaryData): Promise<string> {
   return id;
 }
 
-export async function getAllCommentaries() {
-  const result = await runQuery(`
-    MATCH (c:Commentary)
-    OPTIONAL MATCH (c)-[:COMMENTS_ON]->(h:Hadith)
-    OPTIONAL MATCH (c)-[:DISCUSSES]->(n:Narrator)
-    RETURN c, h, n
-    ORDER BY c.created_at DESC
-  `);
-  return result.map((r) => ({
-    ...r.c.properties,
-    hadith: r.h?.properties || null,
-    narrator: r.n?.properties || null,
-  }));
+export async function getAllCommentaries(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+  const { skip, limit, page, pageSize } = toSkipLimit(pagination);
+  const [countResult, result] = await Promise.all([
+    runQuery<{ total: number }>(`MATCH (c:Commentary) RETURN count(c) as total`),
+    runQuery(`
+      MATCH (c:Commentary)
+      OPTIONAL MATCH (c)-[:COMMENTS_ON]->(h:Hadith)
+      OPTIONAL MATCH (c)-[:DISCUSSES]->(n:Narrator)
+      RETURN c, h, n
+      ORDER BY c.created_at DESC
+      SKIP $skip LIMIT $limit
+    `, { skip, limit }),
+  ]);
+  return paginate(
+    result.map((r) => ({
+      ...r.c.properties,
+      hadith: r.h?.properties || null,
+      narrator: r.n?.properties || null,
+    })),
+    countResult[0]?.total ?? 0, page, pageSize,
+  );
 }
 
 /**
@@ -790,14 +694,13 @@ export async function getCommentariesForNarrator(narratorId: string) {
   return result.map((r) => r.c.properties);
 }
 
-export async function updateCommentary(commentaryId: string, data: Partial<CommentaryData>): Promise<void> {
-  const updateData = { ...data };
-  delete (updateData as any).hadith_id;
-  delete (updateData as any).narrator_id;
+const COMMENTARY_KEYS = ['source_work', 'author', 'text', 'text_arabic', 'type', 'reference'] as const;
 
-  const setClause = Object.keys(updateData).map((key) => `c.${key} = $${key}`).join(', ');
+export async function updateCommentary(commentaryId: string, data: Partial<CommentaryData>): Promise<void> {
+  const safe = safeKeys(data, COMMENTARY_KEYS);
+  const setClause = buildSetClause('c', safe);
   if (!setClause) return;
-  await runWrite(`MATCH (c:Commentary {id: $commentaryId}) SET ${setClause}`, { commentaryId, ...updateData });
+  await runWrite(`MATCH (c:Commentary {id: $commentaryId}) SET ${setClause}`, { commentaryId, ...safe });
 }
 
 export async function deleteCommentary(commentaryId: string): Promise<void> {
@@ -836,19 +739,26 @@ export async function createLocation(data: LocationData): Promise<string> {
   return id;
 }
 
-export async function getAllLocations() {
-  const result = await runQuery(`MATCH (l:Location) RETURN l ORDER BY l.name`);
-  return result.map((r) => r.l.properties);
+export async function getAllLocations(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+  const { skip, limit, page, pageSize } = toSkipLimit(pagination);
+  const [countResult, result] = await Promise.all([
+    runQuery<{ total: number }>(`MATCH (l:Location) RETURN count(l) as total`),
+    runQuery(`MATCH (l:Location) RETURN l ORDER BY l.name SKIP $skip LIMIT $limit`, { skip, limit }),
+  ]);
+  return paginate(result.map((r) => r.l.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
 
 export async function deleteLocation(locationId: string): Promise<void> {
   await runWrite(`MATCH (l:Location {id: $locationId}) DETACH DELETE l`, { locationId });
 }
 
+const LOCATION_KEYS = ['name', 'name_arabic', 'modern_country', 'region', 'latitude', 'longitude', 'description'] as const;
+
 export async function updateLocation(locationId: string, data: Partial<LocationData>): Promise<void> {
-  const setClause = Object.keys(data).map((key) => `l.${key} = $${key}`).join(', ');
+  const safe = safeKeys(data, LOCATION_KEYS);
+  const setClause = buildSetClause('l', safe);
   if (!setClause) return;
-  await runWrite(`MATCH (l:Location {id: $locationId}) SET ${setClause}`, { locationId, ...data });
+  await runWrite(`MATCH (l:Location {id: $locationId}) SET ${setClause}`, { locationId, ...safe });
 }
 
 /**
@@ -859,6 +769,10 @@ export async function linkNarratorToLocation(
   locationId: string,
   relType: 'BORN_IN' | 'DIED_IN' | 'RESIDED_IN'
 ): Promise<void> {
+  const VALID_REL_TYPES = new Set(['BORN_IN', 'DIED_IN', 'RESIDED_IN']);
+  if (!VALID_REL_TYPES.has(relType)) {
+    throw new Error(`Invalid relationship type: ${relType}`);
+  }
   await runWrite(`
     MATCH (n:Narrator {id: $narratorId})
     MATCH (l:Location {id: $locationId})
@@ -959,10 +873,12 @@ export async function getSourceStats() {
  */
 export async function searchHadiths(
   searchTerm: string = '',
-  filters?: { source?: string; grade?: string; chapter?: string }
-) {
-  let query = 'MATCH (h:Hadith)';
-  const params: Record<string, any> = {};
+  filters?: { source?: string; grade?: string; chapter?: string },
+  pagination?: PaginationParams,
+): Promise<PaginatedResult<any>> {
+  const { skip, limit, page, pageSize } = toSkipLimit(pagination);
+  let whereClause = '';
+  const params: Record<string, any> = { skip, limit };
   const conditions: string[] = [];
 
   if (searchTerm) {
@@ -983,10 +899,12 @@ export async function searchHadiths(
   }
 
   if (conditions.length > 0) {
-    query += ' WHERE ' + conditions.join(' AND ');
+    whereClause = ' WHERE ' + conditions.join(' AND ');
   }
 
-  query += ' RETURN h ORDER BY h.title LIMIT 100';
-  const result = await runQuery(query, params);
-  return result.map((r) => r.h.properties);
+  const [countResult, result] = await Promise.all([
+    runQuery<{ total: number }>(`MATCH (h:Hadith)${whereClause} RETURN count(h) as total`, params),
+    runQuery(`MATCH (h:Hadith)${whereClause} RETURN h ORDER BY h.source, toInteger(h.hadith_no) SKIP $skip LIMIT $limit`, params),
+  ]);
+  return paginate(result.map((r) => r.h.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
