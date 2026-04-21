@@ -128,6 +128,16 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                 totalResults={pagination.total}
                 filters={[
                     {
+                        key: 'school',
+                        label: 'School',
+                        options: [
+                            { label: 'All Schools', value: '' },
+                            { label: 'Sunni', value: 'Sunni' },
+                            { label: 'Shia', value: 'Shia' },
+                            { label: 'Ibadi', value: 'Ibadi' },
+                        ],
+                    },
+                    {
                         key: 'source',
                         label: 'Source',
                         options: getSourceFilterOptions(),
@@ -154,6 +164,14 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                     <h3 className="text-lg font-semibold text-white">{hadith.title}</h3>
+                                    {hadith.tradition && (
+                                        <Badge className={hadith.tradition === 'Shia'
+                                            ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                                            : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
+                                        }>
+                                            {hadith.tradition}
+                                        </Badge>
+                                    )}
                                     {hadith.display_grade && (
                                         <Badge className={getGradeBadgeColor(hadith.display_grade)}>
                                             {hadith.display_grade}
@@ -161,11 +179,15 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                     )}
                                     {hadith.transmission_type === 'MUTAWATIR' && (
                                         <Badge className="bg-amber-500/20 text-amber-400">
-                                            ⭐ Mutawatir
+                                            Mutawatir
                                         </Badge>
                                     )}
                                 </div>
-                                <p className="text-sm text-slate-400">{hadith.primary_topic}</p>
+                                <p className="text-sm text-slate-400">
+                                    {hadith.source && <span className="text-slate-300">{hadith.source}</span>}
+                                    {hadith.source && hadith.primary_topic && ' — '}
+                                    {hadith.primary_topic}
+                                </p>
                             </div>
 
                             <div className="flex gap-2">

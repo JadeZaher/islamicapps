@@ -10,17 +10,17 @@ export default function AdminPage() {
 
     const sections = [
         {
-            title: 'Hadith Management',
-            description: 'Manage Hadith entries, grading, and transmission chains',
+            title: 'Hadith Collections',
+            description: 'Browse and manage Sunni and Shia hadith collections with filtering by school, source, and grade',
             icon: BookOpen,
             href: '/admin/hadith',
             color: 'bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50',
         },
         {
-            title: 'Chain Builder',
-            description: 'Create and validate transmission chains for hadiths',
+            title: 'Narrators',
+            description: 'Browse narrator biographies, reliability ratings, and teacher-student networks',
             icon: Users,
-            href: '/admin/chain-builder',
+            href: '/admin/narrators',
             color: 'bg-cyan-500/10 border-cyan-500/30 hover:border-cyan-500/50',
         },
         {

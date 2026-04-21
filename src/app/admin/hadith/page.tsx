@@ -2,7 +2,7 @@ import { getAllHadiths, searchHadiths } from '@/app/actions/graph-actions';
 import { HadithManagerClient } from './client';
 
 interface PageProps {
-    searchParams: Promise<{ page?: string; q?: string; source?: string; grade?: string }>;
+    searchParams: Promise<{ page?: string; q?: string; source?: string; grade?: string; school?: string }>;
 }
 
 export default async function HadithManagerPage({ searchParams }: PageProps) {
@@ -11,10 +11,11 @@ export default async function HadithManagerPage({ searchParams }: PageProps) {
     const q = params.q || '';
     const source = params.source || '';
     const grade = params.grade || '';
+    const school = params.school || '';
 
-    const hasFilters = q || source || grade;
+    const hasFilters = q || source || grade || school;
     const result = hasFilters
-        ? await searchHadiths(q, { source: source || undefined, grade: grade || undefined }, { page })
+        ? await searchHadiths(q, { source: source || undefined, grade: grade || undefined, school: school || undefined }, { page })
         : await getAllHadiths({ page });
 
     return (

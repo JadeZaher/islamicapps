@@ -12,7 +12,7 @@ export default function HomePage() {
         <div className="text-center mb-20 animate-slide-up">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-6">
             <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-medium text-emerald-300">Cross-Tradition Hadith Explorer</span>
+            <span className="text-sm font-medium text-emerald-300">Sunni &amp; Shia Hadith Explorer</span>
           </div>
 
           <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tight">
@@ -24,8 +24,8 @@ export default function HomePage() {
           </h1>
 
           <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
-            Visualize <strong className="font-semibold text-white">Isnad transmission chains</strong> across major hadith collections.
-            Explore authentic Islamic scholarship through interactive graph visualization.
+            Explore <strong className="font-semibold text-white">60,000+ hadiths</strong> across Sunni and Shia collections.
+            Search by school, source, grading, and topic with interactive graph visualization.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -83,9 +83,9 @@ export default function HomePage() {
               <div className="w-16 h-16 rounded-2xl bg-blue-400/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                 <Book className="w-8 h-8 text-blue-400" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-100">Matn Variations</h3>
+              <h3 className="text-xl font-semibold mb-3 text-slate-100">Multi-School Collections</h3>
               <p className="text-slate-400 leading-relaxed">
-                Compare different text variations from Sahih Bukhari, Muslim, and other authentic hadith collections.
+                Browse Kutub al-Sittah, Al-Kafi, Man La Yahduruhu al-Faqih, Nahj al-Balagha, and 30+ collections across traditions.
               </p>
             </div>
           </Card>

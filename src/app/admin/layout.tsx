@@ -1,12 +1,15 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Book, Users, GitBranch, Home } from 'lucide-react';
+import { Book, Users, Home, Calendar, MessageSquare, MapPin, Globe } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const navItems = [
-        { href: '/admin/hadith', label: 'Hadith Manager', icon: Book },
-        { href: '/admin/narrator', label: 'Narrators', icon: Users },
-        { href: '/admin/chain', label: 'Chain Builder', icon: GitBranch },
+        { href: '/admin/hadith', label: 'Hadiths', icon: Book },
+        { href: '/admin/narrators', label: 'Narrators', icon: Users },
+        { href: '/admin/events', label: 'Events', icon: Calendar },
+        { href: '/admin/commentaries', label: 'Commentaries', icon: MessageSquare },
+        { href: '/admin/locations', label: 'Locations', icon: MapPin },
+        { href: '/admin/comparative', label: 'Comparative', icon: Globe },
     ];
 
     return (

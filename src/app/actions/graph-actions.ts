@@ -873,11 +873,10 @@ export async function getSourceStats() {
  */
 export async function searchHadiths(
   searchTerm: string = '',
-  filters?: { source?: string; grade?: string; chapter?: string },
+  filters?: { source?: string; grade?: string; chapter?: string; school?: string },
   pagination?: PaginationParams,
 ): Promise<PaginatedResult<any>> {
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
-  let whereClause = '';
   const params: Record<string, any> = { skip, limit };
   const conditions: string[] = [];
 
@@ -897,10 +896,12 @@ export async function searchHadiths(
     conditions.push('h.primary_topic = $chapter');
     params.chapter = filters.chapter;
   }
-
-  if (conditions.length > 0) {
-    whereClause = ' WHERE ' + conditions.join(' AND ');
+  if (filters?.school) {
+    conditions.push('h.tradition = $school');
+    params.school = filters.school;
   }
+
+  const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
 
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (h:Hadith)${whereClause} RETURN count(h) as total`, params),
