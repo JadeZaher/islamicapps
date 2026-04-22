@@ -87,7 +87,20 @@
       "Bash(git rm:*)",
       "Bash(git stash:*)",
       "Bash(git push:*)",
-      "Bash(PYTHONIOENCODING=utf-8 cat)"
+      "Bash(PYTHONIOENCODING=utf-8 cat)",
+      "WebFetch(domain:kitab-corpus-metadata.azurewebsites.net)",
+      "WebFetch(domain:archive.org)",
+      "WebFetch(domain:nafeeslibrary.org)",
+      "WebFetch(domain:hmml.org)",
+      "Bash(curl -sL -o musnad_zayd_text_en.txt \"https://archive.org/download/musnad-zaid/musnad-zaid_djvu.txt\" -w \"\\\\nHTTP %{http_code}, Size: %{size_download} bytes\\\\n\")",
+      "Bash(curl -sL -o musnad_zayd_arabic_text.txt \"https://archive.org/download/msnd_lmm_zyd/msnd_lmm_zyd_djvu.txt\" -w \"\\\\nHTTP %{http_code}, Size: %{size_download} bytes\\\\n\")",
+      "Bash(curl -sL -o musnad_zayd_azzi_text.txt \"https://archive.org/download/1_20200420_20200420_1555/1_20200420_20200420_1555_djvu.txt\" -w \"\\\\nHTTP %{http_code}, Size: %{size_download} bytes\\\\n\")",
+      "Bash(curl -sL \"https://archive.org/download/msnd_lmm_zyd/\")",
+      "Bash(curl -sL \"https://archive.org/download/musnad-zaid/\")",
+      "Bash(curl -sL -o musnad_zayd.pdf \"https://archive.org/download/msnd_lmm_zyd/msnd_lmm_zyd.pdf\" -w \"\\\\nHTTP %{http_code}, Size: %{size_download} bytes\\\\n\")",
+      "Bash(python -c \"import sys; sys.stdout.reconfigure\\(encoding=''''utf-8''''\\); [print\\(l.rstrip\\(\\)[:300]\\) for l in sys.stdin]\")",
+      "Bash(grep -r \"CREATE.*NODE\\\\|model.*Hadith\\\\|interface.*Hadith\\\\|type.*Hadith\" c:/Users/atooz/Programming/experiments/islamicapps/src --include=*.ts)",
+      "Bash(python parse_musnad_zayd.py)"
     ]
   }
 }

@@ -210,6 +210,14 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     displayLabel: 'Risalat al-Huquq',
     compiler: 'Ali ibn al-Husayn Zayn al-Abidin',
   },
+
+  // ─── Zaydi Shia Collections ─────────────────────────────────────────────────
+  musnad_zayd: {
+    canonical: 'Musnad al-Imam Zayd ibn Ali',
+    arabic: 'مسند الإمام زيد بن علي',
+    displayLabel: 'Musnad Zayd ibn Ali',
+    compiler: 'Abd al-Aziz ibn Ishaq al-Baghdadi',
+  },
 };
 
 /** Get canonical DB name from slug */

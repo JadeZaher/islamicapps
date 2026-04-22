@@ -363,7 +363,7 @@ async function batchMergeInSchoolEdges(hadithIds: string[], dryRun: boolean): Pr
   const cypher = `
     UNWIND $ids AS hadithId
     MATCH (h:Hadith {id: hadithId})
-    MATCH (sch:SchoolOfThought {name: 'Shia'})
+    MATCH (sch:SchoolOfThought {name: 'Shia Imami'})
     MERGE (h)-[:IN_SCHOOL]->(sch)
   `;
   await runWrite(cypher, { ids: hadithIds });
@@ -373,13 +373,14 @@ async function batchMergeInSchoolEdges(hadithIds: string[], dryRun: boolean): Pr
 
 async function ensureShiaSchool(dryRun: boolean): Promise<void> {
   if (dryRun) return;
+  // Use Shia Imami (Twelver) as the specific school for these collections
   await mergeNodeByKey({
     label: 'SchoolOfThought',
     keyProp: 'name',
-    keyValue: 'Shia',
-    createProps: { tradition: 'Shia' },
+    keyValue: 'Shia Imami',
+    createProps: { tradition: 'Shia Imami', name_arabic: 'الشيعة الإمامية' },
   });
-  console.log('  Created SchoolOfThought:Shia');
+  console.log('  Ensured SchoolOfThought:Shia Imami (Twelver)');
 }
 
 async function ensureSource(
@@ -404,12 +405,12 @@ async function ensureSource(
   });
   sourceCache.set(sourceSlug, result.id);
 
-  // Source -> Shia school
+  // Source -> Shia Imami (Twelver) school
   await mergeEdge({
     fromLabel: 'Source',
     fromKey: { prop: 'id', value: result.id },
     toLabel: 'SchoolOfThought',
-    toKey: { prop: 'name', value: 'Shia' },
+    toKey: { prop: 'name', value: 'Shia Imami' },
     relType: 'CANON_OF',
   });
 
@@ -521,7 +522,7 @@ async function main(): Promise<void> {
         matn_english: row.matn_en || '',
         display_grade,
         grading_detail,
-        tradition: 'Shia',
+        tradition: 'Shia Imami',
         source_role: 'PRIMARY_COLLECTION',
         url: row.url || '',
       });
