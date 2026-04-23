@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllHistoricalEvents } from '@/app/actions/graph-actions';
 import { EventsManagerClient } from './client';
 

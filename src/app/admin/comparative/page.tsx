@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllTraditions, getAllSourceTexts, getAllParallels, getAllMotifTags } from '@/app/actions/comparative-actions';
 import { getAllNarrators } from '@/app/actions/graph-actions';
 import { ComparativeManagerClient } from './client';

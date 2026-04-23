@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getHadithById, getFullChainGraph } from '@/app/actions/graph-actions';
 import { getParallelsForHadith } from '@/app/actions/comparative-actions';
 import { HadithClientPage } from './client-page';

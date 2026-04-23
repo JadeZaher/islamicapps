@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllParallels, getAllTraditions, getComparativeStats } from '@/app/actions/comparative-actions';
 import { ComparativeClient } from './client';
 

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllCommentaries, getAllHadiths, getAllNarrators } from '@/app/actions/graph-actions';
 import { CommentariesManagerClient } from './client';
 

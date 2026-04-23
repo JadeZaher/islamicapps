@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllNarrators, searchNarrators } from '@/app/actions/graph-actions';
 import { NarratorsClient } from './client';
 

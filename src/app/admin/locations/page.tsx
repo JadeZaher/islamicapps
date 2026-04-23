@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllLocations } from '@/app/actions/graph-actions';
 import { LocationsManagerClient } from './client';
 

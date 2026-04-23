@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllHadiths, searchHadiths } from '@/app/actions/graph-actions';
 import { HadithManagerClient } from './client';
 

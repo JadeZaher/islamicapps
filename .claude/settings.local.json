@@ -100,7 +100,12 @@
       "Bash(curl -sL -o musnad_zayd.pdf \"https://archive.org/download/msnd_lmm_zyd/msnd_lmm_zyd.pdf\" -w \"\\\\nHTTP %{http_code}, Size: %{size_download} bytes\\\\n\")",
       "Bash(python -c \"import sys; sys.stdout.reconfigure\\(encoding=''''utf-8''''\\); [print\\(l.rstrip\\(\\)[:300]\\) for l in sys.stdin]\")",
       "Bash(grep -r \"CREATE.*NODE\\\\|model.*Hadith\\\\|interface.*Hadith\\\\|type.*Hadith\" c:/Users/atooz/Programming/experiments/islamicapps/src --include=*.ts)",
-      "Bash(python parse_musnad_zayd.py)"
+      "Bash(python parse_musnad_zayd.py)",
+      "Bash(find . -type f -size +90M -exec ls -lh {})",
+      "Bash(2)",
+      "Bash(gzip -k unified_hadith_consolidated.csv)",
+      "Bash(gzip -k all_hadiths_shia.csv)",
+      "Bash(ls -lh *.gz)"
     ]
   }
 }
