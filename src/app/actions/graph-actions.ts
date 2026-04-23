@@ -909,3 +909,99 @@ export async function searchHadiths(
   ]);
   return paginate(result.map((r) => r.h.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
+
+// ============ EXPORT ============
+
+export interface ExportConfig {
+  filters: { source?: string; grade?: string; school?: string; searchTerm?: string };
+  /** Which metadata fields to include */
+  fields: string[];
+  /** Which related edges to include as extra columns */
+  edges: string[];
+}
+
+/**
+ * Export hadiths as structured rows for CSV generation.
+ * Supports configurable fields and edge data (narrators, commentaries, schools, variations).
+ */
+export async function exportHadiths(config: ExportConfig): Promise<Record<string, string>[]> {
+  const params: Record<string, any> = {};
+  const conditions: string[] = [];
+
+  if (config.filters.searchTerm) {
+    conditions.push('(toLower(h.title) CONTAINS toLower($searchTerm) OR toLower(h.primary_topic) CONTAINS toLower($searchTerm) OR toLower(h.text_english) CONTAINS toLower($searchTerm))');
+    params.searchTerm = config.filters.searchTerm;
+  }
+  if (config.filters.source) {
+    conditions.push('h.source = $source');
+    params.source = config.filters.source;
+  }
+  if (config.filters.grade) {
+    conditions.push('h.display_grade = $grade');
+    params.grade = config.filters.grade;
+  }
+  if (config.filters.school) {
+    conditions.push('h.tradition = $school');
+    params.school = config.filters.school;
+  }
+
+  const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
+  const hadiths = await runQuery(`MATCH (h:Hadith)${whereClause} RETURN h ORDER BY h.source, toInteger(h.hadith_no)`, params);
+
+  const includeNarrators = config.edges.includes('narrators');
+  const includeCommentaries = config.edges.includes('commentaries');
+  const includeVariations = config.edges.includes('variations');
+  const includeSchool = config.edges.includes('school');
+
+  const rows: Record<string, string>[] = [];
+
+  for (const r of hadiths) {
+    const h = r.h.properties;
+    const row: Record<string, string> = {};
+
+    for (const field of config.fields) {
+      row[field] = h[field] != null ? String(h[field]) : '';
+    }
+
+    if (includeNarrators) {
+      const narrators = await runQuery(`
+        MATCH (h:Hadith {id: $id})-[:HAS_VARIATION]->(m:MatnVariation)
+              -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n:Narrator)
+        RETURN DISTINCT n.name_english as name, n.reliability as reliability
+        ORDER BY n.name_english
+      `, { id: h.id });
+      row['narrators'] = narrators.map((n: any) => n.name).join('; ');
+      row['narrator_reliability'] = narrators.map((n: any) => `${n.name}:${n.reliability || 'unknown'}`).join('; ');
+    }
+
+    if (includeCommentaries) {
+      const comms = await runQuery(`
+        MATCH (c:Commentary)-[:COMMENTS_ON]->(h:Hadith {id: $id})
+        RETURN c.author as author, c.source_work as source_work, c.text as text
+        ORDER BY c.author
+      `, { id: h.id });
+      row['commentaries'] = comms.map((c: any) => `[${c.author} - ${c.source_work}] ${c.text}`).join(' | ');
+    }
+
+    if (includeVariations) {
+      const vars = await runQuery(`
+        MATCH (h:Hadith {id: $id})-[:HAS_VARIATION]->(m:MatnVariation)
+        RETURN m.text_english as text_english, m.text_arabic as text_arabic
+      `, { id: h.id });
+      row['variation_texts_english'] = vars.map((v: any) => v.text_english || '').filter(Boolean).join(' | ');
+      row['variation_texts_arabic'] = vars.map((v: any) => v.text_arabic || '').filter(Boolean).join(' | ');
+    }
+
+    if (includeSchool) {
+      const schools = await runQuery(`
+        MATCH (h:Hadith {id: $id})-[:IN_SCHOOL]->(s:SchoolOfThought)
+        RETURN s.name as name
+      `, { id: h.id });
+      row['schools'] = schools.map((s: any) => s.name).join('; ');
+    }
+
+    rows.push(row);
+  }
+
+  return rows;
+}
