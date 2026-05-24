@@ -304,19 +304,32 @@ export async function getFullChainGraph(hadithId: string) {
   // temporal_plausibility + extraction_method + source). The legacy v1 path
   // (HAS_VARIATION → MatnVariation → TRANSMITTED_VIA → Chain) and the v1 edge
   // type (:HEARD_FROM) are NOT present after the v2 fullregen.
+  //
+  // Order nodes by chain position (the :INCLUDES.position property). Cypher's
+  // `collect()` and `RETURN DISTINCT n` do NOT preserve insertion order, so
+  // without an explicit ORDER BY the narrators come back scrambled and the
+  // isnad renders in the wrong sequence on the page.
   const nodes = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[:INCLUDES]->(n:Narrator)
-    RETURN DISTINCT n
+    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i:INCLUDES]->(n:Narrator)
+    WITH n, min(i.position) AS pos
+    RETURN n, pos
+    ORDER BY pos
   `, { hadithId });
 
   const edges = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[:INCLUDES]->(n1:Narrator)
+    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i:INCLUDES]->(n1:Narrator)
     MATCH (n1)-[r:NARRATED_FROM]->(n2:Narrator)
-    RETURN DISTINCT n1, r, n2
+    WHERE (c)-[:INCLUDES]->(n2)
+    RETURN DISTINCT n1, r, n2, i.position AS pos
+    ORDER BY pos
   `, { hadithId });
 
   return {
-    nodes: nodes.map((r) => r.n.properties),
+    nodes: nodes.map((r) => ({
+      ...r.n.properties,
+      // Surface the position so the UI can also sort if it shuffles.
+      chain_position: typeof r.pos === 'number' ? r.pos : (r.pos?.toNumber?.() ?? null),
+    })),
     edges: edges.map((r) => ({
       source: r.n1.properties.id,
       target: r.n2.properties.id,
