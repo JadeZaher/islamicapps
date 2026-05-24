@@ -9,8 +9,11 @@ export async function initializeSchema(): Promise<void> {
 
     const constraints = [
         { label: 'Narrator', prop: 'id' },
+        // narrator_scholar_indx_unique — stable business key; narrators MERGE on this, never on UUID (FR-0.1)
         { label: 'Narrator', prop: 'scholar_indx' },
         { label: 'Hadith', prop: 'id' },
+        // Hadith.dataset_row_id uniqueness — blocks new duplicates; Workstream C tombstones legacy dups (FR-1.1, OQ-5)
+        { label: 'Hadith', prop: 'dataset_row_id' },
         { label: 'MatnVariation', prop: 'id' },
         { label: 'Chain', prop: 'id' },
         { label: 'Scholar', prop: 'id' },
@@ -31,10 +34,20 @@ export async function initializeSchema(): Promise<void> {
         { label: 'MotifTag', prop: 'id' },
         { label: 'MotifTag', prop: 'name' },
         // Scholarship-layer nodes
+        // TODO FR-1.8: SchoolOfThought already has id+name unique constraints. The 4 tradition-pseudo-schools
+        // (Sunni / Shia Imami / Ibadi / Shia Zaydi) must be tombstoned and their IN_SCHOOL edges migrated
+        // to (:Hadith)-[:FROM_TRADITION]->(:ReligiousTradition). This is application-level logic (requires
+        // Cypher mutation in regen-isnad-graph.ts task 1.8), not a schema-only change. The existing
+        // uniqueness on SchoolOfThought.id / SchoolOfThought.name is already correct and sufficient for
+        // the tradition-scoped representation once the pseudo-schools are tombstoned.
         { label: 'SchoolOfThought', prop: 'id' },
         { label: 'SchoolOfThought', prop: 'name' },
         { label: 'Practice', prop: 'id' },
         { label: 'Practice', prop: 'name' },
+        // Reified isnad/narrator graph nodes (FR-1.1..1.4)
+        { label: 'NameMention', prop: 'id' },
+        { label: 'Assessment', prop: 'id' },
+        { label: 'DatasetVersion', prop: 'id' },
     ];
 
     for (const { label, prop } of constraints) {
@@ -85,6 +98,18 @@ export async function initializeSchema(): Promise<void> {
         // Scholarship-layer indexes
         { label: 'SchoolOfThought', prop: 'category' },
         { label: 'Practice', prop: 'category' },
+        // Reified isnad/narrator graph indexes (FR-1.1..1.4)
+        // NameMention — high-cardinality lookups for resolution matching
+        { label: 'NameMention', prop: 'surface_form' },
+        { label: 'NameMention', prop: 'normalized_form' },
+        { label: 'NameMention', prop: 'position' },
+        // Assessment — tradition-scoped grade lookups (G-1 guardrail: grades live here, not on Narrator/Hadith)
+        { label: 'Assessment', prop: 'grade' },
+        { label: 'Assessment', prop: 'grade_source' },
+        { label: 'Assessment', prop: 'grade_scheme' },
+        // DatasetVersion — provenance chain lookups
+        { label: 'DatasetVersion', prop: 'content_hash' },
+        { label: 'DatasetVersion', prop: 'created_at' },
     ];
 
     for (const { label, prop } of indexes) {

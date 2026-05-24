@@ -1,0 +1,26 @@
+{
+  "track_id": "narrator_enrichment_20260425",
+  "title": "Narrator Biographical Enrichment",
+  "type": "chore",
+  "status": "planned",
+  "created_at": "2026-04-25",
+  "priority": "P0",
+  "phases": [
+    { "id": 1, "name": "Audit & Source Identification", "status": "pending" },
+    { "id": 2, "name": "Arabic Name Backfill", "status": "pending" },
+    { "id": 3, "name": "Death Year & Birth Year Enrichment", "status": "pending" },
+    { "id": 4, "name": "Geographic Region Assignment", "status": "pending" },
+    { "id": 5, "name": "Tradition Assignment & Deduplication", "status": "pending" },
+    { "id": 6, "name": "Verification & Metrics", "status": "pending" }
+  ],
+  "dependencies": {
+    "npm_packages_to_install": [],
+    "env_vars_required": ["NEO4J_URL", "NEO4J_USERNAME", "NEO4J_PASSWORD"],
+    "env_vars_optional": [],
+    "external_apis": []
+  },
+  "blocks": ["gds_setup_analytics_20260425", "vector_embedding_pipeline_20260425"],
+  "files_created": [],
+  "spec": "conductor/tracks/narrator_enrichment_20260425/spec.md",
+  "plan": "conductor/tracks/narrator_enrichment_20260425/plan.md"
+}

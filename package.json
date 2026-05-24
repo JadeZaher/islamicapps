@@ -8,15 +8,16 @@
     "start": "next start",
     "lint": "eslint",
     "db:init": "tsx src/scripts/init-db.ts",
-    "db:import": "tsx src/scripts/import-datasets.ts",
-    "db:import:clear": "tsx src/scripts/import-datasets.ts --clear",
+    "db:drain": "tsx src/scripts/drain-db.ts",
+    "db:regen": "tsx src/scripts/regen-isnad-graph.ts",
+    "db:audit": "tsx src/scripts/audit-graph.ts",
+    "db:remediate-legacy-assessment": "tsx src/scripts/remediate-legacy-scalar-assessment.ts",
+    "test:regen": "tsx src/scripts/__tests__/regen-isnad-graph.test.ts",
     "db:seed-history": "tsx src/scripts/seed-historical-data.ts",
-    "db:import:musnad": "tsx src/scripts/import-musnad.ts",
     "db:find-parallels": "tsx src/scripts/find-parallels.ts",
     "db:ingest-parallels": "tsx src/scripts/ingest-approved-parallels.ts",
-    "db:import:pure-canon": "echo 'Moved to datasets/hadith-data/sheikahmad/ — re-enable when scholar layer is ready'",
-    "db:import:classical": "tsx src/scripts/import-classical-collections.ts",
-    "db:link-sanads": "tsx src/scripts/link-sanad-chains.ts"
+    "db:link-sanads": "tsx src/scripts/link-sanad-chains.ts",
+    "db:ingest-er": "tsx src/scripts/ingest-er-approved.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

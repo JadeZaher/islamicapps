@@ -16,7 +16,12 @@ function safeKeys<T extends Record<string, unknown>>(data: T, allowed: readonly 
 }
 
 function buildSetClause(alias: string, data: Record<string, unknown>): string {
-  return Object.keys(data).map((key) => `${alias}.${key} = $${key}`).join(', ');
+  return Object.keys(data).map((key) => {
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) {
+      throw new Error(`Invalid property key: ${key}`);
+    }
+    return `${alias}.${key} = $${key}`;
+  }).join(', ');
 }
 
 // ============ TYPES ============
@@ -221,17 +226,60 @@ export async function createHadith(data: HadithData): Promise<string> {
 }
 
 export async function getHadithById(id: string) {
+  // v2 schema: Hadith is the single source of text/sanad fields; no MatnVariation
+  // intermediary. Chains attach directly via (h)-[:HAS_CHAIN]->(:Chain).
+  // We still optional-match MatnVariation so any legacy v1 nodes that survived
+  // a partial migration won't break the page.
   const result = await runQuery(`
     MATCH (h:Hadith {id: $id})
     OPTIONAL MATCH (h)-[:HAS_VARIATION]->(m:MatnVariation)
-    RETURN h, collect(DISTINCT m) as variations
+    RETURN h, collect(DISTINCT m) as legacy_variations
   `, { id });
 
   if (result.length === 0) return null;
 
+  const props = result[0].h.properties as Record<string, unknown>;
+  const legacyVariations = (result[0].legacy_variations as Array<{ properties: Record<string, unknown> } | null>) ?? [];
+
+  // Backward-compatible aliases so existing UI bindings keep rendering.
+  // v2 schema is authoritative; the v1 names are mirrored for the read layer only.
+  const text_en = props.text_en as string | null | undefined;
+  const text_ar = props.text_ar as string | null | undefined;
+  const chapter = props.chapter as string | null | undefined;
+  const category = props.category as string | null | undefined;
+
+  // Build a "variations" array for legacy UI bindings: if no MatnVariation
+  // children exist, synthesise one from the Hadith's own matn fields so the
+  // detail page renders matn text.
+  let variations: Array<Record<string, unknown>>;
+  if (legacyVariations.length > 0) {
+    variations = legacyVariations
+      .filter((v): v is { properties: Record<string, unknown> } => v !== null)
+      .map((v) => v.properties);
+  } else {
+    const synthesized: Record<string, unknown> = {
+      id: `${props.id}::synthesized`,
+      // Prefer matn_* (the canonical narrative text in v2), fall back to text_*
+      text_arabic: (props.matn_ar as string) || text_ar || null,
+      text_english: (props.matn_en as string) || text_en || null,
+      source: 'hadith_node',
+    };
+    variations = [synthesized];
+  }
+
   return {
-    ...result[0].h.properties,
-    variations: result[0].variations.map((v: any) => v.properties),
+    ...props,
+    // v1 aliases for legacy UI bindings
+    title: chapter || category || null,
+    primary_topic: category || null,
+    text_english: text_en ?? null,
+    text_arabic: text_ar ?? null,
+    // v2 fields the UI should start reading directly
+    isnad_arabic: (props.sanad as string) ?? null,
+    chain_text_arabic: (props.sanad as string) ?? null,
+    matn_ar: (props.matn_ar as string) ?? null,
+    matn_en: (props.matn_en as string) ?? null,
+    variations,
   };
 }
 
@@ -251,16 +299,19 @@ export async function getAllHadiths(pagination?: PaginationParams): Promise<Pagi
 
 // --- GRAPH QUERIES ---
 export async function getFullChainGraph(hadithId: string) {
+  // v2 schema: direct (h)-[:HAS_CHAIN]->(:Chain)-[:INCLUDES]->(:Narrator) traversal.
+  // Transmission edges between narrators are :NARRATED_FROM (with confidence +
+  // temporal_plausibility + extraction_method + source). The legacy v1 path
+  // (HAS_VARIATION → MatnVariation → TRANSMITTED_VIA → Chain) and the v1 edge
+  // type (:HEARD_FROM) are NOT present after the v2 fullregen.
   const nodes = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(m:MatnVariation)
-          -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n:Narrator)
+    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[:INCLUDES]->(n:Narrator)
     RETURN DISTINCT n
   `, { hadithId });
 
   const edges = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(m:MatnVariation)
-          -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n1:Narrator)
-    MATCH (n1)-[r:HEARD_FROM]->(n2:Narrator)
+    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[:INCLUDES]->(n1:Narrator)
+    MATCH (n1)-[r:NARRATED_FROM]->(n2:Narrator)
     RETURN DISTINCT n1, r, n2
   `, { hadithId });
 
@@ -269,7 +320,11 @@ export async function getFullChainGraph(hadithId: string) {
     edges: edges.map((r) => ({
       source: r.n1.properties.id,
       target: r.n2.properties.id,
-      status: r.r.properties.status,
+      // v2: status now comes from temporal_plausibility ('plausible'|'impossible'|'unknown').
+      // Fall back to legacy r.status if a partial-migration edge still carries it.
+      status: r.r.properties.temporal_plausibility ?? r.r.properties.status ?? null,
+      confidence: r.r.properties.confidence ?? null,
+      extraction_method: r.r.properties.extraction_method ?? null,
     })),
   };
 }
@@ -770,7 +825,7 @@ export async function linkNarratorToLocation(
   relType: 'BORN_IN' | 'DIED_IN' | 'RESIDED_IN'
 ): Promise<void> {
   const VALID_REL_TYPES = new Set(['BORN_IN', 'DIED_IN', 'RESIDED_IN']);
-  if (!VALID_REL_TYPES.has(relType)) {
+  if (!VALID_REL_TYPES.has(relType) || !/^[A-Z_]+$/.test(relType)) {
     throw new Error(`Invalid relationship type: ${relType}`);
   }
   await runWrite(`
@@ -920,11 +975,21 @@ export interface ExportConfig {
   edges: string[];
 }
 
+const ALLOWED_EXPORT_FIELDS = new Set([
+  'id', 'title', 'source', 'hadith_no', 'primary_topic',
+  'text_english', 'text_arabic', 'display_grade', 'transmission_type', 'tradition',
+]);
+
+const EXPORT_LIMIT = 10000;
+
 /**
  * Export hadiths as structured rows for CSV generation.
  * Supports configurable fields and edge data (narrators, commentaries, schools, variations).
  */
 export async function exportHadiths(config: ExportConfig): Promise<Record<string, string>[]> {
+  // Validate fields against allowlist
+  const validFields = config.fields.filter((f) => ALLOWED_EXPORT_FIELDS.has(f));
+
   const params: Record<string, any> = {};
   const conditions: string[] = [];
 
@@ -946,12 +1011,40 @@ export async function exportHadiths(config: ExportConfig): Promise<Record<string
   }
 
   const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
-  const hadiths = await runQuery(`MATCH (h:Hadith)${whereClause} RETURN h ORDER BY h.source, toInteger(h.hadith_no)`, params);
 
+  // Single query with optional edge collection — avoids N+1
   const includeNarrators = config.edges.includes('narrators');
   const includeCommentaries = config.edges.includes('commentaries');
   const includeVariations = config.edges.includes('variations');
   const includeSchool = config.edges.includes('school');
+
+  const optionalClauses: string[] = [];
+  const returnFields = ['h'];
+
+  if (includeNarrators) {
+    optionalClauses.push('OPTIONAL MATCH (h)-[:HAS_VARIATION]->(:MatnVariation)-[:TRANSMITTED_VIA]->(:Chain)-[:INCLUDES]->(n:Narrator)');
+    returnFields.push('collect(DISTINCT n {.name_english, .reliability}) as narrators');
+  }
+  if (includeCommentaries) {
+    optionalClauses.push('OPTIONAL MATCH (comm:Commentary)-[:COMMENTS_ON]->(h)');
+    returnFields.push('collect(DISTINCT comm {.author, .source_work, .text}) as commentaries');
+  }
+  if (includeVariations) {
+    optionalClauses.push('OPTIONAL MATCH (h)-[:HAS_VARIATION]->(mv:MatnVariation)');
+    returnFields.push('collect(DISTINCT mv {.text_english, .text_arabic}) as variations');
+  }
+  if (includeSchool) {
+    optionalClauses.push('OPTIONAL MATCH (h)-[:IN_SCHOOL]->(sch:SchoolOfThought)');
+    returnFields.push('collect(DISTINCT sch.name) as schools');
+  }
+
+  const cypher = `MATCH (h:Hadith)${whereClause}
+    ${optionalClauses.join('\n    ')}
+    RETURN ${returnFields.join(', ')}
+    ORDER BY h.source, toInteger(h.hadith_no)
+    LIMIT ${EXPORT_LIMIT}`;
+
+  const hadiths = await runQuery(cypher, params);
 
   const rows: Record<string, string>[] = [];
 
@@ -959,45 +1052,26 @@ export async function exportHadiths(config: ExportConfig): Promise<Record<string
     const h = r.h.properties;
     const row: Record<string, string> = {};
 
-    for (const field of config.fields) {
+    for (const field of validFields) {
       row[field] = h[field] != null ? String(h[field]) : '';
     }
 
-    if (includeNarrators) {
-      const narrators = await runQuery(`
-        MATCH (h:Hadith {id: $id})-[:HAS_VARIATION]->(m:MatnVariation)
-              -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n:Narrator)
-        RETURN DISTINCT n.name_english as name, n.reliability as reliability
-        ORDER BY n.name_english
-      `, { id: h.id });
-      row['narrators'] = narrators.map((n: any) => n.name).join('; ');
-      row['narrator_reliability'] = narrators.map((n: any) => `${n.name}:${n.reliability || 'unknown'}`).join('; ');
+    if (includeNarrators && r.narrators) {
+      row['narrators'] = r.narrators.map((n: any) => n.name_english).filter(Boolean).join('; ');
+      row['narrator_reliability'] = r.narrators.map((n: any) => `${n.name_english}:${n.reliability || 'unknown'}`).filter((s: string) => !s.startsWith('undefined')).join('; ');
     }
 
-    if (includeCommentaries) {
-      const comms = await runQuery(`
-        MATCH (c:Commentary)-[:COMMENTS_ON]->(h:Hadith {id: $id})
-        RETURN c.author as author, c.source_work as source_work, c.text as text
-        ORDER BY c.author
-      `, { id: h.id });
-      row['commentaries'] = comms.map((c: any) => `[${c.author} - ${c.source_work}] ${c.text}`).join(' | ');
+    if (includeCommentaries && r.commentaries) {
+      row['commentaries'] = r.commentaries.map((c: any) => `[${c.author} - ${c.source_work}] ${c.text}`).filter((s: string) => !s.startsWith('[undefined')).join(' | ');
     }
 
-    if (includeVariations) {
-      const vars = await runQuery(`
-        MATCH (h:Hadith {id: $id})-[:HAS_VARIATION]->(m:MatnVariation)
-        RETURN m.text_english as text_english, m.text_arabic as text_arabic
-      `, { id: h.id });
-      row['variation_texts_english'] = vars.map((v: any) => v.text_english || '').filter(Boolean).join(' | ');
-      row['variation_texts_arabic'] = vars.map((v: any) => v.text_arabic || '').filter(Boolean).join(' | ');
+    if (includeVariations && r.variations) {
+      row['variation_texts_english'] = r.variations.map((v: any) => v.text_english || '').filter(Boolean).join(' | ');
+      row['variation_texts_arabic'] = r.variations.map((v: any) => v.text_arabic || '').filter(Boolean).join(' | ');
     }
 
-    if (includeSchool) {
-      const schools = await runQuery(`
-        MATCH (h:Hadith {id: $id})-[:IN_SCHOOL]->(s:SchoolOfThought)
-        RETURN s.name as name
-      `, { id: h.id });
-      row['schools'] = schools.map((s: any) => s.name).join('; ');
+    if (includeSchool && r.schools) {
+      row['schools'] = r.schools.filter(Boolean).join('; ');
     }
 
     rows.push(row);

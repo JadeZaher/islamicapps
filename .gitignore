@@ -45,6 +45,32 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# Large CSV files (compressed .gz versions are tracked instead)
+# Large CSV files (compressed .gz versions are tracked instead).
+# Match the consolidated unified CSV anywhere — it gets moved to archive/
+# during snapshots and the old top-level path was the only one listed before.
 datasets/hadith-data/unified_hadith_consolidated.csv
+**/unified_hadith_consolidated.csv
 datasets/hadith-data/all_hadiths_shia.csv
+
+# Large unified hadith CSVs (raw form exceeds GitHub's 100MB limit;
+# rebuilt locally from sources by datasets/hadith-data/regen_unified_csvs.py)
+datasets/hadith-data/all_hadiths_unified.csv
+datasets/hadith-data/all_hadiths_unified.csv.gz
+datasets/hadith-data/all_hadiths_unified.csv.bak-*
+datasets/hadith-data/all_hadiths_clean.csv
+datasets/hadith-data/sunni_isnad.jsonl
+
+# Logs (regen runs produce GB of these)
+logs/
+*.log
+
+# Python bytecode + caches
+__pycache__/
+*.pyc
+*.pyo
+
+# LibreOffice / Office lock files
+.~lock.*#
+
+# Local OS files
+Thumbs.db

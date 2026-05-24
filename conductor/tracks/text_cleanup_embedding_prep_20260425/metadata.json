@@ -1,0 +1,25 @@
+{
+  "track_id": "text_cleanup_embedding_prep_20260425",
+  "title": "Text Cleanup & Embedding Preparation",
+  "type": "chore",
+  "status": "planned",
+  "created_at": "2026-04-25",
+  "priority": "P0",
+  "phases": [
+    { "id": 1, "name": "OCR Artifact Cleanup", "status": "pending" },
+    { "id": 2, "name": "AI Translation Refusal Repair", "status": "pending" },
+    { "id": 3, "name": "Short Text Triage", "status": "pending" },
+    { "id": 4, "name": "Text Normalization Pipeline", "status": "pending" },
+    { "id": 5, "name": "Verification", "status": "pending" }
+  ],
+  "dependencies": {
+    "npm_packages_to_install": [],
+    "env_vars_required": ["NEO4J_URL", "NEO4J_USERNAME", "NEO4J_PASSWORD"],
+    "env_vars_optional": [],
+    "external_apis": []
+  },
+  "blocks": ["vector_embedding_pipeline_20260425"],
+  "files_created": [],
+  "spec": "conductor/tracks/text_cleanup_embedding_prep_20260425/spec.md",
+  "plan": "conductor/tracks/text_cleanup_embedding_prep_20260425/plan.md"
+}

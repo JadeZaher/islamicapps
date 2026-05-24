@@ -99,6 +99,11 @@ export async function runQuery<T = any>(
     }
 }
 
+// 30s per-tx timeout so a stuck connection surfaces as a TransientError
+// instead of hanging the whole script. Long-running batches should be
+// chunked at the caller.
+const WRITE_TX_TIMEOUT_MS = 30_000;
+
 export async function runWrite<T = any>(
     query: string,
     params: Record<string, any> = {}
@@ -106,7 +111,10 @@ export async function runWrite<T = any>(
     const driver = getDriver();
     const session: Session = driver.session();
     try {
-        const result = await session.executeWrite((tx) => tx.run(query, params));
+        const result = await session.executeWrite(
+            (tx) => tx.run(query, params),
+            { timeout: WRITE_TX_TIMEOUT_MS },
+        );
         return result.records.map((record) => JSON.parse(JSON.stringify(toPlainValue(record.toObject()))) as T);
     } finally {
         await session.close();

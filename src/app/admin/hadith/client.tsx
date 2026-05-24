@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createHadith, calculateAutoGrade, calculateTransmissionType, exportHadiths, type ExportConfig } from '@/app/actions/graph-actions';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,13 +21,35 @@ interface PaginationInfo {
     pageSize: number;
 }
 
+interface HadithListItem {
+    id: string;
+    title: string;
+    source?: string;
+    primary_topic?: string;
+    text_english?: string;
+    text_arabic?: string;
+    display_grade?: string;
+    transmission_type?: string;
+    tradition?: string;
+    hadith_no?: string;
+}
+
+const SCHOOL_OPTIONS = [
+    { label: 'All Schools', value: '' },
+    { label: 'Sunni', value: 'Sunni' },
+    { label: 'Twelver Shia', value: 'Shia Imami' },
+    { label: 'Zaydi Shia', value: 'Shia Zaydi' },
+    { label: 'Ibadi', value: 'Ibadi' },
+];
+
 interface HadithManagerClientProps {
-    hadiths: any[];
+    hadiths: HadithListItem[];
     pagination: PaginationInfo;
 }
 
 export function HadithManagerClient({ hadiths, pagination }: HadithManagerClientProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isCreating, setIsCreating] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
@@ -49,19 +71,30 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
         }
     };
 
+    const [error, setError] = useState<string | null>(null);
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const hadithId = await createHadith(formData);
-        setFormData({ title: '', primary_topic: '' });
-        setIsCreating(false);
-        router.refresh();
-        router.push(`/hadith/${hadithId}`);
+        try {
+            setError(null);
+            const hadithId = await createHadith(formData);
+            setFormData({ title: '', primary_topic: '' });
+            setIsCreating(false);
+            router.refresh();
+            router.push(`/hadith/${hadithId}`);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to create hadith');
+        }
     };
 
     const handleRunAutoAnalysis = async (hadithId: string) => {
-        await calculateAutoGrade(hadithId);
-        await calculateTransmissionType(hadithId);
-        router.refresh();
+        try {
+            await calculateAutoGrade(hadithId);
+            await calculateTransmissionType(hadithId);
+            router.refresh();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Auto-analysis failed');
+        }
     };
 
     // ── Export ──
@@ -106,7 +139,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
             };
             const rows = await exportHadiths(config);
             if (rows.length === 0) {
-                alert('No hadiths matched the selected filters.');
+                setError('No hadiths matched the selected filters.');
                 return;
             }
             // Build CSV
@@ -216,11 +249,9 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                     <Label className="text-xs text-slate-400">School</Label>
                                     <select value={exportSchool} onChange={(e) => setExportSchool(e.target.value)}
                                         className="w-full mt-1 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-sm">
-                                        <option value="">All Schools</option>
-                                        <option value="Sunni">Sunni</option>
-                                        <option value="Shia Imami">Twelver Shia</option>
-                                        <option value="Shia Zaydi">Zaydi Shia</option>
-                                        <option value="Ibadi">Ibadi</option>
+                                        {SCHOOL_OPTIONS.map((opt) => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
@@ -295,6 +326,13 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                 </Card>
             )}
 
+            {error && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center justify-between">
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 ml-4">&times;</button>
+                </div>
+            )}
+
             <SearchFilterBar
                 searchPlaceholder="Search hadiths by title, topic, or text..."
                 totalResults={pagination.total}
@@ -302,13 +340,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                     {
                         key: 'school',
                         label: 'School',
-                        options: [
-                            { label: 'All Schools', value: '' },
-                            { label: 'Sunni', value: 'Sunni' },
-                            { label: 'Twelver Shia', value: 'Shia Imami' },
-                            { label: 'Zaydi Shia', value: 'Shia Zaydi' },
-                            { label: 'Ibadi', value: 'Ibadi' },
-                        ],
+                        options: SCHOOL_OPTIONS,
                     },
                     {
                         key: 'source',
@@ -380,7 +412,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleRunAutoAnalysis(hadith.id)}
-                                    className="border-slate-600 text-black"
+                                    className="border-slate-600 text-slate-300"
                                 >
                                     <BarChart3 className="w-4 h-4 mr-2" />
                                     Auto-Analysis
@@ -410,7 +442,11 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                     totalPages={pagination.totalPages}
                     total={pagination.total}
                     pageSize={pagination.pageSize}
-                    onPageChange={(p) => router.push(`?page=${p}`)}
+                    onPageChange={(p) => {
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('page', String(p));
+                        router.push(`?${params.toString()}`);
+                    }}
                 />
             </div>
         </div>

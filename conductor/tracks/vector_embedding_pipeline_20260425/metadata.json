@@ -1,0 +1,26 @@
+{
+  "track_id": "vector_embedding_pipeline_20260425",
+  "title": "Vector Embedding Pipeline & Semantic Search",
+  "type": "feature",
+  "status": "planned",
+  "created_at": "2026-04-25",
+  "priority": "P1",
+  "phases": [
+    { "id": 1, "name": "Embedding Model Selection & Setup", "status": "pending" },
+    { "id": 2, "name": "Embedding Generation Pipeline", "status": "pending" },
+    { "id": 3, "name": "Neo4j Vector Index Creation", "status": "pending" },
+    { "id": 4, "name": "Semantic Search API", "status": "pending" },
+    { "id": 5, "name": "Cross-Tradition Similarity Analysis", "status": "pending" },
+    { "id": 6, "name": "Verification & Benchmarking", "status": "pending" }
+  ],
+  "dependencies": {
+    "npm_packages_to_install": ["@xenova/transformers"],
+    "env_vars_required": ["NEO4J_URL", "NEO4J_USERNAME", "NEO4J_PASSWORD"],
+    "env_vars_optional": ["OPENAI_API_KEY"],
+    "external_apis": [],
+    "tracks": ["text_cleanup_embedding_prep_20260425", "narrator_enrichment_20260425"]
+  },
+  "files_created": [],
+  "spec": "conductor/tracks/vector_embedding_pipeline_20260425/spec.md",
+  "plan": "conductor/tracks/vector_embedding_pipeline_20260425/plan.md"
+}

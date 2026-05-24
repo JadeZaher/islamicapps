@@ -1,56 +1,45 @@
 {
   "active": false,
   "mode": "ultrapilot",
-  "task": "pure-canon-import-pipeline",
+  "task": "neo4j_isnad_graph_regen_20260516",
+  "passoff": "conductor/tracks/neo4j_isnad_graph_regen_20260516/ultrapilot-passoff.md",
   "phase": "complete",
-  "started_at": "2026-04-11T01:05:00Z",
-  "completed_at": "2026-04-11T01:30:00Z",
+  "started_at": "2026-05-20T00:00:00Z",
+  "completed_at": "2026-05-20T01:00:00Z",
+  "gate_status": {
+    "phase_0_exit": "[x] re-affirmed",
+    "phase_0b_exit": "[!] code wired; awaits operator-run fullregen",
+    "gate_g1": "[x] post-fix re-verification clean",
+    "phase_2_exit": "[ ] awaits operator-run fullregen + HITL queue drain"
+  },
+  "waves": {
+    "wave_1": {"status": "complete", "workstreams": ["A", "B"]},
+    "wave_2": {"status": "complete", "workstreams": ["C", "D", "F"]},
+    "wave_3": {"status": "complete", "workstreams": ["E"]},
+    "integration_fix": {"status": "complete", "scope": "19 broken relative-import paths in src/scripts/lib/regen/"},
+    "wave_4": {"status": "complete", "workstreams": ["G"]},
+    "post_verify_fix": {"status": "complete", "items": ["FR-1.3 NameMention persistence in mode-fullregen.ts", "runRegen export restored in regen-isnad-graph.ts"]},
+    "wave_4b_reverify": {"status": "complete", "result": "Gate G1 -> [x]"}
+  },
   "workers": [
-    {
-      "id": "worker_a_python",
-      "status": "complete",
-      "model": "sonnet",
-      "files_created": [
-        "datasets/06_pure_canon_preprocess.py",
-        "datasets/translate_ollama_generic.py",
-        "datasets/hadith-data/README_PURE_CANON.md"
-      ],
-      "lines_of_code": 845,
-      "smoke_test": "preprocessor_500_rows_ok; translator_3_rows_ok"
-    },
-    {
-      "id": "worker_b_importer",
-      "status": "complete",
-      "model": "sonnet",
-      "files_created": [
-        "src/scripts/import-pure-canon.ts",
-        "src/lib/import/canon-normalize.ts"
-      ],
-      "files_modified": ["package.json"],
-      "lines_of_code": 514,
-      "smoke_test": "dry_run_3_rows_ok"
-    },
-    {
-      "id": "worker_c_refactor",
-      "status": "complete",
-      "model": "sonnet",
-      "files_created": ["src/app/hadith/[id]/types.ts"],
-      "files_modified": [
-        "src/scripts/import-musnad.ts",
-        "src/app/hadith/[id]/client-page.tsx"
-      ],
-      "lines_of_code": 99,
-      "notes": "5 as-any casts at client-page.tsx use sites bridging HadithNode/GraphNode/ParallelRecord to stricter internal component types"
-    }
+    {"id": "w_A_pydataprep", "status": "complete", "deliverable": "regen_unified_csvs.py extended; all_hadiths_unified.csv = 99,283 records; classical_narrator_gap.csv = 13,413 rows"},
+    {"id": "w_B_schema", "status": "complete", "deliverable": "+4 constraints, +9 indexes; tsc clean"},
+    {"id": "w_C_loaders", "status": "complete", "deliverable": "8 loader modules under src/scripts/lib/regen/ (~1,460 LOC)"},
+    {"id": "w_D_er", "status": "complete", "deliverable": "entity-resolution.ts + ingest-er-approved.ts + er-staging.jsonl scaffold + db:ingest-er script"},
+    {"id": "w_E_modes", "status": "complete", "deliverable": "regen-isnad-graph.ts thin CLI (135 LOC) + 4 mode-*.ts modules"},
+    {"id": "w_F_tests", "status": "complete", "deliverable": "7 test files (~1,671 LOC, 197 assertions); 179 unit tests passing; 25/25 Arabic norm parity passing"},
+    {"id": "w_integration_fix", "status": "complete", "deliverable": "19 relative-import paths fixed in src/scripts/lib/regen/"},
+    {"id": "w_G_verify_1", "status": "complete", "deliverable": "verification.md written; 2 must-fix items filed back"},
+    {"id": "w_post_verify_fix", "status": "complete", "deliverable": "FR-1.3 + runRegen fixes; tsc clean in-scope"},
+    {"id": "w_G_reverify", "status": "complete", "deliverable": "Gate G1 flipped to [x]; verification.md + plan.md updated"}
   ],
-  "integration": {
-    "tsc_noemit": "clean",
-    "python_syntax": "ok",
-    "package_json": "parses; db:import:pure-canon script added",
-    "smoke_tests": {
-      "preprocessor_500_rows": "287 classical + 213 anthology + 26 id_dedups",
-      "translator_3_rows_gemma3_4b": "works but hallucinates names/events; needs gemma3:12b or llama3.1:8b for production",
-      "importer_dry_run_3_rows": "classifies + batches correctly, no writes issued"
-    }
-  }
+  "operator_actions_remaining": [
+    "npm run db:init  (apply B's 4 new constraints + 9 indexes to live Neo4j)",
+    "npm run db:regen -- --mode=fullregen  (multi-hour live mutation; applies 0.7/0.8/0.10 remediations + full graph load)",
+    "npm run db:regen -- --mode=test  (post-fullregen guardrail check; expect exit 0)",
+    "Wire 7 new regen-*.test.ts files into npm run test:regen",
+    "Drain HITL er-staging.jsonl queue, then npm run db:ingest-er",
+    "Manual commit per passoff template",
+    "Check [x] for this track in conductor/tracks.md"
+  ]
 }

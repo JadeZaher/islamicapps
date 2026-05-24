@@ -1,0 +1,19 @@
+{
+  "id": "neo4j_isnad_graph_regen_20260516",
+  "description": "Neo4j Isnad/Narrator Graph Regeneration Pipeline (Phases 0-2)",
+  "type": "feature",
+  "created_at": "2026-05-16T00:00:00Z",
+  "status": "in_progress",
+  "priority": "P0",
+  "design_source": ".omc/research/neo4j-hadith-graph/STRATEGIC_REPORT.md",
+  "blocks": [
+    "narrator_enrichment_20260425",
+    "gds_setup_analytics_20260425",
+    "grade_normalization_20260425",
+    "vector_embedding_pipeline_20260425",
+    "scholarly_metadata_layer_20260425"
+  ],
+  "depends_on": [
+    "fix_hadith_data_integrity_20260418"
+  ]
+}

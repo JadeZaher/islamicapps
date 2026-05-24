@@ -22,6 +22,7 @@ export function HadithClientPage({
     edges,
     chainHealthScore,
     parallels = [],
+    tracesToProphet = false,
 }: HadithClientPageProps) {
     const gradeColor = GRADE_COLORS[hadith.display_grade as string] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
 
@@ -43,6 +44,11 @@ export function HadithClientPage({
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
+                        {tracesToProphet && (
+                            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                                Marfu&apos;
+                            </Badge>
+                        )}
                         <Badge className={gradeColor}>
                             {hadith.display_grade || 'Ungraded'}
                         </Badge>
@@ -87,8 +93,64 @@ export function HadithClientPage({
                         />
                     </Card>
 
-                    {/* Matn Variations */}
-                    {hadith.variations && hadith.variations.length > 0 && (
+                    {/* Sanad (isnad text) + Matn from v2 :Hadith node — direct render */}
+                    {(hadith.sanad || hadith.matn_ar || hadith.matn_en || hadith.text_ar || hadith.text_en) && (
+                        <Card className="bg-slate-900/50 border-slate-800 p-6 md:col-span-2">
+                            <h2 className="text-lg font-semibold mb-4 text-white">Hadith Text</h2>
+                            <div className="space-y-5">
+                                {hadith.sanad && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                            Sanad (Isnad)
+                                        </h3>
+                                        <p
+                                            className="text-base leading-loose font-[var(--font-amiri)] text-amber-100"
+                                            dir="rtl"
+                                        >
+                                            {hadith.sanad}
+                                        </p>
+                                    </div>
+                                )}
+                                {(hadith.matn_ar || hadith.text_ar) && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                            Matn — Arabic
+                                        </h3>
+                                        <p
+                                            className="text-lg leading-loose font-[var(--font-amiri)] text-amber-50"
+                                            dir="rtl"
+                                        >
+                                            {hadith.matn_ar || hadith.text_ar}
+                                        </p>
+                                    </div>
+                                )}
+                                {(hadith.matn_en || hadith.text_en) && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                            Matn — English
+                                        </h3>
+                                        <p className="text-base leading-relaxed text-slate-200">
+                                            {hadith.matn_en || hadith.text_en}
+                                        </p>
+                                    </div>
+                                )}
+                                {/* Metadata strip */}
+                                <div className="pt-3 border-t border-slate-800/60 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-400">
+                                    {hadith.source && <span><span className="text-slate-500">Source:</span> {hadith.source}</span>}
+                                    {hadith.hadith_no && <span><span className="text-slate-500">No:</span> {hadith.hadith_no}</span>}
+                                    {hadith.volume && <span><span className="text-slate-500">Volume:</span> {hadith.volume}</span>}
+                                    {hadith.chapter && <span><span className="text-slate-500">Chapter:</span> {hadith.chapter}</span>}
+                                    {hadith.tradition && <span><span className="text-slate-500">Tradition:</span> {hadith.tradition}</span>}
+                                    {hadith.chain_type && <span><span className="text-slate-500">Chain type:</span> {hadith.chain_type}</span>}
+                                    {hadith.attributed_to && <span><span className="text-slate-500">Attributed to:</span> {hadith.attributed_to}</span>}
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
+                    {/* Legacy MatnVariation tabs — only when real :MatnVariation nodes exist
+                        (synthesized single-variation from getHadithById is filtered out via source check). */}
+                    {hadith.variations && hadith.variations.length > 0 && hadith.variations.some((v) => v.source !== 'hadith_node') && (
                         <Card className="bg-slate-900/50 border-slate-800 p-6 md:col-span-2">
                             <h2 className="text-lg font-semibold mb-4 text-white">Text Variations (Matn)</h2>
                             <Tabs defaultValue="0" className="w-full">

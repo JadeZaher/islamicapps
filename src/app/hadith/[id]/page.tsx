@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { getHadithById, getFullChainGraph } from '@/app/actions/graph-actions';
 import { getParallelsForHadith } from '@/app/actions/comparative-actions';
 import { HadithClientPage } from './client-page';
+import type { HadithNode } from './types';
 
 interface PageProps {
     params: Promise<{
@@ -27,31 +28,67 @@ export default async function HadithPage({ params }: PageProps) {
             getParallelsForHadith(id).catch(() => []),
         ]);
 
-        // Create a default hadith object with null values if not found
-        const hadithData = hadith || {
+        // Create a default hadith object with null values if not found.
+        // Shape matches HadithNode (see ./types.ts) so the typed prop fits.
+        const hadithData: HadithNode = (hadith as HadithNode | null) ?? {
             id,
             title: null,
             primary_topic: null,
             display_grade: null,
             auto_calculated_grade: null,
             transmission_type: null,
+            text_english: null,
+            text_arabic: null,
+            isnad_arabic: null,
+            chain_text_arabic: null,
+            chapter: null,
+            hadith_no: null,
+            source: null,
             variations: [],
+            // v2 canonical fields — all optional/null when hadith not found
+            text_en: null,
+            text_ar: null,
+            matn_ar: null,
+            matn_en: null,
+            sanad: null,
+            category: null,
         };
 
-        // Calculate chain health score (percentage of THIQA narrators)
-        const thiqaNarrators = graphData.nodes?.filter((n: any) => n.reliability === 'THIQA').length || 0;
-        const totalNarrators = graphData.nodes?.length || 0;
+        // Calculate chain health score (percentage of THIQA narrators).
+        // v1 narrators had `.reliability` directly; v2 narrators do not (G-1
+        // moved verdicts onto :Assessment nodes). For v2 nodes the score will
+        // be 0 here — TODO: re-derive from :HAS_ASSESSMENT.
+        const nodes = graphData.nodes || [];
+        const thiqaNarrators = nodes.filter((n) => (n as { reliability?: string }).reliability === 'THIQA').length;
+        const totalNarrators = nodes.length;
         const chainHealthScore = totalNarrators > 0
             ? Math.round((thiqaNarrators / totalNarrators) * 100)
             : 0;
 
+        // Check if chain traces back to the Prophet (via Sahabi or Prophet node)
+        const hasSahabi = nodes.some((n) => (n as { tabaqah?: string }).tabaqah === 'SAHABA');
+        const hasProphet = nodes.some((n) => {
+            const x = n as { is_prophet?: boolean; tabaqah?: string };
+            return x.is_prophet === true || x.tabaqah === 'PROPHET';
+        });
+        const chainTextMentionsProphet = Boolean(
+            hadithData.chain_text_arabic?.includes('رسول الله') ||
+            hadithData.chain_text_arabic?.includes('النبي') ||
+            hadithData.isnad_arabic?.includes('رسول الله') ||
+            hadithData.isnad_arabic?.includes('النبي') ||
+            hadithData.sanad?.includes('رسول الله') ||
+            hadithData.sanad?.includes('النبي')
+        );
+        const tracesToProphet = hasProphet || hasSahabi || chainTextMentionsProphet;
+
         return (
             <HadithClientPage
                 hadith={hadithData}
-                nodes={graphData.nodes || []}
+                nodes={nodes}
                 edges={graphData.edges || []}
                 chainHealthScore={chainHealthScore}
                 parallels={parallels}
+                tracesToProphet={tracesToProphet}
             />
         );
     } catch (error) {

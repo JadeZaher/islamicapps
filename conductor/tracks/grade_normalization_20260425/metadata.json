@@ -1,0 +1,24 @@
+{
+  "track_id": "grade_normalization_20260425",
+  "title": "Hadith Grade Normalization",
+  "type": "chore",
+  "status": "planned",
+  "created_at": "2026-04-25",
+  "priority": "P1",
+  "phases": [
+    { "id": 1, "name": "Grade Taxonomy Design", "status": "pending" },
+    { "id": 2, "name": "Mapping Script", "status": "pending" },
+    { "id": 3, "name": "Apply Normalization", "status": "pending" },
+    { "id": 4, "name": "Verification", "status": "pending" }
+  ],
+  "dependencies": {
+    "npm_packages_to_install": [],
+    "env_vars_required": ["NEO4J_URL", "NEO4J_USERNAME", "NEO4J_PASSWORD"],
+    "env_vars_optional": [],
+    "external_apis": []
+  },
+  "blocks": ["gds_setup_analytics_20260425"],
+  "files_created": [],
+  "spec": "conductor/tracks/grade_normalization_20260425/spec.md",
+  "plan": "conductor/tracks/grade_normalization_20260425/plan.md"
+}

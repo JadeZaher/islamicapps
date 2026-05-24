@@ -41,7 +41,8 @@
 |---|---|
 | tsx | Run TypeScript scripts directly |
 | `npm run db:init` | Initialize Neo4j schema (constraints + indexes) |
-| `npm run db:import` | Import hadith datasets from CSV/JSON |
+| `npm run db:regen` | **Canonical** idempotent isnad/narrator graph regeneration (`src/scripts/regen-isnad-graph.ts`) — MERGE on stable business keys, `:DatasetVersion` provenance, no scalar assessment (track `neo4j_isnad_graph_regen_20260516`, Phase 0) |
+| `npm run db:import` | **DEPRECATED** — `src/scripts/import-datasets.ts`, superseded by `db:regen` (D-1, kept in place as reference; has the narrator-duplication + unified-narrator-fallacy bugs) |
 | `npm run db:seed-history` | Seed historical event data |
 | `npm run db:find-parallels` | Discover cross-cultural parallels via you.com Research API (batch) |
 | `npm run db:ingest-parallels` | Ingest APPROVED candidates from staging JSON into Neo4j |
