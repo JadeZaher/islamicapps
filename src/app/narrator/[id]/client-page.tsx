@@ -9,6 +9,30 @@ import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/component
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+/** Inline badge rendering the reliability_consensus verdict.
+ *  Colours map to the classical taxonomy: trust-tier = green, contested = amber,
+ *  weak = orange/red, not-applicable (Companion / Prophet) = neutral cyan. */
+function ConsensusBadge({ verdict }: { verdict: string }) {
+    const map: Record<string, { label: string; cls: string }> = {
+        thiqa_thabt:    { label: 'thiqa thabt',    cls: 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' },
+        thiqa:          { label: 'thiqa',          cls: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30' },
+        'ṣadūq':        { label: 'ṣadūq',          cls: 'bg-lime-500/15  text-lime-200    border-lime-500/30'    },
+        'lā_baʾsa_bihi':{ label: 'lā baʾsa bihi',  cls: 'bg-lime-500/10  text-lime-200    border-lime-500/20'    },
+        mukhtalaf_fīhi: { label: 'mukhtalaf fīhi', cls: 'bg-amber-500/15 text-amber-200   border-amber-500/30'   },
+        majhūl:         { label: 'majhūl',         cls: 'bg-slate-500/20 text-slate-200   border-slate-500/30'   },
+        'ḍaʿīf':        { label: 'ḍaʿīf',          cls: 'bg-orange-500/20 text-orange-200 border-orange-500/40'  },
+        matrūk:         { label: 'matrūk',         cls: 'bg-rose-500/20  text-rose-200    border-rose-500/40'    },
+        kadhāb:         { label: 'kadhāb',         cls: 'bg-red-600/25   text-red-200     border-red-600/50'     },
+        not_applicable: { label: 'ʿadālat al-ṣaḥāba',  cls: 'bg-cyan-500/15  text-cyan-200    border-cyan-500/30'    },
+    };
+    const m = map[verdict] || { label: verdict, cls: 'bg-white/10 text-white/80 border-white/20' };
+    return (
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${m.cls}`}>
+            {m.label}
+        </span>
+    );
+}
+
 interface NarratorClientPageProps {
     narratorDetails: {
         id: string;
@@ -23,6 +47,36 @@ interface NarratorClientPageProps {
         bio?: string;
         biographical_narrative?: string;
         geographic_region?: string;
+        // ─── v2 / Phase-0 narrator-enrichment fields ─────────────────────────
+        /** True for the Prophet ﷺ; suppresses jarḥ/taʿdīl rendering by design. */
+        is_prophet?: boolean;
+        /** True for Companions (ṣaḥāba). */
+        is_companion?: boolean;
+        /** Cleaned canonical Arabic name (alongside legacy name_arabic). */
+        name_arabic_clean?: string;
+        /** Cleaned canonical English transliteration. */
+        name_english_clean?: string;
+        kunya?: string;
+        nasab?: string;
+        nisba?: string;
+        /** AH death year (v2 schema). */
+        death_date_hijri?: number;
+        /** CE death year (v2 schema). */
+        death_date_gregorian?: number;
+        /** 2-3 sentence English synopsis. */
+        bio_summary?: string;
+        /** Concatenated tawthīq quotes (Arabic with English glosses in parens). */
+        bio_tadil?: string;
+        /** Concatenated tajrīḥ quotes — usually empty for Companions / major Tābiʿīn. */
+        bio_jarh?: string;
+        /** Single classical verdict label: thiqa | ṣadūq | ḍaʿīf | … | not_applicable. */
+        reliability_consensus?: string;
+        /** True when critics conflicted — drives a "contested" badge. */
+        reliability_disagreement?: boolean;
+        /** How many distinct critics contributed quotes. */
+        critic_quote_count?: number;
+        /** Provenance of bio fields: 'manual_phase_0' | 'taqrib_v1' | … */
+        bio_provenance?: string;
         other_hadiths?: Array<{
             id: string;
             title: string;
@@ -135,7 +189,98 @@ export default function NarratorClientPage({
                                 <CardTitle className="text-white">Biography</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                {narratorDetails.biographical_narrative && (
+                                {/* ─── Phase-0 enriched bio_summary ─── */}
+                                {narratorDetails.bio_summary && (
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-cyan-300 mb-3">
+                                            Summary
+                                        </h3>
+                                        <p className="text-white/85 leading-relaxed whitespace-pre-line">
+                                            {narratorDetails.bio_summary}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* ─── Classical verdict: jarḥ wa taʿdīl ─── */}
+                                {narratorDetails.is_prophet ? (
+                                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+                                        <h3 className="text-base font-semibold text-amber-300 mb-2">
+                                            Not subject to jarḥ wa taʿdīl
+                                        </h3>
+                                        <p className="text-white/75 text-sm leading-relaxed">
+                                            As the source of the ḥadīth corpus, the Prophet ﷺ is not classified
+                                            within the classical narrator-criticism framework. Biographical fields
+                                            here document basic identity only.
+                                        </p>
+                                    </div>
+                                ) : (narratorDetails.reliability_consensus || narratorDetails.bio_tadil || narratorDetails.bio_jarh) && (
+                                    <div className="pt-2 border-t border-white/10">
+                                        <div className="flex items-baseline justify-between mb-3">
+                                            <h3 className="text-lg font-semibold text-cyan-300">
+                                                Classical Verdict — Jarḥ wa Taʿdīl
+                                            </h3>
+                                            <div className="flex items-center gap-2">
+                                                {narratorDetails.reliability_consensus && (
+                                                    <ConsensusBadge verdict={narratorDetails.reliability_consensus} />
+                                                )}
+                                                {narratorDetails.reliability_disagreement && (
+                                                    <span className="text-xs px-2 py-0.5 rounded bg-rose-500/15 text-rose-200 border border-rose-500/30">
+                                                        contested
+                                                    </span>
+                                                )}
+                                                {narratorDetails.is_companion && (
+                                                    <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-200 border border-emerald-500/30">
+                                                        ṣaḥābī
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {narratorDetails.is_companion && (
+                                            <p className="text-xs text-white/55 mb-3 italic">
+                                                Sunni rijāl literature does not subject Companions to individual taʿdīl/jarḥ
+                                                under the doctrine of <span className="not-italic">ʿadālat al-ṣaḥāba</span>.
+                                                Where critique exists in Imami or other traditions, it is noted below.
+                                            </p>
+                                        )}
+
+                                        {narratorDetails.bio_tadil && (
+                                            <div className="mb-4">
+                                                <h4 className="text-sm font-semibold text-emerald-300 mb-2 uppercase tracking-wide">
+                                                    Taʿdīl — testimonies of trust
+                                                </h4>
+                                                <p className="text-white/85 leading-loose" dir="auto">
+                                                    {narratorDetails.bio_tadil}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {narratorDetails.bio_jarh && (
+                                            <div className="mb-2">
+                                                <h4 className="text-sm font-semibold text-rose-300 mb-2 uppercase tracking-wide">
+                                                    Jarḥ — testimonies of criticism
+                                                </h4>
+                                                <p className="text-white/85 leading-loose" dir="auto">
+                                                    {narratorDetails.bio_jarh}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {narratorDetails.bio_provenance && (
+                                            <p className="text-xs text-white/40 mt-3 italic">
+                                                Source: {narratorDetails.bio_provenance === 'manual_phase_0'
+                                                    ? 'manually curated from Tahdhīb al-Kamāl, Taqrīb al-Tahdhīb, Siyar Aʿlām al-Nubalāʾ'
+                                                    : narratorDetails.bio_provenance}
+                                                {typeof narratorDetails.critic_quote_count === 'number' && narratorDetails.critic_quote_count > 0 && (
+                                                    ` · ${narratorDetails.critic_quote_count} critic${narratorDetails.critic_quote_count === 1 ? '' : 's'}`
+                                                )}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Legacy fields (only render if no Phase-0 bio_summary already covered them) */}
+                                {narratorDetails.biographical_narrative && !narratorDetails.bio_summary && (
                                     <div>
                                         <h3 className="text-lg font-semibold text-cyan-300 mb-3">
                                             Biographical Narrative
@@ -146,10 +291,10 @@ export default function NarratorClientPage({
                                     </div>
                                 )}
 
-                                {narratorDetails.bio && (
+                                {narratorDetails.bio && !narratorDetails.bio_summary && (
                                     <div>
                                         <h3 className="text-lg font-semibold text-cyan-300 mb-3">
-                                            Summary
+                                            Summary (legacy)
                                         </h3>
                                         <p className="text-white/80 leading-relaxed">
                                             {narratorDetails.bio}
