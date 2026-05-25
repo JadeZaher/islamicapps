@@ -366,15 +366,14 @@ export async function getTraditionConnectionsForNarrator(narratorId: string) {
     `, { narratorId });
 
     const parallels = await runQuery(`
-        MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)
-              <-[:TRANSMITTED_VIA]-(m:MatnVariation)<-[:HAS_VARIATION]-(h:Hadith)
+        MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)<-[:HAS_CHAIN]-(h:Hadith)
         MATCH (h)-[:HAS_PARALLEL]->(p:CrossCulturalParallel)-[:FROM_TRADITION]->(t:ReligiousTradition)
         MATCH (p)-[:PARALLELS]->(s:SourceText)
-        RETURN DISTINCT h {.id, .title, .display_grade} as hadith,
+        RETURN DISTINCT h {.id, .chapter, .category, .display_grade} as hadith,
                p {.id, .parallel_type, .isra_iliyyat_status} as parallel,
                t {.id, .name} as tradition,
                s {.title, .canonical_reference} as source_text
-        ORDER BY h.title
+        ORDER BY h.chapter, h.category
         LIMIT 50
     `, { narratorId });
 
@@ -439,7 +438,7 @@ export async function searchParallels(filters?: {
     }
 
     query += `
-        RETURN p, h {.id, .title, .display_grade, .primary_topic} as hadith,
+        RETURN p, h {.id, .chapter, .category, .display_grade} as hadith,
                s, t, collect(DISTINCT mt) as tags
         ORDER BY t.name, p.parallel_type
         LIMIT 100

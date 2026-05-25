@@ -63,14 +63,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         // Single hadith mode
         const rows = await runQuery<{
             id: string;
-            title: string;
-            text_english: string;
-            primary_topic: string;
+            chapter: string;
+            category: string;
+            text_en: string;
         }>(
             `MATCH (h:Hadith {id: $id})
-             WHERE h.text_english IS NOT NULL
-             RETURN h.id AS id, h.title AS title, h.text_english AS text_english,
-                    h.primary_topic AS primary_topic`,
+             WHERE h.text_en IS NOT NULL
+             RETURN h.id AS id, (h.chapter ?? h.category) AS chapter,
+                    h.category AS category, h.text_en AS text_en`,
             { id: body.hadith_id }
         );
 
@@ -80,21 +80,38 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 { status: 404 }
             );
         }
-        hadiths = rows;
+        hadiths = rows.map((r) => ({
+            id: r.id,
+            title: r.chapter || r.category,
+            text_english: r.text_en,
+            primary_topic: r.category,
+        }));
     } else {
         // Batch mode
         const batchSize = Math.min(body.batch_size ?? 5, 20); // cap at 20
         const offset = body.offset ?? 0;
 
-        hadiths = await runQuery<HadithRecord>(
+        const rows = await runQuery<{
+            id: string;
+            chapter: string;
+            category: string;
+            text_en: string;
+        }>(
             `MATCH (h:Hadith)
-             WHERE h.text_english IS NOT NULL AND h.text_english <> ''
-             RETURN h.id AS id, h.title AS title, h.text_english AS text_english,
-                    h.primary_topic AS primary_topic
+             WHERE h.text_en IS NOT NULL AND h.text_en <> ''
+             RETURN h.id AS id, (h.chapter ?? h.category) AS chapter,
+                    h.category AS category, h.text_en AS text_en
              ORDER BY h.created_at
              SKIP $offset LIMIT $batchSize`,
             { offset, batchSize }
         );
+
+        hadiths = rows.map((r) => ({
+            id: r.id,
+            title: r.chapter || r.category,
+            text_english: r.text_en,
+            primary_topic: r.category,
+        }));
 
         if (!hadiths.length) {
             return NextResponse.json({
