@@ -369,7 +369,7 @@ export async function getTraditionConnectionsForNarrator(narratorId: string) {
         MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)<-[:HAS_CHAIN]-(h:Hadith)
         MATCH (h)-[:HAS_PARALLEL]->(p:CrossCulturalParallel)-[:FROM_TRADITION]->(t:ReligiousTradition)
         MATCH (p)-[:PARALLELS]->(s:SourceText)
-        RETURN DISTINCT h {.id, .chapter, .category, .display_grade} as hadith,
+        RETURN DISTINCT h {.id, .chapter, .category} as hadith,
                p {.id, .parallel_type, .isra_iliyyat_status} as parallel,
                t {.id, .name} as tradition,
                s {.title, .canonical_reference} as source_text
@@ -438,7 +438,7 @@ export async function searchParallels(filters?: {
     }
 
     query += `
-        RETURN p, h {.id, .chapter, .category, .display_grade} as hadith,
+        RETURN p, h {.id, .chapter, .category} as hadith,
                s, t, collect(DISTINCT mt) as tags
         ORDER BY t.name, p.parallel_type
         LIMIT 100
@@ -466,20 +466,28 @@ export async function getAllParallels(pagination?: PaginationParams): Promise<Pa
             MATCH (p)-[:PARALLELS]->(s:SourceText)
             MATCH (p)-[:FROM_TRADITION]->(t:ReligiousTradition)
             OPTIONAL MATCH (p)-[:TAGGED_WITH]->(mt:MotifTag)
-            RETURN p, h {.id, .title, .display_grade} as hadith, s, t,
+            RETURN p, h {.id, .chapter, .category} as hadith, s, t,
                    collect(DISTINCT mt) as tags
             ORDER BY p.created_at DESC
             SKIP $skip LIMIT $limit
         `, { skip, limit }),
     ]);
     return paginate(
-        result.map((r) => ({
-            ...r.p.properties,
-            hadith: r.hadith,
-            source_text: r.s.properties,
-            tradition: r.t.properties,
-            motif_tags: r.tags.map((t: any) => t.properties),
-        })),
+        result.map((r) => {
+            const hadith = r.hadith as Record<string, unknown>;
+            return {
+                ...r.p.properties,
+                hadith: {
+                    ...hadith,
+                    // v1 aliases for legacy UI
+                    title: (hadith.chapter as string) || (hadith.category as string) || null,
+                    primary_topic: hadith.category || null,
+                },
+                source_text: r.s.properties,
+                tradition: r.t.properties,
+                motif_tags: r.tags.map((t: any) => t.properties),
+            };
+        }),
         countResult[0]?.total ?? 0, page, pageSize,
     );
 }

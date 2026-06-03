@@ -26,22 +26,6 @@ function buildSetClause(alias: string, data: Record<string, unknown>): string {
 
 // ============ TYPES ============
 
-export interface NarratorData {
-  name_arabic: string;
-  name_english: string;
-  reliability: 'THIQA' | 'SADUQ' | 'DAIF' | 'MAJHUL' | 'KADHAB';
-  tabaqah: 'PROPHET' | 'SAHABA' | 'TABI_UN' | 'TABI_TABI_IN';
-  bio: string;
-  birth_year_hijri?: number;
-  death_year_hijri?: number;
-  geographic_region?: string;
-}
-
-export interface HadithData {
-  title: string;
-  primary_topic: string;
-}
-
 export interface HistoricalEventData {
   title: string;
   title_arabic?: string;
@@ -72,119 +56,7 @@ export interface LocationData {
   longitude?: number;
 }
 
-// ============ GRADING SYSTEM ============
-
-/**
- * Calculates auto_calculated_grade based on chain analysis
- * Logic:
- * - If any narrator is KADHAB (liar) → MAWDU
- * - If any narrator is DAIF and chain has gaps → DAIF
- * - If all narrators are THIQA and chain is connected → SAHIH
- * - If all narrators are THIQA or SADUQ → HASAN
- */
-export async function calculateAutoGrade(hadithId: string): Promise<string> {
-  // Get all narrators from all chains of this Hadith
-  const narrators = await runQuery<{ reliability: string; connected: boolean }>(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(m:MatnVariation)
-          -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n:Narrator)
-    MATCH (n)-[r:HEARD_FROM]->()
-    RETURN DISTINCT n.reliability as reliability, r.status as connected
-  `, { hadithId });
-
-  let grade = 'SAHIH';
-
-  // Check for KADHAB (fabricators)
-  if (narrators.some((n) => n.reliability === 'KADHAB')) {
-    grade = 'MAWDU';
-  }
-  // Check for DAIF with broken chains
-  else if (
-    narrators.some((n) => n.reliability === 'DAIF') ||
-    narrators.some((n) => !n.connected)
-  ) {
-    grade = 'DAIF';
-  }
-  // All THIQA → SAHIH
-  else if (narrators.every((n) => n.reliability === 'THIQA')) {
-    grade = 'SAHIH';
-  }
-  // Mix of THIQA and SADUQ → HASAN
-  else if (narrators.every((n) => n.reliability === 'THIQA' || n.reliability === 'SADUQ')) {
-    grade = 'HASAN';
-  }
-  // Default to DAIF if conditions unclear
-  else {
-    grade = 'DAIF';
-  }
-
-  // Store the auto-calculated grade
-  await runWrite(`
-    MATCH (h:Hadith {id: $hadithId})
-    SET h.auto_calculated_grade = $grade
-  `, { hadithId, grade });
-
-  // Set display_grade to match auto-calculated
-  await runWrite(`
-    MATCH (h:Hadith {id: $hadithId})
-    SET h.display_grade = $grade
-  `, { hadithId, grade });
-
-  return grade;
-}
-
-/**
- * Calculates transmission_type based on chain counts per generation
- * - MUTAWATIR: ≥10 chains per Tabaqah layer
- * - MASHHUR: 3-9 chains
- * - AZIZ: 2 chains
- * - GHARIB: 1 chain
- */
-export async function calculateTransmissionType(hadithId: string): Promise<string> {
-  const result = await runQuery<{ chainCount: number }>(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(m:MatnVariation)
-          -[:TRANSMITTED_VIA]->(c:Chain)
-    RETURN count(DISTINCT c) as chainCount
-  `, { hadithId });
-
-  const chainCount = result[0]?.chainCount || 0;
-
-  let transmissionType = 'GHARIB';
-  if (chainCount >= 10) {
-    transmissionType = 'MUTAWATIR';
-  } else if (chainCount >= 3) {
-    transmissionType = 'MASHHUR';
-  } else if (chainCount === 2) {
-    transmissionType = 'AZIZ';
-  }
-
-  await runWrite(`
-    MATCH (h:Hadith {id: $hadithId})
-    SET h.transmission_type = $transmissionType
-  `, { hadithId, transmissionType });
-
-  return transmissionType;
-}
-
-// ============ CRUD OPERATIONS ============
-
-// --- NARRATOR ---
-export async function createNarrator(data: NarratorData): Promise<string> {
-  const id = randomUUID();
-  await runWrite(`
-    CREATE (n:Narrator {
-      id: $id,
-      name_arabic: $name_arabic,
-      name_english: $name_english,
-      reliability: $reliability,
-      tabaqah: $tabaqah,
-      bio: $bio,
-      birth_year_hijri: $birth_year_hijri,
-      death_year_hijri: $death_year_hijri,
-      geographic_region: $geographic_region
-    })
-  `, { id, ...data });
-  return id;
-}
+// ============ READ HELPERS ============
 
 export async function getNarratorById(id: string) {
   const result = await runQuery(`
@@ -210,21 +82,6 @@ export async function getAllNarrators(pagination?: PaginationParams): Promise<Pa
 }
 
 // --- HADITH ---
-export async function createHadith(data: HadithData): Promise<string> {
-  const id = randomUUID();
-  await runWrite(`
-    CREATE (h:Hadith {
-      id: $id,
-      title: $title,
-      primary_topic: $primary_topic,
-      auto_calculated_grade: '',
-      display_grade: '',
-      transmission_type: ''
-    })
-  `, { id, ...data });
-  return id;
-}
-
 export async function getHadithById(id: string) {
   // v2 schema: Hadith is the single source of text/sanad fields; no MatnVariation
   // intermediary. Chains attach directly via (h)-[:HAS_CHAIN]->(:Chain).
@@ -342,23 +199,6 @@ export async function getFullChainGraph(hadithId: string) {
   };
 }
 
-export async function getNarratorDetails(narratorId: string) {
-  const narrator = await getNarratorById(narratorId);
-
-  // Get other Hadiths this narrator appears in
-  const hadiths = await runQuery(`
-    MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)
-          <-[:TRANSMITTED_VIA]-(m:MatnVariation)<-[:HAS_VARIATION]-(h:Hadith)
-    RETURN DISTINCT h
-    ORDER BY h.title
-  `, { narratorId });
-
-  return {
-    ...narrator,
-    other_hadiths: hadiths.map((r) => r.h.properties),
-  };
-}
-
 /**
  * Search narrators by name with optional filters
  */
@@ -403,125 +243,6 @@ export async function searchNarrators(searchTerm: string = '', filters?: {
 
   const result = await runQuery(query, params);
   return result.map((r) => r.n.properties);
-}
-
-/**
- * Create a new chain with narrators
- * @param hadithId - The hadith this chain belongs to
- * @param variationId - The matn variation this chain transmits
- * @param narratorIds - Array of narrator IDs in order (oldest to youngest)
- */
-export async function createChain(
-  hadithId: string,
-  variationId: string,
-  narratorIds: string[]
-): Promise<string> {
-  const chainId = randomUUID();
-
-  const queries: Array<{ query: string; params?: Record<string, any> }> = [
-    {
-      query: `
-        CREATE (c:Chain {
-          id: $id,
-          is_golden_chain: false,
-          created_at: datetime()
-        })
-      `,
-      params: { id: chainId },
-    },
-    {
-      query: `
-        MATCH (m:MatnVariation {id: $variationId})
-        MATCH (c:Chain {id: $chainId})
-        CREATE (m)-[:TRANSMITTED_VIA]->(c)
-      `,
-      params: { variationId, chainId },
-    },
-  ];
-
-  // Add INCLUDES relationships for all narrators
-  for (const narratorId of narratorIds) {
-    queries.push({
-      query: `
-        MATCH (c:Chain {id: $chainId})
-        MATCH (n:Narrator {id: $narratorId})
-        CREATE (c)-[:INCLUDES]->(n)
-      `,
-      params: { chainId, narratorId },
-    });
-  }
-
-  // Create HEARD_FROM relationships between consecutive narrators
-  for (let i = 0; i < narratorIds.length - 1; i++) {
-    queries.push({
-      query: `
-        MATCH (student:Narrator {id: $studentId})
-        MATCH (teacher:Narrator {id: $teacherId})
-        MERGE (student)-[r:HEARD_FROM {
-          status: 'connected',
-          meeting_place: 'Unknown'
-        }]->(teacher)
-      `,
-      params: {
-        studentId: narratorIds[i],
-        teacherId: narratorIds[i + 1],
-      },
-    });
-  }
-
-  await runTransaction(queries);
-
-  // Recalculate grades for the hadith
-  await calculateAutoGrade(hadithId);
-  await calculateTransmissionType(hadithId);
-
-  return chainId;
-}
-
-/**
- * Validate that a chain follows proper chronological order
- * Later generations cannot teach earlier generations
- */
-export async function validateChainOrder(narratorIds: string[]): Promise<{
-  valid: boolean;
-  error?: string;
-}> {
-  // Fetch narrator details
-  const narrators = await Promise.all(narratorIds.map((id) => getNarratorById(id)));
-
-  const TABAQAH_ORDER = ['PROPHET', 'SAHABA', 'TABI_UN', 'TABI_TABI_IN'];
-
-  for (let i = 0; i < narrators.length - 1; i++) {
-    const student = narrators[i];
-    const teacher = narrators[i + 1];
-
-    if (!student || !teacher) {
-      return { valid: false, error: 'One or more narrators not found' };
-    }
-
-    const studentLevel = TABAQAH_ORDER.indexOf(student.tabaqah);
-    const teacherLevel = TABAQAH_ORDER.indexOf(teacher.tabaqah);
-
-    // Student should be from later or same generation as teacher
-    if (studentLevel < teacherLevel) {
-      return {
-        valid: false,
-        error: `Invalid order: ${student.name_english} (${student.tabaqah}) cannot learn from ${teacher.name_english} (${teacher.tabaqah})`,
-      };
-    }
-
-    // Check death/birth years if available
-    if (student.birth_year_hijri && teacher.death_year_hijri) {
-      if (student.birth_year_hijri > teacher.death_year_hijri) {
-        return {
-          valid: false,
-          error: `Timeline conflict: ${student.name_english} was born after ${teacher.name_english} died`,
-        };
-      }
-    }
-  }
-
-  return { valid: true };
 }
 
 // ============ HISTORICAL EVENTS ============
@@ -899,32 +620,18 @@ export async function getEnhancedNarratorDetails(narratorId: string) {
 }
 
 /**
- * Get enhanced hadith details with commentaries and chain info
- */
-export async function getEnhancedHadithDetails(hadithId: string) {
-  const hadith = await getHadithById(hadithId);
-  const commentaries = await getCommentariesForHadith(hadithId);
-
-  const chains = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(m:MatnVariation)
-          -[:TRANSMITTED_VIA]->(c:Chain)-[:INCLUDES]->(n:Narrator)
-    RETURN DISTINCT c.id as chainId, collect(DISTINCT n {.id, .name_english, .name_arabic, .reliability, .tabaqah}) as narrators
-  `, { hadithId });
-
-  return { ...hadith, commentaries, transmission_chains: chains };
-}
-
-/**
- * Get teacher-student network for graph visualization
+ * Get teacher-student network for graph visualization.
+ *
+ * v2: direction = student -[:NARRATED_FROM]-> teacher.
  */
 export async function getNarratorNetwork(narratorId: string, depth: number = 2) {
   const teachers = await runQuery(`
-    MATCH (n:Narrator {id: $narratorId})-[:HEARD_FROM]->(teacher:Narrator)
+    MATCH (n:Narrator {id: $narratorId})-[:NARRATED_FROM]->(teacher:Narrator)
     RETURN DISTINCT teacher
   `, { narratorId });
 
   const students = await runQuery(`
-    MATCH (student:Narrator)-[:HEARD_FROM]->(n:Narrator {id: $narratorId})
+    MATCH (student:Narrator)-[:NARRATED_FROM]->(n:Narrator {id: $narratorId})
     RETURN DISTINCT student
   `, { narratorId });
 
@@ -952,7 +659,7 @@ export async function getSourceStats() {
  */
 export async function searchHadiths(
   searchTerm: string = '',
-  filters?: { source?: string; grade?: string; chapter?: string; school?: string },
+  filters?: { source?: string; chapter?: string; school?: string },
   pagination?: PaginationParams,
 ): Promise<PaginatedResult<any>> {
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
@@ -966,10 +673,6 @@ export async function searchHadiths(
   if (filters?.source) {
     conditions.push('h.source = $source');
     params.source = filters.source;
-  }
-  if (filters?.grade) {
-    conditions.push('h.display_grade = $grade');
-    params.grade = filters.grade;
   }
   if (filters?.chapter) {
     conditions.push('h.category = $chapter');
@@ -1005,17 +708,20 @@ export async function searchHadiths(
 // ============ EXPORT ============
 
 export interface ExportConfig {
-  filters: { source?: string; grade?: string; school?: string; searchTerm?: string };
+  filters: { source?: string; school?: string; searchTerm?: string };
   /** Which metadata fields to include */
   fields: string[];
   /** Which related edges to include as extra columns */
   edges: string[];
 }
 
+// v2: grade lives on :Assessment, not on :Hadith. The CSV currently emits
+// only the matn-side fields; per-tradition grade columns are deferred until
+// the grading-UX redesign (see runbook addendum 2026-05-25).
 const ALLOWED_EXPORT_FIELDS = new Set([
   'id', 'chapter', 'category', 'source', 'hadith_no',
-  'text_en', 'text_ar', 'display_grade', 'transmission_type', 'tradition',
-  // v1 aliases for backward compat
+  'text_en', 'text_ar', 'tradition',
+  // v1 aliases for downstream CSV consumers
   'title', 'primary_topic', 'text_english', 'text_arabic',
 ]);
 
@@ -1039,10 +745,6 @@ export async function exportHadiths(config: ExportConfig): Promise<Record<string
   if (config.filters.source) {
     conditions.push('h.source = $source');
     params.source = config.filters.source;
-  }
-  if (config.filters.grade) {
-    conditions.push('h.display_grade = $grade');
-    params.grade = config.filters.grade;
   }
   if (config.filters.school) {
     conditions.push('h.tradition = $school');

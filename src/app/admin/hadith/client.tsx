@@ -2,14 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createHadith, calculateAutoGrade, calculateTransmissionType, exportHadiths, type ExportConfig } from '@/app/actions/graph-actions';
+import { exportHadiths, type ExportConfig } from '@/app/actions/graph-actions';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, BarChart3, Download, X } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 import { getSourceFilterOptions } from '@/lib/constants/sources';
@@ -28,10 +26,15 @@ interface HadithListItem {
     primary_topic?: string;
     text_english?: string;
     text_arabic?: string;
-    display_grade?: string;
-    transmission_type?: string;
     tradition?: string;
     hadith_no?: string;
+    chapter?: string;
+    chapter_no?: string;
+    volume?: string;
+    matn_ar?: string;
+    matn_en?: string;
+    text_ar?: string;
+    text_en?: string;
 }
 
 const SCHOOL_OPTIONS = [
@@ -50,52 +53,8 @@ interface HadithManagerClientProps {
 export function HadithManagerClient({ hadiths, pagination }: HadithManagerClientProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [isCreating, setIsCreating] = useState(false);
-    const [formData, setFormData] = useState({
-        title: '',
-        primary_topic: '',
-    });
-
-    const getGradeBadgeColor = (grade: string) => {
-        switch (grade) {
-            case 'SAHIH':
-                return 'bg-green-500/20 text-green-400 border-green-500/30';
-            case 'HASAN':
-                return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-            case 'DAIF':
-                return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-            case 'MAWDU':
-                return 'bg-red-500/20 text-red-400 border-red-500/30';
-            default:
-                return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-        }
-    };
 
     const [error, setError] = useState<string | null>(null);
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            setError(null);
-            const hadithId = await createHadith(formData);
-            setFormData({ title: '', primary_topic: '' });
-            setIsCreating(false);
-            router.refresh();
-            router.push(`/hadith/${hadithId}`);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to create hadith');
-        }
-    };
-
-    const handleRunAutoAnalysis = async (hadithId: string) => {
-        try {
-            await calculateAutoGrade(hadithId);
-            await calculateTransmissionType(hadithId);
-            router.refresh();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Auto-analysis failed');
-        }
-    };
 
     // ── Export ──
     const [showExport, setShowExport] = useState(false);
@@ -108,8 +67,6 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
         primary_topic: true,
         text_english: true,
         text_arabic: false,
-        display_grade: true,
-        transmission_type: false,
         tradition: true,
     });
     const [exportEdges, setExportEdges] = useState<Record<string, boolean>>({
@@ -120,7 +77,6 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
     });
     const [exportSchool, setExportSchool] = useState('');
     const [exportSource, setExportSource] = useState('');
-    const [exportGrade, setExportGrade] = useState('');
 
     const toggleField = (key: string) => setExportFields((prev) => ({ ...prev, [key]: !prev[key] }));
     const toggleEdge = (key: string) => setExportEdges((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -131,7 +87,6 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
             const config: ExportConfig = {
                 filters: {
                     source: exportSource || undefined,
-                    grade: exportGrade || undefined,
                     school: exportSchool || undefined,
                 },
                 fields: Object.entries(exportFields).filter(([, v]) => v).map(([k]) => k),
@@ -142,7 +97,6 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                 setError('No hadiths matched the selected filters.');
                 return;
             }
-            // Build CSV
             const headers = Object.keys(rows[0]);
             const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
             const csv = [
@@ -160,14 +114,14 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
         } finally {
             setIsExporting(false);
         }
-    }, [exportFields, exportEdges, exportSchool, exportSource, exportGrade]);
+    }, [exportFields, exportEdges, exportSchool, exportSource]);
 
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-white">Hadith Manager</h1>
-                    <p className="text-slate-400 mt-1">Manage Hadith entries and grading</p>
+                    <p className="text-slate-400 mt-1">Browse and export Hadith entries. Manual grading and authoring are paused pending a v2 grading-UX redesign.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button
@@ -178,58 +132,8 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                         <Download className="w-4 h-4 mr-2" />
                         Export CSV
                     </Button>
-                    <Button
-                        onClick={() => setIsCreating(true)}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Hadith
-                    </Button>
                 </div>
             </div>
-
-            {isCreating && (
-                <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
-                    <h2 className="text-xl font-semibold text-white mb-4">Create New Hadith</h2>
-                    <form onSubmit={handleCreate} className="space-y-4">
-                        <div>
-                            <Label htmlFor="title" className="text-slate-300">Title</Label>
-                            <Input
-                                id="title"
-                                value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                placeholder="e.g., Hadith of Jibril"
-                                required
-                                className="bg-slate-800 border-slate-700 text-white"
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="topic" className="text-slate-300">Primary Topic</Label>
-                            <Textarea
-                                id="topic"
-                                value={formData.primary_topic}
-                                onChange={(e) => setFormData({ ...formData, primary_topic: e.target.value })}
-                                placeholder="e.g., Pillars of Islam, Iman, Ihsan"
-                                required
-                                className="bg-slate-800 border-slate-700 text-white"
-                            />
-                        </div>
-                        <div className="flex gap-3">
-                            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                                Create
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsCreating(false)}
-                                className="border-slate-600 text-slate-300"
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </form>
-                </Card>
-            )}
 
             {showExport && (
                 <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
@@ -261,17 +165,6 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                         {getSourceFilterOptions().map((opt) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <Label className="text-xs text-slate-400">Grade</Label>
-                                    <select value={exportGrade} onChange={(e) => setExportGrade(e.target.value)}
-                                        className="w-full mt-1 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-sm">
-                                        <option value="">All Grades</option>
-                                        <option value="SAHIH">Sahih</option>
-                                        <option value="HASAN">Hasan</option>
-                                        <option value="DAIF">Daif</option>
-                                        <option value="MAWDU">Mawdu</option>
                                     </select>
                                 </div>
                             </div>
@@ -347,93 +240,82 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                         label: 'Source',
                         options: getSourceFilterOptions(),
                     },
-                    {
-                        key: 'grade',
-                        label: 'Grade',
-                        options: [
-                            { label: 'All Grades', value: '' },
-                            { label: 'Sahih', value: 'SAHIH' },
-                            { label: 'Hasan', value: 'HASAN' },
-                            { label: 'Daif', value: 'DAIF' },
-                            { label: 'Mawdu', value: 'MAWDU' },
-                        ],
-                    },
                 ]}
             />
 
             {/* Hadith List */}
             <div className="space-y-4">
-                {hadiths.map((hadith) => (
-                    <Card key={hadith.id} className="bg-slate-900 border-slate-700 p-6">
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-lg font-semibold text-white">{hadith.title}</h3>
-                                    {hadith.tradition && (
-                                        <Badge className={
-                                            hadith.tradition === 'Shia Imami'
-                                                ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                                                : hadith.tradition === 'Shia Zaydi'
-                                                    ? 'bg-violet-500/20 text-violet-400 border-violet-500/30'
-                                                    : hadith.tradition === 'Ibadi'
-                                                        ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-                                                        : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
-                                        }>
-                                            {hadith.tradition === 'Shia Imami' ? 'Twelver Shia'
-                                                : hadith.tradition === 'Shia Zaydi' ? 'Zaydi Shia'
-                                                : hadith.tradition}
-                                        </Badge>
+                {hadiths.map((hadith) => {
+                    // Prefer matn (prophetic narrative only) over text (full row incl. isnad).
+                    // matn_ar covers ~36% of rows; text_ar covers 100%, so this falls back gracefully.
+                    const matnAr = hadith.matn_ar || hadith.text_ar || hadith.text_arabic || '';
+                    const referenceParts = [
+                        hadith.source,
+                        hadith.hadith_no ? `#${hadith.hadith_no}` : null,
+                        hadith.chapter || hadith.primary_topic,
+                        hadith.volume ? `Vol. ${hadith.volume}` : null,
+                    ].filter(Boolean);
+
+                    return (
+                        <Card key={hadith.id} className="bg-slate-900 border-slate-700 p-6">
+                            <div className="flex items-start justify-between gap-6">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <h3 className="text-lg font-semibold text-white">{hadith.title}</h3>
+                                        {hadith.tradition && (
+                                            <Badge className={
+                                                hadith.tradition === 'Shia Imami'
+                                                    ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                                                    : hadith.tradition === 'Shia Zaydi'
+                                                        ? 'bg-violet-500/20 text-violet-400 border-violet-500/30'
+                                                        : hadith.tradition === 'Ibadi'
+                                                            ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                                                            : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
+                                            }>
+                                                {hadith.tradition === 'Shia Imami' ? 'Twelver Shia'
+                                                    : hadith.tradition === 'Shia Zaydi' ? 'Zaydi Shia'
+                                                    : hadith.tradition}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    {referenceParts.length > 0 && (
+                                        <p className="text-sm text-slate-400">
+                                            {referenceParts.map((part, i) => (
+                                                <span key={i}>
+                                                    {i > 0 && <span className="text-slate-600 mx-2">·</span>}
+                                                    <span className={i === 0 ? 'text-slate-300' : ''}>{part}</span>
+                                                </span>
+                                            ))}
+                                        </p>
                                     )}
-                                    {hadith.display_grade && (
-                                        <Badge className={getGradeBadgeColor(hadith.display_grade)}>
-                                            {hadith.display_grade}
-                                        </Badge>
-                                    )}
-                                    {hadith.transmission_type === 'MUTAWATIR' && (
-                                        <Badge className="bg-amber-500/20 text-amber-400">
-                                            Mutawatir
-                                        </Badge>
+                                    {matnAr && (
+                                        <p
+                                            dir="rtl"
+                                            lang="ar"
+                                            className="text-base text-slate-200 mt-3 line-clamp-2 leading-loose font-arabic"
+                                        >
+                                            {matnAr}
+                                        </p>
                                     )}
                                 </div>
-                                <p className="text-sm text-slate-400">
-                                    {hadith.source && <span className="text-slate-300">{hadith.source}</span>}
-                                    {hadith.source && hadith.primary_topic && ' — '}
-                                    {hadith.primary_topic}
-                                </p>
-                                {hadith.text_english && (
-                                    <p className="text-sm text-slate-300/80 mt-2 line-clamp-2 leading-relaxed">
-                                        {hadith.text_english}
-                                    </p>
-                                )}
-                            </div>
 
-                            <div className="flex gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleRunAutoAnalysis(hadith.id)}
-                                    className="border-slate-600 text-slate-300"
-                                >
-                                    <BarChart3 className="w-4 h-4 mr-2" />
-                                    Auto-Analysis
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    onClick={() => router.push(`/hadith/${hadith.id}`)}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                    View Details
-                                </Button>
+                                <div className="flex gap-2 shrink-0">
+                                    <Button
+                                        size="sm"
+                                        onClick={() => router.push(`/hadith/${hadith.id}`)}
+                                        className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                        View Details
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
-                    </Card>
-                ))}
+                        </Card>
+                    );
+                })}
 
                 {hadiths.length === 0 && (
                     <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
-                        <p className="text-center text-slate-400">
-                            No Hadiths yet. Click &ldquo;New Hadith&rdquo; to create one.
-                        </p>
+                        <p className="text-center text-slate-400">No hadiths match the current filters.</p>
                     </Card>
                 )}
 
