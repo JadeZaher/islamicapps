@@ -127,14 +127,12 @@ function sha256File(filePath: string): string {
 // The shape is otherwise identical. We adapt here in mode-fullregen, keeping
 // both read-only modules untouched.
 //
-// D also returns a flat { resolved, mentions, method } (no chain_index).
-// We wrap it in chain_index=0 since Tier-1 / Tier-2 produce one chain per row.
-// Multi-isnad hadiths with real chain_indx arrays go through buildTier1Resolution
-// which already handles multi-chain logic.
+// FR-2.2 (Phase 3, uniform_isnad_extraction_20260609): resolveNarrators now
+// returns one result per isnad branch (taḥwīl-aware). We map each branch
+// directly — the upstream `chain_index` is preserved.
 
 function adaptErResult(
-    erResult: { resolved: ErResolvedNarrator[]; mentions: ErNameMentionDraft[]; method: ErTier },
-    chainIndex: number
+    erResult: { resolved: ErResolvedNarrator[]; mentions: ErNameMentionDraft[]; method: ErTier; chain_index: number },
 ): NarratorResolutionResult {
     const adapted: ResolvedNarrator[] = erResult.resolved.map((r) => ({
         scholar_indx: r.scholar_indx,
@@ -159,7 +157,7 @@ function adaptErResult(
         resolved: adapted,
         mentions,
         method: erResult.method,
-        chain_index: chainIndex,
+        chain_index: erResult.chain_index,
     };
 }
 
@@ -386,6 +384,48 @@ export async function runModeFullregen(args: CliArgs): Promise<void> {
         `matched=${narratorResult.matched} errors=${narratorResult.errors}`
     );
 
+    // 9b. Global INCLUDES + NARRATED_FROM wipe.
+    //
+    // Why wipe both:
+    //   - INCLUDES: prior runs may have written LONGER chains (taḥwīl merge,
+    //     chain_indx=[hadith_no] garbage). MERGE preserves stale extras →
+    //     chain becomes union(old, new). Wipe → clean re-load.
+    //   - NARRATED_FROM: fresh-mode CREATE (used by loadChainsBatchFresh
+    //     below) doesn't dedupe across buffers. Without a global wipe we'd
+    //     accumulate duplicate (student,teacher) edges every fullregen.
+    //
+    // Brief window of no INCLUDES / NARRATED_FROM is acceptable inside one
+    // mutation pass; the row-stream re-creates them within minutes.
+    //
+    // Chunked apoc-free delete to stay under the 30s per-tx timeout on
+    // Railway. Count BEFORE delete (after DELETE the rel is gone).
+    async function wipeRelType(relType: 'INCLUDES' | 'NARRATED_FROM'): Promise<void> {
+        console.log(`\n[fullregen] Wiping :${relType} edges before re-load...`);
+        const before = await runQuery<{ n: number }>(
+            `MATCH ()-[r:${relType}]->() RETURN count(r) AS n`,
+        );
+        const beforeCount = before[0]?.n ?? 0;
+        console.log(`[fullregen]   :${relType} edges before wipe: ${beforeCount.toLocaleString()}`);
+        let totalDeleted = 0;
+        while (true) {
+            const deleted = await runWrite<{ n: number }>(
+                `MATCH ()-[r:${relType}]->()
+                 WITH r LIMIT 50000
+                 WITH collect(r) AS rs
+                 WITH rs, size(rs) AS n
+                 FOREACH (x IN rs | DELETE x)
+                 RETURN n AS n`,
+            );
+            const n = deleted[0]?.n ?? 0;
+            totalDeleted += n;
+            if (n === 0) break;
+            console.log(`[fullregen]   wiped ${totalDeleted.toLocaleString()} / ${beforeCount.toLocaleString()}`);
+        }
+        console.log(`[fullregen] :${relType} wipe complete (${totalDeleted.toLocaleString()} edges deleted).`);
+    }
+    await wipeRelType('INCLUDES');
+    await wipeRelType('NARRATED_FROM');
+
     // 10. Create JSONL logger.
     const logger = createRegenLogger('fullregen', dvId);
     const ctx: LoadContext = {
@@ -448,7 +488,11 @@ export async function runModeFullregen(args: CliArgs): Promise<void> {
         if (slice.length === 0) return;
         try {
             await loadHadithsBatch(slice, ctx, sourceCache);
-            const chainRes = await loadChainsBatch(slice, ctx);
+            // Use fresh-mode loader: global :INCLUDES wipe above leaves the DB
+            // chain-edge-clean, so CREATE is safe and bypasses MERGE's
+            // duplicate-scan against supernode narrators (Abu Hurayrah etc.).
+            // MERGE variant left in batch-loaders.ts for resume/incremental runs.
+            const chainRes = await loadChainsBatchFresh(slice, ctx);
             for (const ids of chainRes.chainIdsByRow.values()) chainLoaded += ids.length;
             const asmtRes = await loadAssessmentsBatch(slice, ctx);
             assessmentLoaded += asmtRes.real;
@@ -507,11 +551,11 @@ export async function runModeFullregen(args: CliArgs): Promise<void> {
                 chain_indx: '',
             };
             try {
-                const erResult = await resolveNarrators(
+                const erResults = await resolveNarrators(
                     erRow,
                     rawis as unknown as Map<number, import('./entity-resolution').RawiRecord>,
                 );
-                resolutions = [adaptErResult(erResult, 0)];
+                resolutions = erResults.map((r) => adaptErResult(r));
             } catch (err) {
                 errors++;
                 logger.write({ action: 'er_error', row: rowNum, error: String(err) });

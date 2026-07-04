@@ -1,0 +1,17 @@
+{
+  "id": "uniform_isnad_extraction_20260609",
+  "description": "Tahwil-aware uniform isnad extraction from text_ar / arabicText across all traditions, producing one :Chain per branch with shared post-convergence segments",
+  "type": "feature",
+  "created_at": "2026-06-09T00:00:00Z",
+  "status": "planned",
+  "priority": "P0",
+  "design_source": "conductor/tracks/uniform_isnad_extraction_20260609/spec.md",
+  "blocks": [
+    "narrator_enrichment_20260425",
+    "gds_setup_analytics_20260425",
+    "vector_embedding_pipeline_20260425"
+  ],
+  "depends_on": [
+    "neo4j_isnad_graph_regen_20260516"
+  ]
+}

@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python datasets/translate_ollama_generic.py --help)"
+      "Bash(python datasets/translate_ollama_generic.py --help)",
+      "Bash(PowerShell.exe -Command \"Stop-Process -Id 55248,131316,122272 -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Get-Process -Id 55248,131316,122272 -ErrorAction SilentlyContinue\")",
+      "Bash(:)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.StartTime -gt \\(Get-Date\\).AddHours\\(-2\\)} | Sort-Object CPU -Descending | Select-Object -First 5 Id, StartTime, @{N='CPU_min';E={[math]::Round\\($_.CPU/60,1\\)}}, @{N='MB';E={[math]::Round\\($_.WorkingSet/1MB,0\\)}} | Format-Table)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.StartTime -gt \\(Get-Date\\).AddHours\\(-8\\)} | Sort-Object CPU -Descending | Select-Object -First 5 Id, StartTime, @{N='CPU_min';E={[math]::Round\\($_.CPU/60,1\\)}}, @{N='MB';E={[math]::Round\\($_.WorkingSet/1MB,0\\)}} | Format-Table -AutoSize)",
+      "Bash(PYTHONIOENCODING=utf-8 npx tsx -e ' *)",
+      "Bash(disown)"
     ]
   }
 }

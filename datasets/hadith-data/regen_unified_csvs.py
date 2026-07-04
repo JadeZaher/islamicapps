@@ -484,24 +484,52 @@ def _extract_arabic_name(name_field: str) -> str:
     return arabic_parts.strip()
 
 
+# Phase-4 kunya alias support. Operate on raw (pre-_norm) Arabic surface so
+# both ابو/أبو and ابي/أبي variants are reachable; the caller _norm()s before
+# indexing (matches the existing build_narrator_index pattern).
+_KUNYA_PREFIXES = ("أبو", "أبي", "ابو", "ابي", "أم", "ام", "ابن", "بنت")
+
+
+def _extract_alias_segments(arabic_name: str) -> list[str]:
+    """Extract candidate kunya alias surfaces from a raw Arabic name.
+
+    Given an Arabic name like "أبو عوانة اليشكري وضاح بن خالد", return:
+      ["أبو عوانة", "أبو عوانة اليشكري"]
+
+    For "ابن عمر بن الخطاب":
+      ["ابن عمر", "ابن عمر بن"]   (caller dedupes via _norm)
+
+    Returns surfaces in their original Arabic surface form (NOT _norm'd; the
+    caller applies _norm before indexing). Intentionally narrow: only emits
+    aliases anchored on a kunya prefix token, with 1 or 2 following name
+    tokens. Wider windows would over-generate noise.
+
+    Aliases that map to ≥2 scholars are rejected by the caller's uniqueness
+    check; this function may emit ambiguous candidates without harm.
+    """
+    tokens = (arabic_name or "").split()
+    aliases: list[str] = []
+    for i, tok in enumerate(tokens):
+        if tok in _KUNYA_PREFIXES and i + 1 < len(tokens):
+            aliases.append(" ".join(tokens[i:i + 2]))
+            if i + 2 < len(tokens):
+                aliases.append(" ".join(tokens[i:i + 3]))
+    return aliases
+
+
 def build_narrator_index(all_rawis_path: str):
     """Load all_rawis.csv and return two lookup dicts:
         exact_index  : normalized_arabic_name → scholar_indx  (unique only)
         blocked_index: first 4 chars of normalized → [(scholar_indx, norm_name)]
 
-    The all_rawis `name` field is English with Arabic in parentheses.
-    Both the full normalized name AND the extracted Arabic portion are indexed
-    so that pure-Arabic surface forms from pure_canon chains can be resolved.
+    Indexes:
+      - the full mixed English+Arabic normalized name,
+      - the Arabic-only portion extracted from parentheses,
+      - and (Phase-4) kunya alias segments ("أبو X", "أبو X Y") — ONLY when the
+        alias maps to exactly one scholar across the entire lexicon. Ambiguous
+        aliases are deliberately left unresolved (FR-5.2 — no guessing).
 
-    This is the Tier-1 (exact) and Tier-2 (blocked) resolver from FR-0.9.
-    Intentionally side-effect-free so workstream D can import it.
-
-    Proposed reusable module: datasets/narrator_resolver.py
-    Signature:
-        build_narrator_index(all_rawis_path: str)
-            -> tuple[dict[str,str], dict[str,list[tuple[str,str]]]]
-        resolve_narrator(surface: str, exact_index, blocked_index)
-            -> str | None   # returns scholar_indx string or None
+    See `conductor/tracks/uniform_isnad_extraction_20260609/spec.md` §FR-5.
     """
     from classify_attribution import _norm  # noqa: PLC0415
 
@@ -523,6 +551,9 @@ def build_narrator_index(all_rawis_path: str):
         if entry not in block_list:
             block_list.append(entry)
 
+    # Phase-4: gather kunya alias candidates and only commit unique ones.
+    alias_candidates: dict[str, set[str]] = {}  # alias_norm -> set of indxs
+
     with open(all_rawis_path, encoding='utf-8', errors='replace') as f:
         for row in csv.DictReader(f):
             indx = row.get('scholar_indx', '').strip()
@@ -535,10 +566,32 @@ def build_narrator_index(all_rawis_path: str):
             arabic_name = _extract_arabic_name(name)
             if arabic_name:
                 _add(_norm(arabic_name), indx)
+                # Collect kunya alias candidates from this Arabic name
+                for alias in _extract_alias_segments(arabic_name):
+                    alias_norm = _norm(alias)
+                    if alias_norm:
+                        alias_candidates.setdefault(alias_norm, set()).add(indx)
 
-    # Remove ambiguous entries from exact_index
+    # Remove ambiguous full-name entries from exact_index
     for dn in dup_norms:
         exact_index.pop(dn, None)
+
+    # Commit kunya aliases ONLY when they map to exactly one scholar
+    # AND don't collide with an already-indexed canonical norm. The collision
+    # guard prevents an alias from overwriting a canonical mapping.
+    for alias_norm, indxs in alias_candidates.items():
+        if len(indxs) != 1:
+            continue
+        if alias_norm in exact_index:
+            continue  # canonical name already wins; don't shadow
+        indx = next(iter(indxs))
+        exact_index[alias_norm] = indx
+        # Also surface in blocked_index so Tier-2 prefix matching can see it
+        block = alias_norm[:4] if len(alias_norm) >= 4 else alias_norm
+        entry = (indx, alias_norm)
+        block_list = blocked_index.setdefault(block, [])
+        if entry not in block_list:
+            block_list.append(entry)
 
     return exact_index, blocked_index
 

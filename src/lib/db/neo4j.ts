@@ -99,10 +99,16 @@ export async function runQuery<T = any>(
     }
 }
 
-// 30s per-tx timeout so a stuck connection surfaces as a TransientError
+// Per-tx timeout so a stuck connection surfaces as a TransientError
 // instead of hanging the whole script. Long-running batches should be
 // chunked at the caller.
-const WRITE_TX_TIMEOUT_MS = 30_000;
+//
+// 2026-06-08: raised from 30s → 120s after probe showed UNWIND-500 INCLUDES
+// CREATE timing out at exactly 30s (= ~60ms/edge × 500). The Cypher itself
+// completes in ~40-60s; the lower bound was too tight for the realistic
+// batched workload and triggered per-batch retry-split storms in fullregen
+// that cost 60× throughput. 120s is comfortably above observed peak.
+const WRITE_TX_TIMEOUT_MS = 120_000;
 
 export async function runWrite<T = any>(
     query: string,

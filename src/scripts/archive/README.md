@@ -96,3 +96,29 @@ Diagnostic scripts (`check-traditions.ts`, `verify-db.ts`,
 `src/scripts/` for the moment — their checks will be folded into
 `db:regen --mode=test` (Phase 1 task 1.9) and they will be archived here at
 that point (task 1.10).
+
+---
+
+## 2026-06-10 addendum — chain-data ultrapilot batch probes
+
+**Archived by:** investigation flow that produced [`uniform_isnad_extraction_20260609`](../../../conductor/tracks/uniform_isnad_extraction_20260609/).
+**Policy:** same as above — preserved, not deleted; reversible via plain `mv` back to `src/scripts/`.
+
+| Archived file | Was used for | Why archived |
+|---|---|---|
+| `diagnose-chain-data-2.ts` | Drill-down probe (Chain-node property dump for Tirmidhi #1, sibling-Chain-sharing audit, supernode chain-source breakdown, position-gap detection) during the 2026-06-05 chain-data diagnostic. | One-off — superseded by `diagnose-chain-data.ts` at the same level (which stayed live as the FR-6.6 acceptance test for the new track). Its specific queries are documented in the new track's spec §2.2. |
+| `peek-tirmidhi-csv.ts` | Peek at raw CSV rows for a few specific Tirmidhi hadith ids (and an Imami sample) to confirm `chain_indx` shape before the W1/W3 patches. Uses the project's own `readUnifiedCsv` parser. | One-off — the row-shape facts it surfaced are now permanent in the new track's spec §2.1. Re-write in 30 seconds if needed; not worth keeping as a script. |
+| `probe-tirmidhi-text.ts` | Pull the live `sanad` / `text_ar` / `matn_ar` for the canary hadith `626a2cb0-…` during the 2026-06-09 retraction-of-conclusion exchange (the moment we realised the sidecar's truncated sanad was dropping post-convergence narrators). | Pure ad-hoc probe; its job is now done. The text-reading itself is folded into the new track's Phase 1 unit-test fixtures (`text_ar` for FR-1.3 case (a) is exactly this hadith). |
+
+### Promoted in the same batch (stayed in `src/scripts/`, renamed)
+
+These three were probe scripts originally but proved generally useful — renamed with permanent names:
+
+| Original | New name | Permanent purpose |
+|---|---|---|
+| `probe-chain-stats.ts` | [`report-chain-stats.ts`](../report-chain-stats.ts) | Per-source `:Chain` / `:INCLUDES` summary against the live Neo4j. Run as `npx tsx src/scripts/report-chain-stats.ts`. Useful as a quick state check during any chain-touching track. |
+| `probe-neo4j-batch.ts` | [`bench-neo4j-batch.ts`](../bench-neo4j-batch.ts) | Realistic-shape MERGE batch timing probe (4 stages: Hadith MERGE, Chain MERGE, HAS_CHAIN MERGE, INCLUDES CREATE). Originally identified the 2026-06-08 `WRITE_TX_TIMEOUT_MS` 30s ceiling as the cause of fullregen retry-storms. Run when investigating Neo4j-write latency regressions. |
+| `probe-neo4j-perf.ts` | [`bench-neo4j-latency.ts`](../bench-neo4j-latency.ts) | Single-MATCH + UNWIND-MATCH latency probe. Useful when triaging "is Railway slow today?" before tuning batch loaders. |
+| `probe-tirmidhi.ts` | [`verify-tirmidhi-fix.ts`](../verify-tirmidhi-fix.ts) | Canary check for the chain on hadith `626a2cb0-…` (Jami' al-Tirmidhi #1). Will be the smoke test for `uniform_isnad_extraction_20260609` guardrails G-1/G-2/G-3. |
+
+None of the 4 promoted scripts are wired into `package.json` — they're operator tools, run via `npx tsx`.

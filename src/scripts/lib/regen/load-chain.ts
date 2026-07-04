@@ -227,27 +227,33 @@ export async function loadChainForRow(
 
 /**
  * Convenience function for the common Tier-1 case: the row has chain_indx
- * already (array of scholar_indx values), so we skip entity resolution and
- * directly emit ResolvedNarrator objects.
+ * already (array of branches of scholar_indx values), so we skip entity
+ * resolution and directly emit ResolvedNarrator objects.
  *
- * Returns the NarratorResolutionResult array suitable for loadChainForRow().
+ * Returns one NarratorResolutionResult per branch (one per taḥwīl `ح`-split
+ * isnad). Single-branch rows (the common case) produce exactly one result
+ * with `chain_index: 0`, preserving backwards compatibility with pre-Phase-2
+ * CSVs.
+ *
+ * `position` is always position-within-branch (0-based, NOT a global running
+ * index across branches), so each branch's :INCLUDES edges carry the correct
+ * chain ordering and the per-branch :Chain node is internally consistent.
  */
 export function buildTier1Resolution(row: UnifiedRow): NarratorResolutionResult[] {
     if (row.chain_indx.length === 0) return [];
 
-    const resolved: ResolvedNarrator[] = row.chain_indx.map((idx, pos) => ({
-        scholar_indx: idx,
-        position: pos,
-        confidence: 1.0,
-        method: 'chain_indx_join',
-    }));
-
-    return [
-        {
+    return row.chain_indx.map((branch, branchIdx) => {
+        const resolved: ResolvedNarrator[] = branch.map((idx, posInBranch) => ({
+            scholar_indx: idx,
+            position: posInBranch,
+            confidence: 1.0,
+            method: 'chain_indx_join',
+        }));
+        return {
             resolved,
             mentions: [],
             method: 'chain_indx_join',
-            chain_index: 0,
-        },
-    ];
+            chain_index: branchIdx,
+        };
+    });
 }

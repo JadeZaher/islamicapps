@@ -73,9 +73,13 @@ export function csvNarratorFrequency(csvPath: string): NarratorFrequencyEntry[] 
         const rawChain = (fields[chainIdx] ?? '').trim();
         if (!rawChain) continue;
         const source = sourceIdx === -1 ? '' : (fields[sourceIdx] ?? '').trim();
+        // FR-2.2 (uniform_isnad_extraction_20260609): chain_indx may carry
+        // multiple isnad branches separated by `|`. For supernode frequency we
+        // simply count every narrator appearance across all branches, so the
+        // delimiter is dropped before splitting on `,`.
         const indices = rawChain
             .replace(/^\[|\]$/g, '')
-            .split(',')
+            .split(/[|,]/)
             .map((s) => parseInt(s.trim(), 10))
             .filter((n) => Number.isFinite(n));
         for (const idx of indices) {

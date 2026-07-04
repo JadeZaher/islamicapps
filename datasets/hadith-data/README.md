@@ -10,11 +10,13 @@ stored in subdirectories or archived under `archive/`.
 
 ### Active Files
 
-| File | Rows | Size | Description |
-|------|------|------|-------------|
-| `all_hadiths_clean.csv` | 34,441 | ~38 MB | Primary dataset: Sunni only (Kutub al-Sittah). Zaydi/Ibadi stripped pending quality validation. |
-| `all_hadiths_shia.csv` | ~33,817 | ~90 MB | Imami (Thaqalayn) dataset. Extended schema with grading fields. Not in git (too large). |
-| `all_hadiths_shia.csv.gz` | ~33,817 | ~16 MB | Compressed version of above for git storage. |
+**Gz-first convention.** The large derived CSVs listed below are stored as `.gz` in git (well under the 100 MB GitHub limit) and decompressed on demand by the pipeline. The plain `.csv` versions are **gitignored**; they're recreated on first read by `_ensure_csv_decompressed` in [`regen_unified_csvs.py`](./regen_unified_csvs.py) (Python) and `ensureCsvDecompressed` in [`src/scripts/lib/regen/io.ts`](../../src/scripts/lib/regen/io.ts) (TS). Cloning the repo and running any pipeline command "just works" — no manual unzip step required.
+
+| File | Rows | Plain size | .gz size | Description |
+|------|------|------|------|-------------|
+| `all_hadiths_unified.csv` | 99,283 | 172 MB | 32 MB | **Authoritative.** All traditions (Sunni 64k + Imami 33k + Ibadi 1k + Zaydi 698). Rebuilt by `python regen_unified_csvs.py`. Multi-isnad-ready (the `chain_indx` column will become `|`-delimited once the [`uniform_isnad_extraction_20260609`](../../conductor/tracks/uniform_isnad_extraction_20260609/) track ships). |
+| `all_hadiths_clean.csv` | 66,058 | 60 MB | 14 MB | Sunni + Ibadi + Zaydi view (no Imami). Derived from `all_hadiths_unified.csv`. |
+| `all_hadiths_shia.csv` | 34,927 | 95 MB | 18 MB | Imami + Rida + Ibadi + Zaydi view. Extended schema with grading fields. Derived from `all_hadiths_unified.csv` (and itself the input for Imami row loading via the Thaqalayn build at `shia-hadith/build_csv.py`). |
 
 ### Zaydi Sub-directory (`zaydi-hadith/`)
 

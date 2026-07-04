@@ -1,0 +1,22 @@
+{
+  "id": "tier2_llm_isnad_reconciliation_20260612",
+  "description": "Tier-2 LLM (Claude Sonnet 4.6) second-opinion pass that fires on suspicious Tier-1 isnad extraction output, with schema-validated tool_use JSON, hallucination guard against all_rawis.csv, never-silent-overwrite reconciliation, and a $50/run hard cost ceiling. Lifts the p25 Jaccard floor on K6 multi-branch hadiths.",
+  "type": "feature",
+  "created_at": "2026-06-12T00:00:00Z",
+  "status": "planned",
+  "priority": "P0",
+  "design_source": "conductor/tracks/tier2_llm_isnad_reconciliation_20260612/spec.md",
+  "research_basis": ".omc/research/uniform-isnad/research-session/report.md",
+  "depends_on": [
+    "uniform_isnad_extraction_20260609"
+  ],
+  "blocks": [
+    "uniform_isnad_extraction_20260609:phase-6b-rerun"
+  ],
+  "parallel_safe_with": [
+    "uniform_isnad_extraction_20260609:phase-4",
+    "uniform_isnad_extraction_20260609:phase-5",
+    "narrator_enrichment_20260425",
+    "gds_setup_analytics_20260425"
+  ]
+}

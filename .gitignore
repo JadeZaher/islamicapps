@@ -45,20 +45,24 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# Large CSV files (compressed .gz versions are tracked instead).
-# Match the consolidated unified CSV anywhere — it gets moved to archive/
-# during snapshots and the old top-level path was the only one listed before.
-datasets/hadith-data/unified_hadith_consolidated.csv
-**/unified_hadith_consolidated.csv
-datasets/hadith-data/all_hadiths_shia.csv
-
-# Large unified hadith CSVs (raw form exceeds GitHub's 100MB limit;
-# rebuilt locally from sources by datasets/hadith-data/regen_unified_csvs.py)
+# Large derived hadith CSVs — gz-first convention.
+# The `.gz` versions ARE committed (cloneable, well under GitHub's 100 MB
+# limit at ~13-32 MB each). The plain `.csv` versions are gitignored and
+# decompressed on demand by:
+#   - `_ensure_csv_decompressed` in datasets/hadith-data/regen_unified_csvs.py
+#   - `ensureCsvDecompressed` in src/scripts/lib/regen/io.ts
+# Anyone cloning the repo gets the data; the pipeline does the decompression
+# transparently on first run. See datasets/hadith-data/README.md for the
+# corresponding regen / source-of-truth notes.
 datasets/hadith-data/all_hadiths_unified.csv
-datasets/hadith-data/all_hadiths_unified.csv.gz
-datasets/hadith-data/all_hadiths_unified.csv.bak-*
+datasets/hadith-data/all_hadiths_shia.csv
 datasets/hadith-data/all_hadiths_clean.csv
-datasets/hadith-data/sunni_isnad.jsonl
+
+# Per-batch unified CSV backups (`.bak-<tag>-<ts>` snapshots created by the
+# regen pipeline before destructive rewrites). The most recent one is kept
+# on disk for safety; the rest live in
+# datasets/hadith-data/archive/unified-snapshots/.
+datasets/hadith-data/all_hadiths_unified.csv.bak-*
 
 # Logs (regen runs produce GB of these)
 logs/

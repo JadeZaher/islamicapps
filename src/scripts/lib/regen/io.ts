@@ -12,6 +12,25 @@
 
 import fs from 'fs';
 import path from 'path';
+import zlib from 'zlib';
+
+/**
+ * Gz-first dataset convention: large derived CSVs live as `.gz` in the repo
+ * (committed) and as plain `.csv` on disk (gitignored, decompressed on first
+ * read). If the plain CSV is missing but a sibling `.gz` exists, decompress
+ * it in place so downstream readers operate on the plain file as before.
+ *
+ * Mirrors `_ensure_csv_decompressed` in datasets/hadith-data/regen_unified_csvs.py.
+ */
+function ensureCsvDecompressed(filePath: string): void {
+    if (fs.existsSync(filePath)) return;
+    const gzPath = filePath + '.gz';
+    if (!fs.existsSync(gzPath)) return;
+    console.log(`[io] Decompressing ${path.basename(gzPath)}...`);
+    const gz = fs.readFileSync(gzPath);
+    const plain = zlib.gunzipSync(gz);
+    fs.writeFileSync(filePath, plain);
+}
 
 // ─── Shared types (canonical surface consumed by all regen modules) ──────────
 
@@ -38,8 +57,16 @@ export interface UnifiedRow {
     /** Narrator names in sanad field (free text, not yet resolved). */
     sanad: string;
     sanad_confidence: string;
-    /** Parsed numeric chain indices — may be empty. */
-    chain_indx: number[];
+    /**
+     * Parsed numeric chain indices, organized as branches.
+     *   outer array = isnad branches (one per taḥwīl `ح` split, single-branch rows produce one branch)
+     *   inner array = scholar_indx ints in chain order within that branch
+     *
+     * Empty when the CSV cell is empty / "[]". A flat legacy cell `"1,2,3"`
+     * still produces `[[1, 2, 3]]` (one branch), preserving backwards
+     * compatibility with pre-Phase-2 CSVs.
+     */
+    chain_indx: number[][];
     school: string;
     chain_type: string;
     attributed_to: string;
@@ -175,7 +202,7 @@ function splitCSVRecords(content: string): string[] {
     return rows;
 }
 
-function parseIndices(s: string): number[] {
+export function parseIndices(s: string): number[] {
     if (!s) return [];
     // Handle JSON-array form "[1,2,3]" as well as bare "1,2,3".
     const stripped = s.trim().replace(/^\[|\]$/g, '');
@@ -184,6 +211,43 @@ function parseIndices(s: string): number[] {
         .split(',')
         .map((t) => parseInt(t.trim(), 10))
         .filter((n) => !isNaN(n));
+}
+
+/**
+ * Parse the chain_indx CSV cell into branches.
+ *
+ * Format (FR-2.2, Phase 2 of uniform_isnad_extraction_20260609):
+ *   - Single branch (legacy):   "1,2,3"        -> [[1, 2, 3]]
+ *   - Multi-branch (taḥwīl ح):  "1,2,3|4,5,6"  -> [[1, 2, 3], [4, 5, 6]]
+ *   - Empty cell:               ""             -> []
+ *   - JSON-array legacy form:   "[1,2,3]"      -> [[1, 2, 3]]
+ *   - Invalid token:            skipped silently (matches parseIndices behavior)
+ *   - Empty inner branch:       discarded ("1||2" -> [[1], [2]])
+ *
+ * Branches are separated by `|`, narrators within a branch by `,`.
+ * `teachers_inds` and `students_inds` continue to use the flat `parseIndices`
+ * — they never use the `|` delimiter.
+ *
+ * @returns Array of branches; each branch is an array of scholar_indx ints
+ *          in chain order. Empty array when the cell is empty.
+ */
+export function parseChainIndices(s: string): number[][] {
+    if (!s) return [];
+    // Strip optional JSON-array wrapping at the outer level only
+    // (legacy "[1,2,3]" form). The pipe delimiter is never wrapped.
+    const trimmed = s.trim().replace(/^\[|\]$/g, '');
+    if (!trimmed) return [];
+    return trimmed
+        .split('|')
+        .map((branch) =>
+            branch
+                .split(',')
+                .map((t) => t.trim())
+                .filter((t) => t.length > 0)
+                .map((t) => parseInt(t, 10))
+                .filter((n) => !isNaN(n))
+        )
+        .filter((branch) => branch.length > 0);
 }
 
 function parseIntOrNull(s: string | undefined): number | null {
@@ -211,7 +275,7 @@ function mapUnifiedRow(raw: CSVRow): UnifiedRow {
         matn_en: s('matn_en'),
         sanad: s('sanad'),
         sanad_confidence: s('sanad_confidence'),
-        chain_indx: parseIndices(s('chain_indx')),
+        chain_indx: parseChainIndices(s('chain_indx')),
         school: s('school'),
         chain_type: s('chain_type'),
         attributed_to: s('attributed_to'),
@@ -234,6 +298,7 @@ function mapUnifiedRow(raw: CSVRow): UnifiedRow {
  * that naive line-splitting would corrupt. Tradition strings are canonicalized.
  */
 export async function* readUnifiedCsv(filePath: string): AsyncIterable<UnifiedRow> {
+    ensureCsvDecompressed(filePath);
     const content = fs.readFileSync(filePath, 'utf8');
     const rawRows = splitCSVRecords(content);
     const parser = new CSVParser();
@@ -276,6 +341,7 @@ function mapRawiRecord(raw: CSVRow): RawiRecord {
  * The file is small (~24k rows) and is used as a lookup table by all loaders.
  */
 export async function readAllRawis(filePath: string): Promise<Map<number, RawiRecord>> {
+    ensureCsvDecompressed(filePath);
     const content = fs.readFileSync(filePath, 'utf8');
     const rawRows = splitCSVRecords(content);
     const parser = new CSVParser();

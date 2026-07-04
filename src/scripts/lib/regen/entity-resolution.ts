@@ -133,30 +133,59 @@ export interface StagingRecord {
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
 /**
- * Parse chain_indx from a CSV field that may be:
- *   - a JSON array string: "[1,2,3]"
- *   - a comma-separated string: "1,2,3"
- *   - empty/null
+ * Parse chain_indx from a CSV field into a flat number[] (legacy helper).
+ *   - JSON array string:        "[1,2,3]"     -> [1, 2, 3]
+ *   - Comma-separated string:   "1,2,3"       -> [1, 2, 3]
+ *   - Multi-branch pipe string: "1,2,3|4,5,6" -> [1, 2, 3, 4, 5, 6]  (flattened)
+ *   - Empty/null:                              -> []
+ *
+ * Prefer `parseChainIndxBranches` for branch-aware downstream logic;
+ * this flat helper is kept for any caller that just needs a flat list
+ * of IDs (e.g., supernode tallies).
  */
 function parseChainIndx(raw: string | undefined): number[] {
+  return parseChainIndxBranches(raw).flat();
+}
+
+/**
+ * Parse chain_indx into branches (Phase 3 of uniform_isnad_extraction_20260609).
+ *   - Single branch (legacy):     "1,2,3"       -> [[1, 2, 3]]
+ *   - Multi-branch (taḥwīl ح):    "1,2,3|4,5,6" -> [[1, 2, 3], [4, 5, 6]]
+ *   - JSON array (legacy):        "[1,2,3]"     -> [[1, 2, 3]]
+ *   - Empty / "[]" / "nan":                     -> []
+ *
+ * Branches separated by `|`, narrators within branch by `,`.
+ * Invalid tokens and non-positive ints are silently dropped (matches the
+ * historical `parseChainIndx` contract: scholar_indx values must be > 0).
+ */
+function parseChainIndxBranches(raw: string | undefined): number[][] {
   if (!raw) return [];
   const trimmed = raw.trim();
   if (!trimmed || trimmed === '[]' || trimmed === 'nan') return [];
-  // Try JSON array first
+
+  // JSON-array legacy form: "[1,2,3]" — always single-branch.
   if (trimmed.startsWith('[')) {
     try {
       const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) return parsed.map(Number).filter(n => !isNaN(n) && n > 0);
+      if (Array.isArray(parsed)) {
+        const branch = parsed.map(Number).filter(n => !isNaN(n) && n > 0);
+        return branch.length > 0 ? [branch] : [];
+      }
     } catch {
-      // fall through
+      // fall through to delimited parsing
     }
   }
-  // Comma-separated fallback
+
   return trimmed
     .replace(/[\[\]]/g, '')
-    .split(',')
-    .map(s => parseInt(s.trim(), 10))
-    .filter(n => !isNaN(n) && n > 0);
+    .split('|')
+    .map(branch =>
+      branch
+        .split(',')
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => !isNaN(n) && n > 0)
+    )
+    .filter(branch => branch.length > 0);
 }
 
 /**
@@ -262,12 +291,31 @@ function appendToStaging(record: StagingRecord): void {
 // ─── Main export: resolveNarrators ────────────────────────────────────────────
 
 /**
+ * One resolution result returned by `resolveNarrators` per isnad branch.
+ * `chain_index` identifies which branch (0-based) this result belongs to —
+ * single-branch rows produce exactly one result with `chain_index: 0`.
+ */
+export interface ResolveNarratorsResult {
+  resolved: ResolvedNarrator[];
+  mentions: NameMentionDraft[];
+  method: ErTier;
+  chain_index: number;
+}
+
+/**
  * Resolve narrator identities for one unified CSV row.
  *
- * Returns:
+ * Returns an ARRAY of results — one per isnad branch (taḥwīl-aware).
+ *   - Single-branch rows: exactly one result with `chain_index: 0`.
+ *   - Multi-branch Tier-1 rows ("1,2,3|4,5,6"): one result per branch.
+ *   - Tier-2/3 paths (no chain_indx): one result with `chain_index: 0`
+ *     because the sanad text is parsed as a single token stream.
+ *
+ * Each result carries:
  *   resolved  — narrators successfully resolved to a scholar_indx.
  *   mentions  — unresolved names that become :NameMention nodes.
- *   method    — the dominant ErTier for this row.
+ *   method    — the dominant ErTier for this branch.
+ *   chain_index — 0-based branch index.
  *
  * INVARIANT: this function NEVER writes :RESOLVES_TO or :SAME_AS to Neo4j.
  * Tier-3 ambiguous candidates are written to datasets/hadith-data/er-staging.jsonl
@@ -276,9 +324,7 @@ function appendToStaging(record: StagingRecord): void {
 export async function resolveNarrators(
   row: UnifiedRow,
   rawis: Map<number, RawiRecord>,
-): Promise<{ resolved: ResolvedNarrator[]; mentions: NameMentionDraft[]; method: ErTier }> {
-  const resolved: ResolvedNarrator[] = [];
-  const mentions: NameMentionDraft[] = [];
+): Promise<ResolveNarratorsResult[]> {
   const tradition = String(row.tradition ?? '');
   const sourceRowId = String(
     row.dataset_row_id ?? `${row.source ?? ''}|${row.hadith_no ?? ''}`
@@ -290,38 +336,59 @@ export async function resolveNarrators(
   // chain_indx is a pre-resolved numeric ID array. Each ID maps directly to a
   // scholar_indx in all_rawis.csv.
   //
+  // FR-2.2 (Phase 2, uniform_isnad_extraction_20260609): chain_indx may now
+  // carry multiple branches separated by `|`. One :Chain / NarratorResolutionResult
+  // is emitted per branch, with `chain_index` = branch position.
+  //
   // Verified coverage targets:
   //   Sunni K6 ≥ 99% | Sunni classical ≥ 55% (after WS-A) | Imami ≥ 84%
   //   Ibadi = 0%      | Zaydi = 0%  (these go to Tier 2)
 
-  const chainIds = parseChainIndx(row.chain_indx as string | undefined);
+  const branches = parseChainIndxBranches(row.chain_indx as string | undefined);
 
-  if (chainIds.length > 0) {
-    let position = 0;
-    for (const id of chainIds) {
-      if (rawis.has(id)) {
-        resolved.push({
-          scholar_indx: id,
-          position,
-          confidence: 1.0,
-          extraction_method: 'chain_indx_join',
-        });
-      } else {
-        // chain_indx present but no matching scholar_indx → audit flag (spec FR-2.1)
-        // Emit as a NameMention so the isnad link is never silently dropped (FR-1.3).
-        mentions.push({
-          surface_form: `[chain_indx:${id}]`,
-          normalized_form: `[chain_indx:${id}]`,
-          position,
-        });
+  if (branches.length > 0) {
+    const tier1Results: ResolveNarratorsResult[] = [];
+    for (let branchIdx = 0; branchIdx < branches.length; branchIdx++) {
+      const branch = branches[branchIdx];
+      const branchResolved: ResolvedNarrator[] = [];
+      const branchMentions: NameMentionDraft[] = [];
+      let position = 0;
+      for (const id of branch) {
+        if (rawis.has(id)) {
+          branchResolved.push({
+            scholar_indx: id,
+            position,
+            confidence: 1.0,
+            extraction_method: 'chain_indx_join',
+          });
+        } else {
+          // chain_indx present but no matching scholar_indx → audit flag (spec FR-2.1)
+          // Emit as a NameMention so the isnad link is never silently dropped (FR-1.3).
+          branchMentions.push({
+            surface_form: `[chain_indx:${id}]`,
+            normalized_form: `[chain_indx:${id}]`,
+            position,
+          });
+        }
+        position++;
       }
-      position++;
+      tier1Results.push({
+        resolved: branchResolved,
+        mentions: branchMentions,
+        method: 'chain_indx_join',
+        chain_index: branchIdx,
+      });
     }
-    if (resolved.length > 0) {
-      return { resolved, mentions, method: 'chain_indx_join' };
+    const anyResolvedAcrossBranches = tier1Results.some(r => r.resolved.length > 0);
+    if (anyResolvedAcrossBranches) {
+      return tier1Results;
     }
-    // All IDs had no matching rawi — fall through to Tier 2.
+    // No branch matched any rawi — fall through to Tier 2 with the sanad text.
   }
+
+  // Single-result accumulators for the Tier-2/3 path.
+  const resolved: ResolvedNarrator[] = [];
+  const mentions: NameMentionDraft[] = [];
 
   // ── Tier 2: exact / blocked lexicon (FR-2.2) ──────────────────────────────
   //
@@ -335,12 +402,12 @@ export async function resolveNarrators(
   const isUnmeasuredStratum =
     tradition === 'Ibadi' ||
     tradition === 'Zaydi' ||
-    (tradition === 'Imami' && chainIds.length === 0);
+    (tradition === 'Imami' && branches.length === 0);
 
   const sanadText = String(row.sanad ?? '');
   if (!sanadText.trim()) {
     // No sanad text — matn-only; nothing to resolve.
-    return { resolved, mentions, method: 'lexicon_exact' };
+    return [{ resolved, mentions, method: 'lexicon_exact', chain_index: 0 }];
   }
 
   const nameTokens = splitSanadNames(sanadText);
@@ -503,5 +570,6 @@ export async function resolveNarrators(
       ? 'chain_indx_join'
       : 'regex_sanad';
 
-  return { resolved, mentions, method: effectiveMethod };
+  // Tier-2/3 path: single result (the sanad is parsed as one token stream).
+  return [{ resolved, mentions, method: effectiveMethod, chain_index: 0 }];
 }
