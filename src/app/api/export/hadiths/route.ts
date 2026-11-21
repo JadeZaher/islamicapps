@@ -22,7 +22,7 @@ const exportQuery = z.object({
 
 /** One RFC 4180 cell; a leading = + @ would run as a spreadsheet formula, so it is neutralised with a quote. */
 function csvCell(value: string): string {
-  const safe = /^[=+@\t\r]/.test(value) ? `'${value}` : value;
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
   return `"${safe.replace(/"/g, '""')}"`;
 }
 
