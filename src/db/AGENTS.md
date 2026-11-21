@@ -18,7 +18,7 @@ the rationale that code comments point to, plus every decision taken while imple
 | `schema/assessments.ts` | hadith_assessments, narrator_assessments, narrator_bios |
 | `schema/history.ts` | locations, historical_events, narrator_events, narrator_locations; `published_historical_events` declaration |
 | `schema/commentary.ts` | commentaries, commentary_hadiths, commentary_narrators |
-| `schema/comparative.ts` | religious_traditions, schools_of_thought, source_texts, cross_parallels, motif_tags, four link tables, parallel_research_runs |
+| `schema/comparative.ts` | religious_traditions, schools_of_thought, source_texts, cross_parallels, motif_tags, four link tables |
 | `client.ts` | The app's only client (server-only, lazy, globalThis-cached, max 5) |
 | `connection-options.ts` | `DATABASE_URL` check and TLS rule, shared by client, migrator and verify |
 | `migrate.ts` | Programmatic migrator (`npm run db:migrate`); the pre-deploy command bundles it to `migrate.mjs` |
@@ -102,8 +102,8 @@ Where the doc was ambiguous or contradicted the orchestrator brief, the stricter
 
 1. **Layout.** Schema files are flat in `src/db/schema/<domain>.ts` (orchestrator brief) instead of the doc's
    `schema/core/`; migrations stay in `drizzle/core` (doc). `narrator_bios` lives in `assessments.ts`,
-   `parallel_research_runs` in `comparative.ts`, `dataset_versions` and `curation_audit` in `operations.ts`.
-2. **Only the 41 launch tables are declared.** The doc says schema files for the 7 later tables exist from
+   `dataset_versions` and `curation_audit` in `operations.ts`.
+2. **Only the 40 launch tables are declared.** The doc says schema files for the 7 later tables exist from
    step 4, but declaring them would make drizzle-kit migrate them. Each later table (`translation_candidates`,
    `resolution_review_units`, `narrator_same_as`, `biographical_assertions`, `temporal_assertions`, `epochs`,
    `hadith_embeddings`) is declared together with its migration. No launch table has a foreign key into them.

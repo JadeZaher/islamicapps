@@ -510,7 +510,6 @@ window.ERD = [
     text religious_tradition_id FK
     text parallel_type
     text status
-    text research_run_id FK
     text source_translation_id FK
   }
   motif_tags {
@@ -547,7 +546,6 @@ window.ERD = [
   source_texts ||--o{ cross_parallels : cited
   religious_traditions ||--o{ cross_parallels : compares
   translations |o--o{ cross_parallels : read
-  parallel_research_runs |o--o{ cross_parallels : produced
   hadiths ||--o{ hadith_motif_tags : tagged
   motif_tags ||--o{ hadith_motif_tags : tags
   cross_parallels ||--o{ parallel_motif_tags : tagged
@@ -561,11 +559,10 @@ window.ERD = [
   {
     name: "Operations and vectors",
     owner: "operations",
-    blurb: "Load records, the curation audit trail, paid research runs and the derived hadith embeddings.",
+    blurb: "Load records, the curation audit trail and the derived hadith embeddings.",
     tables: [
       { name: "dataset_versions", purpose: "One row per load, with hashes, counts, release class and the current-version flag.", ships: "launch" },
       { name: "curation_audit", purpose: "Append-only record of every curated change, written in the same transaction.", ships: "launch" },
-      { name: "parallel_research_runs", purpose: "One row per paid research call so re-runs skip researched pairs and spend is visible.", ships: "launch" },
       { name: "hadith_embeddings", purpose: "Derived halfvec embeddings per hadith, model and input kind.", ships: "later" }
     ],
     mermaid: `erDiagram
@@ -586,15 +583,6 @@ window.ERD = [
     text entity_id
     jsonb after
   }
-  parallel_research_runs {
-    text id PK
-    text hadith_id FK
-    text faith_code
-    text effort
-    text outcome
-    text translation_id FK
-    text parallel_id FK
-  }
   hadith_embeddings {
     text hadith_id PK
     text model
@@ -604,9 +592,6 @@ window.ERD = [
     halfvec embedding
     text dataset_version_id FK
   }
-  hadiths ||--o{ parallel_research_runs : researched
-  translations |o--o{ parallel_research_runs : sent
-  cross_parallels |o--o{ parallel_research_runs : yields
   hadiths ||--o{ hadith_embeddings : embedded
   traditions ||--o{ hadith_embeddings : filters
   dataset_versions ||--o{ hadith_embeddings : loaded

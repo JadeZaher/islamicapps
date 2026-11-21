@@ -1,12 +1,10 @@
-/** Comparative-study tables (section 5.11): faiths, schools, source texts, parallels, motifs, research runs. */
+/** Comparative-study tables (section 5.11): faiths, schools, source texts, parallels, motifs. */
 import {
   index,
   integer,
   pgTable,
   text,
-  timestamp,
   uniqueIndex,
-  type PgTableExtraConfigValue,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { curationBookkeeping, isLive, linkBookkeeping, restrictForeignKey } from './columns';
@@ -18,7 +16,6 @@ import {
   motifCategoryEnum,
   parallelTypeEnum,
   recordOriginEnum,
-  researchOutcomeEnum,
   schoolCategoryEnum,
 } from './enums';
 import { locations } from './history';
@@ -117,16 +114,13 @@ export const crossParallels = pgTable(
     scholarlyAnalysis: text('scholarly_analysis'),
     origin: recordOriginEnum('origin').notNull(),
     status: curationStatusEnum('status').notNull(),
-    researchRunId: text('research_run_id'),
     ...curationBookkeeping(),
   },
-  // Return type annotated: cross_parallels and parallel_research_runs reference each other.
-  (table): PgTableExtraConfigValue[] => [
+  (table) => [
     restrictForeignKey('cross_parallels_hadith_id_fk', table.hadithId, hadiths.id),
     restrictForeignKey('cross_parallels_source_text_id_fk', table.sourceTextId, sourceTexts.id),
     restrictForeignKey('cross_parallels_religious_tradition_id_fk', table.religiousTraditionId, religiousTraditions.id),
     restrictForeignKey('cross_parallels_source_translation_id_fk', table.sourceTranslationId, translations.id),
-    restrictForeignKey('cross_parallels_research_run_id_fk', table.researchRunId, parallelResearchRuns.id),
     uniqueIndex('cross_parallels_live_pipeline_key_key').on(table.pipelineKey).where(isLive(table.retiredAt)),
     index('cross_parallels_hadith_id_idx').on(table.hadithId),
     index('cross_parallels_tradition_type_idx').on(table.religiousTraditionId, table.parallelType),
@@ -224,30 +218,5 @@ export const locationReligiousTraditions = pgTable(
       .on(table.locationId, table.religiousTraditionId)
       .where(isLive(table.retiredAt)),
     index('location_religious_traditions_religious_tradition_id_idx').on(table.religiousTraditionId),
-  ],
-);
-
-/** One row per paid research call (operations), so re-runs skip researched pairs and spend is visible. */
-export const parallelResearchRuns = pgTable(
-  'parallel_research_runs',
-  {
-    id: text('id').primaryKey(),
-    hadithId: text('hadith_id').notNull(),
-    faithCode: text('faith_code').notNull(),
-    effort: text('effort').notNull(),
-    outcome: researchOutcomeEnum('outcome').notNull(),
-    translationId: text('translation_id'),
-    parallelId: text('parallel_id'),
-    error: text('error'),
-    requestedBy: text('requested_by').notNull(),
-    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
-    finishedAt: timestamp('finished_at', { withTimezone: true }),
-  },
-  // Return type annotated: cross_parallels and parallel_research_runs reference each other.
-  (table): PgTableExtraConfigValue[] => [
-    restrictForeignKey('parallel_research_runs_hadith_id_fk', table.hadithId, hadiths.id),
-    restrictForeignKey('parallel_research_runs_translation_id_fk', table.translationId, translations.id),
-    restrictForeignKey('parallel_research_runs_parallel_id_fk', table.parallelId, crossParallels.id),
-    index('parallel_research_runs_hadith_faith_idx').on(table.hadithId, table.faithCode),
   ],
 );

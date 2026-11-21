@@ -12,13 +12,12 @@ Design: [../../../docs/architecture/data-architecture.md](../../../docs/architec
 
 ## Goal
 
-The open research route cannot spend money, and anonymous requests cannot
+Anonymous requests cannot
 reach any write on the production URL.
 
 ## Scope
 
-- **Step 0.5, no build:** remove or rotate `YOU_API_KEY` on the `islamicapps`
-  service; check you.com spend and request logs; inspect `NODE_CSV_URLS` and
+- **Step 0.5, no build:** inspect `NODE_CSV_URLS` and
   `RELATION_CSV_URLS` for embedded credentials; rotate the stray
   `OPENROUTER_KEY` and remove its line from the stale UTF-16 `.env`
   (section 10.3).
@@ -27,8 +26,7 @@ reach any write on the production URL.
   exist), then reconcile section 10 with it. Then `src/proxy.ts` (route gate,
   sign-in throttling, per-IP read rate limit), the named-curator cookie,
   `requireCurator()` as the first line of every current mutating action, zod
-  input, allowlists in the three comparative update actions, and auth plus
-  caps on the research route.
+  input, and allowlists in the three comparative update actions.
 
 ## Out of scope
 
@@ -41,8 +39,7 @@ reach any write on the production URL.
 - Containment actions recorded with dates (never secret values).
 - The inventory lists every writing `'use server'` export and route handler.
 - On the **production URL**: every inventoried action and route refuses an
-  anonymous request; the sixth failed sign-in in 15 minutes returns 429; the
-  research route rejects anonymous and over-cap calls.
+  anonymous request; the sixth failed sign-in in 15 minutes returns 429.
 - Flow tests drive the proxy gate and `requireCurator()` through the public
   seam, not mocks.
 
@@ -51,5 +48,4 @@ reach any write on the production URL.
 - Q14: named curators from step 1 (design assumes yes). The owner supplies
   curator names and passphrases.
 - Section 15 assumptions to confirm: `CURATOR_PASSPHRASES` and
-  `ADMIN_SESSION_SECRET` as names, research effort levels `lite` and
-  `standard`, 30 reads a minute per IP.
+  `ADMIN_SESSION_SECRET` as names, 30 reads a minute per IP.

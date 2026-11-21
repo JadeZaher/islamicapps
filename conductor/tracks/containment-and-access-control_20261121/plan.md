@@ -11,12 +11,10 @@ Track: `containment-and-access-control_20261121`. Spec: [./spec.md](./spec.md). 
 
 ## Phase 0 — Containment (step 0.5)
 
-- [ ] Remove or rotate `YOU_API_KEY` on the `islamicapps` service.
-- [ ] Check you.com spend and production request logs for abuse.
 - [ ] Inspect `NODE_CSV_URLS` and `RELATION_CSV_URLS` for embedded credentials.
 - [ ] Rotate `OPENROUTER_KEY`; remove the line from `.env`.
 
-Done when: the open research route cannot spend, recorded with dates (design section 10.3).
+Done when: no stray credentials remain in the service variables, recorded with dates (design section 10.3).
 
 ## Phase 1 — Inventory
 
@@ -37,7 +35,6 @@ Done when: local flow tests show anonymous requests refused and a signed-in cura
 
 - [ ] `requireCurator()` first in every inventoried action; zod input.
 - [ ] Allowlists in the three comparative update actions.
-- [ ] Research route: curator-only, fixed effort levels, caps (section 10.1).
 
 Done when: every inventory row is marked gated.
 

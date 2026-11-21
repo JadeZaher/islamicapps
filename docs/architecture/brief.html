@@ -147,7 +147,7 @@
           <tr><td>Extensions</td><td><span class="done">Enabled.</span> <code>vector</code> 0.8.7 for embeddings, <code>pg_trgm</code> for fuzzy Arabic and name search, <code>unaccent</code>.</td></tr>
           <tr><td>App connection</td><td><span class="done">Set.</span> The app's <code>DATABASE_URL</code> points at the database over the private network. The live site has not been redeployed and still reads Neo4j.</td></tr>
           <tr><td>Local connection</td><td><span class="done">Set.</span> <code>DATABASE_URL</code> in <code>.env.local</code>, over SSL.</td></tr>
-          <tr><td>Tables</td><td>Being created now from the design: 41 at launch, 7 more when their first feature ships.</td></tr>
+          <tr><td>Tables</td><td>Being created now from the design: 40 at launch, 7 more when their first feature ships.</td></tr>
           <tr><td>Memory tuning</td><td>Not applied yet. The database runs on defaults (128 MB shared buffers, 100 connections).</td></tr>
         </tbody>
       </table>
@@ -172,7 +172,7 @@
 
   <section id="erd">
     <h2>Schema diagrams</h2>
-    <p>48 tables in total. Each diagram shows a group of tables with their keys and most important columns. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets; <span class="tag curation">curation</span> tables are edited in the app.</p>
+    <p>47 tables in total. Each diagram shows a group of tables with their keys and most important columns. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets; <span class="tag curation">curation</span> tables are edited in the app.</p>
     <div id="domains"></div>
   </section>
 
@@ -220,7 +220,6 @@
     <h2>Order of work</h2>
     <ol class="steps">
       <li><span class="done">Done.</span> Working tree checkpointed on branch <code>refactor/postgres-drizzle</code>.</li>
-      <li><strong>Containment.</strong> The AI research endpoint can be called by anyone and spends a paid API key. Remove or rotate that key first.</li>
       <li><strong>Access control.</strong> Admin pages and every write action currently have no sign-in. Add a gate and named curators.</li>
       <li><span class="done">In progress.</span> <strong>Build fix.</strong> The current code does not compile (39 type errors), which is why the August deploy failed.</li>
       <li><span class="done">In progress.</span> <strong>Database foundation.</strong> Drizzle schema, client, and migrations applied to the Railway database.</li>

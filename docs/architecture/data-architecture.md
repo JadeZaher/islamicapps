@@ -149,7 +149,6 @@ the database "yours to manage".
 | App | `MIGRATOR_DATABASE_URL` | The `schema_owner` role's private URL. Read only by `migrate.mjs` in the pre-deploy command |
 | App | `CURATOR_PASSPHRASES` | One scrypt hash per named curator, as JSON `{name: hash}` (section 10). Name is a proposal |
 | App | `ADMIN_SESSION_SECRET` | Key for signing the curator cookie (section 10). Rotating it signs every curator out. Name is a proposal |
-| App | `YOU_API_KEY` | you.com Research API key for the comparative pipeline. Never copied into docs or pages |
 | App | `PORT` | Injected by Railway. The Dockerfile must stop setting `ENV PORT 3000`, and the domain target port (pinned to 8080 today) must match or auto-detect |
 | App | `HOSTNAME` | `0.0.0.0`, already in the Dockerfile |
 | App | `NEXT_TELEMETRY_DISABLED` | `1` |
@@ -386,8 +385,7 @@ src/db/
       commentary.ts            commentaries, commentary_hadiths, commentary_narrators
       comparative.ts           religious_traditions, schools_of_thought, source_texts, cross_parallels,
                                motif_tags, hadith_motif_tags, parallel_motif_tags,
-                               narrator_religious_traditions, location_religious_traditions,
-                               parallel_research_runs
+                               narrator_religious_traditions, location_religious_traditions
       audit.ts                 curation_audit
       vector.ts                hadith_embeddings (step 11)
       index.ts                 re-exports
@@ -403,7 +401,6 @@ src/db/
     location.ts
     commentary.ts
     comparative.ts             traditions, source texts, motif tags, parallels, stats
-    research.ts                research runs and the AI commit path
     curation.ts                surface decisions, absence dispositions, publish and status actions,
                                collection rights, network refresh
     export.ts                  streaming CSV export
@@ -420,7 +417,7 @@ src/db/
 src/lib/auth/
   session.ts                   sign and verify the curator cookie (Web Crypto HMAC)
   require-curator.ts           requireCurator(): returns the actor string (curator:<name>) or throws
-src/proxy.ts                   gates /admin and /api/comparative; sign-in throttling; per-IP rate limit
+src/proxy.ts                   gates /admin; sign-in throttling; per-IP rate limit
                                on read actions and search
 
 src/app/actions/
@@ -429,7 +426,6 @@ src/app/actions/
   curation/                    'use server' writes. First line of every function: await requireCurator()
 src/app/api/health/route.ts
 src/app/api/export/hadiths/route.ts      curator-only streaming CSV (replaces the exportHadiths action)
-src/app/api/comparative/research/route.ts curator-only, server-capped
 
 src/scripts/db/                operator entry points: load-bundle.ts, verify.ts, audit.ts,
                                export-neo4j-curation.ts (one-time), seed-*.ts, export-decisions.ts,
@@ -531,7 +527,7 @@ tables, is named below with its two writers.
 
 | Pipeline | Candidate | Curation | Derived | Operations |
 | --- | --- | --- | --- | --- |
-| `traditions`, `sources`, `collections`, `books`, `chapters`, `hadiths`, `translations`, `narrators`, `narrator_lexicon_profiles`, `narrator_aliases`, `narrator_teachers`, `chains`, `chain_mentions`, `hadith_assessments`, `bibliographic_works`, `editions`, `citations`, `biographical_assertions`, `temporal_assertions` | `translation_candidates`, `resolution_review_units` | `collection_rights`, `narrator_surface_decisions`, `chain_absence_dispositions`, `narrator_bios`, `narrator_same_as`, `narrator_assessments`, `locations`, `historical_events`, `epochs`, `narrator_events`, `narrator_locations`, `commentaries`, `commentary_hadiths`, `commentary_narrators`, `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | `narrator_transmissions` (materialized view), `hadith_embeddings`, and the derived columns listed below | `dataset_versions`, `curation_audit`, `parallel_research_runs` |
+| `traditions`, `sources`, `collections`, `books`, `chapters`, `hadiths`, `translations`, `narrators`, `narrator_lexicon_profiles`, `narrator_aliases`, `narrator_teachers`, `chains`, `chain_mentions`, `hadith_assessments`, `bibliographic_works`, `editions`, `citations`, `biographical_assertions`, `temporal_assertions` | `translation_candidates`, `resolution_review_units` | `collection_rights`, `narrator_surface_decisions`, `chain_absence_dispositions`, `narrator_bios`, `narrator_same_as`, `narrator_assessments`, `locations`, `historical_events`, `epochs`, `narrator_events`, `narrator_locations`, `commentaries`, `commentary_hadiths`, `commentary_narrators`, `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | `narrator_transmissions` (materialized view), `hadith_embeddings`, and the derived columns listed below | `dataset_versions`, `curation_audit` |
 
 **Derived columns on pipeline tables.** These are written by the loader and
 by `apply_decision(unit_id)`, and by nothing else:
@@ -749,7 +745,7 @@ reads over the TCP proxy are billed as egress.
   | Column | Type | Null | Meaning |
   | --- | --- | --- | --- |
   | `created_at` | timestamptz | not null, default `now()` | |
-  | `created_by` | text | not null | Actor: `curator:<name>`, or `system:seed`, `system:neo4j-migration`, `system:you-research` |
+  | `created_by` | text | not null | Actor: `curator:<name>`, or `system:seed`, `system:neo4j-migration` |
   | `updated_at` | timestamptz | not null, default `now()` | |
   | `updated_by` | text | not null | |
   | `retired_at` | timestamptz | null | Soft delete. "Delete" in the admin sets this |
@@ -799,7 +795,6 @@ reads over the TCP proxy are billed as egress.
 | `motif_category` | `ESCHATOLOGY`, `CREATION`, `PROPHETIC_STORIES`, `LEGAL`, `WISDOM`, `PERSIAN_INFLUENCE`, `COSMOLOGY` |
 | `school_category` | `SUNNI_THEOLOGICAL`, `SHIA_THEOLOGICAL`, `IBADI_THEOLOGICAL`, `SUNNI_MADHHAB`, `SHIA_MADHHAB` |
 | `record_origin` | `manual`, `seed`, `ai_research`, `neo4j_migration` |
-| `research_outcome` | `parallel_found`, `no_parallel`, `error` |
 
 The narrator verdict values are the Phase-0 vocabulary written in ASCII
 (`ṣadūq` becomes `saduq`, `lā_baʾsa_bihi` becomes `la_basa_bihi`). The mapper
@@ -964,7 +959,7 @@ The hash ties each row to the Arabic it rendered.
 
 **`translation_candidates`**: the 31,652 machine or unknown-provenance English
 rows. Read only by reviewer-mode queries; never by public pages, search, the
-research route or exports. Ships with reviewer mode (section 5.14).
+exports. Ships with reviewer mode (section 5.14).
 
 | Column | Type | Null | Notes |
 | --- | --- | --- | --- |
@@ -1504,10 +1499,10 @@ distinct from the four hadith `traditions`.
 | Column | Type | Null | Notes |
 | --- | --- | --- | --- |
 | `id` | text | PK | |
-| `name` | text | not null; unique where live | The AI commit path keys on this |
+| `name` | text | not null; unique where live | Natural key for the tradition |
 | `name_arabic`, `description`, `geographic_origin` | text | null | |
 | `geographic_heartlands` | text[] | not null, default `'{}'` | |
-| `research_faith_code` | text | null; unique where live | Links a row to the code-side faith registry (`faith-prompts.ts`, 16 faiths), for example `JUDAISM` |
+| `research_faith_code` | text | null; unique where live | Legacy code from the removed faith registry (for example `JUDAISM`), kept so migrated rows stay matchable |
 | + curation bookkeeping | | | |
 
 **`schools_of_thought`**: seeded taxonomy, ported from `seed-taxonomy.ts`.
@@ -1531,8 +1526,8 @@ distinct from the four hadith `traditions`.
 | `id` | text | PK | |
 | `religious_tradition_id` | text | not null | FK, restrict |
 | `title` | text | not null | |
-| `title_original`, `author`, `approximate_date_ce`, `description` | text | null | `description` holds the English quote on the AI commit path |
-| `canonical_reference` | text | null; unique where live | The AI commit path's idempotency key |
+| `title_original`, `author`, `approximate_date_ce`, `description` | text | null | `description` holds the English quote on migrated AI-found rows |
+| `canonical_reference` | text | null; unique where live | Natural key for the source text |
 | `origin` | record_origin | not null | |
 | + curation bookkeeping | | | |
 
@@ -1553,17 +1548,16 @@ be loaded.
 | `bound_arabic_sha256` | text | not null | The hadith's `arabic_sha256` when the parallel was made. `db:verify` lists parallels whose hadith Arabic has since changed |
 | `source_text_id` | text | not null | FK, restrict |
 | `religious_tradition_id` | text | not null | FK, restrict |
-| `parallel_type` | parallel_type | not null | The AI path's `NONE` is rejected, not stored |
+| `parallel_type` | parallel_type | not null | A `NONE` type is rejected, not stored |
 | `isra_iliyyat_status` | isra_iliyyat_status | not null, default `NONE` | Spelled as the code and UI spell it |
 | `confidence_level` | confidence_level | not null, default `MEDIUM` | |
-| `hadith_excerpt_en` | text | null | Holds the full English hadith text on the AI path, despite the name. Public reads return it only while the hadith's English is in `public_translations`; otherwise null |
-| `source_translation_id` | text | null | FK `translations`; the public English the research run read, if any |
-| `source_text_original` | text | null | Holds the citation string on the AI path, despite the name |
+| `hadith_excerpt_en` | text | null | Holds the full English hadith text on AI-found rows, despite the name. Public reads return it only while the hadith's English is in `public_translations`; otherwise null |
+| `source_translation_id` | text | null | FK `translations`; the public English the parallel was matched against, if any |
+| `source_text_original` | text | null | Holds the citation string on AI-found rows, despite the name |
 | `source_text_en` | text | null | |
 | `scholarly_analysis` | text | null | Markdown with citations, can be several KB |
 | `origin` | record_origin | not null | |
 | `status` | curation_status | not null | Default `proposed` for `ai_research`, `published` for `manual` (assumption pending section 14, question 6). Changed only by `publishParallel` |
-| `research_run_id` | text | null | FK `parallel_research_runs` |
 | + curation bookkeeping | | | |
 
 The `status` column is the review gate the old conductor track planned as a
@@ -1582,23 +1576,6 @@ the pair where live):
 | `parallel_motif_tags` | (`parallel_id`, `motif_tag_id`) |
 | `narrator_religious_traditions` | (`narrator_id`, `religious_tradition_id`) |
 | `location_religious_traditions` | (`location_id`, `religious_tradition_id`) |
-
-**`parallel_research_runs`** (operations): one row per paid research call, so
-re-runs can skip pairs already researched and spend is visible.
-
-| Column | Type | Null | Notes |
-| --- | --- | --- | --- |
-| `id` | text | PK | |
-| `hadith_id` | text | not null | FK `hadiths` |
-| `faith_code` | text | not null | |
-| `effort` | text | not null | `lite`, `standard`, `deep` or `exhaustive` |
-| `outcome` | research_outcome | not null | `no_parallel` and `error` are now recorded too |
-| `translation_id` | text | null | FK `translations`; the public English sent to the research API. Never a candidate |
-| `parallel_id` | text | null | FK `cross_parallels` |
-| `error` | text | null | |
-| `requested_by` | text | not null | Actor |
-| `started_at` | timestamptz | not null | |
-| `finished_at` | timestamptz | null | |
 
 ### 5.12 Audit (operations)
 
@@ -1657,14 +1634,14 @@ migrated, mapped and verified before it is needed.
 | Evidence | 5 | `bibliographic_works`, `editions`, `citations` | `biographical_assertions`, `temporal_assertions` (first claims in `evidence_curation.json`) |
 | History | 5, plus 1 view | `locations`, `historical_events`, `narrator_events`, `narrator_locations`; `published_historical_events` | `epochs` (first epoch writer) |
 | Commentary | 3 | `commentaries`, `commentary_hadiths`, `commentary_narrators` | |
-| Comparative | 10 | `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions`, `parallel_research_runs` | |
+| Comparative | 9 | `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | |
 | Operations | 2 | `dataset_versions`, `curation_audit` | |
 | Vector | 1 | | `hadith_embeddings` (step 11) |
-| **Total** | **48** | **41** | **7** |
+| **Total** | **47** | **40** | **7** |
 
 Plus the public views in section 11.3.
 
-### 5.15 Contribution system (planned, not in the 48)
+### 5.15 Contribution system (planned, not in the 47)
 
 The Open Scholarly Contribution System plan (`Open_Scholarly_Contribution_System_Plan.docx`,
 March 2026) describes contributor profiles, five roles, eight contribution
@@ -1800,9 +1777,8 @@ Primary keys and unique constraints listed in section 5 are not repeated.
 | `cross_parallels` | (`hadith_id`); (`religious_tradition_id`, `parallel_type`); (`created_at` desc) | Parallels per hadith, stats, admin pagination |
 | `source_texts` | (`religious_tradition_id`) | |
 | `motif_tags` | (`category`) | |
-| Curation tables with a natural key (`religious_traditions.name`, `research_faith_code`, `schools_of_thought.name`, `motif_tags.name`, `source_texts.canonical_reference`, `cross_parallels.pipeline_key`) | unique `where retired_at is null` | Re-creating a retired row works; the AI commit path's `on conflict` names these partial indexes, so it never attaches to a retired row |
+| Curation tables with a natural key (`religious_traditions.name`, `research_faith_code`, `schools_of_thought.name`, `motif_tags.name`, `source_texts.canonical_reference`, `cross_parallels.pipeline_key`) | unique `where retired_at is null` | Re-creating a retired row works; the commit path's `on conflict` names these partial indexes, so it never attaches to a retired row |
 | Link tables | unique on the linked pair `where retired_at is null`; the second column of the pair | Live uniqueness; reverse lookups |
-| `parallel_research_runs` | (`hadith_id`, `faith_code`) | Skip already-researched pairs |
 | `curation_audit` | (`entity_type`, `entity_id`, `occurred_at` desc) | History of one record |
 
 Pipeline indexes do not filter on `retired_at`; retired pipeline rows are rare
@@ -1976,8 +1952,6 @@ cheap and otherwise deleted (section 13).
 | `linkNarratorToTradition`, `unlinkNarratorFromTradition` | `narrator_religious_traditions` |
 | `getTraditionConnectionsForNarrator` | `narrator_religious_traditions`; `public_chain_links` to `public_hadiths` to published `cross_parallels`, `source_texts`, `religious_traditions` |
 | `linkLocationToTradition` | `location_religious_traditions` |
-| AI commit path (`neo4j-commit.ts`, renamed `commit-parallel.ts`) | `religious_traditions`, `source_texts`, `cross_parallels`, `motif_tags`, `parallel_motif_tags`, `parallel_research_runs`, one transaction. `on conflict` names the partial unique indexes (section 7.1) |
-| `POST /api/comparative/research` | `public_hadiths` joined to `public_translations` (keyset by `id`), plus the commit path. It never reads `translation_candidates`; it records the `translation_id` it sent on `parallel_research_runs` and `cross_parallels.source_translation_id` |
 
 The three update actions that interpolated object keys into Cypher become
 typed column allowlists, which removes that injection class.
@@ -2023,7 +1997,7 @@ code against these signatures.
 Today there is no authentication anywhere: no `proxy.ts` or `middleware.ts`,
 no guard in `src/app/admin/layout.tsx`, and about 29 mutating server actions
 callable anonymously, including a Cypher injection in three comparative update
-actions and an unauthenticated route that spends the server's you.com key.
+actions.
 This section adopts the security finding's recommendation. The findings file
 `08-security-auth.md` does not exist anywhere under `.omc/`, so the counts
 above (about 29 anonymous mutating actions, three injectable actions) are
@@ -2039,10 +2013,9 @@ reconciled with it before any gate is written.
 | Writes need a named curator | Each curator has a name and a passphrase; `CURATOR_PASSPHRASES` holds `{name: scrypt hash}`. Signing in sets an httpOnly, Secure, SameSite=Strict cookie whose value is `{curator name, expiry}` signed with HMAC-SHA256 using `ADMIN_SESSION_SECRET`. Lifetime 12 hours. No users table |
 | Sign-in throttling | 5 failed attempts per IP per 15 minutes, then 429, in `src/proxy.ts` |
 | Revocation | Remove the curator's entry and rotate `ADMIN_SESSION_SECRET`; every session ends. Documented in `src/lib/auth/AGENTS.md` |
-| Route gate | `src/proxy.ts` with matcher `/admin/:path*` and `/api/comparative/:path*`, excluding the sign-in page. It verifies the cookie with Web Crypto and redirects or returns 401 |
+| Route gate | `src/proxy.ts` with matcher `/admin/:path*`, excluding the sign-in page. It verifies the cookie with Web Crypto and redirects or returns 401 |
 | Action gate | `requireCurator()` is the first line of every function in `src/app/actions/curation/`. The proxy alone is not enough because server actions are POST endpoints reachable from any page |
 | Input validation | zod schema per action; enum values validated against the Postgres enums |
-| Research route | Curator-only. The server fixes the allowed effort levels (assumption: `lite` and `standard`), caps faiths and batch size, enforces a minimum delay, and records every call in `parallel_research_runs`. Batches longer than a request should run from the operator CLI, not the route |
 | Export | Curator-only route; the anonymous 10,000-row export and the unbounded network read stop being scrape amplifiers |
 | Headers | `X-Robots-Tag: noindex` on `/admin`; standard security headers |
 | Admin chrome | The hard-coded "Neo4j Connected" status in the admin layout is removed |
@@ -2055,7 +2028,7 @@ reconciled with it before any gate is written.
   `reviewer` on decisions and same-as rows is stamped from the session actor;
   client input can supply only `attributed_scholar`.
 - System writers use fixed actors: `system:seed`, `system:neo4j-migration`,
-  `system:you-research`, `system:loader`, `system:owner` (for
+  `system:loader`, `system:owner` (for
   `db:approve-preview`).
 - Every curated write sets `created_by` or `updated_by` and inserts a
   `curation_audit` row with before and after images, in the same transaction.
@@ -2067,11 +2040,8 @@ reconciled with it before any gate is written.
 - **Containment now, before any build (step 0.5).** The deploy pipeline is
   broken (the last successful deploy was 2026-07-22; the 2026-08-18 build
   failed), so the step 1 code cannot reach production until step 2 lands.
-  Meanwhile remove or rotate `YOU_API_KEY` on the `islamicapps` service, so
-  the open research route cannot spend. Inspect `NODE_CSV_URLS` and
+  Meanwhile inspect `NODE_CSV_URLS` and
   `RELATION_CSV_URLS` for embedded credentials.
-- Check you.com spend and production request logs for abuse, because the
-  research route has been open.
 - Because curated data in Neo4j had no audit trail and was writable
   anonymously, treat it as possibly tampered with until cutover. The one-time
   export compares seeded events and locations with their seed definitions and
@@ -2157,7 +2127,7 @@ load if any is false. `npm run db:verify` runs the same checks on demand.
 | No live `narrator_surface_decisions` row lacks a reviewer and time; no `derived_relation` decision has the coarse scope | G-5; derived identity depends on the student |
 | Contiguous positions in every chain: positions 0 to `length - 1` | Bundle chain-integrity gate |
 | No row in `public_translations` has `quality_status <> 'complete'`, a hash that differs from its hadith's, or a state outside the policy | Translation release gate |
-| No `cross_parallels` row's `source_translation_id` points outside `translations`, and no `parallel_research_runs` row points at a candidate | Candidate isolation |
+| No `cross_parallels` row's `source_translation_id` points outside `translations` | Candidate isolation |
 | No `hadith_assessments` row with a placeholder grade | No placeholders |
 | No published narrator verdict, bio or event whose citation is missing, retired or unreviewed | Check constraints plus section 5.8; verified again |
 | No published event that fails the gate | Enforced by check constraint; verified again |
@@ -2187,8 +2157,8 @@ for its done-when. Step 3 is independent of everything else.
 | Step | Work | Done when |
 | --- | --- | --- |
 | 0 | The working tree is checkpointed at `af2f90b` on `refactor/postgres-drizzle`; everything removed later is recoverable from git | Done |
-| 0.5 | **Containment, no build needed.** Remove or rotate `YOU_API_KEY` on the `islamicapps` service; check you.com spend; inspect the `*_CSV_URLS` variables; rotate the stray `OPENROUTER_KEY` | The open research route cannot spend |
-| 1 | **Security.** First, the checked-in inventory of mutating actions and routes (section 10). Then `proxy.ts` (route gate, sign-in throttling, read rate limit), the named-curator cookie, `requireCurator()` in every current mutating action, zod input, allowlists in the three comparative update actions, auth and caps on the research route | Verified on the **production URL** (after step 2): anonymous requests cannot reach any write |
+| 0.5 | **Containment, no build needed.** Inspect the `*_CSV_URLS` variables; rotate the stray `OPENROUTER_KEY` | No stray credentials remain in the service variables |
+| 1 | **Security.** First, the checked-in inventory of mutating actions and routes (section 10). Then `proxy.ts` (route gate, sign-in throttling, read rate limit), the named-curator cookie, `requireCurator()` in every current mutating action, zod input, allowlists in the three comparative update actions | Verified on the **production URL** (after step 2): anonymous requests cannot reach any write |
 | 2 | **Build fix and delete-now inventory** (section 13.1); exclude `src/scripts` from `tsconfig.json`; add `railway.json`; fix the Dockerfile port; get the real build log of the failed deploy | `next build` succeeds in the image and a deploy goes live |
 | 3 | **Data-gap jobs** J1 to J9 from finding 07, which write only new files under `datasets/hadith-data/diagnostics/` | Their outputs exist; J9 gives the owner the per-row picture |
 | 4 | Start the local `pgvector/pgvector:pg18` container; apply `roles.sql`. Add `drizzle-orm`, `drizzle-kit`, `postgres`, `zod`, `server-only`. Write the schema in section 5 (launch tables only, section 5.14), generate `drizzle/core`, hand-write the extension, view, function and partial-index migrations | `db:migrate` runs cleanly on the local container as `schema_owner` |
@@ -2246,22 +2216,18 @@ they are the source of every rebuild.
 | Item | Port to |
 | --- | --- |
 | `src/app/actions/graph-actions.ts`, `comparative-actions.ts` | `src/db/queries/*` plus thin actions in `src/app/actions/{read,curation}/` |
-| `src/app/api/comparative/research/route.ts` (probably broken today: invalid Cypher `??`, unwrapped SKIP and LIMIT) | Rewrite against queries, with auth and caps |
-| `src/lib/comparative/neo4j-commit.ts` | `commit-parallel.ts`, one transaction |
 | `src/lib/pagination.ts` | Plain numbers; a finite-number guard for `?page=` |
 | `src/lib/db/AGENTS.md` invariants (publish gate, assertion and citation model, no overlap edges) | `src/db/AGENTS.md` |
 | `seed-historical-data.ts` (1,034 lines of curated events), `seed-narrator-bios-phase0.ts` (irreplaceable hand-written bios), `seed-taxonomy.ts` | `src/scripts/db/seed-*.ts` writing curation tables with actor `system:seed` |
 | `audit-graph.ts`, `verify-regen-acceptance.ts` | `db:audit`, `db:verify` |
 | `data-readiness-audit.ts` (embedding half only) | Vector readiness check |
-| `find-parallels.ts` (uses stale v1 property names), `ingest-er-approved.ts` (low priority; its `source_row_id` match never worked) | Drizzle queries; ER ingest becomes decisions in `narrator_surface_decisions` |
+| `ingest-er-approved.ts` (low priority; its `source_row_id` match never worked) | Drizzle queries; ER ingest becomes decisions in `narrator_surface_decisions` |
 | Pure logic: `assessTemporalPlausibility`, `schemeForTradition`, `parseGradingsFull`, the ER tier enum, `io.ts` CSV and chain parsing, the curated release-gate preflight and its DB-free test | Kept as pure modules with table-driven tests |
 | Duplicated Arabic `norm()` in `name-mention.ts` | Removed; `classify-attribution.ts` is the one copy |
 
 ### 13.4 Keep
 
-`src/scripts/lib/env.ts`, `build-credits.ts`, `types/parallel-candidate.ts`,
-`classify-attribution.ts` and its parity test, the comparative pipeline,
-faith prompts and you.com client, `src/scripts/archive/`, the Python pipeline
+`src/scripts/lib/env.ts`, `build-credits.ts`, `classify-attribution.ts` and its parity test, `src/scripts/archive/`, the Python pipeline
 and the Neo4j-format bundle exporter and validator (now a source format).
 
 ### 13.5 Stale documentation to rewrite
@@ -2311,7 +2277,7 @@ Each needs checking by whoever implements the part it touches.
 | `hadiths.chapter_title` and `chapter_no` are needed beside `chapter_id` because the structure nodes cover fewer rows | Compare with `_structure_nodes` in `export_bundle.py` |
 | The unified CSV carries `source_display_label` per row, including the legacy ambiguous labels | Read the header before writing the projection; if absent, the ambiguous filter options are removed instead |
 | The database is the system of record for identity decisions, exported to JSONL for the Python side | Owner |
-| `CURATOR_PASSPHRASES` and `ADMIN_SESSION_SECRET` as names; allowed research effort levels `lite` and `standard`; 30 read requests a minute per IP | The step 1 inventory |
+| `CURATOR_PASSPHRASES` and `ADMIN_SESSION_SECRET` as names; 30 read requests a minute per IP | The step 1 inventory |
 | The drizzle-orm 0.45.4 migrator wraps pending migrations in one transaction, so concurrent index builds cannot be migrations | drizzle-orm source |
 | Local database name `islamicapps`; local pgvector container on port 5442 | Local machine |
 | A 7-day observation period before removing Neo4j | Owner |

@@ -17,7 +17,7 @@ import postgres from 'postgres';
 import { connectionOptions, requireDatabaseUrl } from './connection-options';
 import * as schema from './schema';
 
-const EXPECTED_TABLE_COUNT = 41;
+const EXPECTED_TABLE_COUNT = 40;
 const EXPECTED_VIEW_COUNT = 5;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];

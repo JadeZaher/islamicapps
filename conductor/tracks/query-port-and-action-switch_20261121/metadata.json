@@ -36,7 +36,6 @@
         "path": "src/app/api/export/**",
         "status": "future"
       },
-      "src/app/api/comparative/**",
       "src/lib/comparative/**",
       "eslint.config.mjs",
       "src/scripts/__tests__/**",
@@ -56,7 +55,7 @@
     },
     "tripwires": [
       "The section 9.4 UI files belong to ui-polish lanes B, C and D; phase 6 starts only after those lanes close.",
-      "src/app/actions/** and src/app/api/comparative/** are owned by containment first; start after containment phase 3."
+      "src/app/actions/** is owned by containment first; start after containment phase 3."
     ]
   },
   "depends_note": "ui-polish only for phase 6 (UI co-changes). containment for requireCurator()."

@@ -85,7 +85,7 @@ useful:
 - **`regen-isnad-graph.ts`** — `npm run db:regen` (the unified runner)
 - **`remediate-legacy-scalar-assessment.ts`** — `npm run db:remediate-legacy-assessment`
 - **`seed-historical-data.ts`** — `npm run db:seed-history`
-- **`find-parallels.ts`** / **`ingest-approved-parallels.ts`** — comparative track
+- **`ingest-approved-parallels.ts`** — comparative track
 - **`link-sanad-chains.ts`** — `npm run db:link-sanads`
 - **`backup-db.ts`** — DB backup utility
 - **`audit-graph.ts`** — `npm run db:audit` (the generic Neo4j diagnostic that

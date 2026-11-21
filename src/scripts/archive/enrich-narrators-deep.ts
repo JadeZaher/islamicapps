@@ -5,14 +5,12 @@
  * ========================
  * Phase 1: Infer tradition from graph (HEARD_FROM neighbors)
  * Phase 2: Extract geographic_region from name nisbas
- * Phase 3: Use you.com Research API for death_year + remaining gaps
  *
- * Usage: npx tsx src/scripts/enrich-narrators-deep.ts [--phase 1|2|3] [--limit N] [--dry-run]
+ * Usage: npx tsx src/scripts/enrich-narrators-deep.ts [--phase 1|2] [--limit N] [--dry-run]
  */
 
 import { loadEnv } from './lib/env';
 import { runQuery, runWrite, closeDriver } from '../lib/db/neo4j';
-import { callYouResearch } from '../lib/comparative/you-research-client';
 
 loadEnv();
 
@@ -253,165 +251,6 @@ async function phase2_nisbaExtraction(dryRun: boolean) {
     console.log(`Remaining without region: ${Number(remaining[0]?.count ?? 0)}`);
 }
 
-// ─── PHASE 3: you.com Research API enrichment ───────────────────────────────
-
-interface NarratorGap {
-    id: string;
-    scholar_indx: number;
-    name_english: string;
-    name_arabic: string | null;
-    needs_death_year: boolean;
-    needs_birth_year: boolean;
-    needs_region: boolean;
-    needs_tradition: boolean;
-}
-
-async function phase3_youApiEnrichment(limit: number, dryRun: boolean) {
-    console.log('\n========================================');
-    console.log('  PHASE 3: you.com API Enrichment');
-    console.log('========================================\n');
-
-    const apiKey = process.env.YOU_API_KEY;
-    if (!apiKey) {
-        console.error('ERROR: YOU_API_KEY not set in .env.local');
-        return;
-    }
-
-    // Find narrators needing enrichment, prioritize by how many gaps they have
-    const gaps = await runQuery<NarratorGap>(`
-        MATCH (n:Narrator)
-        WHERE n.death_year_hijri IS NULL
-           OR n.geographic_region IS NULL OR n.geographic_region = ''
-        RETURN n.id AS id,
-               n.scholar_indx AS scholar_indx,
-               n.name_english AS name_english,
-               n.name_arabic AS name_arabic,
-               CASE WHEN n.death_year_hijri IS NULL THEN true ELSE false END AS needs_death_year,
-               CASE WHEN n.birth_year_hijri IS NULL THEN true ELSE false END AS needs_birth_year,
-               CASE WHEN n.geographic_region IS NULL OR n.geographic_region = '' THEN true ELSE false END AS needs_region,
-               CASE WHEN n.tradition IS NULL OR n.tradition = '' THEN true ELSE false END AS needs_tradition
-        ORDER BY (CASE WHEN n.death_year_hijri IS NULL THEN 1 ELSE 0 END +
-                  CASE WHEN n.geographic_region IS NULL OR n.geographic_region = '' THEN 1 ELSE 0 END) DESC
-    `);
-
-    const toProcess = limit > 0 ? gaps.slice(0, limit) : gaps;
-    console.log(`Narrators needing enrichment: ${gaps.length}`);
-    console.log(`Processing: ${toProcess.length}${limit > 0 ? ` (limited to ${limit})` : ''}`);
-
-    let enriched = 0;
-    let apiCalls = 0;
-    let errors = 0;
-
-    for (let i = 0; i < toProcess.length; i++) {
-        const n = toProcess[i];
-
-        // Clean name for query
-        const cleanName = n.name_english
-            .replace(/[\u0621-\u064A\u0671-\u06D3\u0640\u064B-\u0652\u0670\u200F\u200E]+/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-
-        if (!cleanName || cleanName.length < 3) continue;
-
-        const query = `Islamic hadith narrator "${cleanName}" biographical information: death year hijri, birth year hijri, city they lived in, and which Islamic tradition (Sunni/Shia/Ibadi/Zaydi) they belong to. Return only factual biographical data.`;
-
-        if (dryRun) {
-            console.log(`  [DRY] Would query: ${cleanName}`);
-            continue;
-        }
-
-        try {
-            const response = await callYouResearch(query, apiKey, 'lite');
-            apiCalls++;
-
-            const content = response.content;
-
-            // Parse death year
-            if (n.needs_death_year) {
-                const deathMatch = content.match(/(?:died|death|d\.)\s*(?:in\s*)?(\d{1,4})\s*(?:AH|A\.H\.|Hijri|hijri)/i)
-                    || content.match(/(?:died|death)\s*(?:in\s*)?(?:around\s*)?(\d{1,4})\s*(?:AH|A\.H\.)/i)
-                    || content.match(/(\d{1,4})\s*(?:AH|A\.H\.)\s*[^-]*?(?:death|died)/i);
-                if (deathMatch) {
-                    const year = parseInt(deathMatch[1], 10);
-                    if (year > 0 && year < 1500) {
-                        await runWrite(
-                            `MATCH (n:Narrator {id: $id}) WHERE n.death_year_hijri IS NULL SET n.death_year_hijri = $year`,
-                            { id: n.id, year }
-                        );
-                    }
-                }
-            }
-
-            // Parse birth year
-            if (n.needs_birth_year) {
-                const birthMatch = content.match(/(?:born|birth|b\.)\s*(?:in\s*)?(\d{1,4})\s*(?:AH|A\.H\.|Hijri|hijri)/i);
-                if (birthMatch) {
-                    const year = parseInt(birthMatch[1], 10);
-                    if (year > 0 && year < 1500) {
-                        await runWrite(
-                            `MATCH (n:Narrator {id: $id}) WHERE n.birth_year_hijri IS NULL SET n.birth_year_hijri = $year`,
-                            { id: n.id, year }
-                        );
-                    }
-                }
-            }
-
-            // Parse geographic region
-            if (n.needs_region) {
-                const cities = ['Medina', 'Makkah', 'Mecca', 'Kufa', 'Basra', 'Damascus', 'Baghdad',
-                    'Egypt', 'Yemen', 'Khurasan', 'Isfahan', 'Nishapur', 'Rayy', 'Wasit',
-                    'Hijaz', 'Persia', 'India', 'Samarqand', 'Bukhara'];
-                for (const city of cities) {
-                    if (content.toLowerCase().includes(city.toLowerCase())) {
-                        const region = city === 'Mecca' ? 'Makkah' : city;
-                        await runWrite(
-                            `MATCH (n:Narrator {id: $id}) WHERE n.geographic_region IS NULL OR n.geographic_region = '' SET n.geographic_region = $region`,
-                            { id: n.id, region }
-                        );
-                        break;
-                    }
-                }
-            }
-
-            // Parse tradition
-            if (n.needs_tradition) {
-                const tradMatch = content.match(/\b(Sunni|Shi['\u2018\u2019]?[ai]|Shia|Ibadi|Zaydi)\b/i);
-                if (tradMatch) {
-                    let tradition = tradMatch[1];
-                    if (/shi/i.test(tradition)) tradition = 'Shia Imami';
-                    else if (/sunni/i.test(tradition)) tradition = 'Sunni';
-                    else if (/ibadi/i.test(tradition)) tradition = 'Ibadi';
-                    else if (/zaydi/i.test(tradition)) tradition = 'Shia Zaydi';
-                    await runWrite(
-                        `MATCH (n:Narrator {id: $id}) WHERE n.tradition IS NULL OR n.tradition = '' SET n.tradition = $tradition`,
-                        { id: n.id, tradition }
-                    );
-                }
-            }
-
-            enriched++;
-
-            if ((i + 1) % 50 === 0 || i === toProcess.length - 1) {
-                console.log(`  [${i + 1}/${toProcess.length}] ${apiCalls} API calls, ${enriched} enriched, ${errors} errors`);
-            }
-
-            // Rate limit: ~2 req/sec to be safe
-            await new Promise(r => setTimeout(r, 500));
-        } catch (err: any) {
-            errors++;
-            if (err.message?.includes('429') || err.message?.includes('rate')) {
-                console.log(`  Rate limited at ${i}, waiting 10s...`);
-                await new Promise(r => setTimeout(r, 10000));
-                i--; // Retry
-            } else {
-                console.error(`  Error for ${cleanName}: ${err.message}`);
-            }
-        }
-    }
-
-    console.log(`\nPhase 3 complete: ${apiCalls} API calls, ${enriched} enriched, ${errors} errors`);
-}
-
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -429,9 +268,6 @@ async function main() {
     }
     if (args.phase === 0 || args.phase === 2) {
         await phase2_nisbaExtraction(args.dryRun);
-    }
-    if (args.phase === 0 || args.phase === 3) {
-        await phase3_youApiEnrichment(args.limit, args.dryRun);
     }
 
     console.log('\nDone!');

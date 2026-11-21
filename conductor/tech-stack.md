@@ -88,11 +88,6 @@ TEST_DATABASE_URL=       # disposable test database (name ends in _test)
 DATABASE_PUBLIC_URL=     # Postgres service; exists only while Public Access is on for a load
 CURATOR_PASSPHRASES=     # {name: scrypt hash}
 ADMIN_SESSION_SECRET=    # HMAC key for the curator cookie
-
-# Comparative parallel discovery pipeline
-YOU_API_KEY=             # research route; curator-only
-OPENAI_API_KEY=          # optional fallback LLM
-BIBLE_API_KEY=           # optional (scripture.api.bible); Sefaria needs no key
 ```
 
 The nine Neo4j variables stay on the app until the owner approves their

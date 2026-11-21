@@ -211,5 +211,3 @@ export const schoolCategoryEnum = pgEnum('school_category', [
 ]);
 
 export const recordOriginEnum = pgEnum('record_origin', ['manual', 'seed', 'ai_research', 'neo4j_migration']);
-
-export const researchOutcomeEnum = pgEnum('research_outcome', ['parallel_found', 'no_parallel', 'error']);

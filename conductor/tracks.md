@@ -26,7 +26,8 @@ Status: `[~]` in progress, `[ ]` planned, `[x]` done. All ids end in `_20261121`
 | [ ] | [`neo4j-retirement-sweep`](./tracks/neo4j-retirement-sweep_20261121/spec.md) | 10 | railway-cutover | none |
 | [ ] | [`vectors-semantic-search`](./tracks/vectors-semantic-search_20261121/spec.md) | 11 | query-port, railway-cutover; owner Q8 | none |
 
-Containment phase 0 (step 0.5: rotate `YOU_API_KEY`, check spend) needs no
+Containment phase 0 (step 0.5: inspect the `*_CSV_URLS` variables, rotate the
+stray `OPENROUTER_KEY`) needs no
 build and should start now.
 
 ## Alongside the spine
