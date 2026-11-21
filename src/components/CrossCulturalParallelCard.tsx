@@ -19,6 +19,8 @@ interface CrossCulturalParallelCardProps {
         source_text_original?: string | null;
         source_text_en?: string | null;
         scholarly_analysis?: string | null;
+        provenance?: string | null;
+        reviewed?: boolean | null;
     };
     tradition: {
         id: string;
@@ -55,6 +57,19 @@ const MOTIF_CATEGORY_COLORS: Record<string, string> = {
     COSMOLOGY: 'bg-indigo-500/10 text-indigo-300',
 };
 
+/** True when the record is flagged as machine-proposed (provenance field) or explicitly unreviewed. */
+export function isMachineProposed(parallel: { provenance?: string | null; reviewed?: boolean | null }): boolean {
+    return parallel.provenance === 'machine' || parallel.reviewed === false;
+}
+
+export function MachineProposedBadge() {
+    return (
+        <span className="inline-block px-2 py-0.5 rounded border border-dashed border-slate-400/50 text-xs font-medium text-slate-300">
+            Machine-proposed · unreviewed
+        </span>
+    );
+}
+
 export function CrossCulturalParallelCard({
     parallel,
     tradition,
@@ -71,6 +86,7 @@ export function CrossCulturalParallelCard({
                     <TraditionBadge tradition={tradition.name} />
                     <ParallelTypeBadge type={parallel.parallel_type} />
                     <IsraIliyyatBadge status={parallel.isra_iliyyat_status} />
+                    {isMachineProposed(parallel) && <MachineProposedBadge />}
                     {parallel.confidence_level && (
                         <span
                             className={`text-xs font-medium ${CONFIDENCE_COLORS[parallel.confidence_level] ?? 'text-slate-400'}`}
@@ -109,7 +125,7 @@ export function CrossCulturalParallelCard({
                                 {tradition.name} Source
                             </p>
                             {parallel.source_text_original && (
-                                <p className="text-sm text-amber-100/80 leading-relaxed mb-2 font-serif whitespace-pre-line">
+                                <p dir="auto" className="text-sm text-amber-100/80 leading-relaxed mb-2 font-serif whitespace-pre-line text-start">
                                     {parallel.source_text_original}
                                 </p>
                             )}

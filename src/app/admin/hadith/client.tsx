@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { exportHadiths, type ExportConfig } from '@/app/actions/graph-actions';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,10 +43,18 @@ interface HadithManagerClientProps {
     pagination: PaginationInfo;
 }
 
-export function HadithManagerClient({ hadiths, pagination }: HadithManagerClientProps) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+const TRADITION_BADGE_CLASSES: Record<string, string> = {
+    Imami: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    'Shia Imami': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    Zaydi: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+    'Shia Zaydi': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+    Ibadi: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+};
+const DEFAULT_TRADITION_BADGE_CLASS = 'bg-teal-500/20 text-teal-400 border-teal-500/30';
 
+const traditionBadgeClass = (tradition: string) => TRADITION_BADGE_CLASSES[tradition] ?? DEFAULT_TRADITION_BADGE_CLASS;
+
+export function HadithManagerClient({ hadiths, pagination }: HadithManagerClientProps) {
     const [error, setError] = useState<string | null>(null);
 
     // ── Export ──
@@ -76,6 +84,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
 
     const handleExport = useCallback(async () => {
         setIsExporting(true);
+        setError(null);
         try {
             const config: ExportConfig = {
                 filters: {
@@ -104,6 +113,8 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
             a.download = `hadith-export-${new Date().toISOString().slice(0, 10)}.csv`;
             a.click();
             URL.revokeObjectURL(url);
+        } catch {
+            setError('Export failed. Try again.');
         } finally {
             setIsExporting(false);
         }
@@ -112,10 +123,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Hadith Manager</h1>
-                    <p className="text-slate-400 mt-1">Browse and export Hadith entries. Manual grading and authoring are paused pending a v2 grading-UX redesign.</p>
-                </div>
+                <h1 className="text-3xl font-bold text-white">Hadiths</h1>
                 <div className="flex gap-3">
                     <Button
                         onClick={() => setShowExport(true)}
@@ -132,8 +140,8 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                 <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-semibold text-white">Export Hadiths to CSV</h2>
-                        <Button size="sm" variant="ghost" onClick={() => setShowExport(false)} className="text-slate-400 hover:text-white">
-                            <X className="w-4 h-4" />
+                        <Button size="sm" variant="ghost" onClick={() => setShowExport(false)} aria-label="Close export panel" className="text-slate-400 hover:text-white">
+                            <X className="w-4 h-4" aria-hidden="true" />
                         </Button>
                     </div>
 
@@ -204,7 +212,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                         <Button variant="outline" onClick={() => setShowExport(false)} className="border-slate-600 text-slate-300">
                             Cancel
                         </Button>
-                        <Button onClick={handleExport} disabled={isExporting} className="bg-emerald-600 hover:bg-emerald-700">
+                        <Button onClick={handleExport} disabled={isExporting} aria-busy={isExporting} className="bg-emerald-600 hover:bg-emerald-700">
                             <Download className="w-4 h-4 mr-2" />
                             {isExporting ? 'Exporting...' : 'Download CSV'}
                         </Button>
@@ -213,9 +221,11 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
             )}
 
             {error && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center justify-between">
+                <div role="alert" className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center justify-between">
                     <span>{error}</span>
-                    <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 ml-4">&times;</button>
+                    <button type="button" onClick={() => setError(null)} aria-label="Dismiss error" className="text-red-400 hover:text-red-300 ml-4">
+                        <X className="w-4 h-4" aria-hidden="true" />
+                    </button>
                 </div>
             )}
 
@@ -257,15 +267,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="text-lg font-semibold text-white">{hadith.title}</h3>
                                         {hadith.tradition && (
-                                            <Badge className={
-                                                hadith.tradition === 'Imami' || hadith.tradition === 'Shia Imami'
-                                                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                                                    : hadith.tradition === 'Zaydi' || hadith.tradition === 'Shia Zaydi'
-                                                        ? 'bg-violet-500/20 text-violet-300 border-violet-500/30'
-                                                        : hadith.tradition === 'Ibadi'
-                                                            ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-                                                            : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
-                                            }>
+                                            <Badge className={traditionBadgeClass(hadith.tradition)}>
                                                 {displayHadithTradition(hadith.tradition)}
                                             </Badge>
                                         )}
@@ -292,12 +294,10 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                 </div>
 
                                 <div className="flex gap-2 shrink-0">
-                                    <Button
-                                        size="sm"
-                                        onClick={() => router.push(`/hadith/${hadith.id}`)}
-                                        className="bg-blue-600 hover:bg-blue-700"
-                                    >
-                                        View Details
+                                    <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                        <Link href={`/hadith/${hadith.id}`} aria-label={`View details: ${hadith.title}`}>
+                                            View Details
+                                        </Link>
                                     </Button>
                                 </div>
                             </div>
@@ -316,11 +316,6 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                     totalPages={pagination.totalPages}
                     total={pagination.total}
                     pageSize={pagination.pageSize}
-                    onPageChange={(p) => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('page', String(p));
-                        router.push(`?${params.toString()}`);
-                    }}
                 />
             </div>
         </div>

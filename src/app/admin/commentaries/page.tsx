@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { getAllCommentaries, getAllHadiths, getAllNarrators } from '@/app/actions/graph-actions';
+import { parsePageParam } from '@/lib/pagination';
 import { CommentariesManagerClient } from './client';
 
 interface PageProps {
@@ -9,7 +10,7 @@ interface PageProps {
 
 export default async function CommentariesManagerPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const page = parseInt(params.page || '1', 10);
+    const page = parsePageParam(params.page);
     const type = params.type || '';
 
     const [commentariesResult, hadithsResult, narratorsResult] = await Promise.all([

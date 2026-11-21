@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
 import { searchParallels } from '@/app/actions/comparative-actions';
 import { CrossCulturalParallelCard } from '@/components/CrossCulturalParallelCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { REGIONAL_CONTEXT } from './regional-context';
 
 const PARALLEL_TYPES = [
     { value: '', label: 'All Types' },
@@ -43,44 +43,13 @@ const CONFIDENCE_LEVELS = [
     { value: 'LOW', label: 'Low' },
 ];
 
-// Regional context table - no external map needed
-const REGIONAL_CONTEXT = [
-    {
-        school: 'Damascus (Syria)',
-        traditions: ['Judaism', 'Christianity'],
-        narrators: ["Ka'b al-Ahbar", 'Wahb ibn Munabbih'],
-        notes: 'Primary conduit for Isra\'iliyyat. Ka\'b al-Ahbar was a Jewish convert who settled in Damascus under the Umayyads.',
-    },
-    {
-        school: 'Kufa (Iraq)',
-        traditions: ['Judaism', 'Zoroastrianism'],
-        narrators: ['Salman al-Farisi', 'Ibn Mas\'ud students'],
-        notes: 'Persian cultural contact. Active Jewish diaspora communities. Ra\'y methodology may have been influenced by both.',
-    },
-    {
-        school: 'Basra (Iraq)',
-        traditions: ['Zoroastrianism', 'Manichaeism'],
-        narrators: ['Al-Hasan al-Basri'],
-        notes: 'Gateway to Persia. Zoroastrian converts common in the early Islamic period. Ascetic themes may show Zoroastrian/Manichaean parallels.',
-    },
-    {
-        school: 'Medina (Hijaz)',
-        traditions: ['Judaism', 'Christianity'],
-        narrators: ['Abdullah ibn Salam'],
-        notes: 'Jewish tribes of Banu Qaynuqa, Banu Nadir, Banu Qurayza had historical presence. Christian contact via trade routes.',
-    },
-    {
-        school: 'Khorasan / Persia',
-        traditions: ['Zoroastrianism'],
-        narrators: ['Late Tabi\'in chains'],
-        notes: 'Abbasid-era expansion. Zoroastrian conceptual vocabulary entered Islamic theological discourse during translation movement.',
-    },
-    {
-        school: 'Yemen',
-        traditions: ['Judaism', 'Christianity'],
-        narrators: ['Wahb ibn Munabbih', 'Ka\'b al-Ahbar (origin)'],
-        notes: 'Wahb ibn Munabbih was of Yemeni/South Arabian origin with Jewish background. Yemen had ancient Jewish and Christian communities.',
-    },
+type SelectFilterKey = 'parallel_type' | 'isra_iliyyat_status' | 'motif_category' | 'confidence_level';
+
+const SELECT_FILTERS: { key: SelectFilterKey; label: string; options: { value: string; label: string }[] }[] = [
+    { key: 'parallel_type', label: 'Parallel Type', options: PARALLEL_TYPES },
+    { key: 'isra_iliyyat_status', label: "Isra'iliyyat Status", options: ISRA_STATUSES },
+    { key: 'motif_category', label: 'Motif Category', options: MOTIF_CATEGORIES },
+    { key: 'confidence_level', label: 'Confidence', options: CONFIDENCE_LEVELS },
 ];
 
 interface Props {
@@ -101,17 +70,24 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
     });
     const [activeView, setActiveView] = useState<'results' | 'regional'>('results');
 
+    const [error, setError] = useState<string | null>(null);
+
     const applyFilters = (newFilters: typeof filters) => {
         setFilters(newFilters);
+        setError(null);
         startTransition(async () => {
-            const results = await searchParallels({
-                tradition_id: newFilters.tradition_id || undefined,
-                parallel_type: (newFilters.parallel_type as any) || undefined,
-                isra_iliyyat_status: (newFilters.isra_iliyyat_status as any) || undefined,
-                motif_category: (newFilters.motif_category as any) || undefined,
-                confidence_level: (newFilters.confidence_level as any) || undefined,
-            });
-            setParallels(results);
+            try {
+                const results = await searchParallels({
+                    tradition_id: newFilters.tradition_id || undefined,
+                    parallel_type: (newFilters.parallel_type as any) || undefined,
+                    isra_iliyyat_status: (newFilters.isra_iliyyat_status as any) || undefined,
+                    motif_category: (newFilters.motif_category as any) || undefined,
+                    confidence_level: (newFilters.confidence_level as any) || undefined,
+                });
+                setParallels(results);
+            } catch {
+                setError("Couldn't load parallels for these filters. Try again.");
+            }
         });
     };
 
@@ -126,14 +102,7 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-10">
-                    <Link href="/" className="inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 mb-4">
-                        ← Back to Home
-                    </Link>
-                    <h1 className="text-4xl font-bold text-white mb-2">Comparative Religious Studies</h1>
-                    <p className="text-slate-400 max-w-2xl">
-                        Explore cross-cultural parallels between hadith narratives and Jewish, Christian, and Zoroastrian traditions.
-                        Examine Isra'iliyyat transmission, regional cultural contact, and the scholarly classification of these parallels.
-                    </p>
+                    <h1 className="text-4xl font-bold text-white">Comparative Religious Studies</h1>
                 </div>
 
                 {/* Overview stats */}
@@ -151,16 +120,18 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                 </div>
 
                 {/* View toggle */}
-                <div className="flex gap-3 mb-6">
+                <div className="flex gap-3 mb-6" role="group" aria-label="View">
                     <Button
                         onClick={() => setActiveView('results')}
+                        aria-pressed={activeView === 'results'}
                         className={activeView === 'results' ? 'bg-cyan-700 text-white' : 'bg-white/5 text-slate-300 hover:bg-white/10'}
                     >
                         Browse Parallels
                     </Button>
                     <Button
                         onClick={() => setActiveView('regional')}
-                        className={activeView === 'regional' ? 'bg-amber-700 text-white' : 'bg-white/5 text-slate-300 hover:bg-white/10'}
+                        aria-pressed={activeView === 'regional'}
+                        className={activeView === 'regional' ? 'bg-cyan-700 text-white' : 'bg-white/5 text-slate-300 hover:bg-white/10'}
                     >
                         Regional Context
                     </Button>
@@ -168,12 +139,10 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
 
                 {activeView === 'regional' ? (
                     /* Regional Context View */
-                    <div className="space-y-4">
-                        <p className="text-slate-400 text-sm mb-4">
-                            The following table shows how different religious traditions were geographically positioned relative to
-                            major hadith transmission centers, explaining the vectors through which cross-cultural influences entered
-                            the hadith corpus.
-                        </p>
+                    <section aria-labelledby="regional-context-heading" className="space-y-4">
+                        <h2 id="regional-context-heading" className="text-xl font-semibold text-white">
+                            Regional context
+                        </h2>
                         {REGIONAL_CONTEXT.map((region) => (
                             <Card key={region.school} className="bg-white/5 border-white/10">
                                 <CardContent className="pt-5">
@@ -216,16 +185,18 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                                 </CardContent>
                             </Card>
                         ))}
-                    </div>
+                    </section>
                 ) : (
                     /* Parallel Browse View */
                     <div className="flex gap-6">
                         {/* Filter sidebar */}
-                        <div className="w-56 flex-shrink-0 space-y-5">
+                        <div className="w-56 shrink-0 space-y-5">
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <h3 className="text-sm font-semibold text-white mb-3">Tradition</h3>
                                 <div className="space-y-1.5">
                                     <button
+                                        type="button"
+                                        aria-pressed={!filters.tradition_id}
                                         onClick={() => applyFilters({ ...filters, tradition_id: '' })}
                                         className={`w-full text-left text-sm px-2 py-1.5 rounded transition-colors ${!filters.tradition_id ? 'bg-cyan-700/50 text-white' : 'text-slate-400 hover:text-white'}`}
                                     >
@@ -233,6 +204,8 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                                     </button>
                                     {traditions.map((t) => (
                                         <button key={t.id}
+                                            type="button"
+                                            aria-pressed={filters.tradition_id === t.id}
                                             onClick={() => applyFilters({ ...filters, tradition_id: t.id })}
                                             className={`w-full text-left text-sm px-2 py-1.5 rounded transition-colors ${filters.tradition_id === t.id ? 'bg-cyan-700/50 text-white' : 'text-slate-400 hover:text-white'}`}
                                         >
@@ -242,49 +215,21 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                                 </div>
                             </Card>
 
-                            <Card className="bg-white/5 border-white/10 p-4">
-                                <h3 className="text-sm font-semibold text-white mb-3">Parallel Type</h3>
-                                <select
-                                    value={filters.parallel_type}
-                                    onChange={(e) => applyFilters({ ...filters, parallel_type: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 text-white rounded px-2 py-1.5 text-sm"
-                                >
-                                    {PARALLEL_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                </select>
-                            </Card>
-
-                            <Card className="bg-white/5 border-white/10 p-4">
-                                <h3 className="text-sm font-semibold text-white mb-3">Isra'iliyyat Status</h3>
-                                <select
-                                    value={filters.isra_iliyyat_status}
-                                    onChange={(e) => applyFilters({ ...filters, isra_iliyyat_status: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 text-white rounded px-2 py-1.5 text-sm"
-                                >
-                                    {ISRA_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                                </select>
-                            </Card>
-
-                            <Card className="bg-white/5 border-white/10 p-4">
-                                <h3 className="text-sm font-semibold text-white mb-3">Motif Category</h3>
-                                <select
-                                    value={filters.motif_category}
-                                    onChange={(e) => applyFilters({ ...filters, motif_category: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 text-white rounded px-2 py-1.5 text-sm"
-                                >
-                                    {MOTIF_CATEGORIES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-                                </select>
-                            </Card>
-
-                            <Card className="bg-white/5 border-white/10 p-4">
-                                <h3 className="text-sm font-semibold text-white mb-3">Confidence</h3>
-                                <select
-                                    value={filters.confidence_level}
-                                    onChange={(e) => applyFilters({ ...filters, confidence_level: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 text-white rounded px-2 py-1.5 text-sm"
-                                >
-                                    {CONFIDENCE_LEVELS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-                                </select>
-                            </Card>
+                            {SELECT_FILTERS.map(({ key, label, options }) => (
+                                <Card key={key} className="bg-white/5 border-white/10 p-4">
+                                    <label htmlFor={`parallel-filter-${key}`} className="block text-sm font-semibold text-white mb-3">
+                                        {label}
+                                    </label>
+                                    <select
+                                        id={`parallel-filter-${key}`}
+                                        value={filters[key]}
+                                        onChange={(e) => applyFilters({ ...filters, [key]: e.target.value })}
+                                        className="w-full bg-slate-800 border border-slate-700 text-white rounded px-2 py-1.5 text-sm"
+                                    >
+                                        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                    </select>
+                                </Card>
+                            ))}
 
                             {(filters.tradition_id || filters.parallel_type || filters.isra_iliyyat_status || filters.motif_category || filters.confidence_level) && (
                                 <Button
@@ -298,13 +243,22 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                         </div>
 
                         {/* Results */}
-                        <div className="flex-1">
-                            <p className="text-sm text-slate-400 mb-4">
+                        <div className="flex-1" aria-busy={isPending}>
+                            <p role="status" className="text-sm text-slate-400 mb-4">
                                 {isPending ? 'Searching...' : `${parallels.length} parallel${parallels.length !== 1 ? 's' : ''} found`}
                             </p>
 
+                            {error && (
+                                <div role="alert" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                                    <span>{error}</span>
+                                    <Button type="button" size="sm" variant="outline" onClick={() => applyFilters(filters)} disabled={isPending}>
+                                        Retry
+                                    </Button>
+                                </div>
+                            )}
+
                             {parallels.length > 0 ? (
-                                <div className="space-y-4">
+                                <div className={`space-y-4 transition-opacity ${isPending ? 'opacity-60' : ''}`}>
                                     {parallels.map((p) => (
                                         <CrossCulturalParallelCard
                                             key={p.id}
@@ -320,7 +274,7 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                             ) : (
                                 <Card className="bg-white/5 border-white/10 border-dashed p-12">
                                     <p className="text-center text-slate-400">
-                                        {isPending ? 'Searching...' : 'No parallels found. Add some via the Admin → Comparative Studies section.'}
+                                        {isPending ? 'Searching...' : 'No parallels match these filters.'}
                                     </p>
                                 </Card>
                             )}

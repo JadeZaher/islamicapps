@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { getAllHadiths, searchHadiths } from '@/app/actions/graph-actions';
+import { parsePageParam } from '@/lib/pagination';
 import { HadithManagerClient } from './client';
 
 interface PageProps {
@@ -9,7 +10,7 @@ interface PageProps {
 
 export default async function HadithManagerPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const page = parseInt(params.page || '1', 10);
+    const page = parsePageParam(params.page);
     const q = params.q || '';
     const source = params.source || '';
     // `school` remains a read-only URL alias for bookmarked legacy filters.

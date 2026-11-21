@@ -1,7 +1,8 @@
 'use client';
 
 interface TabaqahTimelineProps {
-    currentTabaqah: 'PROPHET' | 'SAHABA' | 'TABI_UN' | 'TABI_TABI_IN';
+    /** Tabaqah key; anything outside TABAQAH_LEVELS (or empty) renders as "not recorded". */
+    currentTabaqah?: string | null;
 }
 
 const TABAQAH_LEVELS = [
@@ -9,26 +10,33 @@ const TABAQAH_LEVELS = [
     { key: 'SAHABA', label: 'Companions (Sahaba)', era: 'Generation 1' },
     { key: 'TABI_UN', label: "Successors (Tabi'un)", era: 'Generation 2' },
     { key: 'TABI_TABI_IN', label: "Successors' Successors", era: 'Generation 3' },
+    { key: 'LATER_SCHOLAR', label: 'Later scholars', era: 'Generation 4 and later' },
 ] as const;
 
 export function TabaqahTimeline({ currentTabaqah }: TabaqahTimelineProps) {
     const currentIndex = TABAQAH_LEVELS.findIndex((t) => t.key === currentTabaqah);
+    const isRecognised = currentIndex !== -1;
 
     return (
         <div className="w-full max-w-4xl">
             <h3 className="text-lg font-semibold text-white/80 mb-6">Generation (Tabaqah)</h3>
+            {!isRecognised && (
+                <p role="status" className="mb-4 text-sm text-white/60">
+                    {currentTabaqah ? `Recorded as ${currentTabaqah.replaceAll('_', ' ').toLowerCase()}` : 'Generation not recorded'}
+                </p>
+            )}
             <div className="relative">
                 {/* Timeline line */}
                 <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-cyan-500/30" />
 
                 {/* Timeline items */}
-                <div className="space-y-6">
+                <div className="space-y-6" aria-label="Generation levels" role="list">
                     {TABAQAH_LEVELS.map((level, index) => {
                         const isCurrent = level.key === currentTabaqah;
                         const isPast = index < currentIndex;
 
                         return (
-                            <div key={level.key} className="relative flex items-start gap-6">
+                            <div key={level.key} role="listitem" aria-current={isCurrent ? 'step' : undefined} className="relative flex items-start gap-6">
                                 {/* Node */}
                                 <div
                                     className={`relative z-10 w-16 h-16 rounded-full border-4 flex items-center justify-center

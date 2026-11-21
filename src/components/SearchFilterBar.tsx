@@ -108,21 +108,23 @@ export function SearchFilterBar({
         <section className="mb-6 space-y-3" aria-label="Search and filters" aria-busy={isPending}>
             <div className="flex flex-wrap items-end gap-3">
                 {showSearch && (
-                    <div className="relative flex-1 min-w-[200px] max-w-md">
+                    <div className="flex-1 min-w-[200px] max-w-md">
                         <label htmlFor={searchId} className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
                             Search
                         </label>
-                        <input
-                            id={searchId}
-                            type="search"
-                            value={searchInput}
-                            onChange={(e) => setSearchDraft({ source: currentSearch, value: e.target.value })}
-                            placeholder={searchPlaceholder}
-                            className="w-full min-h-11 rounded-md border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
-                        />
-                        {isPending && (
-                            <div className="absolute right-3 top-9 size-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" role="status" aria-label="Updating results" />
-                        )}
+                        <div className="relative">
+                            <input
+                                id={searchId}
+                                type="search"
+                                value={searchInput}
+                                onChange={(e) => setSearchDraft({ source: currentSearch, value: e.target.value })}
+                                placeholder={searchPlaceholder}
+                                className="w-full min-h-11 rounded-md border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+                            />
+                            {isPending && (
+                                <div className="absolute right-10 top-1/2 size-4 -translate-y-1/2 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" role="status" aria-label="Updating results" />
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -161,7 +163,6 @@ export function SearchFilterBar({
             {totalResults !== undefined && (
                 <p className="text-xs text-slate-400" aria-live="polite" aria-atomic="true">
                     {totalResults.toLocaleString()} result{totalResults !== 1 ? 's' : ''}
-                    {isPending && ' (updating...)'}
                 </p>
             )}
         </section>

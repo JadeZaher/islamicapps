@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { getAllHistoricalEvents } from '@/app/actions/graph-actions';
+import { parsePageParam } from '@/lib/pagination';
 import { EventsManagerClient } from './client';
 
 interface PageProps {
@@ -9,7 +10,7 @@ interface PageProps {
 
 export default async function EventsManagerPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const page = parseInt(params.page || '1', 10);
+    const page = parsePageParam(params.page);
     const category = params.category || '';
 
     const result = await getAllHistoricalEvents(

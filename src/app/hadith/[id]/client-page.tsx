@@ -16,6 +16,7 @@ const GRADE_COLORS: Record<string, string> = {
     DAIF: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
     MAWDU: 'bg-red-500/20 text-red-400 border-red-500/30',
 };
+const NEUTRAL_GRADE = 'bg-gray-500/20 text-gray-300 border-gray-500/30';
 
 export function HadithClientPage({
     hadith,
@@ -25,8 +26,6 @@ export function HadithClientPage({
     parallels = [],
     tracesToProphet = false,
 }: HadithClientPageProps) {
-    const gradeColor = GRADE_COLORS[hadith.display_grade as string] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-
     // Prefer the v2 fields; legacy aliases remain a fallback for the live graph.
     const hasArabicMatn = Boolean(hadith.matn_ar?.trim());
     const hasEnglishMatn = Boolean(hadith.matn_en?.trim());
@@ -42,12 +41,17 @@ export function HadithClientPage({
             ? 'Hadith text (mixed segmentation)'
             : 'Source text (unsegmented)';
     const sourceSanadText = hadith.sanad ?? hadith.isnad_arabic ?? hadith.chain_text_arabic ?? null;
-    const linkedNodes = nodes.filter((node) => Boolean(node.name_arabic?.trim() || node.name_english?.trim()));
-    const linkedNarratorCount = new Set(linkedNodes.map((node) => node.id)).size;
-    const branchCount = new Set(linkedNodes.map((node) => node.chain_id || 'linked-chain')).size;
-    const linkedSummary = linkedNarratorCount > 0
-        ? `${linkedNarratorCount} linked narrator ${linkedNarratorCount === 1 ? 'identity' : 'identities'}${branchCount > 1 ? ` across ${branchCount} isnad branches` : ''}`
-        : 'identities unresolved';
+    const hasChain = nodes.some((node) => Boolean(node.name_arabic?.trim() || node.name_english?.trim()));
+    const showChainSection = Boolean(sourceSanadText?.trim()) || hasChain;
+    const hasGrading = Boolean(
+        hadith.display_grade || hadith.auto_calculated_grade || typeof chainHealthScore === 'number',
+    );
+    const heading = hadith.title?.trim()
+        || [hadith.source, hadith.hadith_no].filter(Boolean).join(' ')
+        || 'Hadith';
+    const hasMetadata = Boolean(
+        hadith.source || hadith.hadith_no || hadith.volume || hadith.chapter || hadith.tradition || hadith.chain_type || hadith.attributed_to,
+    );
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -55,12 +59,10 @@ export function HadithClientPage({
             <header className="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-sm sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 px-6 py-4">
                     <div>
-                        <h1 className="text-2xl font-bold">
-                            {hadith.title || <span className="text-slate-400 italic">Untitled</span>}
-                        </h1>
-                        <p className="text-sm text-slate-400 mt-0.5">
-                            {hadith.primary_topic || <span className="text-slate-400 italic">No topic</span>}
-                        </p>
+                        <h1 className="text-2xl font-bold">{heading}</h1>
+                        {hadith.primary_topic && (
+                            <p className="text-sm text-slate-400 mt-0.5">{hadith.primary_topic}</p>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         {tracesToProphet && (
@@ -68,9 +70,11 @@ export function HadithClientPage({
                                 Marfu&apos;
                             </Badge>
                         )}
-                        <Badge className={gradeColor}>
-                            {hadith.display_grade || 'Ungraded'}
-                        </Badge>
+                        {hadith.display_grade && (
+                            <Badge className={GRADE_COLORS[hadith.display_grade] ?? NEUTRAL_GRADE}>
+                                {hadith.display_grade}
+                            </Badge>
+                        )}
                         {hadith.transmission_type && (
                             <Badge className={hadith.transmission_type === 'MUTAWATIR'
                                 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
@@ -83,92 +87,50 @@ export function HadithClientPage({
                 </div>
             </header>
 
-            {/* ── Full-width Isnad Chain ── */}
-            <section className="w-full border-b border-slate-800/40">
-                <div className="max-w-7xl mx-auto px-6 pt-2 pb-2">
-                    <p className="text-xs text-slate-400 uppercase tracking-widest">
-                        {sourceSanadText
-                            ? `Source sanad shown verbatim · ${linkedSummary}`
-                            : linkedNarratorCount > 0
-                                ? linkedSummary
-                                : 'Transmission chain'}
-                    </p>
-                </div>
-                <IsnadChain
-                    nodes={nodes}
-                    edges={edges}
-                    hadithTextArabic={hadithTextArabic}
-                    hadithTextEnglish={hadithTextEnglish}
-                    hadithTextLabel={hadithTextLabel}
-                    sourceSanadText={sourceSanadText}
-                />
-            </section>
+            {showChainSection && (
+                <section className="w-full border-b border-slate-800/40">
+                    <IsnadChain nodes={nodes} edges={edges} sourceSanadText={sourceSanadText} />
+                </section>
+            )}
 
             {/* ── Details section ── */}
             <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-                {/* Grading row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-slate-900/50 border-slate-800 p-6 md:col-span-1">
-                        <GradingPanel
-                            autoCalculatedGrade={hadith.auto_calculated_grade as string}
-                            displayGrade={hadith.display_grade as string}
-                            transmissionType={hadith.transmission_type as string}
-                            chainHealthScore={chainHealthScore}
-                        />
-                    </Card>
+                    {hasGrading && (
+                        <Card className="bg-slate-900/50 border-slate-800 p-6 md:col-span-1 self-start">
+                            <GradingPanel
+                                autoCalculatedGrade={hadith.auto_calculated_grade}
+                                displayGrade={hadith.display_grade}
+                                chainHealthScore={chainHealthScore}
+                            />
+                        </Card>
+                    )}
 
-                    {/* Sanad (isnad text) + Matn from v2 :Hadith node — direct render */}
-                    {(sourceSanadText || hadithTextArabic || hadithTextEnglish) && (
-                        <Card className="bg-slate-900/50 border-slate-800 p-6 md:col-span-2">
-                            <h2 className="text-lg font-semibold mb-4 text-white">Text and source record</h2>
+                    {(hadithTextArabic || hadithTextEnglish || hasMetadata) && (
+                        <Card className={`bg-slate-900/50 border-slate-800 p-6 ${hasGrading ? 'md:col-span-2' : 'md:col-span-3'}`}>
+                            <h2 className="text-lg font-semibold mb-4 text-white">{hadithTextLabel}</h2>
                             <div className="space-y-5">
-                                {sourceSanadText && (
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                                            Source sanad (verbatim)
-                                        </h3>
-                                        <p
-                                            className="text-base leading-loose font-[var(--font-amiri)] text-amber-100"
-                                            dir="auto"
-                                        >
-                                            {sourceSanadText}
-                                        </p>
-                                    </div>
-                                )}
                                 {hadithTextArabic && (
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                                            {hasArabicMatn ? 'Matn — Arabic' : 'Source text — Arabic (unsegmented)'}
-                                        </h3>
-                                        <p
-                                            className="text-lg leading-loose font-[var(--font-amiri)] text-amber-50"
-                                            dir="rtl"
-                                            lang="ar"
-                                        >
-                                            {hadithTextArabic}
-                                        </p>
-                                    </div>
+                                    <p className="text-xl font-arabic text-amber-50" dir="rtl" lang="ar">
+                                        {hadithTextArabic}
+                                    </p>
                                 )}
                                 {hadithTextEnglish && (
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                                            {hasEnglishMatn ? 'Matn — English' : 'Source text — English (unsegmented)'}
-                                        </h3>
-                                        <p className="text-base leading-relaxed text-slate-200">
-                                            {hadithTextEnglish}
-                                        </p>
-                                    </div>
+                                    <p className="text-base leading-relaxed text-slate-200">
+                                        {hadithTextEnglish}
+                                    </p>
                                 )}
-                                {/* Metadata strip */}
-                                <div className="pt-3 border-t border-slate-800/60 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-400">
-                                    {hadith.source && <span><span className="text-slate-500">Source:</span> {hadith.source}</span>}
-                                    {hadith.hadith_no && <span><span className="text-slate-500">No:</span> {hadith.hadith_no}</span>}
-                                    {hadith.volume && <span><span className="text-slate-500">Volume:</span> {hadith.volume}</span>}
-                                    {hadith.chapter && <span><span className="text-slate-500">Chapter:</span> {hadith.chapter}</span>}
-                                    {hadith.tradition && <span><span className="text-slate-500">Tradition:</span> {displayHadithTradition(hadith.tradition)}</span>}
-                                    {hadith.chain_type && <span><span className="text-slate-500">Chain type:</span> {hadith.chain_type}</span>}
-                                    {hadith.attributed_to && <span><span className="text-slate-500">Attributed to:</span> {hadith.attributed_to}</span>}
-                                </div>
+                                {hasMetadata && (
+                                    <dl className="pt-3 border-t border-slate-800/60 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-400">
+                                        {hadith.source && <div className="flex gap-1"><dt className="text-slate-500">Source:</dt><dd>{hadith.source}</dd></div>}
+                                        {hadith.hadith_no && <div className="flex gap-1"><dt className="text-slate-500">No:</dt><dd>{hadith.hadith_no}</dd></div>}
+                                        {hadith.volume && <div className="flex gap-1"><dt className="text-slate-500">Volume:</dt><dd>{hadith.volume}</dd></div>}
+                                        {hadith.chapter && <div className="flex gap-1"><dt className="text-slate-500">Chapter:</dt><dd>{hadith.chapter}</dd></div>}
+                                        {hadith.tradition && <div className="flex gap-1"><dt className="text-slate-500">Tradition:</dt><dd>{displayHadithTradition(hadith.tradition)}</dd></div>}
+                                        {hadith.chain_type && <div className="flex gap-1"><dt className="text-slate-500">Chain type:</dt><dd>{hadith.chain_type}</dd></div>}
+                                        {hadith.attributed_to && <div className="flex gap-1"><dt className="text-slate-500">Attributed to:</dt><dd>{hadith.attributed_to}</dd></div>}
+                                    </dl>
+                                )}
                             </div>
                         </Card>
                     )}
@@ -177,7 +139,7 @@ export function HadithClientPage({
                         (synthesized single-variation from getHadithById is filtered out via source check). */}
                     {hadith.variations && hadith.variations.length > 0 && hadith.variations.some((v) => v.source !== 'hadith_node') && (
                         <Card className="bg-slate-900/50 border-slate-800 p-6 md:col-span-2">
-                            <h2 className="text-lg font-semibold mb-4 text-white">Text Variations (Matn)</h2>
+                            <h2 className="text-lg font-semibold mb-4 text-white">Variant texts</h2>
                             <Tabs defaultValue="0" className="w-full">
                                 <TabsList className="mb-4">
                                     {hadith.variations.map((v, i) => (
@@ -190,10 +152,10 @@ export function HadithClientPage({
                                     <TabsContent key={i} value={i.toString()} className="space-y-4">
                                         <div>
                                             <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">Arabic</h3>
-                                            <p className="text-lg leading-loose font-[var(--font-amiri)] text-amber-100" dir="rtl">{v.text_arabic}</p>
+                                            <p className="text-lg font-arabic text-amber-100" dir="rtl" lang="ar">{v.text_arabic}</p>
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">English Translation</h3>
+                                            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">English</h3>
                                             <p className="text-base leading-relaxed text-slate-300">{v.text_english}</p>
                                         </div>
                                     </TabsContent>
@@ -207,7 +169,7 @@ export function HadithClientPage({
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-semibold">
-                            Comparative Parallels
+                            Parallels
                             {parallels.length > 0 && (
                                 <span className="ml-2 text-sm font-normal text-slate-400">({parallels.length})</span>
                             )}
@@ -229,14 +191,7 @@ export function HadithClientPage({
                             ))}
                         </div>
                     ) : (
-                        <Card className="bg-slate-900/30 border-slate-800 border-dashed p-8">
-                            <p className="text-center text-slate-400 text-sm">
-                                No cross-cultural parallels recorded for this hadith.{' '}
-                                <Link href="/admin/comparative" className="text-amber-500 hover:text-amber-400">
-                                    Add one in the admin &rarr;
-                                </Link>
-                            </p>
-                        </Card>
+                        <p className="text-sm text-slate-400" role="status">No parallels recorded.</p>
                     )}
                 </div>
             </div>

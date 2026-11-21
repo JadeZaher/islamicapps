@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,15 +36,10 @@ const TABAQAH_LABELS: Record<string, string> = {
 };
 
 export function NarratorsClient({ narrators, pagination }: NarratorsClientProps) {
-    const router = useRouter();
-
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Narrators</h1>
-                    <p className="text-slate-400 mt-1">Browse narrator biographies and reliability ratings</p>
-                </div>
+                <h1 className="text-3xl font-bold text-white">Narrators</h1>
             </div>
 
             <SearchFilterBar
@@ -87,7 +82,7 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
                                         {n.name_english || 'Unknown'}
                                     </h3>
                                     {n.name_arabic && (
-                                        <span className="text-base text-slate-400 font-amiri shrink-0" dir="rtl">
+                                        <span className="text-base text-slate-400 font-arabic shrink-0" lang="ar" dir="rtl">
                                             {n.name_arabic}
                                         </span>
                                     )}
@@ -116,12 +111,12 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
                                 </div>
                             </div>
                             <Button
+                                asChild
                                 size="sm"
                                 variant="outline"
-                                onClick={() => router.push(`/narrator/${n.id}`)}
                                 className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 shrink-0 ml-4"
                             >
-                                View
+                                <Link href={`/narrator/${n.id}`} aria-label={`View ${n.name_english || 'narrator'}`}>View</Link>
                             </Button>
                         </div>
                     </Card>
@@ -138,7 +133,6 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
                     totalPages={pagination.totalPages}
                     total={pagination.total}
                     pageSize={pagination.pageSize}
-                    onPageChange={(p) => router.push(`?page=${p}`)}
                 />
             </div>
         </div>

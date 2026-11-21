@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { getAllNarrators, searchNarrators } from '@/app/actions/graph-actions';
+import { DEFAULT_PAGE_SIZE, parsePageParam } from '@/lib/pagination';
 import { NarratorsClient } from './client';
 
 interface PageProps {
@@ -9,7 +10,7 @@ interface PageProps {
 
 export default async function NarratorsPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const page = parseInt(params.page || '1', 10);
+    const requestedPage = parsePageParam(params.page);
     const q = params.q || '';
     const reliability = params.reliability || '';
     const tabaqah = params.tabaqah || '';
@@ -18,19 +19,23 @@ export default async function NarratorsPage({ searchParams }: PageProps) {
 
     let result;
     if (hasFilters) {
+        // searchNarrators returns every match, so paginate here instead of rendering them all.
         const narrators = await searchNarrators(q, {
             reliability: reliability || undefined,
             tabaqah: tabaqah || undefined,
         });
+        const pageSize = DEFAULT_PAGE_SIZE;
+        const totalPages = Math.max(1, Math.ceil(narrators.length / pageSize));
+        const page = Math.min(requestedPage, totalPages);
         result = {
-            items: narrators,
-            page: 1,
-            totalPages: 1,
+            items: narrators.slice((page - 1) * pageSize, page * pageSize),
+            page,
+            totalPages,
             total: narrators.length,
-            pageSize: 50,
+            pageSize,
         };
     } else {
-        result = await getAllNarrators({ page });
+        result = await getAllNarrators({ page: requestedPage });
     }
 
     return (

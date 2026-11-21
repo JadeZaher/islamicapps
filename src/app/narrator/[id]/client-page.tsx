@@ -1,37 +1,14 @@
 'use client';
 
-import { useState, type ComponentProps } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { TabaqahTimeline } from '@/components/TabaqahTimeline';
 import { HistoricalTimeline, type HistoricalTimelineEvent } from '@/components/HistoricalTimeline';
 import { CommentarySection } from '@/components/CommentarySection';
 import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/components/TraditionBadge';
+import { ConsensusBadge } from '@/components/ConsensusBadge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-/** Inline badge rendering the reliability_consensus verdict.
- *  Colours map to the classical taxonomy: trust-tier = green, contested = amber,
- *  weak = orange/red, not-applicable (Companion / Prophet) = neutral cyan. */
-function ConsensusBadge({ verdict }: { verdict: string }) {
-    const map: Record<string, { label: string; cls: string }> = {
-        thiqa_thabt:    { label: 'thiqa thabt',    cls: 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' },
-        thiqa:          { label: 'thiqa',          cls: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30' },
-        'ṣadūq':        { label: 'ṣadūq',          cls: 'bg-lime-500/15  text-lime-200    border-lime-500/30'    },
-        'lā_baʾsa_bihi':{ label: 'lā baʾsa bihi',  cls: 'bg-lime-500/10  text-lime-200    border-lime-500/20'    },
-        mukhtalaf_fīhi: { label: 'mukhtalaf fīhi', cls: 'bg-amber-500/15 text-amber-200   border-amber-500/30'   },
-        majhūl:         { label: 'majhūl',         cls: 'bg-slate-500/20 text-slate-200   border-slate-500/30'   },
-        'ḍaʿīf':        { label: 'ḍaʿīf',          cls: 'bg-orange-500/20 text-orange-200 border-orange-500/40'  },
-        matrūk:         { label: 'matrūk',         cls: 'bg-rose-500/20  text-rose-200    border-rose-500/40'    },
-        kadhāb:         { label: 'kadhāb',         cls: 'bg-red-600/25   text-red-200     border-red-600/50'     },
-        not_applicable: { label: 'ʿadālat al-ṣaḥāba',  cls: 'bg-cyan-500/15  text-cyan-200    border-cyan-500/30'    },
-    };
-    const m = map[verdict] || { label: verdict, cls: 'bg-white/10 text-white/80 border-white/20' };
-    return (
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${m.cls}`}>
-            {m.label}
-        </span>
-    );
-}
 
 function DateEvidence({
     sourceText,
@@ -146,6 +123,12 @@ export interface NarratorClientPageProps {
     };
 }
 
+const HADITH_QUERY_LIMIT = 100;
+
+const TAB_TRIGGER_CLASS =
+    'flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-1 pb-3 pt-1 text-sm font-medium text-white/60 shadow-none ' +
+    'hover:text-white data-[state=active]:border-cyan-400 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none';
+
 export default function NarratorClientPage({
     narratorDetails,
     narratorNetwork,
@@ -155,45 +138,48 @@ export default function NarratorClientPage({
 }: NarratorClientPageProps) {
     const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
 
+    const teachers = narratorNetwork?.teachers ?? [];
+    const students = narratorNetwork?.students ?? [];
+    const hasNetwork = teachers.length > 0 || students.length > 0;
+    const hasTimeline = historicalEvents.length > 0;
+    const hadithCount = narratorDetails.other_hadiths?.length ?? 0;
+    const hasHadiths = hadithCount > 0;
+    // The upstream query is LIMIT 100: a full page means "at least 100", not exactly 100.
+    const hadithCountLabel = hadithCount >= HADITH_QUERY_LIMIT ? `${HADITH_QUERY_LIMIT}+` : String(hadithCount);
+
+    // v2 rows carry death_date_*; v1 rows carry death_year_*. Unknown stays undefined.
+    const deathYearHijri = narratorDetails.death_year_hijri ?? narratorDetails.death_date_hijri;
+    const deathYearGregorian = narratorDetails.death_year_gregorian ?? narratorDetails.death_date_gregorian;
+
     return (
         <Tabs defaultValue="biography" className="w-full">
-            <div className="mb-8 bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 overflow-x-auto">
-                <TabsList className="w-full justify-start gap-2 bg-transparent h-auto p-0">
-                    <TabsTrigger
-                        value="biography"
-                        className="data-[state=active]:bg-cyan-700 data-[state=active]:text-white text-white/70 px-4 py-2 rounded-lg border border-white/20 data-[state=active]:border-cyan-600"
-                    >
+            <div className="mb-8 overflow-x-auto border-b border-white/10 [scrollbar-width:none]">
+                <TabsList className="h-auto w-max min-w-full justify-start gap-6 rounded-none bg-transparent p-0">
+                    <TabsTrigger value="biography" className={TAB_TRIGGER_CLASS}>
                         Biography
                     </TabsTrigger>
-                    <TabsTrigger
-                        value="timeline"
-                        className="data-[state=active]:bg-cyan-700 data-[state=active]:text-white text-white/70 px-4 py-2 rounded-lg border border-white/20 data-[state=active]:border-cyan-600"
-                    >
-                        Historical Timeline
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="network"
-                        className="data-[state=active]:bg-cyan-700 data-[state=active]:text-white text-white/70 px-4 py-2 rounded-lg border border-white/20 data-[state=active]:border-cyan-600"
-                    >
-                        Teacher-Student Network
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="hadiths"
-                        className="data-[state=active]:bg-cyan-700 data-[state=active]:text-white text-white/70 px-4 py-2 rounded-lg border border-white/20 data-[state=active]:border-cyan-600"
-                    >
-                        Hadiths
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="commentaries"
-                        className="data-[state=active]:bg-cyan-700 data-[state=active]:text-white text-white/70 px-4 py-2 rounded-lg border border-white/20 data-[state=active]:border-cyan-600"
-                    >
-                        Commentaries
-                    </TabsTrigger>
+                    {hasTimeline && (
+                        <TabsTrigger value="timeline" className={TAB_TRIGGER_CLASS}>
+                            Historical Timeline
+                        </TabsTrigger>
+                    )}
+                    {hasNetwork && (
+                        <TabsTrigger value="network" className={TAB_TRIGGER_CLASS}>
+                            Teachers and Students
+                        </TabsTrigger>
+                    )}
+                    {hasHadiths && (
+                        <TabsTrigger value="hadiths" className={TAB_TRIGGER_CLASS}>
+                            Hadiths
+                        </TabsTrigger>
+                    )}
+                    {commentaries.length > 0 && (
+                        <TabsTrigger value="commentaries" className={TAB_TRIGGER_CLASS}>
+                            Commentaries
+                        </TabsTrigger>
+                    )}
                     {traditionConnections && traditionConnections.traditions.length > 0 && (
-                        <TabsTrigger
-                            value="traditions"
-                            className="data-[state=active]:bg-amber-600 data-[state=active]:text-white text-white/70 px-4 py-2 rounded-lg border border-white/20 data-[state=active]:border-amber-500"
-                        >
+                        <TabsTrigger value="traditions" className={TAB_TRIGGER_CLASS}>
                             Tradition Connections ({traditionConnections.traditions.length})
                         </TabsTrigger>
                     )}
@@ -342,7 +328,7 @@ export default function NarratorClientPage({
                                     </h3>
                                     <div className="space-y-2 text-white/80">
                                         {(narratorDetails.birth_year_hijri !== undefined
-                                            || narratorDetails.birth_year_gregorian !== undefined) && (
+                                            || narratorDetails.birth_year_gregorian !== undefined) ? (
                                             <div>
                                                 <p>
                                                     <span className="font-semibold">Born:</span>
@@ -362,20 +348,24 @@ export default function NarratorClientPage({
                                                     reviewStatus={narratorDetails.birth_date_review_status}
                                                 />
                                             </div>
+                                        ) : (
+                                            <p>
+                                                <span className="font-semibold">Born:</span>{' '}
+                                                <span className="text-white/50">unknown</span>
+                                            </p>
                                         )}
-                                        {(narratorDetails.death_year_hijri !== undefined
-                                            || narratorDetails.death_year_gregorian !== undefined) && (
+                                        {(deathYearHijri !== undefined || deathYearGregorian !== undefined) ? (
                                             <div>
                                                 <p>
                                                     <span className="font-semibold">Died:</span>
-                                                    {narratorDetails.death_year_hijri !== undefined ? (
+                                                    {deathYearHijri !== undefined ? (
                                                         <>
-                                                            {' '}{narratorDetails.death_year_hijri} AH
-                                                            {narratorDetails.death_year_gregorian !== undefined
-                                                                && ` (${narratorDetails.death_year_gregorian} CE)`}
+                                                            {' '}{deathYearHijri} AH
+                                                            {deathYearGregorian !== undefined
+                                                                && ` (${deathYearGregorian} CE)`}
                                                         </>
                                                     ) : (
-                                                        <> {narratorDetails.death_year_gregorian} CE</>
+                                                        <> {deathYearGregorian} CE</>
                                                     )}
                                                 </p>
                                                 <DateEvidence
@@ -384,6 +374,11 @@ export default function NarratorClientPage({
                                                     reviewStatus={narratorDetails.death_date_review_status}
                                                 />
                                             </div>
+                                        ) : (
+                                            <p>
+                                                <span className="font-semibold">Died:</span>{' '}
+                                                <span className="text-white/50">unknown</span>
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -395,9 +390,7 @@ export default function NarratorClientPage({
                     <div>
                         <Card className="bg-white/5 border-white/10">
                             <CardContent className="pt-6">
-                                <TabaqahTimeline
-                                    currentTabaqah={narratorDetails.tabaqah as ComponentProps<typeof TabaqahTimeline>['currentTabaqah']}
-                                />
+                                <TabaqahTimeline currentTabaqah={narratorDetails.tabaqah} />
                             </CardContent>
                         </Card>
                     </div>
@@ -411,19 +404,13 @@ export default function NarratorClientPage({
                         <CardTitle className="text-white">Historical Timeline</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {historicalEvents && historicalEvents.length > 0 ? (
-                            <HistoricalTimeline
-                                events={historicalEvents}
-                                narratorBirthYear={narratorDetails.birth_year_hijri}
-                                narratorDeathYear={narratorDetails.death_year_hijri}
-                                onEventSelect={setSelectedEvent}
-                                selectedEventId={selectedEvent}
-                            />
-                        ) : (
-                            <div className="text-center py-12">
-                                <p className="text-white/60">No historical events available for this period.</p>
-                            </div>
-                        )}
+                        <HistoricalTimeline
+                            events={historicalEvents}
+                            narratorBirthYear={narratorDetails.birth_year_hijri}
+                            narratorDeathYear={deathYearHijri}
+                            onEventSelect={setSelectedEvent}
+                            selectedEventId={selectedEvent}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -432,14 +419,14 @@ export default function NarratorClientPage({
             <TabsContent value="network">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Teachers */}
-                    {narratorNetwork?.teachers && narratorNetwork.teachers.length > 0 && (
+                    {teachers.length > 0 && (
                         <Card className="bg-white/5 border-white/10">
                             <CardHeader>
                                 <CardTitle className="text-white">Teachers</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {narratorNetwork.teachers.map((teacher) => (
+                                    {teachers.map((teacher) => (
                                         <Link
                                             key={teacher.id}
                                             href={`/narrator/${teacher.id}`}
@@ -449,7 +436,7 @@ export default function NarratorClientPage({
                                             <h4 className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
                                                 {teacher.name_english}
                                             </h4>
-                                            <p className="text-sm text-cyan-200/80 font-arabic mt-1">
+                                            <p lang="ar" dir="rtl" className="text-sm text-cyan-200/80 font-arabic mt-1 text-start">
                                                 {teacher.name_arabic}
                                             </p>
                                             {teacher.relationship && (
@@ -463,14 +450,14 @@ export default function NarratorClientPage({
                     )}
 
                     {/* Students */}
-                    {narratorNetwork?.students && narratorNetwork.students.length > 0 && (
+                    {students.length > 0 && (
                         <Card className="bg-white/5 border-white/10">
                             <CardHeader>
                                 <CardTitle className="text-white">Students</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {narratorNetwork.students.map((student) => (
+                                    {students.map((student) => (
                                         <Link
                                             key={student.id}
                                             href={`/narrator/${student.id}`}
@@ -480,7 +467,7 @@ export default function NarratorClientPage({
                                             <h4 className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
                                                 {student.name_english}
                                             </h4>
-                                            <p className="text-sm text-cyan-200/80 font-arabic mt-1">
+                                            <p lang="ar" dir="rtl" className="text-sm text-cyan-200/80 font-arabic mt-1 text-start">
                                                 {student.name_arabic}
                                             </p>
                                             {student.relationship && (
@@ -493,11 +480,6 @@ export default function NarratorClientPage({
                         </Card>
                     )}
 
-                    {!narratorNetwork?.teachers && !narratorNetwork?.students && (
-                        <div className="col-span-2 text-center py-12">
-                            <p className="text-white/60">No network information available for this narrator.</p>
-                        </div>
-                    )}
                 </div>
             </TabsContent>
 
@@ -507,7 +489,7 @@ export default function NarratorClientPage({
                     <CardHeader>
                         <CardTitle className="text-white">
                             Hadiths Narrated
-                            {narratorDetails.other_hadiths && ` (${narratorDetails.other_hadiths.length})`}
+                            {` (${hadithCountLabel})`}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -565,7 +547,7 @@ export default function NarratorClientPage({
                                         <div key={t.id} className="p-4 bg-amber-900/20 border border-amber-500/20 rounded-lg min-w-48">
                                             <TraditionBadge tradition={t.name} size="md" />
                                             {t.name_arabic && (
-                                                <p className="text-slate-400 font-arabic mt-1 text-sm">{t.name_arabic}</p>
+                                                <p lang="ar" dir="rtl" className="text-slate-400 font-arabic mt-1 text-sm text-start">{t.name_arabic}</p>
                                             )}
                                             {t.description && (
                                                 <p className="text-xs text-slate-400 mt-2 leading-relaxed">{t.description}</p>

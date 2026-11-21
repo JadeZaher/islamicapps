@@ -7,7 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Edit2 } from 'lucide-react';
+import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -28,6 +29,8 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
         modern_country: '',
@@ -45,6 +48,8 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
+        setFormError(null);
         try {
             const submitData = {
                 ...formData,
@@ -63,12 +68,17 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             router.refresh();
         } catch (error) {
             console.error('Error creating location:', error);
+            setFormError('Could not create the location. Check the fields and try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleEdit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingId) return;
+        setIsSaving(true);
+        setFormError(null);
         try {
             const submitData = {
                 ...formData,
@@ -87,18 +97,15 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             router.refresh();
         } catch (error) {
             console.error('Error updating location:', error);
+            setFormError('Could not update the location. Check the fields and try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleDelete = async (locationId: string) => {
-        if (confirm('Are you sure you want to delete this location?')) {
-            try {
-                await deleteLocation(locationId);
-                router.refresh();
-            } catch (error) {
-                console.error('Error deleting location:', error);
-            }
-        }
+        await deleteLocation(locationId);
+        router.refresh();
     };
 
     const handleStartEdit = (location: any) => {
@@ -111,19 +118,18 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             longitude: location.longitude || '',
         });
         setIsCreating(false);
+        setFormError(null);
     };
 
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Locations Manager</h1>
-                    <p className="text-slate-400 mt-1">Manage historical Islamic locations</p>
-                </div>
+                <h1 className="text-3xl font-bold text-white">Locations</h1>
                 <Button
                     onClick={() => {
                         setIsCreating(true);
                         setEditingId(null);
+                        setFormError(null);
                         setFormData({
                             name: '',
                             modern_country: '',
@@ -150,7 +156,12 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                     <h2 className="text-xl font-semibold text-white mb-4">
                         {editingId ? 'Edit Location' : 'Create New Location'}
                     </h2>
-                    <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4">
+                    <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4" aria-busy={isSaving}>
+                        {formError && (
+                            <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                                {formError}
+                            </div>
+                        )}
                         <div>
                             <Label htmlFor="name" className="text-slate-300">
                                 Location Name
@@ -224,15 +235,17 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                         </div>
 
                         <div className="flex gap-3">
-                            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                                {editingId ? 'Update' : 'Create'}
+                            <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                                {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
+                                disabled={isSaving}
                                 onClick={() => {
                                     setIsCreating(false);
                                     setEditingId(null);
+                                    setFormError(null);
                                 }}
                                 className="border-slate-600 text-slate-300"
                             >
@@ -272,23 +285,21 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                 </div>
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex items-start gap-2">
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleStartEdit(location)}
+                                    aria-label={`Edit ${location.name}`}
                                     className="border-slate-600 text-slate-300"
                                 >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit2 className="w-4 h-4" aria-hidden="true" />
                                 </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleDelete(location.id)}
-                                    className="border-red-600/30 text-red-400 hover:bg-red-500/10"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
+                                <ConfirmDelete
+                                    itemName="location"
+                                    consequence={`Delete "${location.name}"? This removes the location permanently and cannot be undone.`}
+                                    onConfirm={() => handleDelete(location.id)}
+                                />
                             </div>
                         </div>
                     </Card>

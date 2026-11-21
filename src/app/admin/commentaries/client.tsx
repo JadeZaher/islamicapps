@@ -15,7 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Edit2 } from 'lucide-react';
+import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -49,6 +50,8 @@ export function CommentariesManagerClient({
     );
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [hadithSearch, setHadithSearch] = useState('');
     const [narratorSearch, setNarratorSearch] = useState('');
     const [hadithResults, setHadithResults] = useState<any[]>([]);
@@ -99,6 +102,8 @@ export function CommentariesManagerClient({
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
+        setFormError(null);
         try {
             await createCommentary(formData as any);
             setFormData({
@@ -117,12 +122,17 @@ export function CommentariesManagerClient({
             router.refresh();
         } catch (error) {
             console.error('Error creating commentary:', error);
+            setFormError('Could not create the commentary. Check the fields and try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleEdit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingId) return;
+        setIsSaving(true);
+        setFormError(null);
         try {
             await updateCommentary(editingId, formData as any);
             setFormData({
@@ -141,18 +151,15 @@ export function CommentariesManagerClient({
             router.refresh();
         } catch (error) {
             console.error('Error updating commentary:', error);
+            setFormError('Could not update the commentary. Check the fields and try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleDelete = async (commentaryId: string) => {
-        if (confirm('Are you sure you want to delete this commentary?')) {
-            try {
-                await deleteCommentary(commentaryId);
-                setCommentaries(commentaries.filter((c) => c.id !== commentaryId));
-            } catch (error) {
-                console.error('Error deleting commentary:', error);
-            }
-        }
+        await deleteCommentary(commentaryId);
+        setCommentaries(commentaries.filter((c) => c.id !== commentaryId));
     };
 
     const handleStartEdit = (commentary: any) => {
@@ -168,6 +175,7 @@ export function CommentariesManagerClient({
             narrator_id: commentary.narrator?.id || '',
         });
         setIsCreating(false);
+        setFormError(null);
     };
 
     const getTypeBadgeColor = (type: string): string => {
@@ -184,14 +192,12 @@ export function CommentariesManagerClient({
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Commentaries Manager</h1>
-                    <p className="text-slate-400 mt-1">Manage scholarly commentaries on hadiths and narrators</p>
-                </div>
+                <h1 className="text-3xl font-bold text-white">Commentaries</h1>
                 <Button
                     onClick={() => {
                         setIsCreating(true);
                         setEditingId(null);
+                        setFormError(null);
                         setFormData({
                             source_work: '',
                             author: '',
@@ -216,7 +222,12 @@ export function CommentariesManagerClient({
                     <h2 className="text-xl font-semibold text-white mb-4">
                         {editingId ? 'Edit Commentary' : 'Create New Commentary'}
                     </h2>
-                    <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4">
+                    <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4" aria-busy={isSaving}>
+                        {formError && (
+                            <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                                {formError}
+                            </div>
+                        )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="source_work" className="text-slate-300">
@@ -289,6 +300,8 @@ export function CommentariesManagerClient({
                                 value={formData.text_arabic}
                                 onChange={(e) => setFormData({ ...formData, text_arabic: e.target.value })}
                                 placeholder="النص العربي"
+                                lang="ar"
+                                dir="rtl"
                                 className="mt-2 bg-slate-800 border-slate-700 text-white"
                             />
                         </div>
@@ -331,6 +344,7 @@ export function CommentariesManagerClient({
                                         <button
                                             type="button"
                                             onClick={() => setFormData({ ...formData, hadith_id: '' })}
+                                            aria-label="Remove linked hadith"
                                             className="text-xs text-red-400 hover:text-red-300"
                                         >
                                             Remove
@@ -383,6 +397,7 @@ export function CommentariesManagerClient({
                                         <button
                                             type="button"
                                             onClick={() => setFormData({ ...formData, narrator_id: '' })}
+                                            aria-label="Remove linked narrator"
                                             className="text-xs text-red-400 hover:text-red-300"
                                         >
                                             Remove
@@ -411,15 +426,17 @@ export function CommentariesManagerClient({
                         </div>
 
                         <div className="flex gap-3">
-                            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                                {editingId ? 'Update' : 'Create'}
+                            <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                                {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
+                                disabled={isSaving}
                                 onClick={() => {
                                     setIsCreating(false);
                                     setEditingId(null);
+                                    setFormError(null);
                                 }}
                                 className="border-slate-600 text-slate-300"
                             >
@@ -460,7 +477,7 @@ export function CommentariesManagerClient({
                                 <p className="text-sm text-slate-400 mb-3">By {commentary.author}</p>
                                 <p className="text-sm text-slate-300 mb-3">{commentary.text}</p>
                                 {commentary.text_arabic && (
-                                    <p className="text-sm text-slate-400 mb-3 font-arabic">{commentary.text_arabic}</p>
+                                    <p className="text-sm text-slate-400 mb-3 font-arabic" lang="ar" dir="rtl">{commentary.text_arabic}</p>
                                 )}
                                 <div className="flex flex-wrap gap-3 text-xs text-slate-400">
                                     {commentary.hadith && (
@@ -481,23 +498,21 @@ export function CommentariesManagerClient({
                                 </div>
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex items-start gap-2">
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleStartEdit(commentary)}
+                                    aria-label={`Edit commentary: ${commentary.source_work}`}
                                     className="border-slate-600 text-slate-300"
                                 >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit2 className="w-4 h-4" aria-hidden="true" />
                                 </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleDelete(commentary.id)}
-                                    className="border-red-600/30 text-red-400 hover:bg-red-500/10"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
+                                <ConfirmDelete
+                                    itemName="commentary"
+                                    consequence={`Delete the commentary from "${commentary.source_work}"? This removes it permanently and cannot be undone.`}
+                                    onConfirm={() => handleDelete(commentary.id)}
+                                />
                             </div>
                         </div>
                     </Card>

@@ -31,6 +31,7 @@ interface CategoryStyle {
     bg: string;
     border: string;
     dot: string;
+    hover: string;
     label: string;
 }
 
@@ -39,72 +40,84 @@ const CATEGORY_COLORS: Record<string, CategoryStyle> = {
         bg: 'bg-violet-500/20',
         border: 'border-violet-500/40',
         dot: 'bg-violet-500',
+        hover: 'hover:bg-violet-500/20 hover:border-violet-500/40',
         label: 'Prophetic era',
     },
     RASHIDUN: {
         bg: 'bg-amber-500/20',
         border: 'border-amber-500/40',
         dot: 'bg-amber-500',
+        hover: 'hover:bg-amber-500/20 hover:border-amber-500/40',
         label: 'Rashidun',
     },
     UMAYYAD: {
         bg: 'bg-orange-500/20',
         border: 'border-orange-500/40',
         dot: 'bg-orange-500',
+        hover: 'hover:bg-orange-500/20 hover:border-orange-500/40',
         label: 'Umayyad',
     },
     ABBASID: {
         bg: 'bg-purple-500/20',
         border: 'border-purple-500/40',
         dot: 'bg-purple-500',
+        hover: 'hover:bg-purple-500/20 hover:border-purple-500/40',
         label: 'Abbasid',
     },
     SCHOLARLY: {
         bg: 'bg-blue-500/20',
         border: 'border-blue-500/40',
         dot: 'bg-blue-500',
+        hover: 'hover:bg-blue-500/20 hover:border-blue-500/40',
         label: 'Scholarly',
     },
     MILITARY: {
         bg: 'bg-rose-500/20',
         border: 'border-rose-500/40',
         dot: 'bg-rose-500',
+        hover: 'hover:bg-rose-500/20 hover:border-rose-500/40',
         label: 'Military',
     },
     POLITICAL: {
         bg: 'bg-red-500/20',
         border: 'border-red-500/40',
         dot: 'bg-red-500',
+        hover: 'hover:bg-red-500/20 hover:border-red-500/40',
         label: 'Political',
     },
     SCIENTIFIC: {
         bg: 'bg-blue-500/20',
         border: 'border-blue-500/40',
         dot: 'bg-blue-500',
+        hover: 'hover:bg-blue-500/20 hover:border-blue-500/40',
         label: 'Scientific',
     },
     CULTURAL: {
         bg: 'bg-teal-500/20',
         border: 'border-teal-500/40',
         dot: 'bg-teal-500',
+        hover: 'hover:bg-teal-500/20 hover:border-teal-500/40',
         label: 'Cultural',
     },
     RELIGIOUS: {
         bg: 'bg-green-500/20',
         border: 'border-green-500/40',
         dot: 'bg-green-500',
+        hover: 'hover:bg-green-500/20 hover:border-green-500/40',
         label: 'Religious',
     },
     SOCIAL: {
         bg: 'bg-cyan-500/20',
         border: 'border-cyan-500/40',
         dot: 'bg-cyan-500',
+        hover: 'hover:bg-cyan-500/20 hover:border-cyan-500/40',
         label: 'Social',
     },
     OTHER: {
         bg: 'bg-gray-500/20',
         border: 'border-gray-500/40',
         dot: 'bg-gray-500',
+        hover: 'hover:bg-gray-500/20 hover:border-gray-500/40',
         label: 'Other',
     },
 };
@@ -163,9 +176,9 @@ export function HistoricalTimeline({
     const isEventInNarratorLifetime = (event: HistoricalTimelineEvent) => {
         const eventStart = event.start_year_hijri ?? event.year_hijri;
         const eventEnd = event.end_year_hijri ?? eventStart;
-        const afterBirth = narratorBirthYear === undefined || eventEnd >= narratorBirthYear;
-        const beforeDeath = narratorDeathYear === undefined || eventStart <= narratorDeathYear;
-        return afterBirth && beforeDeath;
+        // Unknown birth or death means the lifetime is unknown: never claim an overlap.
+        if (narratorBirthYear === undefined || narratorDeathYear === undefined) return false;
+        return eventEnd >= narratorBirthYear && eventStart <= narratorDeathYear;
     };
 
     return (
@@ -178,13 +191,17 @@ export function HistoricalTimeline({
                         <span className="text-sm text-white/70">{colors.label}</span>
                     </div>
                 ))}
-                {(hasBirthYear || hasDeathYear) && (
-                    <>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full border-2 border-yellow-500 bg-transparent" />
-                            <span className="text-sm text-white/70">Life Period</span>
-                        </div>
-                    </>
+                {hasBirthYear && hasDeathYear ? (
+                    <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full border-2 border-yellow-500 bg-transparent" />
+                        <span className="text-sm text-white/70">Life Period</span>
+                    </div>
+                ) : (
+                    <p className="text-sm text-white/60">
+                        {hasBirthYear || hasDeathYear
+                            ? `Only the ${hasBirthYear ? 'birth' : 'death'} year is known, so events are not matched to this narrator's lifetime.`
+                            : "Birth and death years are unknown, so events are not matched to this narrator's lifetime."}
+                    </p>
                 )}
             </div>
 
@@ -270,14 +287,16 @@ export function HistoricalTimeline({
 
                                 {/* Event card */}
                                 <button
+                                    type="button"
                                     onClick={() => {
                                         setExpandedEventId(isExpanded ? null : event.id);
                                         onEventSelect?.(event.id);
                                     }}
-                                    className={`w-96 text-left p-4 rounded-lg border transition-all duration-300 cursor-pointer
+                                    aria-expanded={isExpanded}
+                                    className={`w-full max-w-96 text-left p-4 rounded-lg border transition-all duration-300 cursor-pointer
                                         ${isExpanded
                                         ? `${colors.bg} ${colors.border} border-2`
-                                        : `bg-white/5 border-white/10 hover:${colors.bg} hover:${colors.border}`
+                                        : `bg-white/5 border-white/10 ${colors.hover}`
                                     }`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
@@ -293,7 +312,7 @@ export function HistoricalTimeline({
                                                     </span>
                                                 )}
                                             </div>
-                                            <h4 className="font-semibold text-white text-sm group-hover:text-cyan-300">
+                                            <h4 className="font-semibold text-white text-sm">
                                                 {event.title}
                                             </h4>
                                         </div>
@@ -319,7 +338,7 @@ export function HistoricalTimeline({
                                     )}
                                 </button>
                                 {isExpanded && hasCitation && (
-                                    <div className="mt-2 w-96 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/60">
+                                    <div className="mt-2 w-full max-w-96 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/60">
                                         <p>
                                             <span className="font-semibold text-white/75">Citation:</span>{' '}
                                             {event.citation_source || 'Source not named'}

@@ -1,11 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface Commentary {
     id: string;
@@ -18,7 +14,8 @@ interface Commentary {
 
 interface CommentarySectionProps {
     commentaries: Commentary[];
-    narratorId: string;
+    /** Kept for call-site compatibility; the public view is read-only. */
+    narratorId?: string;
 }
 
 const COMMENTARY_TYPE_LABELS = {
@@ -51,17 +48,8 @@ const COMMENTARY_TYPE_COLORS = {
     },
 };
 
-export function CommentarySection({ commentaries, narratorId }: CommentarySectionProps) {
-    const [showForm, setShowForm] = useState(false);
+export function CommentarySection({ commentaries }: CommentarySectionProps) {
     const [filterType, setFilterType] = useState<string>('ALL');
-    const [formData, setFormData] = useState({
-        author: '',
-        text: '',
-        source_work: '',
-        reference: '',
-        type: 'HADITH_COMMENTARY' as const,
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Group commentaries by source work
     const groupedCommentaries = commentaries.reduce(
@@ -82,164 +70,21 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
             ? commentaries
             : commentaries.filter((c) => c.type === filterType);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        try {
-            // TODO: Implement API call to save commentary
-            // const response = await fetch('/api/commentaries', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({
-            //         ...formData,
-            //         narrator_id: narratorId,
-            //     }),
-            // });
-            // if (response.ok) {
-            //     // Reset form and refresh data
-            //     setShowForm(false);
-            //     setFormData({...});
-            // }
-
-            // For now, just show a success message
-            alert('Commentary form prepared. API integration needed.');
-            setShowForm(false);
-        } catch (error) {
-            console.error('Error submitting commentary:', error);
-            alert('Error submitting commentary');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
     return (
         <div className="space-y-6">
-            {/* Header with Action Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-white">Scholarly Commentaries</h2>
-                    <p className="text-white/60 text-sm mt-1">
-                        {filteredCommentaries.length} commentary
-                        {filteredCommentaries.length !== 1 ? 'ies' : ''}
-                    </p>
-                </div>
-                <Button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-cyan-700 hover:bg-cyan-800 text-white"
-                >
-                    {showForm ? 'Cancel' : '+ Add Commentary'}
-                </Button>
+            <div>
+                <h2 className="text-2xl font-bold text-white">Scholarly Commentaries</h2>
+                <p className="text-white/60 text-sm mt-1" aria-live="polite">
+                    {filteredCommentaries.length} {filteredCommentaries.length === 1 ? 'commentary' : 'commentaries'}
+                </p>
             </div>
-
-            {/* Add Commentary Form */}
-            {showForm && (
-                <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                        <CardTitle className="text-white">Add New Commentary</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-white/80">Author Name</Label>
-                                    <Input
-                                        name="author"
-                                        value={formData.author}
-                                        onChange={handleInputChange}
-                                        placeholder="Scholar name"
-                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="text-white/80">Source Work</Label>
-                                    <Input
-                                        name="source_work"
-                                        value={formData.source_work}
-                                        onChange={handleInputChange}
-                                        placeholder="Book or manuscript title"
-                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="text-white/80">Commentary Type</Label>
-                                    <select
-                                        name="type"
-                                        value={formData.type}
-                                        onChange={handleInputChange}
-                                        className="w-full px-3 py-2 bg-white/5 border border-white/20 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                                    >
-                                        {Object.entries(COMMENTARY_TYPE_LABELS).map(([key, label]) => (
-                                            <option key={key} value={key} className="bg-slate-900">
-                                                {label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="text-white/80">Reference</Label>
-                                    <Input
-                                        name="reference"
-                                        value={formData.reference}
-                                        onChange={handleInputChange}
-                                        placeholder="Page number, volume, etc."
-                                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label className="text-white/80">Commentary Text</Label>
-                                <Textarea
-                                    name="text"
-                                    value={formData.text}
-                                    onChange={handleInputChange}
-                                    placeholder="Commentary details..."
-                                    className="bg-white/5 border-white/20 text-white placeholder:text-white/50 min-h-32"
-                                    required
-                                />
-                            </div>
-
-                            <div className="flex gap-3 justify-end">
-                                <Button
-                                    type="button"
-                                    onClick={() => setShowForm(false)}
-                                    className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="bg-cyan-700 hover:bg-cyan-800 text-white"
-                                >
-                                    {isSubmitting ? 'Submitting...' : 'Add Commentary'}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            )}
 
             {/* Filter Tabs */}
             {commentaries.length > 0 && (
                 <div className="flex flex-wrap gap-2 pb-4 border-b border-white/10">
                     <button
+                        type="button"
+                        aria-pressed={filterType === 'ALL'}
                         onClick={() => setFilterType('ALL')}
                         className={`px-4 py-2 rounded-lg border transition-all ${
                             filterType === 'ALL'
@@ -253,7 +98,9 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                         const count = commentaries.filter((c) => c.type === type).length;
                         return count > 0 ? (
                             <button
+                                type="button"
                                 key={type}
+                                aria-pressed={filterType === type}
                                 onClick={() => setFilterType(type)}
                                 className={`px-4 py-2 rounded-lg border transition-all ${
                                     filterType === type
@@ -331,17 +178,11 @@ export function CommentarySection({ commentaries, narratorId }: CommentarySectio
                 <Card className="bg-white/5 border-white/10">
                     <CardContent className="py-12">
                         <div className="text-center">
-                            <p className="text-white/60 mb-4">
+                            <p className="text-white/60">
                                 {filterType === 'ALL'
                                     ? 'No commentaries available yet.'
                                     : `No ${COMMENTARY_TYPE_LABELS[filterType as keyof typeof COMMENTARY_TYPE_LABELS]} commentaries found.`}
                             </p>
-                            <Button
-                                onClick={() => setShowForm(true)}
-                                className="bg-cyan-700 hover:bg-cyan-800 text-white"
-                            >
-                                Be the first to add a commentary
-                            </Button>
                         </div>
                     </CardContent>
                 </Card>

@@ -1,152 +1,61 @@
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Book, GitBranch, Globe, Database, Sparkles } from 'lucide-react';
+import { HADITH_TRADITION_OPTIONS } from '@/lib/constants/traditions';
+
+const TRADITION_LINKS = HADITH_TRADITION_OPTIONS.filter((option) => option.value);
+
+const linkClass =
+  'rounded-md border border-slate-800 px-4 py-3 text-sm text-slate-200 outline-none transition-colors hover:border-emerald-500/50 hover:bg-slate-900 focus-visible:ring-2 focus-visible:ring-emerald-400';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white pattern-islamic relative overflow-hidden">
+    <main className="mx-auto flex min-h-[70vh] max-w-2xl flex-col justify-center px-6 py-16 text-slate-100">
+      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Shura wa Istehsan</h1>
+      <p className="mt-3 text-lg text-slate-400">
+        Hadith and narrators across the Sunni, Imami, Zaydi and Ibadi traditions.
+      </p>
 
-      <div className="relative max-w-6xl mx-auto px-6 py-20 animate-fade-in">
-        {/* Hero Section */}
-        <div className="text-center mb-20 animate-slide-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-6">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-medium text-emerald-300">Sunni &amp; Shia Hadith Explorer</span>
-          </div>
-
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tight">
-            <span className="text-cyan-400">
-              Hadith Graph
-            </span>
-            <br />
-            <span className="text-slate-100">Explorer</span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
-            Explore <strong className="font-semibold text-white">60,000+ hadiths</strong> across Sunni and Shia collections.
-            Search by school, source, grading, and topic with interactive graph visualization.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/admin">
-              <Button
-                size="lg"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
-              >
-                <Database className="w-5 h-5 mr-2" />
-                Admin Dashboard
-              </Button>
-            </Link>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-slate-600 hover:border-amber-400/50 text-slate-300 hover:text-amber-400 transition-all duration-300"
-            >
-              <Book className="w-5 h-5 mr-2" />
-              Documentation
-            </Button>
-          </div>
+      <form action="/hadith" role="search" className="mt-8 flex gap-2">
+        <div className="relative w-full">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-slate-500"
+          />
+          <input
+            type="search"
+            name="q"
+            aria-label="Search hadith"
+            placeholder="Search hadith by chapter, topic or text"
+            className="h-12 w-full rounded-lg border border-slate-700 bg-slate-900 pl-10 pr-3 text-base text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          />
         </div>
+        <Button type="submit" size="lg" className="h-12 bg-emerald-600 px-6 text-white hover:bg-emerald-500">
+          Search
+        </Button>
+      </form>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-          <Card className="group relative bg-slate-900/50 border-slate-700 hover:border-emerald-500/50 p-8 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 hover:scale-105 cursor-pointer overflow-hidden">
-            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                <GitBranch className="w-8 h-8 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-100">Interactive Graphs</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Visualize complex transmission chains with force-directed layouts. Click nodes to explore narrator biographies and connections.
-              </p>
-            </div>
-          </Card>
-
-          <Card className="group relative bg-slate-900/50 border-slate-700 hover:border-amber-400/50 p-8 transition-all duration-300 hover:shadow-xl hover:shadow-amber-400/10 hover:scale-105 cursor-pointer overflow-hidden">
-            <div className="absolute inset-0 bg-amber-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-amber-400/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                <Globe className="w-8 h-8 text-amber-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-100">Comparative Studies</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Discover cross-cultural parallels across Jewish, Christian, and Zoroastrian traditions alongside hadith collections.
-              </p>
-            </div>
-          </Card>
-
-          <Card className="group relative bg-slate-900/50 border-slate-700 hover:border-blue-400/50 p-8 transition-all duration-300 hover:shadow-xl hover:shadow-blue-400/10 hover:scale-105 cursor-pointer overflow-hidden">
-            <div className="absolute inset-0 bg-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative">
-              <div className="w-16 h-16 rounded-2xl bg-blue-400/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                <Book className="w-8 h-8 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-100">Multi-School Collections</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Browse Kutub al-Sittah, Al-Kafi, Man La Yahduruhu al-Faqih, Nahj al-Balagha, and 30+ collections across traditions.
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Quick Start Section */}
-        <Card className="bg-slate-900/60 backdrop-blur-sm border-slate-700 p-10 border-islamic shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-slate-100">Quick Start Guide</h2>
-          </div>
-
-          <ol className="space-y-6 text-slate-300">
-            <li className="flex items-start gap-4 group">
-              <span className="flex-shrink-0 w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
-                1
-              </span>
-              <div className="flex-1">
-                <p className="font-semibold text-lg text-slate-100 mb-2">Initialize Database</p>
-                <code className="text-sm bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-lg inline-block font-mono">
-                  npm run db:init
-                </code>
-                <p className="text-sm text-slate-400 mt-2">Sets up Neo4j schema and seeds sample data</p>
-              </div>
+      <nav aria-label="Browse by tradition" className="mt-10">
+        <h2 className="text-sm font-medium text-slate-400">Browse by tradition</h2>
+        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {TRADITION_LINKS.map((option) => (
+            <li key={option.value}>
+              <Link href={`/hadith?tradition=${encodeURIComponent(option.value)}`} className={`block ${linkClass}`}>
+                {option.label}
+              </Link>
             </li>
+          ))}
+        </ul>
+      </nav>
 
-            <li className="flex items-start gap-4 group">
-              <span className="flex-shrink-0 w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
-                2
-              </span>
-              <div className="flex-1">
-                <p className="font-semibold text-lg text-slate-100 mb-2">Visit Admin Dashboard</p>
-                <p className="text-slate-300">
-                  Navigate to <code className="bg-slate-800/80 border border-slate-700 px-3 py-1 rounded font-mono text-emerald-400">/admin</code> to manage Hadiths, narrators, and scholars
-                </p>
-              </div>
-            </li>
-
-            <li className="flex items-start gap-4 group">
-              <span className="flex-shrink-0 w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
-                3
-              </span>
-              <div className="flex-1">
-                <p className="font-semibold text-lg text-slate-100 mb-2">Explore Sample Data</p>
-                <p className="text-slate-300">
-                  Database seeds with <strong className="text-amber-400">Hadith of Jibril</strong> and multiple transmission chains for demonstration
-                </p>
-              </div>
-            </li>
-          </ol>
-        </Card>
-
-        {/* Footer Note */}
-        <div className="text-center mt-16 pb-8">
-          <p className="text-slate-400 text-sm">
-            Built with Next.js • Neo4j • React Force Graph
-          </p>
-        </div>
-      </div>
-    </div>
+      <nav aria-label="More" className="mt-6 flex gap-2">
+        <Link href="/narrator" className={`flex-1 text-center ${linkClass}`}>
+          Narrators
+        </Link>
+        <Link href="/comparative" className={`flex-1 text-center ${linkClass}`}>
+          Comparative studies
+        </Link>
+      </nav>
+    </main>
   );
 }

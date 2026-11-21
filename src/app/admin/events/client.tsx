@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Edit2 } from 'lucide-react';
+import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -39,6 +40,8 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         title_arabic: '',
@@ -59,6 +62,8 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
+        setFormError(null);
         try {
             const submitData = {
                 ...formData,
@@ -80,12 +85,17 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             router.refresh();
         } catch (error) {
             console.error('Error creating event:', error);
+            setFormError('Could not create the event. Check the fields and try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleEdit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingId) return;
+        setIsSaving(true);
+        setFormError(null);
         try {
             const submitData = {
                 ...formData,
@@ -107,18 +117,15 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             router.refresh();
         } catch (error) {
             console.error('Error updating event:', error);
+            setFormError('Could not update the event. Check the fields and try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleDelete = async (eventId: string) => {
-        if (confirm('Are you sure you want to delete this event?')) {
-            try {
-                await deleteHistoricalEvent(eventId);
-                router.refresh();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-            }
-        }
+        await deleteHistoricalEvent(eventId);
+        router.refresh();
     };
 
     const handleStartEdit = (event: any) => {
@@ -134,6 +141,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             location_name: event.location_name || '',
         });
         setIsCreating(false);
+        setFormError(null);
     };
 
     const getCategoryBadgeColor = (category: string): string => {
@@ -152,14 +160,12 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Events Manager</h1>
-                    <p className="text-slate-400 mt-1">Manage historical Islamic events</p>
-                </div>
+                <h1 className="text-3xl font-bold text-white">Events</h1>
                 <Button
                     onClick={() => {
                         setIsCreating(true);
                         setEditingId(null);
+                        setFormError(null);
                         setFormData({
                             title: '',
                             title_arabic: '',
@@ -199,7 +205,12 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                     <h2 className="text-xl font-semibold text-white mb-4">
                         {editingId ? 'Edit Event' : 'Create New Event'}
                     </h2>
-                    <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4">
+                    <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4" aria-busy={isSaving}>
+                        {formError && (
+                            <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                                {formError}
+                            </div>
+                        )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="title" className="text-slate-300">
@@ -223,6 +234,8 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     value={formData.title_arabic}
                                     onChange={(e) => setFormData({ ...formData, title_arabic: e.target.value })}
                                     placeholder="e.g., غزوة بدر"
+                                    lang="ar"
+                                    dir="rtl"
                                     className="mt-2 bg-slate-800 border-slate-700 text-white"
                                 />
                             </div>
@@ -318,15 +331,17 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                         </div>
 
                         <div className="flex gap-3">
-                            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                                {editingId ? 'Update' : 'Create'}
+                            <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                                {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                             </Button>
                             <Button
                                 type="button"
                                 variant="outline"
+                                disabled={isSaving}
                                 onClick={() => {
                                     setIsCreating(false);
                                     setEditingId(null);
+                                    setFormError(null);
                                 }}
                                 className="border-slate-600 text-slate-300"
                             >
@@ -354,7 +369,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                                 </Badge>
                                             </div>
                                             {event.title_arabic && (
-                                                <p className="text-sm text-slate-400 mb-2">{event.title_arabic}</p>
+                                                <p className="text-sm text-slate-400 mb-2 font-arabic" lang="ar" dir="rtl">{event.title_arabic}</p>
                                             )}
                                             <p className="text-sm text-slate-300 mb-3">{event.description}</p>
                                             <div className="flex flex-wrap gap-2 text-xs text-slate-400">
@@ -373,23 +388,21 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-2">
+                                        <div className="flex items-start gap-2">
                                             <Button
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => handleStartEdit(event)}
+                                                aria-label={`Edit ${event.title}`}
                                                 className="border-slate-600 text-slate-300"
                                             >
-                                                <Edit2 className="w-4 h-4" />
+                                                <Edit2 className="w-4 h-4" aria-hidden="true" />
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleDelete(event.id)}
-                                                className="border-red-600/30 text-red-400 hover:bg-red-500/10"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                            <ConfirmDelete
+                                                itemName="event"
+                                                consequence={`Delete "${event.title}"? This removes the event permanently and cannot be undone.`}
+                                                onConfirm={() => handleDelete(event.id)}
+                                            />
                                         </div>
                                     </div>
                                 </Card>

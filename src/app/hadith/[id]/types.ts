@@ -75,7 +75,7 @@ export interface HadithNode {
 export interface GraphNode {
     id: string;
     label?: string;
-    reliability?: string;
+    reliability?: string | null;
     tabaqah?: string;
     name_english?: string;
     name_arabic?: string;
@@ -149,8 +149,8 @@ export interface HadithClientPageProps {
     nodes: GraphNode[];
     edges: GraphEdge[];
     parallels: ParallelRecord[];
-    /** Percentage (0-100) of THIQA narrators in the chain. 0 when chain is empty. */
-    chainHealthScore: number;
+    /** Percentage (0-100) of THIQA narrators; null when no narrator verdicts exist. */
+    chainHealthScore: number | null;
     /** Whether the chain traces back to the Prophet (via Sahabi or explicit mention). */
     tracesToProphet: boolean;
 }
