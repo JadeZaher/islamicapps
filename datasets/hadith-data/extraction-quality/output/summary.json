@@ -1,0 +1,129 @@
+{
+  "works": {
+    "rabi": {
+      "records": 1004,
+      "clean": 37,
+      "text_level_clean": 914,
+      "flag_kinds": {
+        "commentary_tail:continuation_of_rabi_comment_paragraph:defect": 71,
+        "commentary_tail:editorial_section:defect": 1,
+        "commentary_tail:text_after_closing_quote:advisory": 109,
+        "markup_leak:asterisk": 3,
+        "markup_leak:page_or_milestone_residue": 1,
+        "merged_records:kitab_heading_inside": 9,
+        "sanad_matn_split_wrong:chain_present_but_sanad_empty": 42,
+        "sanad_matn_split_wrong:continuation_chain_without_sanad": 1,
+        "sanad_matn_split_wrong:matn_differs_from_rule_split": 691,
+        "sanad_matn_split_wrong:matn_starts_mid_word": 333,
+        "sanad_matn_split_wrong:matn_starts_with_reporting_verb": 523,
+        "truncated:pipeline_dropped_source_lines:defect": 7
+      },
+      "with_defect": 967,
+      "flags": {
+        "commentary_misattributed": 138,
+        "commentary_tail": 181,
+        "footnote_leak": 3,
+        "markup_leak": 4,
+        "merged_records": 9,
+        "sanad_latin_not_arabic_span": 843,
+        "sanad_matn_split_wrong": 891,
+        "truncated": 7
+      },
+      "records_with_proposal": 968,
+      "proposal_fields_validated": {
+        "ok": 2713
+      },
+      "proposal_failures": []
+    },
+    "zayd": {
+      "records": 698,
+      "clean": 7,
+      "text_level_clean": 78,
+      "flag_kinds": {
+        "markup_leak:asterisk": 3,
+        "markup_leak:leading_marker": 612,
+        "merged_records:multiple_reports": 4,
+        "sanad_matn_split_wrong:chain_present_but_sanad_empty": 5,
+        "sanad_matn_split_wrong:matn_differs_from_rule_split": 624,
+        "sanad_matn_split_wrong:matn_starts_mid_word": 315,
+        "sanad_matn_split_wrong:matn_starts_with_reporting_verb": 125,
+        "truncated:pipeline_dropped_source_lines:defect": 1,
+        "truncated:record_ends_inside_a_chain:defect": 2
+      },
+      "with_defect": 691,
+      "flags": {
+        "fragment_only_chain": 3,
+        "markup_leak": 613,
+        "merged_records": 4,
+        "multiple_sayings": 18,
+        "sanad_latin_not_arabic_span": 678,
+        "sanad_matn_split_wrong": 654,
+        "truncated": 3
+      },
+      "records_with_proposal": 691,
+      "proposal_fields_validated": {
+        "ok": 2017
+      },
+      "proposal_failures": []
+    },
+    "rida": {
+      "records": 35,
+      "clean": 0,
+      "text_level_clean": 2,
+      "flag_kinds": {
+        "markup_leak:asterisk": 1,
+        "merged_records:bab_heading_inside": 4,
+        "merged_records:multiple_reports": 32,
+        "sanad_matn_split_wrong:chain_present_but_sanad_empty": 1,
+        "sanad_matn_split_wrong:continuation_chain_without_sanad": 25,
+        "sanad_matn_split_wrong:matn_differs_from_rule_split": 30,
+        "sanad_matn_split_wrong:matn_starts_with_reporting_verb": 33,
+        "truncated:record_ends_inside_a_chain:defect": 2
+      },
+      "with_defect": 35,
+      "flags": {
+        "markup_leak": 1,
+        "merged_records": 32,
+        "sanad_latin_not_arabic_span": 9,
+        "sanad_matn_split_wrong": 35,
+        "truncated": 2
+      },
+      "records_with_proposal": 35,
+      "proposal_fields_validated": {
+        "ok": 656
+      },
+      "proposal_failures": []
+    }
+  },
+  "replay": {
+    "rabi": {
+      "records_replayed": 1004,
+      "production_rows": 1004,
+      "reproduced_exactly": 1004,
+      "replay_only_ids": []
+    },
+    "zayd": {
+      "records_replayed": 699,
+      "production_rows": 698,
+      "reproduced_exactly": 698,
+      "replay_only_ids": [
+        "zayd_0118|118|V01P137"
+      ]
+    },
+    "rida": {
+      "records_replayed": 35,
+      "production_rows": 35,
+      "reproduced_exactly": 35,
+      "replay_only_ids": []
+    }
+  },
+  "missed_source_reports": {
+    "('rabi', 'numbered_report_dropped_whole')": 1,
+    "('rabi', 'orphan_line_dropped_inside_record')": 8,
+    "('rabi', 'rabi_comment_not_loaded_to_production')": 140,
+    "('zayd', 'preamble')": 1,
+    "('zayd', 'shorter_than_10_chars_kept_as_prefix_of_next')": 1,
+    "('zayd', 'unrecognised_line')": 1,
+    "('rida', 'biographical_introduction')": 1
+  }
+}

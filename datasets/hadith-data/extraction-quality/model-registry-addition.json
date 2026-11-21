@@ -1,0 +1,69 @@
+{
+  "draft_note": "Paste the object in `entries` into datasets/hadith-data/model_registry.json `entries` ONLY after a scoring run has actually produced outputs (today the account returns HTTP 402 and no model output exists). `kind` has no enum value for an audit; arabic_text_cleanup is the nearest, add an `extraction_audit` value to model_registry.schema.json if preferred. Fill the bracketed fields from output/run_manifest.json.",
+  "entries": [
+    {
+      "id": "qwen3-7-flash-openrouter-extraction-audit",
+      "model_id": "qwen/qwen3.7-flash",
+      "model_id_status": "namespaced_specific",
+      "model_id_note": "Requested id as sent to OpenRouter (default of score_with_model.py). The response model is not stored per row; verify run_manifest.json before trusting this id.",
+      "runtime": "OpenRouter API (provider policy data_collection deny; temperature 0; reasoning disabled; no referer or title headers)",
+      "kind": "arabic_text_cleanup",
+      "work": "Scores each extracted report of Musnad al-Rabi (rabi, 1,004), Musnad Zayd (zayd, 698) and Sahifat al-Rida (rida, 35) against a window of the OpenITI source, 0-3 for boundaries, cleanliness and sanad/matn split, with flags and verbatim-substring proposals (any proposal that is not a substring of the supplied window is discarded). Arabic only; no translation; no authenticity judgement.",
+      "date_range": {
+        "start": "[UTC date of the first completed request, from run_manifest.json started_utc]",
+        "end": "[UTC date of the last completed request, from run_manifest.json finished_utc]",
+        "basis": "run_manifest.json started_utc/finished_utc and the per-row request_started_utc/request_finished_utc"
+      },
+      "inputs": [
+        "datasets/hadith-data/extraction-quality/output/records_with_windows.jsonl.gz (production text_ar, sanad, matn_ar and a normalised source window per record; 1,737 records)",
+        "datasets/hadith-data/extraction-quality/prompt.md (SHA-256 recorded in every row and in run_manifest.json)"
+      ],
+      "outputs": [
+        {
+          "path": "datasets/hadith-data/extraction-quality/output/model_verdicts.jsonl",
+          "rows": null,
+          "unit": "one verdict per record (status ok or failed)",
+          "note": "[fill: rows with status ok]"
+        },
+        {
+          "path": "datasets/hadith-data/extraction-quality/output/run_manifest.json",
+          "rows": 1,
+          "unit": "run manifest",
+          "note": "model, prompt SHA-256, UTC start/finish, tokens, cost, stop reason"
+        }
+      ],
+      "output_status": "candidate_only",
+      "review_state": "machine_unreviewed; verdicts are advice to a curator. The deterministic audit (deterministic_checks.py) is the rule-based cross-check; disagreements between the two are the review queue.",
+      "pinned": false,
+      "allowed_uses": [
+        "Ranking records for human review of extraction quality.",
+        "Candidate corrections that a curator accepts or rejects against the OpenITI source."
+      ],
+      "prohibited_uses": [
+        "Writing any proposal into text_ar, sanad or matn_ar without a hash-bound human review.",
+        "Treating a score as a statement about the authenticity or grade of a report."
+      ],
+      "quality_findings": [
+        {
+          "finding": "Dry-run estimate for all 1,737 records at US$0.03/0.13 per million tokens: about 1.2 million input and 0.73 million output tokens, about US$0.13 (pessimistic 2.2 characters per token).",
+          "source": "datasets/hadith-data/extraction-quality/README.md, section Cost"
+        },
+        {
+          "finding": "First live attempt (one batch of 4 records) returned HTTP 402 (account out of credit); the harness stopped cleanly with no output rows.",
+          "source": "datasets/hadith-data/extraction-quality/output/run_manifest.json"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "datasets/hadith-data/extraction-quality/output/run_manifest.json",
+          "locator": "whole file (run_id, model, prompt_sha256, started_utc, finished_utc, status, stopped_because)"
+        },
+        {
+          "path": "datasets/hadith-data/extraction-quality/score_with_model.py",
+          "locator": "build_body (request parameters), validate_verdict (substring rule)"
+        }
+      ],
+      "notes": "Draft only. Remove draft_note when pasting."
+    }
+  ]
+}
