@@ -3,7 +3,7 @@
  * Run with: npx tsx src/scripts/probe-neo4j-perf.ts
  */
 import 'dotenv/config';
-import { runQuery, runWrite } from '@/lib/db/neo4j';
+import { runQuery } from '@/lib/db/neo4j';
 
 async function main() {
     console.log('=== Railway Neo4j perf probe ===\n');

@@ -22,10 +22,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadEnv } from '../lib/env';
-import { runQuery, runWrite, closeDriver } from '../../lib/db/neo4j';
-
-loadEnv();
+import { runQuery, closeDriver } from '../../lib/db/neo4j';
+import { configureLiveNeo4jTest } from './neo4j-test-env';
 
 // ─── Harness ─────────────────────────────────────────────────────────────────
 
@@ -251,8 +249,18 @@ async function testTC4_live_cypher(): Promise<void> {
   // DEPENDENCY NOTE: TC4 requires workstream E (mode-fullregen.ts) to have
   // run and canonicalized tradition strings on all nodes. Not yet landed.
 
+  const gate = configureLiveNeo4jTest();
+  if (!gate.enabled) {
+    const reason = `live Neo4j tests disabled: ${gate.reason}`;
+    defer('TC4: zero :Hadith with tradition="Shia Imami" post-fullregen', reason);
+    defer('TC4: zero :Hadith with tradition="Shia Zaydi" post-fullregen', reason);
+    defer('TC4: zero :Narrator with tradition="Shia Imami" post-fullregen', reason);
+    defer('TC4: zero :Narrator with tradition="Shia Zaydi" post-fullregen', reason);
+    return;
+  }
+
   const live = await (async () => {
-    try { await runWrite('RETURN 1 AS ok'); return true; } catch { return false; }
+    try { await runQuery('RETURN 1 AS ok'); return true; } catch { return false; }
   })();
 
   if (!live) {

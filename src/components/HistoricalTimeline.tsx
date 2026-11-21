@@ -2,24 +2,75 @@
 
 import { useState } from 'react';
 
-interface HistoricalEvent {
+export interface HistoricalTimelineEvent {
     id: string;
     title: string;
     description: string;
     year_hijri: number;
-    year_gregorian: number;
-    category: 'POLITICAL' | 'SCIENTIFIC' | 'CULTURAL' | 'RELIGIOUS' | 'OTHER';
+    year_gregorian?: number;
+    start_year_hijri?: number;
+    start_year_gregorian?: number;
+    end_year_hijri?: number;
+    end_year_gregorian?: number;
+    category?: string;
+    citation_source?: string;
+    citation_locator?: string;
+    citation_url?: string;
+    citation_retrieved_at?: string;
 }
 
 interface HistoricalTimelineProps {
-    events: HistoricalEvent[];
+    events: HistoricalTimelineEvent[];
     narratorBirthYear?: number;
     narratorDeathYear?: number;
     onEventSelect?: (eventId: string) => void;
     selectedEventId?: string | null;
 }
 
-const CATEGORY_COLORS = {
+interface CategoryStyle {
+    bg: string;
+    border: string;
+    dot: string;
+    label: string;
+}
+
+const CATEGORY_COLORS: Record<string, CategoryStyle> = {
+    PROPHETIC_ERA: {
+        bg: 'bg-violet-500/20',
+        border: 'border-violet-500/40',
+        dot: 'bg-violet-500',
+        label: 'Prophetic era',
+    },
+    RASHIDUN: {
+        bg: 'bg-amber-500/20',
+        border: 'border-amber-500/40',
+        dot: 'bg-amber-500',
+        label: 'Rashidun',
+    },
+    UMAYYAD: {
+        bg: 'bg-orange-500/20',
+        border: 'border-orange-500/40',
+        dot: 'bg-orange-500',
+        label: 'Umayyad',
+    },
+    ABBASID: {
+        bg: 'bg-purple-500/20',
+        border: 'border-purple-500/40',
+        dot: 'bg-purple-500',
+        label: 'Abbasid',
+    },
+    SCHOLARLY: {
+        bg: 'bg-blue-500/20',
+        border: 'border-blue-500/40',
+        dot: 'bg-blue-500',
+        label: 'Scholarly',
+    },
+    MILITARY: {
+        bg: 'bg-rose-500/20',
+        border: 'border-rose-500/40',
+        dot: 'bg-rose-500',
+        label: 'Military',
+    },
     POLITICAL: {
         bg: 'bg-red-500/20',
         border: 'border-red-500/40',
@@ -44,6 +95,12 @@ const CATEGORY_COLORS = {
         dot: 'bg-green-500',
         label: 'Religious',
     },
+    SOCIAL: {
+        bg: 'bg-cyan-500/20',
+        border: 'border-cyan-500/40',
+        dot: 'bg-cyan-500',
+        label: 'Social',
+    },
     OTHER: {
         bg: 'bg-gray-500/20',
         border: 'border-gray-500/40',
@@ -51,6 +108,28 @@ const CATEGORY_COLORS = {
         label: 'Other',
     },
 };
+
+function getCategoryStyle(category?: string): CategoryStyle {
+    const known = category ? CATEGORY_COLORS[category] : undefined;
+    if (known) return known;
+    const normalizedLabel = category?.trim().replaceAll('_', ' ').toLowerCase() ?? '';
+    return {
+        ...CATEGORY_COLORS.OTHER,
+        label: normalizedLabel
+            ? normalizedLabel.replace(/^./, (character) => character.toUpperCase())
+            : CATEGORY_COLORS.OTHER.label,
+    };
+}
+
+function safeExternalUrl(value?: string): string | undefined {
+    if (!value) return undefined;
+    try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.href : undefined;
+    } catch {
+        return undefined;
+    }
+}
 
 export function HistoricalTimeline({
     events,
@@ -60,6 +139,8 @@ export function HistoricalTimeline({
     selectedEventId,
 }: HistoricalTimelineProps) {
     const [expandedEventId, setExpandedEventId] = useState<string | null>(selectedEventId || null);
+    const hasBirthYear = narratorBirthYear !== undefined;
+    const hasDeathYear = narratorDeathYear !== undefined;
 
     // Sort events by year
     const sortedEvents = [...events].sort((a, b) => a.year_hijri - b.year_hijri);
@@ -67,8 +148,8 @@ export function HistoricalTimeline({
     // Calculate the year range
     const allYears = [
         ...sortedEvents.map((e) => e.year_hijri),
-        ...(narratorBirthYear ? [narratorBirthYear] : []),
-        ...(narratorDeathYear ? [narratorDeathYear] : []),
+        ...(narratorBirthYear !== undefined ? [narratorBirthYear] : []),
+        ...(narratorDeathYear !== undefined ? [narratorDeathYear] : []),
     ];
 
     const minYear = Math.min(...allYears);
@@ -79,9 +160,11 @@ export function HistoricalTimeline({
         return ((year - minYear) / yearRange) * 100;
     };
 
-    const isEventInNarratorLifetime = (eventYear: number) => {
-        const afterBirth = !narratorBirthYear || eventYear >= narratorBirthYear;
-        const beforeDeath = !narratorDeathYear || eventYear <= narratorDeathYear;
+    const isEventInNarratorLifetime = (event: HistoricalTimelineEvent) => {
+        const eventStart = event.start_year_hijri ?? event.year_hijri;
+        const eventEnd = event.end_year_hijri ?? eventStart;
+        const afterBirth = narratorBirthYear === undefined || eventEnd >= narratorBirthYear;
+        const beforeDeath = narratorDeathYear === undefined || eventStart <= narratorDeathYear;
         return afterBirth && beforeDeath;
     };
 
@@ -95,7 +178,7 @@ export function HistoricalTimeline({
                         <span className="text-sm text-white/70">{colors.label}</span>
                     </div>
                 ))}
-                {(narratorBirthYear || narratorDeathYear) && (
+                {(hasBirthYear || hasDeathYear) && (
                     <>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full border-2 border-yellow-500 bg-transparent" />
@@ -111,8 +194,8 @@ export function HistoricalTimeline({
                 <div className="absolute top-16 left-0 right-0 h-1 bg-white/10" />
 
                 {/* Life period indicators */}
-                {narratorBirthYear && narratorDeathYear && (
-                    <div className="absolute top-0 bottom-0 pointer-events-none">
+                {narratorBirthYear !== undefined && narratorDeathYear !== undefined && (
+                    <div className="absolute inset-0 w-full pointer-events-none">
                         {/* Life period background */}
                         <div
                             className="absolute top-0 bottom-0 bg-yellow-500/5 border-l-2 border-r-2 border-yellow-500/40"
@@ -162,10 +245,14 @@ export function HistoricalTimeline({
 
                 {/* Events */}
                 <div className="pt-32 pb-8 space-y-6">
-                    {sortedEvents.map((event, index) => {
-                        const colors = CATEGORY_COLORS[event.category];
-                        const isInLifetime = isEventInNarratorLifetime(event.year_hijri);
+                    {sortedEvents.map((event) => {
+                        const colors = getCategoryStyle(event.category);
+                        const isInLifetime = isEventInNarratorLifetime(event);
                         const isExpanded = expandedEventId === event.id;
+                        const citationUrl = safeExternalUrl(event.citation_url);
+                        const hasCitation = Boolean(
+                            event.citation_source || event.citation_locator || citationUrl || event.citation_retrieved_at,
+                        );
 
                         return (
                             <div
@@ -214,9 +301,11 @@ export function HistoricalTimeline({
                                             <span className="text-sm font-bold text-white/80">
                                                 {event.year_hijri} AH
                                             </span>
-                                            <span className="text-xs text-white/60">
-                                                {event.year_gregorian} CE
-                                            </span>
+                                            {event.year_gregorian !== undefined && (
+                                                <span className="text-xs text-white/60">
+                                                    {event.year_gregorian} CE
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -229,6 +318,31 @@ export function HistoricalTimeline({
                                         </div>
                                     )}
                                 </button>
+                                {isExpanded && hasCitation && (
+                                    <div className="mt-2 w-96 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/60">
+                                        <p>
+                                            <span className="font-semibold text-white/75">Citation:</span>{' '}
+                                            {event.citation_source || 'Source not named'}
+                                            {event.citation_locator && ` · ${event.citation_locator}`}
+                                        </p>
+                                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                            {citationUrl && (
+                                                <a
+                                                    href={citationUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    referrerPolicy="no-referrer"
+                                                    className="text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
+                                                >
+                                                    Open source
+                                                </a>
+                                            )}
+                                            {event.citation_retrieved_at && (
+                                                <span>Retrieved {event.citation_retrieved_at}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

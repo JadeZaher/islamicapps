@@ -169,6 +169,7 @@ export function mapToCanonical(
   displayGrade: string | null | undefined,
   _tradition?: string | null,
 ): GradeCanonical {
+  void _tradition;
   if (displayGrade === null || displayGrade === undefined) return 'ungraded';
 
   const normalised = normaliseArabic(displayGrade);

@@ -11,7 +11,7 @@
  *   - MERGE on stable business key (dataset_row_id else buildPipelineKey(source, hadith_no)).
  *   - NEVER on uuidv4(). NEVER writes scalar reliability/grade (G-1).
  *   - Tradition strings canonicalized on load (task 0.7 / FR-1.9).
- *   - Source.tradition set from CANONICAL_SOURCES (task 0.8 / FR-1.10).
+ *   - Source.tradition comes from the validated row and is registry-checked.
  *   - Tombstone semantics applied on supersession (via tombstone.ts).
  *   - INGESTED_IN edge written to active DatasetVersion.
  *
@@ -22,8 +22,8 @@ import { randomUUID } from 'crypto';
 import { runWrite } from '../../../lib/db/neo4j';
 import { mergeNodeByKey, buildPipelineKey } from '../../../lib/db/neo4j-helpers';
 import { CANONICAL_SOURCES } from '../../../lib/constants/sources';
-import type { UnifiedRow, LoadContext } from './io';
-import { canonicalizeTradition } from './io';
+import type { UnifiedRow, LoadContext, Tradition } from './io';
+import { canonicalizeTradition, isSupportedTradition } from './io';
 import { linkHadithToDatasetVersion } from './dataset-version';
 import { tombstone } from './tombstone';
 
@@ -31,22 +31,44 @@ import { tombstone } from './tombstone';
 
 /** Track unknown sources so the warning fires only once per distinct name. */
 const _unknownSourcesWarned = new Set<string>();
+const _sourceTraditionsSeen = new Map<string, Tradition>();
 
-/** Derive the tradition for a source name by scanning CANONICAL_SOURCES. */
-function getTraditionForSource(sourceName: string): string {
-    for (const entry of Object.values(CANONICAL_SOURCES)) {
-        if (entry.canonical === sourceName) {
-            return entry.tradition;
-        }
+/** Validate one source/tradition pair without inventing a default tradition. */
+function getTraditionForSource(sourceName: string, rawRowTradition: string): Tradition {
+    if (!sourceName.trim()) throw new Error('[load-hadith] Source name must be nonblank');
+    if (!isSupportedTradition(rawRowTradition)) {
+        throw new Error(`[load-hadith] Unsupported row tradition: ${rawRowTradition || '<blank>'}`);
     }
-    // Warn once per distinct unknown source, then fall back to Sunni.
-    if (!_unknownSourcesWarned.has(sourceName)) {
-        _unknownSourcesWarned.add(sourceName);
-        console.warn(
-            `[load-hadith] WARNING: Unknown source "${sourceName}" not found in CANONICAL_SOURCES — defaulting tradition to Sunni`,
+    const rowTradition = canonicalizeTradition(rawRowTradition);
+    const observedTradition = _sourceTraditionsSeen.get(sourceName);
+    if (observedTradition && observedTradition !== rowTradition) {
+        throw new Error(
+            `[load-hadith] Source "${sourceName}" has conflicting traditions ` +
+            `${observedTradition} and ${rowTradition}`,
         );
     }
-    return 'Sunni'; // safe default
+
+    const registered = Object.values(CANONICAL_SOURCES).find(
+        (entry) => entry.canonical === sourceName,
+    );
+    if (registered && registered.tradition !== rowTradition) {
+        throw new Error(
+            `[load-hadith] Source registry mismatch for "${sourceName}": ` +
+            `row=${rowTradition}, registry=${registered.tradition}`,
+        );
+    }
+    _sourceTraditionsSeen.set(sourceName, rowTradition);
+
+    if (!_unknownSourcesWarned.has(sourceName)) {
+        if (!registered) {
+            _unknownSourcesWarned.add(sourceName);
+            console.warn(
+                `[load-hadith] WARNING: Unknown source "${sourceName}"; ` +
+                `using validated row tradition ${rowTradition}`,
+            );
+        }
+    }
+    return rowTradition;
 }
 
 // ─── Merge Source node ────────────────────────────────────────────────────────
@@ -96,11 +118,9 @@ export async function loadHadith(row: UnifiedRow, ctx: LoadContext): Promise<voi
         ? 'dataset_row_id'
         : 'pipeline_key';
 
-    // Tradition: canonicalized from row, cross-checked with source registry.
-    const rowTradition = canonicalizeTradition(row.tradition as string);
-    const sourceTradition = getTraditionForSource(row.source);
-    // Prefer row tradition if the source is ambiguous; source is authoritative if row is empty.
-    const tradition = row.tradition ? rowTradition : canonicalizeTradition(sourceTradition);
+    // Tradition is explicit in the row and cross-checked with source metadata.
+    const sourceTradition = getTraditionForSource(row.source, row.tradition);
+    const tradition = sourceTradition;
 
     // Mutable props (always refreshed on MATCH).
     // NOTE: grade-related fields (grade_value, grade_tradition, grade_source, gradings_full)

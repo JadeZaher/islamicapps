@@ -1,197 +1,266 @@
-"""
-Phase 0.5 algorithm bake-off evaluator.
-
-Runs each candidate (A-E) against the annotated rows of
-tahweel-gold.jsonl. Reports:
-  - branch-count accuracy (% fixtures where len(actual) == len(expected))
-  - per-branch narrator-set Jaccard (median + p25/p75)
-  - per-branch edit distance (Levenshtein on ordered list)
-  - per-fixture detailed breakdown when a candidate fails
-
-Writes Markdown report to .omc/research/uniform-isnad/algo-evaluation.md
-"""
+"""Evaluate the canonical extractor against the provenance-backed gold set."""
 from __future__ import annotations
+
 import json
-import os
+import pathlib
 import statistics
 import sys
-
-BASE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE)
-sys.path.insert(0, os.path.normpath(os.path.join(BASE, '..')))
-
-from algo_candidates import CANDIDATES  # noqa: E402
-from algo_candidates._common import name_normalize  # noqa: E402
-
-GOLD = os.path.join(BASE, '__tests__', 'fixtures', 'tahweel-gold.jsonl')
-OUT_MD = os.path.normpath(os.path.join(
-    BASE, '..', '..', '.omc', 'research', 'uniform-isnad', 'algo-evaluation.md',
-))
+from collections import defaultdict
+from collections.abc import Callable
 
 
-def jaccard(a: list[str], b: list[str]) -> float:
-    sa = set(name_normalize(x) for x in a)
-    sb = set(name_normalize(x) for x in b)
-    if not sa and not sb:
+BASE = pathlib.Path(__file__).resolve().parent
+ROOT = BASE.parents[1]
+GOLD = BASE / "__tests__" / "fixtures" / "all-tradition-isnad-gold-v1.jsonl"
+OUT_MD = ROOT / ".omc" / "research" / "uniform-isnad" / "algo-evaluation.md"
+MIN_FIXTURES = 30
+MIN_BRANCH_COUNT_ACCURACY = 0.90
+MIN_JACCARD_MEDIAN = 0.90
+MIN_ORDERED_SIMILARITY_MEDIAN = 0.90
+MIN_TRADITION_BRANCH_COUNT_ACCURACY = 0.80
+MIN_TRADITION_ORDERED_SIMILARITY = 0.80
+
+sys.path.insert(0, str(BASE))
+
+from extract_isnad_unified import extract_isnad_branches, name_normalize  # noqa: E402
+from algo_candidates import CANDIDATES as LEGACY_CANDIDATES  # noqa: E402
+
+
+def _jaccard(left: list[str], right: list[str]) -> float:
+    a = {name_normalize(value) for value in left if value.strip()}
+    b = {name_normalize(value) for value in right if value.strip()}
+    return 1.0 if not (a | b) else len(a & b) / len(a | b)
+
+
+def _edit_distance(left: list[str], right: list[str]) -> int:
+    a = [name_normalize(value) for value in left]
+    b = [name_normalize(value) for value in right]
+    matrix = [[0] * (len(b) + 1) for _ in range(len(a) + 1)]
+    for i in range(len(a) + 1):
+        matrix[i][0] = i
+    for j in range(len(b) + 1):
+        matrix[0][j] = j
+    for i in range(1, len(a) + 1):
+        for j in range(1, len(b) + 1):
+            cost = 0 if a[i - 1] == b[j - 1] else 1
+            matrix[i][j] = min(
+                matrix[i - 1][j] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j - 1] + cost,
+            )
+    return matrix[-1][-1]
+
+
+def _ordered_similarity(left: list[str], right: list[str]) -> float:
+    """Return normalized narrator-sequence edit similarity in [0, 1]."""
+    longest = max(len(left), len(right))
+    if longest == 0:
         return 1.0
-    if not sa or not sb:
-        return 0.0
-    return len(sa & sb) / len(sa | sb)
+    return 1.0 - (_edit_distance(left, right) / longest)
 
 
-def edit_distance(a: list[str], b: list[str]) -> int:
-    """Levenshtein on the position-ordered list, with loose name-equality."""
-    from algo_candidates.candidate_B_name_span import _matches
-    n, m = len(a), len(b)
-    dp = [[0] * (m + 1) for _ in range(n + 1)]
-    for i in range(n + 1):
-        dp[i][0] = i
-    for j in range(m + 1):
-        dp[0][j] = j
-    for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            cost = 0 if _matches(a[i - 1], b[j - 1]) else 1
-            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
-    return dp[n][m]
-
-
-def evaluate_candidate(cand_name, cand_fn, fixtures: list[dict]) -> dict:
-    branch_count_hits = 0
-    jaccard_scores: list[float] = []
-    edit_distances: list[int] = []
-    expected_total_branches = 0
-    actual_total_branches = 0
-    per_fixture: list[dict] = []
-    errors = 0
-
-    for f in fixtures:
-        expected = f['expected_branches']
-        expected_total_branches += len(expected)
-        try:
-            actual = cand_fn(f['text_ar'])
-        except Exception as e:
-            errors += 1
-            per_fixture.append({
-                'fixture': f['hadith_id'],
-                'error': str(e),
-            })
+def _align(
+    actual: list[list[str]], expected: list[list[str]]
+) -> list[tuple[float, float, int, list[str], list[str]]]:
+    remaining = list(expected)
+    aligned: list[tuple[float, float, int, list[str], list[str]]] = []
+    for branch in actual:
+        if not remaining:
+            aligned.append((0.0, 0.0, len(branch), branch, []))
             continue
-        actual_total_branches += len(actual)
-        if len(actual) == len(expected):
-            branch_count_hits += 1
+        ranked = [
+            (
+                (_jaccard(branch, candidate) + _ordered_similarity(branch, candidate)) / 2,
+                _ordered_similarity(branch, candidate),
+                _jaccard(branch, candidate),
+                -index,
+                index,
+            )
+            for index, candidate in enumerate(remaining)
+        ]
+        _, ordered, score, _, best_index = max(ranked)
+        target = remaining.pop(best_index)
+        aligned.append((score, ordered, _edit_distance(branch, target), branch, target))
+    aligned.extend((0.0, 0.0, len(target), [], target) for target in remaining)
+    return aligned
 
-        # Per-branch Jaccard + edit-distance:
-        # align by INDEX (i.e., compare expected[i] to actual[i])
-        n_pairs = min(len(expected), len(actual))
-        per_fix_branches = []
-        for i in range(n_pairs):
-            j = jaccard(actual[i], expected[i])
-            ed = edit_distance(actual[i], expected[i])
-            jaccard_scores.append(j)
-            edit_distances.append(ed)
-            per_fix_branches.append({
-                'expected_len': len(expected[i]),
-                'actual_len': len(actual[i]),
-                'jaccard': round(j, 3),
-                'edit_distance': ed,
-                'expected': expected[i],
-                'actual': actual[i],
-            })
-        # Unmatched branches: count expected ones missed as 0-jaccard,
-        # plus excess actual ones as 0-jaccard penalties
-        for _ in range(abs(len(expected) - len(actual))):
-            jaccard_scores.append(0.0)
-            edit_distances.append(0)  # don't penalize edit distance for missing branch
-        per_fixture.append({
-            'fixture': f['hadith_id'],
-            'expected_branches': len(expected),
-            'actual_branches': len(actual),
-            'count_match': len(actual) == len(expected),
-            'branches': per_fix_branches,
-        })
 
+def _percentile(values: list[float], fraction: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    index = round((len(ordered) - 1) * fraction)
+    return ordered[index]
+
+
+def evaluate(
+    name: str,
+    extractor: Callable[[str], list[list[str]]],
+    fixtures: list[dict],
+) -> dict:
+    branch_hits = 0
+    jaccards: list[float] = []
+    ordered_similarities: list[float] = []
+    edits: list[int] = []
+    details: list[dict] = []
+    errors: list[dict] = []
+    by_tradition: dict[str, dict[str, list[float]]] = defaultdict(
+        lambda: {"branch_hits": [], "jaccards": [], "ordered": []}
+    )
+    for row in fixtures:
+        try:
+            actual = extractor(row["text_ar"])
+        except Exception as error:  # evaluator must report, not hide, a broken row
+            errors.append({"case_id": row["case_id"], "error": f"{type(error).__name__}: {error}"})
+            continue
+        expected = row["expected_branches"]
+        branch_count_match = int(len(actual) == len(expected))
+        branch_hits += branch_count_match
+        aligned = _align(actual, expected)
+        scores = [item[0] for item in aligned]
+        ordered_scores = [item[1] for item in aligned]
+        jaccards.extend(scores)
+        ordered_similarities.extend(ordered_scores)
+        edits.extend(item[2] for item in aligned)
+        tradition = by_tradition[row["tradition"]]
+        tradition["branch_hits"].append(branch_count_match)
+        tradition["jaccards"].extend(scores)
+        tradition["ordered"].extend(ordered_scores)
+        details.append(
+            {
+                "case_id": row["case_id"],
+                "tradition": row["tradition"],
+                "branch_count_match": bool(branch_count_match),
+                "mean_jaccard": statistics.mean(scores) if scores else 0.0,
+                "mean_ordered_similarity": (
+                    statistics.mean(ordered_scores) if ordered_scores else 0.0
+                ),
+                "actual": actual,
+                "expected": expected,
+            }
+        )
     return {
-        'candidate': cand_name,
-        'errors': errors,
-        'branch_count_accuracy': round(branch_count_hits / max(len(fixtures), 1), 3),
-        'jaccard_median': round(statistics.median(jaccard_scores), 3) if jaccard_scores else 0.0,
-        'jaccard_p25': round(statistics.quantiles(jaccard_scores, n=4)[0], 3) if len(jaccard_scores) >= 4 else 0.0,
-        'jaccard_p75': round(statistics.quantiles(jaccard_scores, n=4)[2], 3) if len(jaccard_scores) >= 4 else 0.0,
-        'jaccard_mean': round(statistics.mean(jaccard_scores), 3) if jaccard_scores else 0.0,
-        'edit_distance_median': statistics.median(edit_distances) if edit_distances else 0,
-        'expected_branches_total': expected_total_branches,
-        'actual_branches_total': actual_total_branches,
-        'per_fixture': per_fixture,
+        "name": name,
+        "fixtures": len(fixtures),
+        "errors": errors,
+        "branch_count_accuracy": branch_hits / len(fixtures),
+        "jaccard_median": statistics.median(jaccards) if jaccards else 0.0,
+        "jaccard_p25": _percentile(jaccards, 0.25),
+        "jaccard_p75": _percentile(jaccards, 0.75),
+        "jaccard_mean": statistics.mean(jaccards) if jaccards else 0.0,
+        "ordered_similarity_median": (
+            statistics.median(ordered_similarities)
+            if ordered_similarities else 0.0
+        ),
+        "ordered_similarity_mean": (
+            statistics.mean(ordered_similarities)
+            if ordered_similarities else 0.0
+        ),
+        "edit_median": statistics.median(edits) if edits else 0.0,
+        "traditions": {
+            tradition: {
+                "branch_count_accuracy": statistics.mean(metrics["branch_hits"]),
+                "mean_jaccard": statistics.mean(metrics["jaccards"]),
+                "mean_ordered_similarity": statistics.mean(metrics["ordered"]),
+            }
+            for tradition, metrics in sorted(by_tradition.items())
+        },
+        "details": details,
     }
 
 
-def main() -> int:
-    if not os.path.exists(GOLD):
-        print(f'ERROR: {GOLD} not found', file=sys.stderr)
-        return 1
-    with open(GOLD, 'r', encoding='utf-8') as f:
-        fixtures = [json.loads(l) for l in f if l.strip()]
-    annotated = [f for f in fixtures if f.get('expected_branches')]
-    print(f'Loaded {len(fixtures)} fixtures, {len(annotated)} annotated')
-    print()
-
-    results: list[dict] = []
-    for cand_name, cand_fn in CANDIDATES.items():
-        r = evaluate_candidate(cand_name, cand_fn, annotated)
-        results.append(r)
-        print(f"{cand_name:25s}  branch-acc={r['branch_count_accuracy']:.3f}  "
-              f"jacc med={r['jaccard_median']:.3f} (p25={r['jaccard_p25']:.2f}/p75={r['jaccard_p75']:.2f})  "
-              f"edit-med={r['edit_distance_median']}  errs={r['errors']}")
-
-    # Markdown report
-    os.makedirs(os.path.dirname(OUT_MD), exist_ok=True)
+def _render(results: list[dict], fixture_count: int) -> str:
     lines = [
-        '# Algorithm bake-off — Phase 0.5 evaluation',
-        '',
-        f'Generated by: `datasets/hadith-data/algo_evaluate.py`',
-        f'Fixtures: `datasets/hadith-data/__tests__/fixtures/tahweel-gold.jsonl` ({len(annotated)} annotated rows)',
-        '',
-        '## Summary',
-        '',
-        '| Candidate | branch-count acc | Jaccard median | Jaccard p25 | Jaccard p75 | Jaccard mean | edit median | errors |',
-        '|---|---:|---:|---:|---:|---:|---:|---:|',
+        "# Uniform isnad extraction evaluation",
+        "",
+        f"Fixtures: `{GOLD.relative_to(ROOT)}` ({fixture_count} provenance-backed records)",
+        "",
+        "The canonical release gate requires overall branch-count accuracy >= 0.90, median branch Jaccard >= 0.90, median ordered edit similarity >= 0.90, and for every tradition branch-count accuracy and mean ordered similarity >= 0.80. Legacy candidates are comparison baselines only.",
+        "",
+        "| Extractor | branch-count accuracy | Jaccard median | ordered median | p25 | p75 | mean | edit median | errors |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
-    for r in results:
+    for result in results:
         lines.append(
-            f"| `{r['candidate']}` | {r['branch_count_accuracy']:.3f} | "
-            f"{r['jaccard_median']:.3f} | {r['jaccard_p25']:.3f} | "
-            f"{r['jaccard_p75']:.3f} | {r['jaccard_mean']:.3f} | "
-            f"{r['edit_distance_median']} | {r['errors']} |"
+            f"| `{result['name']}` | {result['branch_count_accuracy']:.3f} | "
+            f"{result['jaccard_median']:.3f} | "
+            f"{result['ordered_similarity_median']:.3f} | "
+            f"{result['jaccard_p25']:.3f} | "
+            f"{result['jaccard_p75']:.3f} | {result['jaccard_mean']:.3f} | "
+            f"{result['edit_median']:.1f} | {len(result['errors'])} |"
         )
-    lines.extend([
-        '',
-        '## Pass criteria (FR-0.5.4)',
-        '',
-        '- branch-count accuracy ≥ 0.85',
-        '- Jaccard median ≥ 0.80',
-        '',
-        '## Per-fixture detail',
-        '',
-    ])
-    for r in results:
-        lines.append(f'### {r["candidate"]}')
-        lines.append('')
-        for pf in r['per_fixture']:
-            lines.append(f'**`{pf["fixture"]}`** — expected_branches={pf.get("expected_branches", "?")}  actual_branches={pf.get("actual_branches", "?")}  count_match={pf.get("count_match", "?")}')
-            for i, b in enumerate(pf.get('branches', [])):
-                lines.append(f'  - branch {i}: jaccard={b["jaccard"]} edit={b["edit_distance"]}')
-                lines.append(f'    - expected ({b["expected_len"]}): {b["expected"]}')
-                lines.append(f'    - actual   ({b["actual_len"]}): {b["actual"]}')
-            if pf.get('error'):
-                lines.append(f'  - ERROR: {pf["error"]}')
-            lines.append('')
-    with open(OUT_MD, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(lines) + '\n')
-    print()
-    print(f'Wrote {OUT_MD}')
-
-    return 0
+    canonical = results[0]
+    lines.extend(["", "## Canonical tradition breakdown", ""])
+    for tradition, metrics in canonical["traditions"].items():
+        lines.append(
+            f"- {tradition}: branch-count accuracy "
+            f"`{metrics['branch_count_accuracy']:.3f}`, mean branch Jaccard "
+            f"`{metrics['mean_jaccard']:.3f}`, mean ordered similarity "
+            f"`{metrics['mean_ordered_similarity']:.3f}`"
+        )
+    lines.extend(["", "## Canonical cases below 0.80", ""])
+    failures = [detail for detail in canonical["details"] if detail["mean_jaccard"] < 0.80]
+    if not failures:
+        lines.append("None.")
+    for detail in failures:
+        lines.append(
+            f"- `{detail['case_id']}` ({detail['tradition']}): "
+            f"mean Jaccard `{detail['mean_jaccard']:.3f}`, "
+            f"mean ordered similarity `{detail['mean_ordered_similarity']:.3f}`, "
+            f"branch-count match `{detail['branch_count_match']}`"
+        )
+    if canonical["errors"]:
+        lines.extend(["", "## Canonical errors", ""])
+        for error in canonical["errors"]:
+            lines.append(f"- `{error['case_id']}`: {error['error']}")
+    return "\n".join(lines) + "\n"
 
 
-if __name__ == '__main__':
-    sys.exit(main())
+def _canonical_gate_failures(result: dict) -> list[str]:
+    failures = []
+    if result["errors"]:
+        failures.append("canonical errors")
+    if result["branch_count_accuracy"] < MIN_BRANCH_COUNT_ACCURACY:
+        failures.append("overall branch-count accuracy")
+    if result["jaccard_median"] < MIN_JACCARD_MEDIAN:
+        failures.append("median branch Jaccard")
+    if result["ordered_similarity_median"] < MIN_ORDERED_SIMILARITY_MEDIAN:
+        failures.append("median ordered similarity")
+    for tradition, metrics in result["traditions"].items():
+        if metrics["branch_count_accuracy"] < MIN_TRADITION_BRANCH_COUNT_ACCURACY:
+            failures.append(f"{tradition} branch-count accuracy")
+        if metrics["mean_ordered_similarity"] < MIN_TRADITION_ORDERED_SIMILARITY:
+            failures.append(f"{tradition} ordered similarity")
+    return failures
+
+
+def main() -> int:
+    fixtures = [
+        json.loads(line)
+        for line in GOLD.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if len(fixtures) < MIN_FIXTURES:
+        print(f"ERROR: gold set has {len(fixtures)} rows; requires >= {MIN_FIXTURES}", file=sys.stderr)
+        return 2
+    evaluated = [("canonical_uniform", extract_isnad_branches)]
+    evaluated.extend((f"legacy_{name}", extractor) for name, extractor in LEGACY_CANDIDATES.items())
+    results = [evaluate(name, extractor, fixtures) for name, extractor in evaluated]
+    OUT_MD.parent.mkdir(parents=True, exist_ok=True)
+    OUT_MD.write_text(
+        _render(results, len(fixtures)), encoding="utf-8", newline="\n"
+    )
+    canonical = results[0]
+    print(
+        f"canonical_uniform fixtures={len(fixtures)} "
+        f"branch_acc={canonical['branch_count_accuracy']:.3f} "
+        f"jaccard_median={canonical['jaccard_median']:.3f} "
+        f"ordered_median={canonical['ordered_similarity_median']:.3f} "
+        f"jaccard_p25={canonical['jaccard_p25']:.3f} "
+        f"errors={len(canonical['errors'])}"
+    )
+    return int(bool(_canonical_gate_failures(canonical)))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

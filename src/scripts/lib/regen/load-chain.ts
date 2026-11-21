@@ -239,19 +239,37 @@ export async function loadChainForRow(
  * index across branches), so each branch's :INCLUDES edges carry the correct
  * chain ordering and the per-branch :Chain node is internally consistent.
  */
-export function buildTier1Resolution(row: UnifiedRow): NarratorResolutionResult[] {
+export function buildTier1Resolution(
+    row: UnifiedRow,
+    availableRawis?: ReadonlyMap<number, unknown>,
+): NarratorResolutionResult[] {
     if (row.chain_indx.length === 0) return [];
 
     return row.chain_indx.map((branch, branchIdx) => {
-        const resolved: ResolvedNarrator[] = branch.map((idx, posInBranch) => ({
-            scholar_indx: idx,
-            position: posInBranch,
-            confidence: 1.0,
-            method: 'chain_indx_join',
-        }));
+        const resolved: ResolvedNarrator[] = [];
+        const mentions: NameMentionDraft[] = [];
+        branch.forEach((idx, posInBranch) => {
+            if (availableRawis && !availableRawis.has(idx)) {
+                const surfaceForm = `[chain_indx:${idx}]`;
+                mentions.push({
+                    surface_form: surfaceForm,
+                    normalized_form: surfaceForm,
+                    position: posInBranch,
+                    hadith_key: row.dataset_row_id ?? buildPipelineKey(row.source, row.hadith_no),
+                    hadith_key_prop: row.dataset_row_id === null ? 'pipeline_key' : 'dataset_row_id',
+                });
+                return;
+            }
+            resolved.push({
+                scholar_indx: idx,
+                position: posInBranch,
+                confidence: 1.0,
+                method: 'chain_indx_join',
+            });
+        });
         return {
             resolved,
-            mentions: [],
+            mentions,
             method: 'chain_indx_join',
             chain_index: branchIdx,
         };

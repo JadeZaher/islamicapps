@@ -9,16 +9,14 @@
  *   flagTransmissionEdge(studentIndx, teacherIndx, result, dvId) → Promise<void>
  *   flagAllTransmissionEdges(rawis, dvId) → Promise<TemporalReport>
  *
- * Using all_rawis.death_date_hijri, flag [:NARRATED_FROM] edges where the
- * TEACHER's recorded death precedes the STUDENT's floruit (= death year, used
- * as a proxy since floruit is rarely recorded).
+ * Using all_rawis birth/death bounds, flag [:NARRATED_FROM] edges whose
+ * narrator lifetimes cannot overlap.
  *
  * Rule (conservative — avoids false positives):
- *   If both teacher and student have known death years, and
- *   teacher.death < student.death − 15  (a generation gap heuristic),
- *   the edge is marked 'impossible'.
- *   If either death year is missing, the edge is marked 'unknown'.
- *   Otherwise 'plausible'.
+ *   If the student was born after the teacher died, or the teacher was born
+ *   after the student died, the edge is marked 'impossible'. If both overlap
+ *   comparisons can be evaluated and pass, it is 'plausible'; otherwise it is
+ *   'unknown'. Plausible means chronologically possible, not historically proven.
  *
  * NEVER deletes edges — sets temporal_plausibility property only (NFR-2).
  * Tombstone is not triggered for temporal implausibility — the edge remains
@@ -49,21 +47,15 @@ export interface TemporalReport {
     errors: string[];
 }
 
-// ─── Generation gap heuristic ─────────────────────────────────────────────────
+// ─── Bounded annotation batches ───────────────────────────────────────────────
 
-/**
- * Minimum hijri year gap between student's death and teacher's death for the
- * transmission to be considered plausible. A traditional generation is ~25–30 AH
- * years; we use 15 to be conservative and avoid false positives (hadith chains
- * sometimes span shorter distances due to precocious learners or long lives).
- */
-const MIN_GENERATION_GAP_AH = 15;
+const TEMPORAL_WRITE_BATCH_SIZE = 1_000;
 
 // ─── assessTemporalPlausibility ───────────────────────────────────────────────
 
 /**
  * Assess whether a transmission edge (student narrated FROM teacher) is
- * temporally plausible given the Hijri death dates from all_rawis.
+ * temporally plausible given Hijri birth/death bounds from all_rawis.
  *
  * This is a pure JS function — no DB I/O — so it can be called on every edge
  * before the write phase (fast batch screening).
@@ -74,36 +66,39 @@ export function assessTemporalPlausibility(
 ): PlausibilityResult {
     const teacherDeath = teacherRecord?.death_date_hijri ?? null;
     const studentDeath = studentRecord?.death_date_hijri ?? null;
+    const teacherBirth = teacherRecord?.birth_date_hijri ?? null;
+    const studentBirth = studentRecord?.birth_date_hijri ?? null;
 
-    if (teacherDeath === null || studentDeath === null) {
-        return {
-            plausibility: 'unknown',
-            reason:
-                teacherDeath === null && studentDeath === null
-                    ? 'Both death dates unknown'
-                    : teacherDeath === null
-                    ? 'Teacher death date unknown'
-                    : 'Student death date unknown',
-            teacher_death_hijri: teacherDeath,
-            student_death_hijri: studentDeath,
-        };
-    }
-
-    // Teacher must die BEFORE the student (teacher is further in the past).
-    // If teacher died AFTER the student (or within MIN_GENERATION_GAP), flag impossible.
-    // Heuristic: teacher.death + MIN_GENERATION_GAP_AH should be <= student.death
-    if (teacherDeath + MIN_GENERATION_GAP_AH > studentDeath) {
+    if (studentBirth !== null && teacherDeath !== null && studentBirth > teacherDeath) {
         return {
             plausibility: 'impossible',
-            reason: `Teacher death ${teacherDeath} AH is not at least ${MIN_GENERATION_GAP_AH} years before student death ${studentDeath} AH`,
+            reason: `Student birth ${studentBirth} AH is after teacher death ${teacherDeath} AH`,
             teacher_death_hijri: teacherDeath,
             student_death_hijri: studentDeath,
         };
     }
-
+    if (teacherBirth !== null && studentDeath !== null && teacherBirth > studentDeath) {
+        return {
+            plausibility: 'impossible',
+            reason: `Teacher birth ${teacherBirth} AH is after student death ${studentDeath} AH`,
+            teacher_death_hijri: teacherDeath,
+            student_death_hijri: studentDeath,
+        };
+    }
+    if (
+        studentBirth !== null && teacherDeath !== null &&
+        teacherBirth !== null && studentDeath !== null
+    ) {
+        return {
+            plausibility: 'plausible',
+            reason: `Lifetimes overlap: student ${studentBirth}–${studentDeath} AH, teacher ${teacherBirth}–${teacherDeath} AH`,
+            teacher_death_hijri: teacherDeath,
+            student_death_hijri: studentDeath,
+        };
+    }
     return {
-        plausibility: 'plausible',
-        reason: `Teacher (d.${teacherDeath} AH) → Student (d.${studentDeath} AH) gap = ${studentDeath - teacherDeath} AH`,
+        plausibility: 'unknown',
+        reason: 'Insufficient birth/death bounds to establish lifetime overlap',
         teacher_death_hijri: teacherDeath,
         student_death_hijri: studentDeath,
     };
@@ -138,17 +133,18 @@ export async function flagTransmissionEdge(
     });
 }
 
-// ─── flagAllTransmissionEdges ─────────────────────────────────────────────────
+interface TransmissionEdge {
+    relationshipId: string;
+    studentIndx: number;
+    teacherIndx: number;
+}
 
-/**
- * Assess and flag ALL [:NARRATED_FROM] edges in the graph using the rawis map.
- * Should be called once after a full regen run, not per-row.
- *
- * Uses batch Cypher to read all edges, then writes plausibility in JS batches.
- */
-export async function flagAllTransmissionEdges(
+interface TemporalUpdate extends TransmissionEdge, PlausibilityResult {}
+
+async function flagTransmissionEdgesBatched(
+    edges: TransmissionEdge[],
     rawis: Map<number, RawiRecord>,
-    dvId: string
+    dvId: string,
 ): Promise<TemporalReport> {
     const report: TemporalReport = {
         total_edges_assessed: 0,
@@ -158,31 +154,88 @@ export async function flagAllTransmissionEdges(
         errors: [],
     };
 
-    // Read all NARRATED_FROM edges that haven't been temporally assessed yet.
-    const edges = await runQuery<{
-        studentIndx: number;
-        teacherIndx: number;
-    }>(`
-        MATCH (student:Narrator)-[r:NARRATED_FROM]->(teacher:Narrator)
-        WHERE r.temporal_plausibility IS NULL
-        RETURN student.scholar_indx AS studentIndx, teacher.scholar_indx AS teacherIndx
-    `);
+    for (let offset = 0; offset < edges.length; offset += TEMPORAL_WRITE_BATCH_SIZE) {
+        const edgeBatch = edges.slice(offset, offset + TEMPORAL_WRITE_BATCH_SIZE);
+        const updates: TemporalUpdate[] = edgeBatch.map((edge) => ({
+            ...edge,
+            ...assessTemporalPlausibility(
+                rawis.get(edge.studentIndx),
+                rawis.get(edge.teacherIndx),
+            ),
+        }));
 
-    for (const edge of edges) {
         try {
-            const studentRecord = rawis.get(edge.studentIndx);
-            const teacherRecord = rawis.get(edge.teacherIndx);
-
-            const result = assessTemporalPlausibility(studentRecord, teacherRecord);
-            await flagTransmissionEdge(edge.studentIndx, edge.teacherIndx, result, dvId);
-
-            report.total_edges_assessed++;
-            report[result.plausibility]++;
+            const rows = await runWrite<{ updated: number }>(`
+                UNWIND $updates AS update
+                MATCH (student:Narrator { scholar_indx: update.studentIndx })
+                    -[r:NARRATED_FROM]->
+                    (teacher:Narrator { scholar_indx: update.teacherIndx })
+                WHERE elementId(r) = update.relationshipId
+                SET r.temporal_plausibility = update.plausibility,
+                    r.temporal_reason = update.reason,
+                    r.temporal_assessed_at = datetime(),
+                    r.temporal_dvId = $dvId
+                RETURN count(r) AS updated
+            `, { updates, dvId });
+            const updated = rows[0]?.updated ?? 0;
+            if (updated !== updates.length) {
+                report.errors.push(
+                    `Temporal batch ${offset}-${offset + updates.length - 1}: ` +
+                    `matched ${updated}/${updates.length} relationships`,
+                );
+                continue;
+            }
+            report.total_edges_assessed += updated;
+            for (const update of updates) report[update.plausibility]++;
         } catch (err) {
-            report.errors.push(`Edge ${edge.studentIndx}→${edge.teacherIndx}: ${err}`);
+            report.errors.push(
+                `Temporal batch ${offset}-${offset + updates.length - 1}: ${String(err)}`,
+            );
         }
     }
 
+    return report;
+}
+
+function mergeTemporalReport(target: TemporalReport, addition: TemporalReport): void {
+    target.total_edges_assessed += addition.total_edges_assessed;
+    target.plausible += addition.plausible;
+    target.impossible += addition.impossible;
+    target.unknown += addition.unknown;
+    target.errors.push(...addition.errors);
+}
+
+function emptyTemporalReport(): TemporalReport {
+    return { total_edges_assessed: 0, plausible: 0, impossible: 0, unknown: 0, errors: [] };
+}
+
+// ─── flagAllTransmissionEdges ─────────────────────────────────────────────────
+
+/**
+ * Assess and flag ALL [:NARRATED_FROM] edges in the graph using the rawis map.
+ * Should be called once after a full regen run, not per-row.
+ *
+ * Reads and writes bounded batches until no unassessed edge remains.
+ */
+export async function flagAllTransmissionEdges(
+    rawis: Map<number, RawiRecord>,
+    dvId: string
+): Promise<TemporalReport> {
+    const report = emptyTemporalReport();
+    while (true) {
+        const edges = await runQuery<TransmissionEdge>(`
+            MATCH (student:Narrator)-[r:NARRATED_FROM]->(teacher:Narrator)
+            WHERE r.temporal_plausibility IS NULL
+            RETURN elementId(r) AS relationshipId,
+                   student.scholar_indx AS studentIndx,
+                   teacher.scholar_indx AS teacherIndx
+            LIMIT $limit
+        `, { limit: TEMPORAL_WRITE_BATCH_SIZE });
+        if (edges.length === 0) break;
+        const batchReport = await flagTransmissionEdgesBatched(edges, rawis, dvId);
+        mergeTemporalReport(report, batchReport);
+        if (batchReport.errors.length > 0) break;
+    }
     return report;
 }
 
@@ -196,34 +249,23 @@ export async function reflagAllTransmissionEdges(
     rawis: Map<number, RawiRecord>,
     dvId: string
 ): Promise<TemporalReport> {
-    const report: TemporalReport = {
-        total_edges_assessed: 0,
-        plausible: 0,
-        impossible: 0,
-        unknown: 0,
-        errors: [],
-    };
-
-    const edges = await runQuery<{
-        studentIndx: number;
-        teacherIndx: number;
-    }>(`
-        MATCH (student:Narrator)-[r:NARRATED_FROM]->(teacher:Narrator)
-        RETURN student.scholar_indx AS studentIndx, teacher.scholar_indx AS teacherIndx
-    `);
-
-    for (const edge of edges) {
-        try {
-            const studentRecord = rawis.get(edge.studentIndx);
-            const teacherRecord = rawis.get(edge.teacherIndx);
-            const result = assessTemporalPlausibility(studentRecord, teacherRecord);
-            await flagTransmissionEdge(edge.studentIndx, edge.teacherIndx, result, dvId);
-            report.total_edges_assessed++;
-            report[result.plausibility]++;
-        } catch (err) {
-            report.errors.push(`Edge ${edge.studentIndx}→${edge.teacherIndx}: ${err}`);
-        }
+    const report = emptyTemporalReport();
+    let cursor = '';
+    while (true) {
+        const edges = await runQuery<TransmissionEdge>(`
+            MATCH (student:Narrator)-[r:NARRATED_FROM]->(teacher:Narrator)
+            WHERE $cursor = '' OR elementId(r) > $cursor
+            RETURN elementId(r) AS relationshipId,
+                   student.scholar_indx AS studentIndx,
+                   teacher.scholar_indx AS teacherIndx
+            ORDER BY relationshipId
+            LIMIT $limit
+        `, { cursor, limit: TEMPORAL_WRITE_BATCH_SIZE });
+        if (edges.length === 0) break;
+        const batchReport = await flagTransmissionEdgesBatched(edges, rawis, dvId);
+        mergeTemporalReport(report, batchReport);
+        if (batchReport.errors.length > 0) break;
+        cursor = edges[edges.length - 1].relationshipId;
     }
-
     return report;
 }

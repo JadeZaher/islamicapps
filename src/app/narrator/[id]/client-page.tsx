@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
 import Link from 'next/link';
 import { TabaqahTimeline } from '@/components/TabaqahTimeline';
-import { HistoricalTimeline } from '@/components/HistoricalTimeline';
+import { HistoricalTimeline, type HistoricalTimelineEvent } from '@/components/HistoricalTimeline';
 import { CommentarySection } from '@/components/CommentarySection';
 import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/components/TraditionBadge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -33,17 +33,45 @@ function ConsensusBadge({ verdict }: { verdict: string }) {
     );
 }
 
-interface NarratorClientPageProps {
+function DateEvidence({
+    sourceText,
+    provenance,
+    reviewStatus,
+}: {
+    sourceText?: string;
+    provenance?: string;
+    reviewStatus?: string;
+}) {
+    const reviewed = (
+        reviewStatus === 'human_verified' || reviewStatus === 'source_verified'
+    ) && Boolean(provenance);
+    return (
+        <p className="mt-1 text-xs text-white/50">
+            {reviewed ? 'Reviewed date provenance' : 'Legacy/unverified date evidence'}:{' '}
+            {provenance ? `Source/provenance: ${provenance}` : 'no structured source retained'}
+            {sourceText && ` · Source text: ${sourceText}`}
+            {!reviewed && ' — not a structured reviewed citation'}
+        </p>
+    );
+}
+
+export interface NarratorClientPageProps {
     narratorDetails: {
         id: string;
         name_english: string;
         name_arabic: string;
-        reliability: 'THIQA' | 'SADUQ' | 'DAIF' | 'MAJHUL' | 'KADHAB';
+        reliability?: 'THIQA' | 'SADUQ' | 'DAIF' | 'MAJHUL' | 'KADHAB';
         tabaqah: string;
         birth_year_hijri?: number;
         birth_year_gregorian?: number;
+        birth_date_source_text?: string;
+        birth_date_provenance?: string;
+        birth_date_review_status?: string;
         death_year_hijri?: number;
         death_year_gregorian?: number;
+        death_date_source_text?: string;
+        death_date_provenance?: string;
+        death_date_review_status?: string;
         bio?: string;
         biographical_narrative?: string;
         geographic_region?: string;
@@ -106,14 +134,7 @@ interface NarratorClientPageProps {
         reference?: string;
         type: 'HADITH_COMMENTARY' | 'NARRATOR_BIOGRAPHY' | 'CHAIN_ANALYSIS' | 'OTHER';
     }>;
-    historicalEvents?: Array<{
-        id: string;
-        title: string;
-        description: string;
-        year_hijri: number;
-        year_gregorian: number;
-        category: 'POLITICAL' | 'SCIENTIFIC' | 'CULTURAL' | 'RELIGIOUS' | 'OTHER';
-    }>;
+    historicalEvents?: HistoricalTimelineEvent[];
     traditionConnections?: {
         traditions: Array<{ id: string; name: string; name_arabic?: string; description?: string }>;
         hadiths_with_parallels: Array<{
@@ -268,8 +289,8 @@ export default function NarratorClientPage({
 
                                         {narratorDetails.bio_provenance && (
                                             <p className="text-xs text-white/40 mt-3 italic">
-                                                Source: {narratorDetails.bio_provenance === 'manual_phase_0'
-                                                    ? 'manually curated from Tahdhīb al-Kamāl, Taqrīb al-Tahdhīb, Siyar Aʿlām al-Nubalāʾ'
+                                                Provenance status: {narratorDetails.bio_provenance === 'manual_phase_0'
+                                                    ? 'uncited legacy manual seed; edition, volume, and page evidence is pending'
                                                     : narratorDetails.bio_provenance}
                                                 {typeof narratorDetails.critic_quote_count === 'number' && narratorDetails.critic_quote_count > 0 && (
                                                     ` · ${narratorDetails.critic_quote_count} critic${narratorDetails.critic_quote_count === 1 ? '' : 's'}`
@@ -320,21 +341,49 @@ export default function NarratorClientPage({
                                         Life Timeline
                                     </h3>
                                     <div className="space-y-2 text-white/80">
-                                        {narratorDetails.birth_year_hijri && (
-                                            <p>
-                                                <span className="font-semibold">Born:</span> {narratorDetails.birth_year_hijri} AH
-                                                {narratorDetails.birth_year_gregorian && (
-                                                    <span> ({narratorDetails.birth_year_gregorian} CE)</span>
-                                                )}
-                                            </p>
+                                        {(narratorDetails.birth_year_hijri !== undefined
+                                            || narratorDetails.birth_year_gregorian !== undefined) && (
+                                            <div>
+                                                <p>
+                                                    <span className="font-semibold">Born:</span>
+                                                    {narratorDetails.birth_year_hijri !== undefined ? (
+                                                        <>
+                                                            {' '}{narratorDetails.birth_year_hijri} AH
+                                                            {narratorDetails.birth_year_gregorian !== undefined
+                                                                && ` (${narratorDetails.birth_year_gregorian} CE)`}
+                                                        </>
+                                                    ) : (
+                                                        <> {narratorDetails.birth_year_gregorian} CE</>
+                                                    )}
+                                                </p>
+                                                <DateEvidence
+                                                    sourceText={narratorDetails.birth_date_source_text}
+                                                    provenance={narratorDetails.birth_date_provenance}
+                                                    reviewStatus={narratorDetails.birth_date_review_status}
+                                                />
+                                            </div>
                                         )}
-                                        {narratorDetails.death_year_hijri && (
-                                            <p>
-                                                <span className="font-semibold">Died:</span> {narratorDetails.death_year_hijri} AH
-                                                {narratorDetails.death_year_gregorian && (
-                                                    <span> ({narratorDetails.death_year_gregorian} CE)</span>
-                                                )}
-                                            </p>
+                                        {(narratorDetails.death_year_hijri !== undefined
+                                            || narratorDetails.death_year_gregorian !== undefined) && (
+                                            <div>
+                                                <p>
+                                                    <span className="font-semibold">Died:</span>
+                                                    {narratorDetails.death_year_hijri !== undefined ? (
+                                                        <>
+                                                            {' '}{narratorDetails.death_year_hijri} AH
+                                                            {narratorDetails.death_year_gregorian !== undefined
+                                                                && ` (${narratorDetails.death_year_gregorian} CE)`}
+                                                        </>
+                                                    ) : (
+                                                        <> {narratorDetails.death_year_gregorian} CE</>
+                                                    )}
+                                                </p>
+                                                <DateEvidence
+                                                    sourceText={narratorDetails.death_date_source_text}
+                                                    provenance={narratorDetails.death_date_provenance}
+                                                    reviewStatus={narratorDetails.death_date_review_status}
+                                                />
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -346,7 +395,9 @@ export default function NarratorClientPage({
                     <div>
                         <Card className="bg-white/5 border-white/10">
                             <CardContent className="pt-6">
-                                <TabaqahTimeline currentTabaqah={narratorDetails.tabaqah as any} />
+                                <TabaqahTimeline
+                                    currentTabaqah={narratorDetails.tabaqah as ComponentProps<typeof TabaqahTimeline>['currentTabaqah']}
+                                />
                             </CardContent>
                         </Card>
                     </div>

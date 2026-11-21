@@ -12,24 +12,43 @@
 
 import fs from 'fs';
 import path from 'path';
+import readline from 'readline';
 import zlib from 'zlib';
+import { createHash } from 'crypto';
+import type { Readable } from 'stream';
 
-/**
- * Gz-first dataset convention: large derived CSVs live as `.gz` in the repo
- * (committed) and as plain `.csv` on disk (gitignored, decompressed on first
- * read). If the plain CSV is missing but a sibling `.gz` exists, decompress
- * it in place so downstream readers operate on the plain file as before.
- *
- * Mirrors `_ensure_csv_decompressed` in datasets/hadith-data/regen_unified_csvs.py.
- */
-function ensureCsvDecompressed(filePath: string): void {
-    if (fs.existsSync(filePath)) return;
-    const gzPath = filePath + '.gz';
-    if (!fs.existsSync(gzPath)) return;
-    console.log(`[io] Decompressing ${path.basename(gzPath)}...`);
-    const gz = fs.readFileSync(gzPath);
-    const plain = zlib.gunzipSync(gz);
-    fs.writeFileSync(filePath, plain);
+/** Resolve an explicit dataset path, falling back to its gzip sibling. */
+export function resolveDatasetInputPath(filePath: string): string {
+    if (fs.existsSync(filePath)) return filePath;
+    if (!filePath.toLowerCase().endsWith('.gz')) {
+        const gzPath = `${filePath}.gz`;
+        if (fs.existsSync(gzPath)) return gzPath;
+    }
+    throw new Error(`[io] Dataset input not found: ${filePath} (or ${filePath}.gz)`);
+}
+
+/** True when a plain path or its gzip sibling can be read. */
+export function datasetInputExists(filePath: string): boolean {
+    if (fs.existsSync(filePath)) return true;
+    return !filePath.toLowerCase().endsWith('.gz') && fs.existsSync(`${filePath}.gz`);
+}
+
+/** Open the logical, decompressed byte stream for a dataset input. */
+function openDatasetStream(filePath: string): Readable {
+    const resolvedPath = resolveDatasetInputPath(filePath);
+    const source = fs.createReadStream(resolvedPath);
+    return resolvedPath.toLowerCase().endsWith('.gz')
+        ? source.pipe(zlib.createGunzip())
+        : source;
+}
+
+/** SHA-256 the logical file contents without buffering the complete file. */
+export async function sha256File(filePath: string): Promise<string> {
+    const hash = createHash('sha256');
+    for await (const chunk of openDatasetStream(filePath)) {
+        hash.update(chunk);
+    }
+    return hash.digest('hex');
 }
 
 // ─── Shared types (canonical surface consumed by all regen modules) ──────────
@@ -40,10 +59,18 @@ export type Tradition = 'Sunni' | 'Imami' | 'Zaydi' | 'Ibadi';
 export interface UnifiedRow {
     /** From CSV `id` column — the canonical dataset_row_id. */
     dataset_row_id: number | null;
+    /** Durable cross-version identity; fullregen never keys nodes on row order. */
+    record_id: string;
+    /** Identifier owned by the upstream source, before unification. */
+    source_record_id: string;
     /** From CSV `hadith_id` — source-specific original ID (may differ from dataset_row_id). */
     hadith_id: string;
     hadith_no: string;
     source: string;
+    /** Durable work key when provider metadata distinguishes a shared label. */
+    source_work_id: string;
+    /** Provider-facing source label retained separately from canonical work name. */
+    source_display_label: string;
     /** Canonical tradition string — already canonicalized by the reader. */
     tradition: Tradition;
     volume: string;
@@ -52,6 +79,11 @@ export interface UnifiedRow {
     category: string;
     text_ar: string;
     text_en: string;
+    provenance_source: string;
+    translation_status: string;
+    translation_source: string;
+    translation_model: string;
+    translation_review_status: string;
     matn_ar: string;
     matn_en: string;
     /** Narrator names in sanad field (free text, not yet resolved). */
@@ -89,8 +121,19 @@ export interface RawiRecord {
     name_arabic: string;
     grade: string;
     bio: string;
+    birth_date_hijri: number | null;
+    birth_date_hijri_raw: string;
+    birth_date_gregorian: number | null;
+    birth_date_gregorian_raw: string;
+    birth_date_source_text: string;
+    birth_place: string;
     death_date_hijri: number | null;
+    death_date_hijri_raw: string;
     death_date_gregorian: number | null;
+    death_date_gregorian_raw: string;
+    death_date_source_text: string;
+    death_place: string;
+    death_reason: string;
     teachers_inds: number[];
     students_inds: number[];
     geographic_region: string;
@@ -129,7 +172,15 @@ const TRADITION_MAP: Record<string, Tradition> = {
 
 export function canonicalizeTradition(raw: string): Tradition {
     const key = raw.toLowerCase().trim();
-    return TRADITION_MAP[key] ?? 'Sunni';
+    const tradition = TRADITION_MAP[key];
+    if (!tradition) {
+        throw new Error(`[io] unsupported tradition: ${raw.trim() || '<blank>'}`);
+    }
+    return tradition;
+}
+
+export function isSupportedTradition(raw: string): boolean {
+    return Object.prototype.hasOwnProperty.call(TRADITION_MAP, raw.toLowerCase().trim());
 }
 
 // ─── CSV parser (multiline-quoted-field aware) ────────────────────────────────
@@ -145,11 +196,21 @@ class CSVParser {
 
     parseRow(line: string): CSVRow | null {
         if (this.isFirstLine) {
-            this.headers = this.parseCSVLine(line);
+            this.headers = this.parseCSVLine(line.replace(/^\uFEFF/, ''));
+            if (
+                this.headers.length === 0 ||
+                this.headers.some((header) => header.length === 0) ||
+                new Set(this.headers).size !== this.headers.length
+            ) {
+                throw new Error('[io] CSV header is empty or contains duplicate column names');
+            }
             this.isFirstLine = false;
             return null;
         }
         const values = this.parseCSVLine(line);
+        if (values.length !== this.headers.length) {
+            throw new Error(`[io] CSV column mismatch: expected ${this.headers.length}, received ${values.length}`);
+        }
         const row: CSVRow = {};
         this.headers.forEach((header, idx) => {
             row[header] = values[idx] ?? '';
@@ -183,23 +244,45 @@ class CSVParser {
     }
 }
 
-function splitCSVRecords(content: string): string[] {
-    const rows: string[] = [];
+/** Yield complete RFC-4180-style records while retaining only one record. */
+async function* readCSVRecords(filePath: string): AsyncIterable<string> {
+    const stream = openDatasetStream(filePath);
+    stream.setEncoding('utf8');
     let currentRow = '';
     let insideQuotes = false;
-    for (let i = 0; i < content.length; i++) {
-        const char = content[i];
-        if (char === '"') insideQuotes = !insideQuotes;
-        if ((char === '\n' || char === '\r') && !insideQuotes) {
-            if (char === '\r' && content[i + 1] === '\n') i++;
-            if (currentRow.trim()) rows.push(currentRow);
-            currentRow = '';
-        } else {
+    let previousDelimiterWasCr = false;
+
+    for await (const chunk of stream) {
+        const text = String(chunk);
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (char === '"') {
+                insideQuotes = !insideQuotes;
+                currentRow += char;
+                previousDelimiterWasCr = false;
+                continue;
+            }
+
+            if (!insideQuotes && (char === '\n' || char === '\r')) {
+                if (char === '\n' && previousDelimiterWasCr) {
+                    previousDelimiterWasCr = false;
+                    continue;
+                }
+                if (currentRow.trim()) yield currentRow;
+                currentRow = '';
+                previousDelimiterWasCr = char === '\r';
+                continue;
+            }
+
+            previousDelimiterWasCr = false;
             currentRow += char;
         }
     }
-    if (currentRow.trim()) rows.push(currentRow);
-    return rows;
+
+    if (insideQuotes) {
+        throw new Error(`[io] Unterminated quoted CSV record in ${resolveDatasetInputPath(filePath)}`);
+    }
+    if (currentRow.trim()) yield currentRow;
 }
 
 export function parseIndices(s: string): number[] {
@@ -209,8 +292,10 @@ export function parseIndices(s: string): number[] {
     if (!stripped) return [];
     return stripped
         .split(',')
-        .map((t) => parseInt(t.trim(), 10))
-        .filter((n) => !isNaN(n));
+        .map((token) => token.trim())
+        .filter((token) => /^\d+$/.test(token))
+        .map((token) => Number(token))
+        .filter((value) => Number.isSafeInteger(value) && value > 0);
 }
 
 /**
@@ -221,8 +306,8 @@ export function parseIndices(s: string): number[] {
  *   - Multi-branch (taḥwīl ح):  "1,2,3|4,5,6"  -> [[1, 2, 3], [4, 5, 6]]
  *   - Empty cell:               ""             -> []
  *   - JSON-array legacy form:   "[1,2,3]"      -> [[1, 2, 3]]
- *   - Invalid token:            skipped silently (matches parseIndices behavior)
- *   - Empty inner branch:       discarded ("1||2" -> [[1], [2]])
+ *   - Invalid/non-positive token: rejected as a curation error
+ *   - Empty inner branch:       rejected as a curation error
  *
  * Branches are separated by `|`, narrators within a branch by `,`.
  * `teachers_inds` and `students_inds` continue to use the flat `parseIndices`
@@ -237,22 +322,42 @@ export function parseChainIndices(s: string): number[][] {
     // (legacy "[1,2,3]" form). The pipe delimiter is never wrapped.
     const trimmed = s.trim().replace(/^\[|\]$/g, '');
     if (!trimmed) return [];
-    return trimmed
-        .split('|')
-        .map((branch) =>
-            branch
-                .split(',')
-                .map((t) => t.trim())
-                .filter((t) => t.length > 0)
-                .map((t) => parseInt(t, 10))
-                .filter((n) => !isNaN(n))
-        )
-        .filter((branch) => branch.length > 0);
+    return trimmed.split('|').map((branch, branchIdx) => {
+        const tokens = branch.split(',').map((token) => token.trim());
+        if (tokens.some((token) => token.length === 0)) {
+            throw new Error(`[io] Empty chain_indx token in branch ${branchIdx}: ${s}`);
+        }
+        return tokens.map((token) => {
+            if (!/^\d+$/.test(token)) {
+                throw new Error(`[io] Invalid chain_indx token "${token}": ${s}`);
+            }
+            const value = Number(token);
+            if (!Number.isSafeInteger(value) || value <= 0) {
+                throw new Error(`[io] Invalid chain_indx value "${token}": ${s}`);
+            }
+            return value;
+        });
+    });
 }
 
-function parseIntOrNull(s: string | undefined): number | null {
-    const v = parseInt((s ?? '').trim(), 10);
-    return isNaN(v) ? null : v;
+function parseExactSafeIntegerOrNull(s: string | undefined): number | null {
+    const token = (s ?? '').trim();
+    if (!/^[+-]?\d+$/.test(token)) return null;
+    const value = Number(token);
+    return Number.isSafeInteger(value) ? value : null;
+}
+
+/** Preserve the sign encoded by a source's “BH” (Before Hijra) date text. */
+function parseHijriYear(
+    rawYear: string | undefined,
+    ...dateContext: Array<string | undefined>
+): number | null {
+    const year = parseExactSafeIntegerOrNull(rawYear);
+    if (year === null) return null;
+    const isBeforeHijra = [rawYear, ...dateContext].some(
+        (value) => /\bBH\b/i.test(value ?? ''),
+    );
+    return isBeforeHijra ? -Math.abs(year) : year;
 }
 
 /** Map a raw CSV row to a typed UnifiedRow with tradition canonicalized. */
@@ -260,10 +365,14 @@ function mapUnifiedRow(raw: CSVRow): UnifiedRow {
     // Helper: read a string column, trimming whitespace (handles trailing-space source names etc.)
     const s = (key: string): string => (raw[key] ?? '').trim();
     return {
-        dataset_row_id: parseIntOrNull(raw['id']),        // CSV column is `id`, not `dataset_row_id`
+        dataset_row_id: parseExactSafeIntegerOrNull(raw['id']), // CSV column is `id`, not `dataset_row_id`
+        record_id: s('record_id'),
+        source_record_id: s('source_record_id'),
         hadith_id: s('hadith_id'),
         hadith_no: s('hadith_no'),
         source: s('source'),
+        source_work_id: s('source_work_id'),
+        source_display_label: s('source_display_label'),
         tradition: canonicalizeTradition(s('tradition')),
         volume: s('volume'),
         chapter: s('chapter'),
@@ -271,6 +380,11 @@ function mapUnifiedRow(raw: CSVRow): UnifiedRow {
         category: s('category'),
         text_ar: s('text_ar'),
         text_en: s('text_en'),                            // CSV column is `text_en`, not `text_english`
+        provenance_source: s('provenance_source'),
+        translation_status: s('translation_status'),
+        translation_source: s('translation_source'),
+        translation_model: s('translation_model'),
+        translation_review_status: s('translation_review_status'),
         matn_ar: s('matn_ar'),
         matn_en: s('matn_en'),
         sanad: s('sanad'),
@@ -298,17 +412,9 @@ function mapUnifiedRow(raw: CSVRow): UnifiedRow {
  * that naive line-splitting would corrupt. Tradition strings are canonicalized.
  */
 export async function* readUnifiedCsv(filePath: string): AsyncIterable<UnifiedRow> {
-    ensureCsvDecompressed(filePath);
-    const content = fs.readFileSync(filePath, 'utf8');
-    const rawRows = splitCSVRecords(content);
     const parser = new CSVParser();
-    for (const rawRow of rawRows) {
-        let row: CSVRow | null = null;
-        try {
-            row = parser.parseRow(rawRow);
-        } catch (err) {
-            console.error('[io] CSV parse error, skipping row:', err);
-        }
+    for await (const rawRow of readCSVRecords(filePath)) {
+        const row = parser.parseRow(rawRow);
         if (row) yield mapUnifiedRow(row);
     }
 }
@@ -316,19 +422,39 @@ export async function* readUnifiedCsv(filePath: string): AsyncIterable<UnifiedRo
 // ─── Public: readAllRawis ─────────────────────────────────────────────────────
 
 function mapRawiRecord(raw: CSVRow): RawiRecord {
-    const scholar_indx = parseIntOrNull(raw['scholar_indx']);
-    if (scholar_indx === null) {
+    const scholarToken = (raw['scholar_indx'] ?? '').trim();
+    const scholar_indx = Number(scholarToken);
+    if (!/^\d+$/.test(scholarToken) || !Number.isSafeInteger(scholar_indx) || scholar_indx <= 0) {
         throw new Error(`[io] Invalid scholar_indx in rawis row: ${JSON.stringify(raw)}`);
     }
     return {
         scholar_indx,
         name: raw['name'] ?? '',
-        name_english: raw['name_english'] ?? raw['name'] ?? '',
+        name_english: raw['name_english'] ?? '',
         name_arabic: raw['name_arabic'] ?? '',
         grade: raw['grade'] ?? '',
         bio: raw['bio'] ?? '',
-        death_date_hijri: parseIntOrNull(raw['death_date_hijri']),
-        death_date_gregorian: parseIntOrNull(raw['death_date_gregorian']),
+        birth_date_hijri: parseHijriYear(
+            raw['birth_date_hijri'],
+            raw['birth_date'],
+            raw['birth_date_place'],
+        ),
+        birth_date_hijri_raw: (raw['birth_date_hijri'] ?? '').trim(),
+        birth_date_gregorian: parseExactSafeIntegerOrNull(raw['birth_date_gregorian']),
+        birth_date_gregorian_raw: (raw['birth_date_gregorian'] ?? '').trim(),
+        birth_date_source_text: (raw['birth_date'] ?? '').trim(),
+        birth_place: raw['birth_place'] ?? '',
+        death_date_hijri: parseHijriYear(
+            raw['death_date_hijri'],
+            raw['death_date'],
+            raw['death_date_place'],
+        ),
+        death_date_hijri_raw: (raw['death_date_hijri'] ?? '').trim(),
+        death_date_gregorian: parseExactSafeIntegerOrNull(raw['death_date_gregorian']),
+        death_date_gregorian_raw: (raw['death_date_gregorian'] ?? '').trim(),
+        death_date_source_text: (raw['death_date'] ?? '').trim(),
+        death_place: raw['death_place'] ?? '',
+        death_reason: raw['death_reason'] ?? '',
         teachers_inds: parseIndices(raw['teachers_inds'] ?? ''),
         students_inds: parseIndices(raw['students_inds'] ?? ''),
         geographic_region: raw['geographic_region'] ?? '',
@@ -341,25 +467,16 @@ function mapRawiRecord(raw: CSVRow): RawiRecord {
  * The file is small (~24k rows) and is used as a lookup table by all loaders.
  */
 export async function readAllRawis(filePath: string): Promise<Map<number, RawiRecord>> {
-    ensureCsvDecompressed(filePath);
-    const content = fs.readFileSync(filePath, 'utf8');
-    const rawRows = splitCSVRecords(content);
     const parser = new CSVParser();
     const out = new Map<number, RawiRecord>();
-    for (const rawRow of rawRows) {
-        let row: CSVRow | null = null;
-        try {
-            row = parser.parseRow(rawRow);
-        } catch (err) {
-            console.error('[io] rawis CSV parse error, skipping row:', err);
-        }
+    for await (const rawRow of readCSVRecords(filePath)) {
+        const row = parser.parseRow(rawRow);
         if (row) {
-            try {
-                const rawi = mapRawiRecord(row);
-                out.set(rawi.scholar_indx, rawi);
-            } catch (err) {
-                console.warn('[io] Skipping malformed rawis row:', err);
+            const rawi = mapRawiRecord(row);
+            if (out.has(rawi.scholar_indx)) {
+                throw new Error(`[io] Duplicate scholar_indx in rawis input: ${rawi.scholar_indx}`);
             }
+            out.set(rawi.scholar_indx, rawi);
         }
     }
     return out;
@@ -372,8 +489,10 @@ export async function readAllRawis(filePath: string): Promise<Map<number, RawiRe
  * Skips blank lines and lines that fail to parse (with a warning).
  */
 export async function* readJsonl<T = Record<string, unknown>>(filePath: string): AsyncIterable<T> {
-    const content = fs.readFileSync(filePath, 'utf8');
-    for (const line of content.split('\n')) {
+    const input = openDatasetStream(filePath);
+    input.setEncoding('utf8');
+    const lines = readline.createInterface({ input, crlfDelay: Infinity });
+    for await (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed) continue;
         try {

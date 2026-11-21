@@ -11,6 +11,7 @@ import { Download, X } from 'lucide-react';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 import { getSourceFilterOptions } from '@/lib/constants/sources';
+import { HADITH_TRADITION_OPTIONS, displayHadithTradition } from '@/lib/constants/traditions';
 
 interface PaginationInfo {
     page: number;
@@ -36,14 +37,6 @@ interface HadithListItem {
     text_ar?: string;
     text_en?: string;
 }
-
-const SCHOOL_OPTIONS = [
-    { label: 'All Schools', value: '' },
-    { label: 'Sunni', value: 'Sunni' },
-    { label: 'Twelver Shia', value: 'Shia Imami' },
-    { label: 'Zaydi Shia', value: 'Shia Zaydi' },
-    { label: 'Ibadi', value: 'Ibadi' },
-];
 
 interface HadithManagerClientProps {
     hadiths: HadithListItem[];
@@ -75,7 +68,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
         variations: false,
         school: false,
     });
-    const [exportSchool, setExportSchool] = useState('');
+    const [exportTradition, setExportTradition] = useState('');
     const [exportSource, setExportSource] = useState('');
 
     const toggleField = (key: string) => setExportFields((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -87,7 +80,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
             const config: ExportConfig = {
                 filters: {
                     source: exportSource || undefined,
-                    school: exportSchool || undefined,
+                    tradition: exportTradition || undefined,
                 },
                 fields: Object.entries(exportFields).filter(([, v]) => v).map(([k]) => k),
                 edges: Object.entries(exportEdges).filter(([, v]) => v).map(([k]) => k),
@@ -114,7 +107,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
         } finally {
             setIsExporting(false);
         }
-    }, [exportFields, exportEdges, exportSchool, exportSource]);
+    }, [exportFields, exportEdges, exportTradition, exportSource]);
 
     return (
         <div>
@@ -150,18 +143,18 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                             <h3 className="text-sm font-medium text-slate-300 mb-3">Export Filters</h3>
                             <div className="space-y-3">
                                 <div>
-                                    <Label className="text-xs text-slate-400">School</Label>
-                                    <select value={exportSchool} onChange={(e) => setExportSchool(e.target.value)}
-                                        className="w-full mt-1 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-sm">
-                                        {SCHOOL_OPTIONS.map((opt) => (
+                                    <Label htmlFor="export-tradition" className="text-xs text-slate-400">Tradition</Label>
+                                    <select id="export-tradition" value={exportTradition} onChange={(e) => setExportTradition(e.target.value)}
+                                        className="w-full min-h-11 mt-1 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/30">
+                                        {HADITH_TRADITION_OPTIONS.map((opt) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div>
-                                    <Label className="text-xs text-slate-400">Source</Label>
-                                    <select value={exportSource} onChange={(e) => setExportSource(e.target.value)}
-                                        className="w-full mt-1 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-sm">
+                                    <Label htmlFor="export-source" className="text-xs text-slate-400">Source</Label>
+                                    <select id="export-source" value={exportSource} onChange={(e) => setExportSource(e.target.value)}
+                                        className="w-full min-h-11 mt-1 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/30">
                                         {getSourceFilterOptions().map((opt) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
@@ -231,9 +224,10 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                 totalResults={pagination.total}
                 filters={[
                     {
-                        key: 'school',
-                        label: 'School',
-                        options: SCHOOL_OPTIONS,
+                        key: 'tradition',
+                        label: 'Tradition',
+                        options: HADITH_TRADITION_OPTIONS,
+                        legacyKeys: ['school'],
                     },
                     {
                         key: 'source',
@@ -264,17 +258,15 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                         <h3 className="text-lg font-semibold text-white">{hadith.title}</h3>
                                         {hadith.tradition && (
                                             <Badge className={
-                                                hadith.tradition === 'Shia Imami'
-                                                    ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                                                    : hadith.tradition === 'Shia Zaydi'
-                                                        ? 'bg-violet-500/20 text-violet-400 border-violet-500/30'
+                                                hadith.tradition === 'Imami' || hadith.tradition === 'Shia Imami'
+                                                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                                                    : hadith.tradition === 'Zaydi' || hadith.tradition === 'Shia Zaydi'
+                                                        ? 'bg-violet-500/20 text-violet-300 border-violet-500/30'
                                                         : hadith.tradition === 'Ibadi'
                                                             ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
                                                             : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
                                             }>
-                                                {hadith.tradition === 'Shia Imami' ? 'Twelver Shia'
-                                                    : hadith.tradition === 'Shia Zaydi' ? 'Zaydi Shia'
-                                                    : hadith.tradition}
+                                                {displayHadithTradition(hadith.tradition)}
                                             </Badge>
                                         )}
                                     </div>

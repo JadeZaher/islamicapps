@@ -13,7 +13,7 @@
  *
  * Constraints asserted (per workstream B spec):
  *   NEW (Phase 1):
- *     - Hadith.dataset_row_id (uniqueness — blocks new legacy duplicates)
+ *     - Hadith.record_id (durable cross-version identity)
  *     - Chain.id
  *     - NameMention.id
  *     - Assessment.id
@@ -28,10 +28,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadEnv } from '../lib/env';
-import { runQuery, runWrite, closeDriver } from '../../lib/db/neo4j';
-
-loadEnv();
+import { runQuery, closeDriver } from '../../lib/db/neo4j';
+import { canRetireHadithDatasetRowIdConstraint } from '../../lib/db/schema';
+import { configureLiveNeo4jTest } from './neo4j-test-env';
 
 // ─── Harness ─────────────────────────────────────────────────────────────────
 
@@ -80,11 +79,23 @@ function testS1_schema_source(): void {
     ['Narrator', 'scholar_indx', 'narrator_scholar_indx_unique (existing — primary merge key)'],
     ['Narrator', 'id', 'Narrator.id (existing)'],
     ['Hadith', 'id', 'Hadith.id (existing)'],
-    ['Hadith', 'dataset_row_id', 'Hadith.dataset_row_id (NEW — blocks legacy dups; FR-1.1)'],
+    ['Hadith', 'record_id', 'Hadith.record_id (durable merge key; FR-1.1)'],
     ['Chain', 'id', 'Chain.id (NEW — FR-1.1)'],
+    ['Chain', 'pipeline_key', 'Chain.pipeline_key (durable loader MERGE key)'],
     ['NameMention', 'id', 'NameMention.id (NEW — FR-1.3)'],
+    ['NameMention', 'pipeline_key', 'NameMention.pipeline_key (durable loader MERGE key)'],
     ['Assessment', 'id', 'Assessment.id (NEW — FR-1.2)'],
+    ['Assessment', 'pipeline_key', 'Assessment.pipeline_key (durable loader MERGE key)'],
     ['DatasetVersion', 'id', 'DatasetVersion.id (NEW — FR-0.2)'],
+    ['DatasetVersion', 'content_hash', 'DatasetVersion.content_hash (durable version MERGE key)'],
+    ['Source', 'name', 'Source.name (durable loader MERGE key)'],
+    ['Person', 'id', 'Person.id (citation-bound biography identity)'],
+    ['BibliographicWork', 'id', 'BibliographicWork.id (citation work identity)'],
+    ['Edition', 'id', 'Edition.id (edition identity)'],
+    ['Citation', 'id', 'Citation.id (record-level citation identity)'],
+    ['BiographicalAssertion', 'id', 'BiographicalAssertion.id (competing biography claim identity)'],
+    ['TemporalAssertion', 'id', 'TemporalAssertion.id (event/epoch date claim identity)'],
+    ['Epoch', 'id', 'Epoch.id (historical period identity)'],
     ['ReligiousTradition', 'name', 'ReligiousTradition.name (existing — tradition scope)'],
     ['ReligiousTradition', 'id', 'ReligiousTradition.id (existing)'],
   ];
@@ -107,10 +118,30 @@ function testS1_schema_source(): void {
     src.includes('IF NOT EXISTS'),
     'db:init must be re-runnable — all constraints need IF NOT EXISTS');
 
-  // Verify no DROP CONSTRAINT anywhere (would break Gate G1 "never shrink")
-  check('S1: schema.ts has zero DROP CONSTRAINT calls',
-    !/DROP\s+CONSTRAINT/i.test(src),
-    'schema.ts must never drop constraints');
+  const drops = src.match(/DROP\s+CONSTRAINT/gi) ?? [];
+  check('S1: only the superseded positional Hadith constraint is retired',
+    drops.length === 1 && src.includes('DROP CONSTRAINT hadith_dataset_row_id_unique IF EXISTS'),
+    'only hadith_dataset_row_id_unique may be dropped after record_id is constrained');
+
+  check('S1: populated positional uniqueness requires complete canonical record_id coverage',
+    src.includes('inspectHadithRecordIdCoverage()') &&
+    src.includes('canRetireHadithDatasetRowIdConstraint(hadithCoverage)') &&
+    !canRetireHadithDatasetRowIdConstraint({
+      totalHadiths: 2,
+      canonicalRecordIds: 1,
+      duplicateRecordIdGroups: 0,
+    }) &&
+    canRetireHadithDatasetRowIdConstraint({
+      totalHadiths: 2,
+      canonicalRecordIds: 2,
+      duplicateRecordIdGroups: 0,
+    }) &&
+    canRetireHadithDatasetRowIdConstraint({
+      totalHadiths: 0,
+      canonicalRecordIds: 0,
+      duplicateRecordIdGroups: 0,
+    }),
+    'drop must be skipped unless the graph is empty or every Hadith has a canonical unique record_id');
 }
 
 // ─── S2 — Live SHOW CONSTRAINTS check ─────────────────────────────────────────
@@ -122,8 +153,15 @@ type ConstraintRow = Record<string, unknown>;
 async function testS2_live_constraints(): Promise<void> {
   console.log('\n[S2] Live Neo4j SHOW CONSTRAINTS');
 
+  const gate = configureLiveNeo4jTest();
+  if (!gate.enabled) {
+    defer('S2: all required constraints present in Neo4j',
+      `live Neo4j tests disabled: ${gate.reason}`);
+    return;
+  }
+
   const live = await (async () => {
-    try { await runWrite('RETURN 1 AS ok'); return true; } catch { return false; }
+    try { await runQuery('RETURN 1 AS ok'); return true; } catch { return false; }
   })();
 
   if (!live) {
@@ -165,11 +203,16 @@ async function testS2_live_constraints(): Promise<void> {
     ['Narrator', 'scholar_indx', 'narrator_scholar_indx_unique'],
     ['Narrator', 'id', 'narrator_id_unique'],
     ['Hadith', 'id', 'hadith_id_unique'],
-    ['Hadith', 'dataset_row_id', 'hadith_dataset_row_id_unique'],
+    ['Hadith', 'record_id', 'hadith_record_id_unique'],
     ['Chain', 'id', 'chain_id_unique'],
+    ['Chain', 'pipeline_key', 'chain_pipeline_key_unique'],
     ['NameMention', 'id', 'namemention_id_unique'],
+    ['NameMention', 'pipeline_key', 'namemention_pipeline_key_unique'],
     ['Assessment', 'id', 'assessment_id_unique'],
+    ['Assessment', 'pipeline_key', 'assessment_pipeline_key_unique'],
     ['DatasetVersion', 'id', 'datasetversion_id_unique'],
+    ['DatasetVersion', 'content_hash', 'datasetversion_content_hash_unique'],
+    ['Source', 'name', 'source_name_unique'],
     ['ReligiousTradition', 'name', 'religioustradition_name_unique'],
     ['ReligiousTradition', 'id', 'religioustradition_id_unique'],
   ];
@@ -185,10 +228,10 @@ async function testS2_live_constraints(): Promise<void> {
     );
   }
 
-  // The pre-existing constraint count (23, as documented) should only INCREASE
-  check(`S2: total constraint count >= 23 (no constraints were dropped)`,
-    constraints.length >= 23,
-    `only ${constraints.length} constraints; expected at least 23`);
+  // record_id replaces positional identity; pipeline-key constraints cover batched MERGEs.
+  check(`S2: total constraint count >= 28 (durable-key coverage retained)`,
+    constraints.length >= 28,
+    `only ${constraints.length} constraints; expected at least 28`);
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────────

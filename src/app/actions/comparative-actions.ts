@@ -64,6 +64,47 @@ export interface MotifTagData {
     description?: string;
 }
 
+interface Neo4jEntity {
+    properties: Record<string, unknown>;
+}
+
+export interface ReligiousTradition extends ReligiousTraditionData {
+    id: string;
+    source_count?: number;
+    narrator_count?: number;
+}
+
+export interface SourceText extends SourceTextData {
+    id: string;
+    tradition?: ReligiousTradition | null;
+}
+
+export interface MotifTag extends MotifTagData {
+    id: string;
+}
+
+export interface HadithParallelSummary {
+    id: string;
+    chapter?: string;
+    category?: string;
+    title?: string | null;
+    primary_topic?: string | null;
+}
+
+export interface CrossCulturalParallel extends Omit<CrossCulturalParallelData, 'motif_tag_ids'> {
+    id: string;
+    hadith?: HadithParallelSummary;
+    source_text?: SourceText;
+    tradition?: ReligiousTradition;
+    motif_tags?: MotifTag[];
+}
+
+export interface ComparativeStat {
+    tradition: string;
+    type: ParallelType;
+    count: number;
+}
+
 // ============ RELIGIOUS TRADITIONS ============
 
 export async function createReligiousTradition(data: ReligiousTraditionData): Promise<string> {
@@ -87,8 +128,12 @@ export async function createReligiousTradition(data: ReligiousTraditionData): Pr
     return id;
 }
 
-export async function getAllTraditions() {
-    const result = await runQuery(`
+export async function getAllTraditions(): Promise<ReligiousTradition[]> {
+    const result = await runQuery<{
+        t: Neo4jEntity;
+        source_count: number;
+        narrator_count: number;
+    }>(`
         MATCH (t:ReligiousTradition)
         OPTIONAL MATCH (s:SourceText)-[:BELONGS_TO]->(t)
         OPTIONAL MATCH (n:Narrator)-[:TRANSMITTER_OF_TRADITION]->(t)
@@ -156,18 +201,18 @@ export async function linkSourceTextToTradition(sourceTextId: string, traditionI
     `, { sourceTextId, traditionId });
 }
 
-export async function getAllSourceTexts(filters?: { tradition_name?: string }) {
+export async function getAllSourceTexts(filters?: { tradition_name?: string }): Promise<SourceText[]> {
     let query = `
         MATCH (s:SourceText)
         OPTIONAL MATCH (s)-[:BELONGS_TO]->(t:ReligiousTradition)
     `;
-    const params: Record<string, any> = {};
+    const params: Record<string, unknown> = {};
     if (filters?.tradition_name) {
         query += ` WHERE s.tradition_name = $tradition_name`;
         params.tradition_name = filters.tradition_name;
     }
     query += ` RETURN s, t ORDER BY s.tradition_name, s.title`;
-    const result = await runQuery(query, params);
+    const result = await runQuery<{ s: Neo4jEntity; t?: Neo4jEntity }>(query, params);
     return result.map((r) => ({
         ...r.s.properties,
         tradition: r.t?.properties || null,
@@ -205,16 +250,16 @@ export async function createMotifTag(data: MotifTagData): Promise<string> {
     return id;
 }
 
-export async function getAllMotifTags(category?: MotifCategory) {
+export async function getAllMotifTags(category?: MotifCategory): Promise<MotifTag[]> {
     let query = 'MATCH (m:MotifTag)';
-    const params: Record<string, any> = {};
+    const params: Record<string, unknown> = {};
     if (category) {
         query += ' WHERE m.category = $category';
         params.category = category;
     }
     query += ' RETURN m ORDER BY m.category, m.name';
-    const result = await runQuery(query, params);
-    return result.map((r) => r.m.properties);
+    const result = await runQuery<{ m: Neo4jEntity }>(query, params);
+    return result.map((r) => r.m.properties as unknown as MotifTag);
 }
 
 export async function deleteMotifTag(tagId: string): Promise<void> {
@@ -249,7 +294,7 @@ export async function tagParallel(parallelId: string, motifTagId: string): Promi
 export async function createCrossParallel(data: CrossCulturalParallelData): Promise<string> {
     const id = randomUUID();
 
-    const queries: Array<{ query: string; params?: Record<string, any> }> = [
+    const queries: Array<{ query: string; params?: Record<string, unknown> }> = [
         {
             query: `
                 CREATE (p:CrossCulturalParallel {
@@ -313,8 +358,13 @@ export async function createCrossParallel(data: CrossCulturalParallelData): Prom
     return id;
 }
 
-export async function getParallelsForHadith(hadithId: string) {
-    const result = await runQuery(`
+export async function getParallelsForHadith(hadithId: string): Promise<CrossCulturalParallel[]> {
+    const result = await runQuery<{
+        p: Neo4jEntity;
+        s: Neo4jEntity;
+        t: Neo4jEntity;
+        tags: Neo4jEntity[];
+    }>(`
         MATCH (h:Hadith {id: $hadithId})-[:HAS_PARALLEL]->(p:CrossCulturalParallel)
         MATCH (p)-[:PARALLELS]->(s:SourceText)
         MATCH (p)-[:FROM_TRADITION]->(t:ReligiousTradition)
@@ -327,8 +377,8 @@ export async function getParallelsForHadith(hadithId: string) {
         ...r.p.properties,
         source_text: r.s.properties,
         tradition: r.t.properties,
-        motif_tags: r.tags.map((t: any) => t.properties),
-    }));
+        motif_tags: r.tags.map((t) => t.properties),
+    })) as unknown as CrossCulturalParallel[];
 }
 
 export async function deleteParallel(parallelId: string): Promise<void> {
@@ -359,13 +409,18 @@ export async function unlinkNarratorFromTradition(narratorId: string, traditionI
 }
 
 export async function getTraditionConnectionsForNarrator(narratorId: string) {
-    const traditions = await runQuery(`
+    const traditions = await runQuery<{ t: Neo4jEntity }>(`
         MATCH (n:Narrator {id: $narratorId})-[:TRANSMITTER_OF_TRADITION]->(t:ReligiousTradition)
         RETURN t
         ORDER BY t.name
     `, { narratorId });
 
-    const parallels = await runQuery(`
+    const parallels = await runQuery<{
+        hadith: HadithParallelSummary;
+        parallel: Pick<CrossCulturalParallel, 'id' | 'parallel_type' | 'isra_iliyyat_status'>;
+        tradition: Pick<ReligiousTradition, 'id' | 'name'>;
+        source_text: Pick<SourceText, 'title' | 'canonical_reference'>;
+    }>(`
         MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)<-[:HAS_CHAIN]-(h:Hadith)
         MATCH (h)-[:HAS_PARALLEL]->(p:CrossCulturalParallel)-[:FROM_TRADITION]->(t:ReligiousTradition)
         MATCH (p)-[:PARALLELS]->(s:SourceText)
@@ -410,7 +465,7 @@ export async function searchParallels(filters?: {
     `;
 
     const conditions: string[] = [];
-    const params: Record<string, any> = {};
+    const params: Record<string, unknown> = {};
 
     if (filters?.tradition_id) {
         conditions.push('t.id = $tradition_id');
@@ -444,24 +499,38 @@ export async function searchParallels(filters?: {
         LIMIT 100
     `;
 
-    const result = await runQuery(query, params);
+    const result = await runQuery<{
+        p: Neo4jEntity;
+        hadith: HadithParallelSummary;
+        s: Neo4jEntity;
+        t: Neo4jEntity;
+        tags: Neo4jEntity[];
+    }>(query, params);
     return result.map((r) => ({
         ...r.p.properties,
         hadith: r.hadith,
         source_text: r.s.properties,
         tradition: r.t.properties,
-        motif_tags: r.tags.map((t: any) => t.properties),
-    }));
+        motif_tags: r.tags.map((t) => t.properties),
+    })) as unknown as CrossCulturalParallel[];
 }
 
-export async function getAllParallels(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+export async function getAllParallels(
+    pagination?: PaginationParams,
+): Promise<PaginatedResult<CrossCulturalParallel>> {
     const { skip, limit, page, pageSize } = toSkipLimit(pagination);
     const [countResult, result] = await Promise.all([
         runQuery<{ total: number }>(`
             MATCH (h:Hadith)-[:HAS_PARALLEL]->(p:CrossCulturalParallel)
             RETURN count(p) as total
         `),
-        runQuery(`
+        runQuery<{
+            p: Neo4jEntity;
+            hadith: Record<string, unknown>;
+            s: Neo4jEntity;
+            t: Neo4jEntity;
+            tags: Neo4jEntity[];
+        }>(`
             MATCH (h:Hadith)-[:HAS_PARALLEL]->(p:CrossCulturalParallel)
             MATCH (p)-[:PARALLELS]->(s:SourceText)
             MATCH (p)-[:FROM_TRADITION]->(t:ReligiousTradition)
@@ -485,15 +554,15 @@ export async function getAllParallels(pagination?: PaginationParams): Promise<Pa
                 },
                 source_text: r.s.properties,
                 tradition: r.t.properties,
-                motif_tags: r.tags.map((t: any) => t.properties),
+                motif_tags: r.tags.map((t) => t.properties),
             };
-        }),
+        }) as unknown as CrossCulturalParallel[],
         countResult[0]?.total ?? 0, page, pageSize,
     );
 }
 
-export async function getComparativeStats() {
-    const result = await runQuery(`
+export async function getComparativeStats(): Promise<ComparativeStat[]> {
+    const result = await runQuery<ComparativeStat>(`
         MATCH (p:CrossCulturalParallel)-[:FROM_TRADITION]->(t:ReligiousTradition)
         RETURN t.name as tradition, p.parallel_type as type, count(*) as count
         ORDER BY tradition, type

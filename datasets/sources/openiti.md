@@ -26,7 +26,7 @@ traditions:
 collections:
   - "Musnad al-Imam Zayd ibn Ali (0122ZaydIbnCali.Musnad.Zaydiyya0000052-ara1)"
   - "Jami' al-Sahih / Musnad al-Rabi (0170RabicIbnHabibAzdi.JamicSahih.ShamIbadiyya0000155-ara1)"
-  - "Musnad al-Imam Ali al-Rida (Zaydi appendix, same file as Musnad Zayd)"
+  - "Sahifat al-Imam Ali al-Rida (Imami-family appendix in the same source file as Musnad Zayd)"
 coverage_rows: 1738
 
 paths:
@@ -57,7 +57,7 @@ OpenITI is our **primary source for Zaydi and Ibadi hadith collections** — two
 
 - `0122ZaydIbnCali.Musnad.Zaydiyya0000052-ara1.mARkdown` — *Musnad al-Imam Zayd ibn Ali*, the foundational Zaydi hadith collection compiled by ʿAbd al-ʿAzīz ibn Isḥāq al-Baghdādī.
 - `0170RabicIbnHabibAzdi.JamicSahih.ShamIbadiyya0000155-ara1.mARkdown` — *Jamiʿ al-Ṣaḥīḥ* of al-Rabīʿ ibn Ḥabīb al-Azdī, the canonical Ibāḍī collection, including al-Rabīʿ's commentary.
-- The Musnad al-Imam ʿAlī al-Riḍā appendix, which is bundled inside the Musnad Zayd file from page 434 onward and is parsed out as a separate Zaydi-tradition collection.
+- The Sahifat al-Imam ʿAlī al-Riḍā appendix, which is bundled inside the Musnad Zayd source file from page 434 onward and is parsed as a separate Imami-family collection.
 
 We chose OpenITI for these three texts because the alternatives (PDF scans, raw HTML from miscellaneous sites) require OCR with non-trivial Arabic-script error rates. OpenITI texts are **community-proofread transcriptions** from Maktaba Shamila al-Zaydiyya and al-Ibadiyya — not OCR — so the upstream error profile is "occasional typo / footnote-marker noise" rather than "garbled Arabic characters." The trade-off, documented under [Known limits](#known-limits), is that some legacy footnote artifacts and inconsistent diacritics survive.
 

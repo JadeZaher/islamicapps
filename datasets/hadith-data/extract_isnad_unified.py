@@ -1,322 +1,486 @@
-"""
-datasets/hadith-data/extract_isnad_unified.py
+"""Canonical, tradition-neutral isnad surface extractor.
 
-The canonical taḥwīl-aware isnad extractor for the unified pipeline.
-
-Replaces the three divergent paths (K6 sidecar parse, OpenITI inline,
-classical Sunni `extract_classical_isnad`) with one algorithm:
-candidate C — LCS-suffix branch reconstruction (winner of the Phase 0.5
-algorithmic bake-off; Jaccard median 0.845, p25 0.625 on 5 fixtures).
-
-Public surface:
-  extract_isnad_branches(text_ar: str) -> list[list[str]]
-  resolve_branches_to_indxs(branches: list[list[str]], resolve_narrator: Callable) -> list[list[int]]
-  _compute_chain_indx(text_ar: str | None, fallback: str | None, resolve_narrator: Callable | None = None) -> str
-
-Module-level stats dict for telemetry:
-  _UNIFIED_CHAIN_STATS: dict[str, int]
-    - "rows_with_text": total rows where text_ar was non-empty
-    - "rows_branched": rows where >1 branch was produced
-    - "branches_total": total branch count emitted
-    - "narrators_attempted": total surface forms passed to resolver
-    - "narrators_resolved": total surface forms that resolved to int indx
-    - "fallback_used": rows where text_ar was None/empty and fallback path fired
-
-This module owns the algorithm; `algo_candidates/candidate_C_lcs_suffix.py`
-stays in place as the reference implementation for regression / future
-bake-off rounds. The two MUST stay byte-equivalent on Phase 0.5 fixtures.
+See ``datasets/hadith-data/AGENTS.md`` for the parsing contract, provenance
+requirements, and known limits. This module extracts source surfaces; it does
+not infer narrator identities.
 """
 from __future__ import annotations
 
-import pathlib
-import sys
-from collections.abc import Callable
+import re
+import unicodedata
+from collections.abc import Callable, Iterable
 from typing import Optional
 
-# Reuse _common.py helpers from algo_candidates/ (winner of Phase 0.5 bake-off
-# imports from the same module). Per spec FR-1.1 promotion path, the helpers
-# stay in algo_candidates/_common.py for this phase. If they later migrate
-# under extract_isnad_unified/, flip the import.
-_HERE = pathlib.Path(__file__).resolve().parent
-_ALGO = _HERE / "algo_candidates"
-if str(_ALGO) not in sys.path:
-    sys.path.insert(0, str(_ALGO))
 
-from _common import (  # noqa: E402
-    TAHWEEL_RE,
-    MATN_ANCHORS,
-    split_on_tahweel,
-    clean_segment,
-    split_into_names,
-    find_matn_start,
-    name_normalize,
-    is_name_token,
+MAX_ISNAD_BRANCHES = 64
+
+_TRANSMISSION_VERBS = (
+    "حدثنا|حدثني|اخبرنا|اخبرني|أخبرنا|أخبرني|انبأنا|انبأني|"
+    "أنبأنا|أنبأني|ثنا|نا|سمعت"
 )
+_LINK_RE = re.compile(
+    rf"\b(?:"
+    rf"قال(?:ا|ت|وا)?[\s:،-]+(?:و?\s*)?(?:{_TRANSMISSION_VERBS})|"
+    rf"يقول[\s:،-]+سمعت|أنه[\s:،-]+سمع|انّه[\s:،-]+سمع|"
+    rf"رفعه[\s:،-]+إلى|رفعه[\s:،-]+الى|"
+    rf"و?(?:{_TRANSMISSION_VERBS})|عن"
+    rf")\b"
+)
+_TRANSMISSION_AHEAD_RE = re.compile(
+    rf"^[\s،,.;:ـ-]*(?:و\s*)?"
+    rf"(?:(?:قال|وقال)\b.{{0,80}}?)?(?:{_TRANSMISSION_VERBS})\b"
+)
+_LONE_H_RE = re.compile(r"(?<![\w])ح(?=[\s،,.;:ـ-])")
+_PROPHET_BOUNDARY_RE = re.compile(
+    r"\b(?:عن|أن|ان|سمعت)\s+(?:النبيء|النبي|رسول\s+الله)\b"
+)
+_SPEECH_RE = re.compile(r"\b(?:قال|قالت|قالوا|يقول)\b")
+_SPEECH_LINK_RE = re.compile(
+    rf"^[\s:،-]*(?:و\s*)?(?:{_TRANSMISSION_VERBS})\b"
+)
+_ARABIC_LETTER_RE = re.compile(r"[ء-ي]")
+_EDITORIAL_RE = re.compile(
+    r"[-–—]\s*(?:يعني|واللفظ\s+له|وهذا\s+حديثه)[^-–—]*[-–—]"
+)
+_HONORIFIC_RE = re.compile(
+    r"\s*(?:"
+    r"رض[ىي]\s+الله\s+عنه(?:ا|ما|م|ن)?|رحم(?:ه|هم|ها)\s+الله(?:\s+تعالى)?|"
+    r"عليه(?:ما|م)?\s+السلام|"
+    r"سلام\s+الله\s+عليه(?:م)?(?:\s+أجمعين\s+آمين\s+إلى\s+يوم\s+الدين)?|"
+    r"صلى\s+الله\s+عليه(?:\s+وآله)?\s+وسلم|"
+    r"أم\s+المؤمنين|(?<![\w])ع\s*م(?![\w])"
+    r")\s*"
+)
+_TRAILING_FRAME_RE = re.compile(
+    r"\s+(?:"
+    r"قالا|قالت|قالوا|قال|يقول|أن|ان|أنه|انّه|وهو|"
+    r"على\s+المنبر|في\s+قوله\s+تعالى|يخطب|"
+    r"واللفظ\s+له|وهذا\s+حديثه|أيضا|جميعا"
+    r")\b.*$"
+)
+_PUNCT_RE = re.compile(r"[،,.:؛!?؟\"'«»“”‘’()\[\]{}ـ=‏‎]+")
+_LEADING_LABEL_RE = re.compile(
+    r"^(?:\d+(?:[-/ـ]\d+)*\s*|قال\s+|وقال\s+|وبإسناده\s+|وباسناده\s+)"
+)
+_PATRONYMIC_CONNECTORS = {
+    "بن", "ابن", "بنت", "أبو", "ابو", "أبي", "ابي", "أبا", "ابا", "أم", "ام"
+}
+_WEAK_CONVERGENCE = {
+    "ابي", "ابيه", "ابا", "ابوه", "امه", "جده", "جدّه", "ابائه", "آبائه",
+    "بعض اصحابنا", "بعض أصحابنا",
+}
 
 
-# Loose name matcher — promoted verbatim from
-# `algo_candidates/candidate_B_name_span._matches`. Candidate C reuses this
-# matcher; the unified extractor owns its own copy to avoid the relative-
-# import dance the candidate package requires. The two implementations
-# MUST stay in sync for the unified extractor to remain byte-equivalent to
-# the bake-off winner on Phase 0.5 fixtures.
-def _matches(a: str, b: str) -> bool:
-    """Loose name match — equality, prefix/suffix, substring, or token-bag.
+_UNIFIED_CHAIN_STATS: dict[str, int] = {
+    "rows_with_text": 0,
+    "rows_empty": 0,
+    "rows_single": 0,
+    "rows_branched": 0,
+    "branches_total": 0,
+    "branches_unstitched": 0,
+    "narrators_attempted": 0,
+    "narrators_resolved": 0,
+    "narrators_unresolved": 0,
+    "narrators_invalid": 0,
+    "rows_resolution_failed": 0,
+    "rows_extraction_failed": 0,
+    "fallback_used": 0,
+}
 
-    Promoted verbatim from `candidate_B_name_span._matches`. See that
-    module's docstring for the matching philosophy.
-    """
-    a = name_normalize(a)
-    b = name_normalize(b)
+
+class UnresolvedNarratorError(ValueError):
+    """Report one surface that makes atomic chain resolution fail."""
+
+    def __init__(
+        self,
+        surface: str,
+        branch_index: int,
+        narrator_index: int,
+        reason: str,
+    ) -> None:
+        self.surface = surface
+        self.branch_index = branch_index
+        self.narrator_index = narrator_index
+        self.reason = reason
+        super().__init__(
+            f"cannot resolve narrator {surface!r} at branch {branch_index}, "
+            f"position {narrator_index}: {reason}"
+        )
+
+
+class IsnadExtractionLimitError(ValueError):
+    """Report a branch expansion rejected before allocation."""
+
+    def __init__(self, stage: str, projected: int,
+                 limit: int = MAX_ISNAD_BRANCHES) -> None:
+        self.stage = stage
+        self.projected = projected
+        self.limit = limit
+        super().__init__(
+            f"isnad branch expansion at {stage} projects {projected} branches; "
+            f"limit is {limit}"
+        )
+
+
+def _check_branch_limit(stage: str, projected: int) -> None:
+    if projected <= MAX_ISNAD_BRANCHES:
+        return
+    _UNIFIED_CHAIN_STATS["rows_extraction_failed"] += 1
+    raise IsnadExtractionLimitError(stage, projected)
+
+
+def reset_stats() -> None:
+    """Reset deterministic run telemetry."""
+    for key in _UNIFIED_CHAIN_STATS:
+        _UNIFIED_CHAIN_STATS[key] = 0
+
+
+def _strip_arabic_marks(value: str) -> str:
+    """Remove vocalization/tatweel while retaining Arabic letters."""
+    return "".join(
+        ch for ch in unicodedata.normalize("NFKC", value)
+        if ch != "ـ" and unicodedata.category(ch) != "Mn"
+    )
+
+
+def name_normalize(value: str) -> str:
+    """Normalize a source surface only for comparison, never identity."""
+    value = _strip_arabic_marks(value)
+    value = value.translate(str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ى": "ي"}))
+    value = re.sub(r"\bابن\b", "بن", value)
+    value = re.sub(r"^[وف]\s*", "", value.strip())
+    return re.sub(r"\s+", " ", value)
+
+
+def is_name_token(value: str) -> bool:
+    """Return whether a cleaned surface is plausible narrator text."""
+    words = value.split()
+    return bool(_ARABIC_LETTER_RE.search(value)) and 1 <= len(words) <= 14
+
+
+def _split_on_tahweel(text_ar: str) -> list[str]:
+    text = _strip_arabic_marks(text_ar)
+    split_points: list[int] = []
+    for match in _LONE_H_RE.finditer(text):
+        if _TRANSMISSION_AHEAD_RE.search(text[match.end():match.end() + 120]):
+            _check_branch_limit("tahweel_stitching", len(split_points) + 2)
+            split_points.append(match.start())
+    if not split_points:
+        return [text.strip()] if text.strip() else []
+    segments: list[str] = []
+    start = 0
+    for point in split_points:
+        segment = text[start:point].strip()
+        if segment:
+            segments.append(segment)
+        start = point + 1
+    tail = text[start:].strip()
+    if tail:
+        segments.append(tail)
+    return segments
+
+
+def _matn_start(segment: str) -> Optional[int]:
+    candidates = [m.start() for m in _PROPHET_BOUNDARY_RE.finditer(segment)]
+    first_link = _LINK_RE.search(segment)
+    for match in _SPEECH_RE.finditer(segment):
+        if _SPEECH_LINK_RE.search(segment[match.end():match.end() + 40]):
+            continue
+        if match.start() == 0 and first_link and first_link.start() < 120:
+            continue
+        if first_link and match.start() > first_link.start():
+            candidates.append(match.start())
+    return min(candidates) if candidates else None
+
+
+def _split_co_transmitters(surface: str, force: bool = False) -> list[str]:
+    """Split conjunctions without corrupting names such as Ibn Wahb."""
+    matches = list(re.finditer(r"\s+و(?=\S)", surface))
+    if not matches:
+        return [surface]
+    split_matches = []
+    for match in matches:
+        prefix = surface[:match.start()].strip()
+        previous = prefix.split()[-1] if prefix.split() else ""
+        if previous not in _PATRONYMIC_CONNECTORS:
+            split_matches.append(match)
+    if not split_matches and force:
+        split_matches.append(matches[-1])
+    if not split_matches:
+        return [surface]
+    parts: list[str] = []
+    start = 0
+    for match in split_matches:
+        left = surface[start:match.start()].strip()
+        if left:
+            parts.append(left)
+        start = match.end()
+    tail = surface[start:].strip()
+    if tail:
+        parts.append(tail)
+    return parts if len(parts) > 1 else [surface]
+
+
+def _repair_joined_name_tokens(value: str) -> str:
+    """Separate common joined tokens after any leading conjunction is removed."""
+    value = re.sub(r"\bبن(?=ال)", "بن ", value)
+    return re.sub(r"\bعبد(?=الله)", "عبد ", value)
+
+
+def _clean_surface(
+    raw: str, *, force_co_transmitters: bool = False
+) -> list[str]:
+    explicit_pair = force_co_transmitters or bool(re.search(r"\bقالا\b", raw))
+    raw = _EDITORIAL_RE.sub(" ", raw)
+    raw = _HONORIFIC_RE.sub(" ", raw)
+    raw = _repair_joined_name_tokens(raw)
+    raw = re.sub(r"\s+ما\s*$", "", raw)
+    raw = raw.strip()
+    while True:
+        cleaned_lead = _LEADING_LABEL_RE.sub("", raw, count=1)
+        if cleaned_lead == raw:
+            break
+        raw = cleaned_lead.strip()
+    raw = _TRAILING_FRAME_RE.sub("", raw)
+    raw = _PUNCT_RE.sub(" ", raw)
+    surface = re.sub(r"\s+", " ", raw).strip(" -")
+    if not surface or not is_name_token(surface):
+        return []
+    if any(token in surface for token in ("رسول الله", "النبي صلى", "قال الله")):
+        return []
+    if len(surface.split()) > 14:
+        return []
+    parts = _split_co_transmitters(surface, force=explicit_pair)
+    return [
+        repaired for part in parts
+        if is_name_token(repaired := _repair_joined_name_tokens(part))
+    ]
+
+
+def _extract_segment_branches(segment: str) -> list[list[str]]:
+    boundary = _matn_start(segment)
+    chain_text = segment[:boundary].strip() if boundary is not None else segment.strip()
+    links = list(_LINK_RE.finditer(chain_text))
+    if not links:
+        alternatives = _clean_surface(chain_text)
+        return [[surface] for surface in alternatives]
+
+    levels: list[list[str]] = []
+    prefix = chain_text[:links[0].start()].strip()
+    if prefix and not any(mark in prefix for mark in ("\"", "«", "»")):
+        cleaned = _clean_surface(prefix)
+        if cleaned:
+            levels.append(cleaned)
+    for index, link in enumerate(links):
+        next_link = links[index + 1] if index + 1 < len(links) else None
+        end = next_link.start() if next_link is not None else len(chain_text)
+        # A following dual verb marks the current level as parallel transmitters.
+        force_pair = bool(
+            next_link
+            and re.match(r"(?:و?قالا)\b", next_link.group().strip())
+        )
+        cleaned = _clean_surface(
+            chain_text[link.end():end], force_co_transmitters=force_pair
+        )
+        if cleaned:
+            levels.append(cleaned)
+
+    branches: list[list[str]] = [[]]
+    for alternatives in levels:
+        _check_branch_limit(
+            "segment_co_transmitters", len(branches) * len(alternatives)
+        )
+        branches = [
+            branch + [surface]
+            for branch in branches
+            for surface in alternatives
+            if not branch or surface != branch[-1]
+        ]
+    return branches
+
+
+def _matches(left: str, right: str) -> bool:
+    a = name_normalize(left)
+    b = name_normalize(right)
     if a == b:
         return True
     if len(a) < 4 or len(b) < 4:
         return False
     if a in b or b in a:
         return True
-    # Token-bag overlap: >= 2 shared whitespace-separated tokens of length >= 3.
-    at = set(t for t in a.split() if len(t) >= 3)
-    bt = set(t for t in b.split() if len(t) >= 3)
+    at = {word for word in a.split() if len(word) >= 3}
+    bt = {word for word in b.split() if len(word) >= 3}
     return len(at & bt) >= 2
 
-# --------------------------------------------------------------------------- #
-# Module-level telemetry
-# --------------------------------------------------------------------------- #
 
-_UNIFIED_CHAIN_STATS: dict[str, int] = {
-    "rows_with_text": 0,
-    "rows_branched": 0,
-    "branches_total": 0,
-    "narrators_attempted": 0,
-    "narrators_resolved": 0,
-    "fallback_used": 0,
-}
-
-
-def reset_stats() -> None:
-    """Zero the module-level stats dict — for tests and per-run resets."""
-    for k in _UNIFIED_CHAIN_STATS:
-        _UNIFIED_CHAIN_STATS[k] = 0
+def _suffix_alignment(earlier: list[str], last: list[str]) -> Optional[tuple[int, int]]:
+    """Return (suffix length, last-branch start) for the strongest alignment."""
+    for length in range(min(len(earlier), len(last)), 0, -1):
+        suffix = earlier[-length:]
+        for start in range(len(last) - length, -1, -1):
+            if all(_matches(suffix[offset], last[start + offset]) for offset in range(length)):
+                if length == 1 and name_normalize(suffix[0]) in _WEAK_CONVERGENCE:
+                    continue
+                return length, start
+    return None
 
 
-# --------------------------------------------------------------------------- #
-# Algorithm — port of candidate_C_lcs_suffix.extract_branches
-# --------------------------------------------------------------------------- #
-
-
-def _longest_common_suffix(short: list[str], long: list[str]) -> int:
-    """Return the length L such that the last L items of `short` align,
-    in order with loose name matching, to a contiguous slice of `long`.
-
-    Port of `candidate_C_lcs_suffix._longest_common_suffix`. Matching uses
-    `_matches` (from candidate B) for tolerance to surface drift.
-    """
-    for L in range(min(len(short), len(long)), 0, -1):
-        suf_short = short[-L:]
-        for start in range(len(long) - L + 1):
-            ok = True
-            for k in range(L):
-                if not _matches(suf_short[k], long[start + k]):
-                    ok = False
-                    break
-            if ok:
-                return L
-    return 0
-
-
-def extract_isnad_branches(text_ar: str | None) -> list[list[str]]:
-    """FR-1.1 — Parse a classical Arabic isnad into one branch per ح-segment.
-
-    Each branch is the ordered list of narrator surface forms from the
-    initial transmitter through the shared post-convergence segment to
-    the Companion / Imam / Prophet attribution point. Surface forms are
-    preserved VERBATIM as they appear in `text_ar` (no normalization;
-    resolution is the resolver's job).
-
-    Algorithm: candidate C — longest-common-suffix branch reconstruction.
-
-    Returns:
-      [[]]                              if text_ar is None or empty.
-      [[name, name, ...]]               if no ح-splitter (single chain;
-                                        ~98.2% of corpus per Phase 0).
-      [branch_a, branch_b, ...]         when N ح-splitters are present.
-
-    Each inner list is in chain order (top of chain → Companion at end).
-    """
-    if not text_ar:
-        return [[]]
+def extract_isnad_branches(text_ar: Optional[str]) -> list[list[str]]:
+    """Extract ordered narrator surfaces, one list per taḥwīl branch."""
+    if not text_ar or not text_ar.strip():
+        _UNIFIED_CHAIN_STATS["rows_empty"] += 1
+        return []
 
     _UNIFIED_CHAIN_STATS["rows_with_text"] += 1
-
-    segments = split_on_tahweel(text_ar)
-    if len(segments) <= 1:
-        names = split_into_names(segments[0]) if segments else []
-        out = [names] if names else [[]]
-        _UNIFIED_CHAIN_STATS["branches_total"] += len(out)
-        return out
-
-    per_seg = [split_into_names(s) for s in segments]
-    last_idx = len(segments) - 1
-
-    # Trim matn from the LAST segment if a matn-anchor fires inside it.
-    matn_pos = find_matn_start(segments[last_idx])
-    if matn_pos is not None:
-        per_seg[last_idx] = split_into_names(segments[last_idx][:matn_pos])
-
-    last_branch = per_seg[-1]
-    if not last_branch:
-        # No tail to stitch onto — emit whatever non-empty segments we have.
-        out = [seg for seg in per_seg if seg]
-        if not out:
-            out = [[]]
-        _UNIFIED_CHAIN_STATS["branches_total"] += len(out)
-        if len(out) > 1:
+    segments = _split_on_tahweel(text_ar)
+    per_segment: list[list[list[str]]] = []
+    collected_branches = 0
+    for segment in segments:
+        group = _extract_segment_branches(segment)
+        if not group:
+            continue
+        _check_branch_limit(
+            "tahweel_segment_collection", collected_branches + len(group)
+        )
+        collected_branches += len(group)
+        per_segment.append(group)
+    if not per_segment:
+        return []
+    if len(per_segment) == 1:
+        branches = per_segment[0]
+        if len(branches) == 1:
+            _UNIFIED_CHAIN_STATS["rows_single"] += 1
+        else:
             _UNIFIED_CHAIN_STATS["rows_branched"] += 1
-        return out
+        _UNIFIED_CHAIN_STATS["branches_total"] += len(branches)
+        return branches
 
+    last_group = per_segment[-1]
+    projected = len(last_group) + sum(
+        len(earlier_group) * len(last_group)
+        for earlier_group in per_segment[:-1]
+    )
+    _check_branch_limit("tahweel_stitching", projected)
     branches: list[list[str]] = []
-    for i in range(last_idx):
-        names = per_seg[i]
-        if not names:
+    for earlier_group in per_segment[:-1]:
+        for earlier in earlier_group:
+            stitched: list[list[str]] = []
+            for last in last_group:
+                alignment = _suffix_alignment(earlier, last)
+                if alignment is None:
+                    continue
+                length, start = alignment
+                stitched.append(earlier + last[start + length:])
+            if stitched:
+                branches.extend(stitched)
+            else:
+                _UNIFIED_CHAIN_STATS["branches_unstitched"] += 1
+                branches.append(earlier)
+    branches.extend(last_group)
+    deduplicated: list[list[str]] = []
+    seen: set[tuple[str, ...]] = set()
+    for branch in branches:
+        key = tuple(branch)
+        if key in seen:
             continue
-        L = _longest_common_suffix(names, last_branch)
-        if L == 0:
-            # No-stitch fallback for this branch — emit as-is.
-            branches.append(names)
-            continue
-        # Re-locate the match start in last_branch so we know where the
-        # shared post-convergence segment begins.
-        suf_short = names[-L:]
-        match_start_in_last = -1
-        for start in range(len(last_branch) - L + 1):
-            if all(_matches(suf_short[k], last_branch[start + k]) for k in range(L)):
-                match_start_in_last = start
-                break
-        if match_start_in_last < 0:
-            branches.append(names)
-            continue
-        prefix = names[:-L]
-        suffix = last_branch[match_start_in_last:]
-        branches.append(prefix + suffix)
-    branches.append(per_seg[-1])
-
-    # Drop any branch that wound up empty.
-    branches = [b for b in branches if b]
-    if not branches:
-        branches = [[]]
-
+        _check_branch_limit("tahweel_deduplication", len(deduplicated) + 1)
+        seen.add(key)
+        deduplicated.append(branch)
+    branches = deduplicated
+    _UNIFIED_CHAIN_STATS["rows_branched"] += 1
     _UNIFIED_CHAIN_STATS["branches_total"] += len(branches)
-    if len(branches) > 1:
-        _UNIFIED_CHAIN_STATS["rows_branched"] += 1
     return branches
 
 
-# --------------------------------------------------------------------------- #
-# FR-1.2 — Resolution
-# --------------------------------------------------------------------------- #
-
-
 def resolve_branches_to_indxs(
-    branches: list[list[str]],
+    branches: Iterable[Iterable[str]],
     resolve_narrator: Callable[[str], Optional[int]],
 ) -> list[list[int]]:
-    """FR-1.2 — Map each surface form to a scholar_indx via the resolver.
-
-    Unresolved names are SKIPPED (not None-tombstoned) to keep chain_indx
-    cells int-only. Empty branches after filtering are dropped.
-
-    The resolver callback signature matches what `regen_unified_csvs.py`
-    will wrap around its `resolve_narrator(surface, exact_index, blocked_index)`
-    in Phase 2 — the unified extractor stays decoupled from the index
-    plumbing.
-
-    Updates `_UNIFIED_CHAIN_STATS["narrators_attempted"]` and
-    `_UNIFIED_CHAIN_STATS["narrators_resolved"]`.
-    """
+    """Resolve surfaces per branch while preserving branch boundaries."""
     resolved_branches: list[list[int]] = []
-    for branch in branches:
-        if not branch:
-            continue
+    for branch_index, branch in enumerate(branches):
         resolved: list[int] = []
-        for surface in branch:
+        for narrator_index, surface in enumerate(branch):
             _UNIFIED_CHAIN_STATS["narrators_attempted"] += 1
-            indx = resolve_narrator(surface)
-            if indx is None:
-                continue
             try:
-                indx_int = int(indx)
+                value = resolve_narrator(surface)
+            except Exception as error:
+                _UNIFIED_CHAIN_STATS["narrators_unresolved"] += 1
+                _UNIFIED_CHAIN_STATS["rows_resolution_failed"] += 1
+                raise UnresolvedNarratorError(
+                    surface, branch_index, narrator_index,
+                    f"resolver raised {type(error).__name__}",
+                ) from error
+            if value is None:
+                _UNIFIED_CHAIN_STATS["narrators_unresolved"] += 1
+                _UNIFIED_CHAIN_STATS["rows_resolution_failed"] += 1
+                raise UnresolvedNarratorError(
+                    surface, branch_index, narrator_index, "not found or ambiguous"
+                )
+            try:
+                parsed = int(value)
             except (TypeError, ValueError):
-                continue
-            resolved.append(indx_int)
+                _UNIFIED_CHAIN_STATS["narrators_invalid"] += 1
+                _UNIFIED_CHAIN_STATS["rows_resolution_failed"] += 1
+                raise UnresolvedNarratorError(
+                    surface, branch_index, narrator_index,
+                    f"invalid resolver value {value!r}",
+                )
+            if parsed <= 0:
+                _UNIFIED_CHAIN_STATS["narrators_invalid"] += 1
+                _UNIFIED_CHAIN_STATS["rows_resolution_failed"] += 1
+                raise UnresolvedNarratorError(
+                    surface, branch_index, narrator_index,
+                    f"non-positive resolver value {parsed}",
+                )
+            resolved.append(parsed)
             _UNIFIED_CHAIN_STATS["narrators_resolved"] += 1
-        if resolved:
-            resolved_branches.append(resolved)
+        resolved_branches.append(resolved)
     return resolved_branches
 
 
-# --------------------------------------------------------------------------- #
-# FR-3.1 — Canonical chain_indx CSV cell
-# --------------------------------------------------------------------------- #
+def _fallback_cell(fallback: object) -> str:
+    if isinstance(fallback, str):
+        return fallback.strip()
+    if isinstance(fallback, (list, tuple)):
+        if fallback and all(isinstance(item, (list, tuple)) for item in fallback):
+            return "|".join(
+                ",".join(str(value) for value in branch if str(value).strip())
+                for branch in fallback
+                if branch
+            )
+        return ",".join(str(value) for value in fallback if str(value).strip())
+    return ""
 
 
 def _compute_chain_indx(
-    text_ar: str | None,
-    fallback: str | None = None,
+    text_ar: Optional[str],
+    fallback: object = None,
     resolve_narrator: Optional[Callable[[str], Optional[int]]] = None,
 ) -> str:
-    """FR-3.1 — Returns the canonical CSV cell value for chain_indx.
-
-    Multi-branch format: '1,2,3|4,5,6' (commas within branch, pipes between).
-    Single-branch falls back to flat 'i,j,k' (no pipe) for backwards
-    compatibility — the TS loader's `parseIndices` handles both forms but
-    the existing CSV has comma-only cells.
-
-    Behavior:
-      - If `text_ar` is None or empty:
-          - if `fallback` is non-empty, return `fallback` verbatim and bump
-            `_UNIFIED_CHAIN_STATS["fallback_used"]`. The fallback is assumed
-            to be a valid chain_indx string from a sidecar.
-          - otherwise return ''.
-      - If `text_ar` is non-empty but `resolve_narrator` is None, raise
-        ValueError — the unified pipeline always supplies a resolver; the
-        parameter is optional only so callers can test the text-only
-        extractor path in isolation.
-      - Otherwise: extract_isnad_branches → resolve_branches_to_indxs → format.
-    """
-    if not text_ar:
-        if fallback:
+    """Return the loader's comma/pipe chain cell without guessing identities."""
+    if not text_ar or not text_ar.strip():
+        cell = _fallback_cell(fallback)
+        if cell:
             _UNIFIED_CHAIN_STATS["fallback_used"] += 1
-            return fallback
-        return ""
-
+        return cell
     if resolve_narrator is None:
-        raise ValueError(
-            "_compute_chain_indx requires a resolve_narrator callback when "
-            "text_ar is provided; got None."
-        )
+        raise ValueError("resolve_narrator is required when text_ar is present")
+    resolved = resolve_branches_to_indxs(
+        extract_isnad_branches(text_ar), resolve_narrator
+    )
+    return "|".join(",".join(str(value) for value in branch) for branch in resolved)
 
-    branches = extract_isnad_branches(text_ar)
-    resolved = resolve_branches_to_indxs(branches, resolve_narrator)
-    if not resolved:
-        return ""
-    if len(resolved) == 1:
-        return ",".join(str(i) for i in resolved[0])
-    return "|".join(",".join(str(i) for i in branch) for branch in resolved)
-
-
-# --------------------------------------------------------------------------- #
-# Re-exports for callers + test helpers
-# --------------------------------------------------------------------------- #
 
 __all__ = [
-    "extract_isnad_branches",
-    "resolve_branches_to_indxs",
-    "_compute_chain_indx",
     "_UNIFIED_CHAIN_STATS",
-    "reset_stats",
-    # Helpers re-exported so callers don't need to reach into algo_candidates.
-    "TAHWEEL_RE",
-    "MATN_ANCHORS",
-    "name_normalize",
+    "_compute_chain_indx",
+    "IsnadExtractionLimitError",
+    "MAX_ISNAD_BRANCHES",
+    "UnresolvedNarratorError",
+    "extract_isnad_branches",
     "is_name_token",
+    "name_normalize",
+    "reset_stats",
+    "resolve_branches_to_indxs",
 ]

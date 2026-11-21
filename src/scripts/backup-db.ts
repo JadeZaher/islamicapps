@@ -14,7 +14,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import neo4j from 'neo4j-driver';
+import neo4j, { type Integer } from 'neo4j-driver';
 import { loadEnv } from './lib/env';
 import { runQuery, closeDriver } from '../lib/db/neo4j';
 
@@ -22,19 +22,37 @@ loadEnv();
 
 const BATCH = 5000;
 
+interface BackupNodeRow {
+  internalId: unknown;
+  labels: unknown;
+  props: Record<string, unknown>;
+}
+
+interface BackupRelationshipRow {
+  internalId: unknown;
+  type: unknown;
+  startId: unknown;
+  endId: unknown;
+  props: Record<string, unknown>;
+}
+
+function isNeo4jInteger(value: unknown): value is Integer {
+  return neo4j.isInt(value);
+}
+
 /** Convert neo4j Integer and DateTime types into JSON-safe primitives. */
-function serializeProps(props: Record<string, any>): Record<string, any> {
-  const out: Record<string, any> = {};
+function serializeProps(props: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(props)) {
     if (v === null || v === undefined) {
       out[k] = v;
-    } else if (neo4j.isInt(v)) {
-      out[k] = (v as any).toNumber?.() ?? Number(v);
+    } else if (isNeo4jInteger(v)) {
+      out[k] = v.toNumber();
     } else if (neo4j.isDateTime?.(v) || neo4j.isDate?.(v) || neo4j.isLocalDateTime?.(v)) {
-      out[k] = v.toString();
+      out[k] = String(v);
     } else if (Array.isArray(v)) {
       out[k] = v.map((x) =>
-        neo4j.isInt(x) ? (x as any).toNumber?.() ?? Number(x) : x
+        isNeo4jInteger(x) ? x.toNumber() : x
       );
     } else {
       out[k] = v;
@@ -61,7 +79,7 @@ async function main() {
 
   console.log('📤 Streaming nodes...');
   while (true) {
-    const batch = await runQuery<any>(
+    const batch = await runQuery<BackupNodeRow>(
       `MATCH (n)
        WITH n ORDER BY id(n)
        SKIP $offset LIMIT $batch
@@ -94,7 +112,7 @@ async function main() {
 
   console.log('\n📤 Streaming relationships...');
   while (true) {
-    const batch = await runQuery<any>(
+    const batch = await runQuery<BackupRelationshipRow>(
       `MATCH (a)-[r]->(b)
        WITH r, a, b ORDER BY id(r)
        SKIP $offset LIMIT $batch

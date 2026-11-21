@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/.pytest_cache/
 
 # next.js
 /.next/
@@ -36,6 +37,21 @@ yarn-error.log*
 # backups
 .omc/backups/
 
+# Local agent context and operational research captures
+/.mpg/
+/.omc/research/audit_railway_neo4j.mjs
+/.omc/research/audit_source_registry.ts
+/.omc/research/neo4j-admin-import-*.html
+/.omc/research/openiti-*-2026-07-20.*
+/.omc/research/railway-build-*.jsonl
+/.omc/research/railway-cost-guardrails-*.md
+/.omc/research/railway-neo4j-*.json*
+/.omc/research/source-registry-audit-*.json
+/.omc/research/sunnah-*-2026-07-20.html
+/.omc/research/thaqalayn-*-2026-07-20.*
+/.omc/research/uniform-isnad/audit_tahweel.py
+/.omc/research/uniform-isnad/research-session/state.json
+
 # vercel
 .vercel
 
@@ -57,12 +73,15 @@ next-env.d.ts
 datasets/hadith-data/all_hadiths_unified.csv
 datasets/hadith-data/all_hadiths_shia.csv
 datasets/hadith-data/all_hadiths_clean.csv
+datasets/hadith-data/archive/unified-snapshots/unified_hadith_consolidated.csv
 
 # Per-batch unified CSV backups (`.bak-<tag>-<ts>` snapshots created by the
 # regen pipeline before destructive rewrites). The most recent one is kept
 # on disk for safety; the rest live in
 # datasets/hadith-data/archive/unified-snapshots/.
 datasets/hadith-data/all_hadiths_unified.csv.bak-*
+datasets/hadith-data/.regen-publication.lock
+datasets/hadith-data/development/
 
 # Logs (regen runs produce GB of these)
 logs/

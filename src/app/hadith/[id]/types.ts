@@ -79,6 +79,11 @@ export interface GraphNode {
     tabaqah?: string;
     name_english?: string;
     name_arabic?: string;
+    chain_id?: string;
+    chain_index?: number | null;
+    position?: number | null;
+    chain_position?: number | null;
+    chain_schema?: 'v2' | 'legacy';
     [key: string]: unknown;
 }
 
@@ -87,6 +92,11 @@ export interface GraphEdge {
     source: string;
     target: string;
     type?: string;
+    chain_id?: string;
+    chain_index?: number | null;
+    source_position?: number | null;
+    target_position?: number | null;
+    chain_schema?: 'v2' | 'legacy';
     [key: string]: unknown;
 }
 

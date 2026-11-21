@@ -49,12 +49,25 @@ function eq<T>(name: string, actual: T, expected: T): void {
         `expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
 }
 
+function throws(name: string, work: () => unknown, expected: RegExp): void {
+    try {
+        work();
+        check(name, false, `expected error matching ${expected}, but no error was thrown`);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        check(name, expected.test(message),
+            `expected error matching ${expected}, got ${JSON.stringify(message)}`);
+    }
+}
+
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 /** Minimal UnifiedRow for buildTier1Resolution tests — only chain_indx matters. */
 function makeRow(chainIndx: number[][]): UnifiedRow {
     return {
         dataset_row_id: 1,
+        record_id: 'test:h1',
+        source_record_id: 'h1',
         hadith_id: 'h1',
         hadith_no: '1',
         source: 'test',
@@ -65,6 +78,11 @@ function makeRow(chainIndx: number[][]): UnifiedRow {
         category: '',
         text_ar: '',
         text_en: '',
+        provenance_source: 'test-fixture',
+        translation_status: 'complete',
+        translation_source: 'test-fixture',
+        translation_model: '',
+        translation_review_status: 'human_verified',
         matn_ar: '',
         matn_en: '',
         sanad: '',
@@ -137,17 +155,17 @@ function testT1_parseChainIndices(): void {
     eq('T1.5: whitespace tolerance " 1, 2 | 3, 4 " → [[1,2],[3,4]]',
         parseChainIndices(' 1, 2 | 3, 4 '), [[1, 2], [3, 4]]);
 
-    eq('T1.6: empty middle branch "1,2||3,4" → [[1,2],[3,4]] (empty dropped)',
-        parseChainIndices('1,2||3,4'), [[1, 2], [3, 4]]);
+    throws('T1.6: empty middle branch "1,2||3,4" is rejected',
+        () => parseChainIndices('1,2||3,4'), /Empty chain_indx token/);
 
-    eq('T1.7: invalid token "1,abc,3" → [[1,3]] (NaN dropped silently)',
-        parseChainIndices('1,abc,3'), [[1, 3]]);
+    throws('T1.7: invalid token "1,abc,3" is rejected',
+        () => parseChainIndices('1,abc,3'), /Invalid chain_indx token/);
 
     eq('T1.8: legacy JSON-array form "[1,2,3]" → [[1,2,3]]',
         parseChainIndices('[1,2,3]'), [[1, 2, 3]]);
 
-    eq('T1.9: leading/trailing pipe "|1,2|" → [[1,2]] (empty branches dropped)',
-        parseChainIndices('|1,2|'), [[1, 2]]);
+    throws('T1.9: leading/trailing pipe "|1,2|" is rejected',
+        () => parseChainIndices('|1,2|'), /Empty chain_indx token/);
 
     // Sanity: parseIndices (flat helper, for teachers/students) MUST stay flat.
     eq('T1.10: parseIndices (flat) on "1,2,3" → [1,2,3] (unchanged)',

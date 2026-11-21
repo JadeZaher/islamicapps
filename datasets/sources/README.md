@@ -2,20 +2,20 @@
 
 One file per upstream data source. Each file carries a BibTeX-style front-matter block plus a prose body — see [`_TEMPLATE.md`](./_TEMPLATE.md).
 
-The canonical, machine-readable list is whatever currently lives in this directory; the table below is a human-friendly index. The generated [`datasets/CREDITS.md`](../CREDITS.md) is derived from this directory by [`scripts/build-credits.ts`](../../scripts/build-credits.ts) — **do not hand-edit the generated file.**
+The canonical, machine-readable list is whatever currently lives in this directory; the table below is a human-friendly index. The generated [`datasets/CREDITS.md`](../CREDITS.md) is derived from this directory by [`src/scripts/build-credits.ts`](../../src/scripts/build-credits.ts) — **do not hand-edit the generated file.**
 
 ## Index
 
 | Slug | Source | Traditions | Kind | License | Status |
 | --- | --- | --- | --- | --- | --- |
 | [openiti](./openiti.md) | Open Islamicate Texts Initiative | cross-tradition | meta-source | CC-BY-NC-SA-4.0 | ✅ documented |
-| `thaqalayn-api` | Thaqalayn API V2 | shia-imami | api | unstated | ⏳ pending |
-| `sunnah-com` | sunnah.com canonical-six export | sunni | scraped-site | unstated | ⏳ pending |
-| `sheikahmad-pure-canon` | Pure Canon Authentica (NabiMuhammad.com / SheikhAhmad) | sunni | dataset | unstated | ⏳ pending |
-| `musnad-zayd-openiti` | Musnad al-Imam Zayd ibn Ali (via OpenITI) | zaydi | corpus | inherits OpenITI | ⏳ pending |
-| `jami-sahih-rabi-openiti` | Jami' al-Sahih (Musnad al-Rabi, Ibadi) via OpenITI | ibadi | corpus | inherits OpenITI | ⏳ pending |
-| `musnad-rida-openiti` | Musnad al-Imam Ali al-Rida (Zaydi appendix) via OpenITI | zaydi | corpus | inherits OpenITI | ⏳ pending |
-| `narrator-lexicon` | Controlled rawi vocabulary (Ibn Hajar / al-Mizzī / al-Khūʾī etc.) | cross-tradition | lexicon | unstated | ⏳ pending |
+| [thaqalayn-api](./thaqalayn-api.md) | Thaqalayn API V2 | shia-imami | api | GPL-3.0 (API repo) | ⚠️ upstream outage / corpus-rights review |
+| [sunnah-com](./sunnah-com.md) | Sunnah.com canonical-six snapshot/API | sunni | api | unstated | ⚠️ license/recovery review |
+| [sheikahmad-pure-canon](./sheikahmad-pure-canon.md) | Pure Canon Authentica (NabiMuhammad.com / SheikhAhmad) | sunni | dataset | unstated | ⚠️ license review |
+| [musnad-zayd-openiti](./musnad-zayd-openiti.md) | Musnad al-Imam Zayd ibn Ali (via OpenITI) | zaydi | corpus | unstated | ⚠️ one-row reconciliation |
+| [jami-sahih-rabi-openiti](./jami-sahih-rabi-openiti.md) | Jami' al-Sahih (Musnad al-Rabi, Ibadi) via OpenITI | ibadi | corpus | unstated | ⚠️ translation collision |
+| [musnad-rida-openiti](./musnad-rida-openiti.md) | Sahifat al-Imam Ali al-Rida appendix via OpenITI | shia-imami | corpus | unstated | ⚠️ license review |
+| [narrator-lexicon](./narrator-lexicon.md) | Local controlled rawi vocabulary | cross-tradition | lexicon | unstated | ⚠️ provenance incomplete |
 
 > Status legend: ✅ documented · ⏳ pending · ⚠️ needs review (license unclear, data updated upstream, scope change).
 

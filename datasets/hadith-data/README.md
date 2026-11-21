@@ -10,11 +10,11 @@ stored in subdirectories or archived under `archive/`.
 
 ### Active Files
 
-**Gz-first convention.** The large derived CSVs listed below are stored as `.gz` in git (well under the 100 MB GitHub limit) and decompressed on demand by the pipeline. The plain `.csv` versions are **gitignored**; they're recreated on first read by `_ensure_csv_decompressed` in [`regen_unified_csvs.py`](./regen_unified_csvs.py) (Python) and `ensureCsvDecompressed` in [`src/scripts/lib/regen/io.ts`](../../src/scripts/lib/regen/io.ts) (TS). Cloning the repo and running any pipeline command "just works" — no manual unzip step required.
+**Gz-first convention.** The large derived CSVs listed below are stored as `.gz` in git (well under the 100 MB GitHub limit). Python streams either representation through `open_csv_input`; TypeScript streams it through `openDatasetStream`. Neither reader expands gzip into a canonical plain file. When both representations exist, their logical SHA-256 must match or the pipeline fails closed. Cloning the repo therefore requires no manual unzip step.
 
 | File | Rows | Plain size | .gz size | Description |
 |------|------|------|------|-------------|
-| `all_hadiths_unified.csv` | 99,283 | 172 MB | 32 MB | **Authoritative.** All traditions (Sunni 64k + Imami 33k + Ibadi 1k + Zaydi 698). Rebuilt by `python regen_unified_csvs.py`. Multi-isnad-ready (the `chain_indx` column will become `|`-delimited once the [`uniform_isnad_extraction_20260609`](../../conductor/tracks/uniform_isnad_extraction_20260609/) track ships). |
+| `all_hadiths_unified.csv` | 99,283 | 172 MB | 32 MB | **Current published master.** All traditions (Sunni 64,356 + Imami 33,225 + Ibadi 1,004 + Zaydi 698). Rebuilt by `python regen_unified_csvs.py`; publication is blocked unless Arabic, English, stable identity, and provenance gates pass. |
 | `all_hadiths_clean.csv` | 66,058 | 60 MB | 14 MB | Sunni + Ibadi + Zaydi view (no Imami). Derived from `all_hadiths_unified.csv`. |
 | `all_hadiths_shia.csv` | 34,927 | 95 MB | 18 MB | Imami + Rida + Ibadi + Zaydi view. Extended schema with grading fields. Derived from `all_hadiths_unified.csv` (and itself the input for Imami row loading via the Thaqalayn build at `shia-hadith/build_csv.py`). |
 
@@ -22,9 +22,9 @@ stored in subdirectories or archived under `archive/`.
 
 | File | Rows | Description |
 |------|------|-------------|
-| `parsed_hadiths.json` | 699 | Authoritative JSON from OpenITI clean text. Source of truth. |
-| `zaydi_hadiths_clean.csv` | 699 | Minimal CSV (id, source, tradition, bab, text_ar). |
-| `zaydi_hadiths_full.csv` | 699 | Full schema CSV for unified dataset integration. |
+| `parsed_hadiths.json` | 698 | Current authoritative JSON from OpenITI clean text. Source of truth. |
+| `zaydi_hadiths_clean.csv` | 699 | Stale derivative; regenerate and reconcile before release. |
+| `zaydi_hadiths_full.csv` | 699 | Stale derivative; regenerate and reconcile before release. |
 | `PROVENANCE.json` | — | Transformation metadata (source URI, parse date, what changed). |
 
 **Source**: OpenITI `0122ZaydIbnCali.Musnad.Zaydiyya0000052-ara1` (community-typed from Shamela al-Zaydiyya, NOT OCR).
@@ -66,6 +66,8 @@ All columns from the clean schema above plus:
 
 | Column | Type | Description |
 |--------|------|-------------|
+| `provider_file_id` | str | Numeric Thaqalayn `v2_books` filename; durable book coordinate |
+| `provider_book_id` | str | Thaqalayn API `bookId`; retained independently of the display title |
 | `volume` | int | Volume number |
 | `category` | str | Top-level category / book name (Arabic) |
 | `sanad` | str | Isnad chain text or Thaqalayn sanad reference |
@@ -75,6 +77,40 @@ All columns from the clean schema above plus:
 | `grading_behbudi` | str | Sheikh Behbudi's grading (Imami only) |
 | `gradings_full` | str | Pipe-delimited full grading list: `Scholar: Grade (Reference)` |
 | `url` | str | Thaqalayn source URL |
+
+### Curation and provenance columns
+
+The next publishable regeneration appends `record_id`, `source_record_id`,
+`provenance_source`, `translation_status`, `translation_source`,
+`translation_model`, and `translation_review_status` to the master and both
+views. `record_id` is the durable graph key; numeric `id` remains row order.
+See [`AGENTS.md`](./AGENTS.md) for the complete load contract.
+
+### Uniform isnad validation assets
+
+`extract_isnad_unified.py` is the canonical Arabic source-surface extractor.
+It supports comma-separated narrator IDs within a branch and `|` between
+taḥwīl branches through `_compute_chain_indx`. It preserves pronouns and
+collective source wording rather than inventing narrator identities.
+Co-transmitters at one level become parallel branches, never adjacent
+teacher/student IDs. Resolution is atomic: one unresolved or invalid surface
+empties the row chain and increments failure telemetry, so no partial chain can
+look complete. Cartesian/co-transmitter and taḥwīl stitching expansion is
+bounded at 64 branches before allocation. Over-limit rows raise a typed
+`IsnadExtractionLimitError`; regeneration emits an empty whole-row chain with
+`rows_extraction_failed` telemetry. The staged Thaqalayn builder applies the
+same row-level policy while still aborting unexpected extractor interface bugs.
+
+The release-quality fixture is
+`__tests__/fixtures/tahweel-gold.jsonl`: 32 manually read local records across
+Sunni, Imami, Ibadi, and Zaydi inputs, each with a durable/local source key and
+provenance path. Full records are compared byte-for-byte to the declared asset;
+the two K6 excerpts carry exact start/end bounds. OpenITI identities compose
+parsed ID, hadith number, and page reference. `test_extract_isnad_unified.py`
+uses only the Python standard library. `algo_evaluate.py` requires at least 30
+fixtures and gates overall branch count, Jaccard, ordered edit similarity, and
+per-tradition quality under `.omc/research/uniform-isnad/`; evaluation must pass
+before regenerated chain data can be treated as curated.
 
 ---
 
@@ -91,7 +127,9 @@ All columns from the clean schema above plus:
 | Jami' al-Tirmidhi | `Jami' al-Tirmidhi` |
 | Sunan Ibn Majah | `Sunan Ibn Majah` |
 
-Source: Parsed from public corpus; translations via OpenRouter LLM (April 2026).
+Source: Parsed from a legacy public corpus. The current published K6 layer has
+853 blank English cells and eight blank Arabic cells; these are release blockers
+until recovered from a cited source or translated and reviewed.
 Isnad chains parsed by `archive/classical-pipeline/parse_sanad.py`.
 
 ### Zaydi — Musnad al-Imam Zayd ibn Ali (627 hadiths)
@@ -118,25 +156,58 @@ Isnad chains parsed by `archive/classical-pipeline/parse_sanad.py`.
   Kutub al-Sittah (public corpus)
   ThaqalaynAPI V2 JSON (34 books)
   Musnad Zayd PDF (Archive.org OCR)
-  SheikhAhmad XLSX (Pure Canon + Green Book)
+  SheikhAhmad Pure Canon (four additional classical Sunni collections only)
 
 [Processing]
   1. Extract → JSONL
   2. Translate (OpenRouter LLM)
   3. Parse isnad chains (parse_sanad.py)
-  4. Merge & deduplicate
+  4. Join classical English by immutable pc_* source id
+  5. Validate identity, provenance, Arabic, English, and source counts
 
 [Output]
   all_hadiths_clean.csv         ← Sunni + Zaydi (minimal schema)
-  all_hadiths_shia.csv(.gz)     ← Imami + Zaydi (full schema)
+  all_hadiths_shia.csv(.gz)     ← Imami + Ibadi + Zaydi (full schema)
 ```
 
 ### Regeneration
 
-`regen_unified_csvs.py` in this directory rebuilds both CSVs from scratch:
-1. Calls `shia-hadith/build_csv.py` to regenerate the Imami CSV from `v2_books/` JSON
-2. Appends Zaydi hadiths (read from `zaydi-hadith/parsed_zaydi_hadiths.json`)
-3. Writes `all_hadiths_shia.csv` (full schema) and `all_hadiths_clean.csv` (minimal schema)
+`regen_unified_csvs.py` rebuilds the master and both views:
+
+1. Optionally regenerates the Imami source CSV from Thaqalayn `v2_books/` JSON into a staging directory; curation never mutates the canonical projection.
+2. Loads K6, four Pure Canon classical collections, Ibadi, Zaydi, and Rida inputs.
+   Every chain path uses the canonical Arabic extractor and shared narrator
+   resolver. The K6 sidecar supplies display `sanad`/`matn_ar` only.
+3. Restores classical English from the enhanced CSV, with a narrow clean-JSONL fallback, by `pc_*` id plus exact Arabic equality.
+4. Applies source-reviewed `translation_overrides.jsonl` entries only when their stable record ID and Arabic SHA-256 still match.
+5. Hashes provenance-only `curation_dispositions.jsonl` into the manifest; these reference corrections and legal-workflow decisions never satisfy a text gate.
+6. Preserves the validated tradition on every source-work label; the Neo4j release preflight separately blocks unresolved registry labels and never defaults them to Sunni.
+7. Writes `curation_backlog.csv` plus aggregated manifest gates for text, explicit translation review, provenance, every-row `chain_indx`, narrator references, and canonical source-work alignment.
+   The chain gate includes present/missing/invalid/unknown-reference counts by
+   tradition for local review assets.
+8. Reads the K6 snapshot transparently from `.csv` or `.csv.gz`, stages and verifies the master and both projections, and emits deterministic gzip companions for all three.
+9. Replaces a ready data bundle under a bounded process-wide lock with rollback protection and swaps the bound manifest last. `--allow-incomplete-curation` writes only ignored `.incomplete` artifacts under `development/incomplete-curation/`; it cannot overwrite canonical CSV, GZIP, backlog, candidate-manifest, or active-manifest files.
+
+Run regeneration and graph dry-runs locally first. A ready manifest is necessary
+but not sufficient for uniform-isnad release: the saved evaluator must also
+clear overall branch-count/Jaccard/ordered gates and the 0.80 per-tradition
+floors. Any production Railway cutover requires separate approval after local
+evidence, environment confirmation, cost estimate, and rollback review.
+
+`--no-shia` has a deliberately exact reuse contract: when the tracked
+`all_hadiths_shia.csv.gz` exists, it is authoritative and the ignored plain CSV
+cache is bypassed even if the pair diverges. `--shia-input <path>` selects a
+different exact CSV/GZIP asset and is valid only with `--no-shia`. Ordinary
+CSV/GZIP discovery remains fail-closed when both representations exist with
+different logical content. The manifest hashes the exact reuse asset selected.
+
+`curation_manifest.json` is the active publication commit and is never replaced
+by a failed attempt when it remains valid and bound to the current CSV/GZIP.
+Every attempt also writes `curation_candidate_manifest.json`; on failure it
+contains the new gate evidence, while a repository without a valid active
+manifest may additionally receive the same non-ready manifest as bootstrap
+state. The backlog always describes the latest candidate, not necessarily the
+active published dataset.
 
 ---
 
@@ -173,8 +244,10 @@ during consolidation.
 ### `archive/sheikahmad-pure-canon/`
 
 Processing pipeline for the "Hadith Pure Canon Authentica" and "Green Book of Sahih Hadith"
-Excel datasets from SheikhAhmad / NabiMuhammad.com. Imported directly into Neo4j; not
-merged into the CSV files.
+Excel datasets from SheikhAhmad / NabiMuhammad.com. The four classical source collections
+(Ahmad, Darimi, Shafi'i, and Muwatta) contribute 29,915 rows to the current master. The
+remaining anthology/authentication rows are not primary hadith nodes and require a cited
+scholarship-layer model rather than blind appending.
 
 | File | Records | Description |
 |------|---------|-------------|
@@ -220,6 +293,11 @@ Translation pipeline artifacts for the Zaydi collection. Archived after completi
 
 ## Data Quality Notes
 
+The archived enhanced workbook contains 97,550 rows and 18 columns, so it is
+1,733 rows and eight columns behind the current published master. It is not a
+load source. The curation manifest is the current machine-readable readiness
+report; a non-empty backlog means the dataset is not releaseable.
+
 ### Zaydi (Musnad al-Imam Zayd ibn Ali)
 
 - **OCR artifacts**: The source PDF was digitized by Archive.org as djvu.txt. Heavy OCR
@@ -237,10 +315,28 @@ Translation pipeline artifacts for the Zaydi collection. Archived after completi
 
 ### Sunni Collections
 
-- Translations were LLM-generated (OpenRouter, April 2026). A small number of hadiths in
-  `classical_translations_refused.jsonl` may have incomplete translations in the final CSV.
+- The published master accidentally discarded all 29,915 classical English values. The
+  generator recovers 29,888 from the enhanced archive and the final 27 Shafi'i rows from
+  `classical_translations_clean.jsonl`, requiring immutable ID plus exact Arabic equality.
+  The remaining 853 K6 blanks require official source recovery or an explicitly labeled,
+  reviewed translation override.
+- Repeated JSONL translation attempts are preserved as evidence but are not merged merely
+  because they are non-empty; conflicting attempts require explicit review.
 - Isnad chains are stored as comma-separated scholar graph node IDs in `chain_indx`.
   The raw isnad text is preserved in `text_ar`.
+
+### Rejected historical translation candidates
+
+A 2026-07-20 recovery audit found 19 historical OpenITI backup rows whose IDs
+and Arabic matched the current parsed records: 15 Zaydi `no_english_text`
+rows, one Ibadi `no_english_text` row, and three Ibadi `same_as_arabic` rows.
+Inspection of the complete backup `text_en` values rejected all 19. They contain
+prompt/meta discussion, self-correction or missing-input messages, or a
+translation of different Arabic. Consequently no `translation_overrides.jsonl`
+entry was created and the projected blocker reduction is zero. A future
+recovery must provide a clean full translation bound to the same immutable ID
+and Arabic hash; extracting a plausible fragment from these contaminated model
+responses is not an acceptable recovery.
 
 ### Imami (Thaqalayn)
 

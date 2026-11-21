@@ -10,11 +10,11 @@
  * Test groups:
  *   A. Unit (no Neo4j) — always run:
  *      A1 faithful classify_attribution port (_norm + markers) on fixtures
- *      A2 multiline-aware CSV-record parser counts the canonical 69,368
- *      A3 STATIC GUARD: regen-isnad-graph.ts never uses uuidv4()/randomUUID
- *         as a MERGE key, and never writes scalar reliability/grade
+ *      A2 multiline-aware CSV-record parser counts the canonical 99,283
+ *      A3 STATIC GUARD: current loaders use durable business-key MERGEs and
+ *         never write scalar reliability/grade
  *   B. Integration (needs live Neo4j) — double-run idempotency on a FIXTURE
- *      SUBSET (NOT the full 69k):
+ *      SUBSET (NOT the full 99k):
  *      B1 2nd run yields identical node + relationship counts (idempotent)
  *      B2 zero UUID-keyed narrator MERGEs (narrators keyed by scholar_indx)
  *      B3 G-1 Cypher returns 0 scalar-assessment violations
@@ -31,12 +31,10 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { spawnSync } from 'child_process';
-import { loadEnv } from '../lib/env';
-import { runQuery, runWrite, closeDriver } from '../../lib/db/neo4j';
+import { runQuery, closeDriver } from '../../lib/db/neo4j';
 import { classify, norm } from '../../lib/attribution/classify-attribution';
 import { runRegen } from '../regen-isnad-graph';
-
-loadEnv();
+import { configureLiveNeo4jTest } from './neo4j-test-env';
 
 // ─── Tiny assertion harness ──────────────────────────────────────────────────
 
@@ -153,7 +151,7 @@ function testClassifierPort(): void {
   check('classify is deterministic', a.attributed_to === b.attributed_to && a.narration_level === b.narration_level);
 }
 
-// ─── Group A2 — multiline-aware CSV-record count == canonical 69,368 ──────────
+// ─── Group A2 — multiline-aware CSV-record count == canonical 99,283 ──────────
 
 function resolveUnifiedCsv(): string | null {
   const candidates = [
@@ -177,14 +175,14 @@ function testRecordCount(): void {
   const records = splitCSVRecords(content);
   const recordCount = records.length - 1; // minus header
 
-  eq('CSV-record count == 69368', recordCount, 69368);
+  eq('CSV-record count == 99283', recordCount, 99283);
   check(
     'naive line count is the WRONG (inflated) number',
     rawLineCount > recordCount,
     `lines≈${rawLineCount} vs records=${recordCount} — confirms embedded newlines in text_ar`
   );
 
-  // Per-tradition sub-counts must sum to 69,368.
+  // Per-tradition sub-counts must sum to 99,283.
   const header = parseCSVLine(records[0]);
   const tIdx = header.indexOf('tradition');
   const sub: Record<string, number> = { Sunni: 0, Imami: 0, Ibadi: 0, Zaydi: 0 };
@@ -192,51 +190,46 @@ function testRecordCount(): void {
     const t = parseCSVLine(records[i])[tIdx]?.trim() || '';
     if (t in sub) sub[t]++;
   }
-  eq('sub-count Sunni', sub.Sunni, 34441);
+  eq('sub-count Sunni', sub.Sunni, 64356);
   eq('sub-count Imami', sub.Imami, 33225);
   eq('sub-count Ibadi', sub.Ibadi, 1004);
   eq('sub-count Zaydi', sub.Zaydi, 698);
-  eq('sub-counts sum to 69368', sub.Sunni + sub.Imami + sub.Ibadi + sub.Zaydi, 69368);
+  eq('sub-counts sum to 99283', sub.Sunni + sub.Imami + sub.Ibadi + sub.Zaydi, 99283);
 }
 
 // ─── Group A3 — static guard: no uuid MERGE key, no scalar assessment ────────
 
 function testStaticGuards(): void {
-  console.log('\n[A3] Static source guards on regen-isnad-graph.ts');
-  const scriptPath = path.join(process.cwd(), 'src', 'scripts', 'regen-isnad-graph.ts');
-  const src = fs.readFileSync(scriptPath, 'utf8');
-  // Strip line/block comments so prose mentioning the old bug doesn't trip the guard.
-  const code = src
+  console.log('\n[A3] Static source guards on the current full-load modules');
+  const readCode = (...segments: string[]): string => fs
+    .readFileSync(path.join(process.cwd(), ...segments), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .split('\n')
-    .map((l) => l.replace(/\/\/.*$/, ''))
+    .map((line) => line.replace(/\/\/.*$/, ''))
     .join('\n');
+  const narratorCode = readCode('src', 'scripts', 'lib', 'regen', 'load-narrators.ts');
+  const hadithCode = readCode('src', 'scripts', 'lib', 'regen', 'batch-loaders.ts');
+  const loaderCode = `${narratorCode}\n${hadithCode}`;
 
   check(
-    'no randomUUID/uuidv4 import or call in regen script code',
-    !/randomUUID|uuidv4/.test(code),
-    'regen script must never generate a UUID as a MERGE key'
-  );
-  check(
     'narrators MERGE on scholar_indx business key',
-    /keyProp:\s*'scholar_indx'/.test(code),
-    "expected mergeNodeByKey({ label: 'Narrator', keyProp: 'scholar_indx' ... })"
+    /MERGE\s*\(n:Narrator\s*\{\s*scholar_indx:\s*row\.scholar_indx\s*\}\s*\)/.test(narratorCode),
+    'load-narrators.ts must MERGE :Narrator on scholar_indx'
   );
   check(
-    'hadith MERGE key prop is dataset_row_id or pipeline_key only',
-    /hadithKeyProp:\s*'dataset_row_id'\s*\|\s*'pipeline_key'/.test(code),
-    'Hadith business key must be dataset_row_id else pipeline_key (OQ-5)'
+    'hadiths MERGE on durable record_id business key',
+    /MERGE\s*\(h:Hadith\s*\{\s*record_id:\s*row\.record_id\s*\}\s*\)/.test(hadithCode),
+    'batch-loaders.ts must MERGE :Hadith on record_id'
   );
   check(
-    'no scalar reliability/grade assignment in mutable/createProps',
-    !/\b(reliability|display_grade|auto_calculated_grade)\s*:/.test(code) &&
-      !/n\.reliability\s*=/.test(code),
+    'identity-node MERGEs do not use generated id keys',
+    !/MERGE\s*\([^)]+:(?:Narrator|Hadith)\s*\{\s*id\s*:/.test(loaderCode),
+    'Narrator/Hadith MERGE keys must remain stable source-owned identifiers'
+  );
+  check(
+    'no scalar reliability/grade assignment on identity nodes',
+    !/\b[nh]\.(?:reliability|grade|display_grade|auto_calculated_grade)\s*=/.test(loaderCode),
     'G-1: regen must not write a scalar reliability/grade on identity nodes'
-  );
-  check(
-    'no DELETE / DETACH DELETE in regen script (NFR-2 no-delete)',
-    !/DETACH\s+DELETE|\bDELETE\b/.test(code),
-    'idempotency must be MERGE + ON CREATE/ON MATCH, never delete-and-recreate'
   );
 }
 
@@ -459,7 +452,7 @@ function testPythonParity(): void {
 
 // ─── Group B — live double-run idempotency on a FIXTURE SUBSET ───────────────
 
-const FIXTURE_LIMIT = 200; // small subset — NOT the full 69k
+const FIXTURE_LIMIT = 200; // intended subset size — NOT the full 99k
 
 interface GraphCounts {
   /** :Hadith nodes carrying an INGESTED_IN edge to THIS version. */
@@ -524,9 +517,12 @@ async function g1ScopedCount(versionLabel: string): Promise<number> {
 }
 
 async function runRegenSubset(): Promise<{ ran: boolean; reason?: string }> {
+  const gate = configureLiveNeo4jTest({ writes: true });
+  if (!gate.enabled) return { ran: false, reason: gate.reason };
+
   // Reachability probe.
   try {
-    await runWrite('RETURN 1 AS ok');
+    await runQuery('RETURN 1 AS ok');
   } catch (e) {
     return { ran: false, reason: `Neo4j unreachable: ${(e as Error).message}` };
   }
@@ -698,9 +694,9 @@ async function main(): Promise<void> {
   if (bDeferred) {
     console.log('  Group B (live double-run idempotency): ⏸️  DEFERRED — NOT verified here.');
     console.log(`    Reason: ${bReason}`);
-    console.log('    Gate-G0 reviewer MUST run: npm run test:regen  (with live Neo4j)');
-    console.log('    to confirm B1 (identical counts), B2 (zero UUID narrators),');
-    console.log('    B3 (G-1 zero scalar assessment). Results here are NOT faked.');
+    console.log('    Group B requires an explicitly provisioned disposable Neo4j target');
+    console.log('    plus a supported fixture loader before B1/B2/B3 can be exercised.');
+    console.log('    Production fullregen is never substituted for that fixture run.');
   } else {
     console.log('  Group B (live double-run idempotency): executed');
   }

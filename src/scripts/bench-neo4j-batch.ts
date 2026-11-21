@@ -130,7 +130,7 @@ async function main() {
             { edges: halfIncludes },
         );
         console.log(`Stage 5: UNWIND 250 INCLUDES CREATE — ${Date.now() - t5} ms (per-edge: ${((Date.now() - t5)/250).toFixed(1)} ms)`);
-    } catch (err) {
+    } catch {
         console.log(`Stage 5 FAILED in ${Date.now() - t5} ms`);
     }
 

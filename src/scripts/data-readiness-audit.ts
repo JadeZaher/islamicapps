@@ -375,7 +375,7 @@ async function auditGraphConnectivity() {
     }
 
     // Check existing indexes
-    const indexes = await runQuery<{ name: string; type: string; labelsOrTypes: any }>(
+    const indexes = await runQuery<{ name: string; type: string; labelsOrTypes: unknown }>(
         `SHOW INDEXES YIELD name, type, labelsOrTypes WHERE type <> 'LOOKUP' RETURN name, type, labelsOrTypes`
     );
     log({ category: 'connectivity', check: 'Existing indexes (non-lookup)', status: 'INFO', detail: `${indexes.length} indexes` });

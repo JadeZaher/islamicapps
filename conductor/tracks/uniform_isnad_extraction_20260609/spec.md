@@ -1,3 +1,7 @@
+---
+type: specification
+---
+
 # Specification: Uniform Taḥwīl-Aware Isnad Extraction
 
 **Track ID:** `uniform_isnad_extraction_20260609`
@@ -6,6 +10,19 @@
 **Created:** 2026-06-09
 **Depends on:** `neo4j_isnad_graph_regen_20260516` (regen pipeline + reified `:Chain` schema)
 **Blocks:** `narrator_enrichment_20260425` (kunya gaps need closing here), `gds_setup_analytics_20260425` (multi-isnad mutawātir analytics need proper branch separation)
+
+**Implementation decision (2026-07-20):** the canonical extractor promotes the
+candidate-C suffix-alignment strategy, but keeps each earlier branch's fuller
+convergence surface and appends only the unmatched final-branch tail. Arabic
+vocalization is ignored for parsing; pronouns and collective surfaces are not
+identity-expanded. The release evidence is now a 32-record, provenance-backed
+gold set across Sunni, Imami, Ibadi, and Zaydi sources. Historical five-row
+metrics below are design history only; acceptance requires an independent run
+on all 32 records with branch-count accuracy and median branch Jaccard both at
+least 0.90, median normalized ordered edit similarity at least 0.90, and each
+tradition's branch-count accuracy and mean ordered similarity at least 0.80.
+Co-transmitters are parallel alternatives, never sequential edges. Resolution
+is atomic: one unresolved or invalid surface empties the whole row chain.
 
 ---
 
@@ -16,6 +33,12 @@ Replace the **three divergent chain_indx code paths** in `datasets/hadith-data/r
 This is correctness work, not a feature add. It fixes a class of bug surfaced by the user on Jami' al-Tirmidhi #1: the chain display shows only the *pre-convergence prefix* of one branch, missing the shared post-convergence narrators (Muṣʿab b. Saʿd, Ibn ʿUmar) that connect the chain to the Prophet ﷺ. Same pathology affects every taḥwīl hadith across the Sunni Six and the Imami compilations.
 
 ### 1.1 Apply mode: differential repair, NOT drop-and-recreate
+
+**Local-first override (2026-07-20):** the repair design below remains a
+technical proposal, not an execution prescription. This track authorizes only
+local staged regeneration and a disposable-local/no-write graph dry run.
+Railway mutation requires a separately approved cutover after every extractor,
+manifest, loader, UI, and rollback gate passes for the confirmed project.
 
 **Decision (2026-06-10):** this track does **not** call `--mode=fullregen`. The existing fullregen pattern wipes all `:INCLUDES` and `:NARRATED_FROM` edges globally then re-CREATEs from scratch (`mode-fullregen.ts:391–443` after the 2026-06-08 wipe addition). That's appropriate when the source-of-truth is being rebuilt wholesale; it is **not appropriate** for an incremental correctness fix that touches the chain composition of a known subset of hadiths.
 
@@ -30,7 +53,8 @@ This track introduces a new mode: **`--mode=repair`**. Its contract:
 4. Never use a global `MATCH ()-[r:INCLUDES]->() DELETE r` or equivalent. The wipe step from `mode-fullregen.ts` line 391 onward is **explicitly forbidden** in repair mode.
 5. Emit per-hadith repair logs to `logs/regen-repair-<dvId>.jsonl` for audit and reproducibility.
 
-The downside is wall time. Repair mode does ~3× the round-trips of fullregen per affected hadith (read live state, diff, surgical writes). At the 2026-06-08 measured Railway latency (~72ms per edge write × N edges per chain), repairing all ~99k hadiths takes an estimated **3–5 days unattended**. That's acceptable — the user-explicit constraint is correctness over speed.
+Remote duration and cost are intentionally not estimated until the local dry
+run supplies current evidence and the user approves a bounded cutover.
 
 The upside: any chain that was *already correct* (or already partially fixed by a prior pass) is left untouched. If a downstream track has been hand-curating specific narrator edges (e.g., a future HITL pass adding human-resolved kunyas to specific chains), repair mode preserves that work. Fullregen would erase it.
 
@@ -83,7 +107,12 @@ Both chains independently connect to the Prophet. They are **independent isnads*
 
 This invalidates "implement FR-1.1's algorithm and ship" as a straight-line plan. Before any production code is written, we must **empirically evaluate** several candidate algorithms against a labeled set of hand-annotated taḥwīl hadiths to pick the right one. Findings recorded at [`.omc/research/uniform-isnad/algo-evaluation.md`](../../../.omc/research/uniform-isnad/algo-evaluation.md).
 
-**FR-0.5.1 — Labeled gold set.** Build `datasets/hadith-data/__tests__/fixtures/tahweel-gold.jsonl` with at least 30 hand-annotated Muslim/Bukhari/Tirmidhi/Abu Dawud/Ibn Majah/Nasai taḥwīl hadiths. Each entry: `{hadith_id, source, hadith_no, text_ar, expected_branches: list[list[str]]}` where each `expected_branches[i]` is the ground-truth full ordered narrator list for branch i (pre-convergence prefix + shared post-convergence suffix). Annotation is manual; use the existing `text_ar` from the unified CSV and write the expected branches by reading the Arabic. Include at least one no-overlap row, at least one 3-branch row, and at least one 4+-branch pathological row.
+**FR-0.5.1 — Labeled gold set.** Maintain at least 30 manually annotated,
+provenance-backed records across Sunni, Imami, Ibadi, and Zaydi assets. Full
+records must match the declared local source byte-for-byte; excerpts require
+exact start/end bounds. OpenITI identity composes parsed ID, hadith number, and
+page reference. Expected branches preserve source order and represent
+co-transmitters as parallel alternatives.
 
 **FR-0.5.2 — Candidate algorithms.** Implement at least four in `datasets/hadith-data/algo_candidates/`. Each candidate exports a single function `extract_branches(text_ar) → list[list[str]]` with the same contract. Candidates to evaluate:
 
@@ -104,9 +133,11 @@ This invalidates "implement FR-1.1's algorithm and ship" as a straight-line plan
 
 Output: a Markdown table per metric, signed off in `.omc/research/uniform-isnad/algo-evaluation.md`.
 
-**FR-0.5.4 — Winner-pick policy.** The winning candidate must:
-- Achieve branch-count accuracy ≥ 0.85 across the gold set.
-- Achieve median per-branch Jaccard ≥ 0.80 on the post-convergence segment.
+**FR-0.5.4 — Winner-pick policy.** The canonical candidate must:
+- Achieve overall branch-count accuracy ≥ 0.90 across the gold set.
+- Achieve median per-branch Jaccard ≥ 0.90.
+- Achieve median normalized ordered edit similarity ≥ 0.90.
+- Achieve per-tradition branch-count accuracy and mean ordered similarity ≥ 0.80.
 - Tie-breakers: simpler implementation > better edge-case behavior > faster.
 
 If no candidate clears the bar, **FR-1 is replanned**: the spec is amended to specify a hybrid (e.g., "use candidate B's name-span detection, but when set-intersect returns empty, fall back to candidate C's LCS"), and the bake-off is re-run on the hybrid before Phase 1 proceeds.
@@ -123,10 +154,10 @@ def extract_isnad_branches(text_ar: str) -> list[list[str]]:
     initial transmitter through the shared post-convergence segment to the
     Companion / Imam / Prophet.
 
-    Algorithm: **candidate C (lcs_suffix)** — picked by FR-0.5 bake-off on
-    2026-06-11. See `.omc/research/uniform-isnad/algo-evaluation.md` and
-    `bakeoff-round-1-findings.md` / `bakeoff-round-2-findings.md` for the
-    full comparison. Round-2 results:
+    Algorithm: **candidate C (lcs_suffix), hardened** — initially picked by
+    the historical FR-0.5 bake-off on 2026-06-11. See
+    `.omc/research/uniform-isnad/algo-evaluation.md` and the two bake-off
+    findings files. The old five-row Round-2 results were:
       - branch-count accuracy: 1.000
       - Jaccard median: 0.845 (FR-0.5.4 bar: 0.80)
       - Jaccard p25: 0.625 (highest of all candidates)
@@ -141,11 +172,10 @@ def extract_isnad_branches(text_ar: str) -> list[list[str]]:
 
     Promotion path:
       - The canonical implementation lives in this module.
-      - Helpers (split_on_tahweel, split_into_names, clean_segment,
-        find_matn_start, MATN_ANCHORS, COTRANSMITTER_SUFFIX, TRAILING_CONNECTIVES)
-        are promoted FROM `datasets/hadith-data/algo_candidates/_common.py`
-        as-is. The algo_candidates/ tree stays in place for regression /
-        bake-off Round-3 if Phase 1 surfaces new failure modes.
+      - The historical `algo_candidates/` tree remains a comparison baseline.
+      - Parsing helpers are canonical here because diacritics, co-transmitters,
+        matn boundaries, weak-pronoun convergence, and branch-local fuller
+        convergence surfaces required fixes beyond `_common.py`.
     """
 ```
 
@@ -154,23 +184,27 @@ The algorithm steps below are common to every candidate; the candidate-specific 
 1. **Detect ح-splitter positions.** Lone ح preceded by ، or whitespace, followed by و? + a transmission verb (حدثنا|حدثني|أخبرنا|أنبأنا|ثنا|نا) signals taḥwīl. Multiple ح in one isnad are allowed (3-branch and 4-branch hadiths exist — see Phase 0 stats). Detector regex shared with `audit_tahweel_stats.py`.
 2. **Split into segments.** Pre-ح + each post-ح clause. Track segment ordering.
 3. **Find the convergence narrator** OR **the shared post-convergence segment** depending on the chosen candidate's strategy (set-intersect, name-span intersect, LCS suffix, or matn-anchored backward walk).
-4. **Construct full branches.** For each branch i: pre-convergence prefix from branch i + shared post-convergence suffix.
+4. **Construct full branches.** Keep the complete earlier branch, including its own convergence spelling, and append only the unmatched last-branch tail.
 5. **No-stitch fallback.** When the chosen algorithm can't find a shared segment (Phase 0 estimates this at 10-15% of taḥwīl hadiths even with the best candidate), emit each branch as its own truncated chain. This is correct, just incomplete.
-6. **Apply the existing cleaners** (`_clean_chain_segment`, honorific stripping, trailing-narrative removal). Reuse `_CHAIN_VERB_SPLIT`, `_AAN_SPLIT`, `_CLASSICAL_HONORIFIC`, `_CLASSICAL_PUNCT` from `regen_unified_csvs.py` — do not redefine.
+6. **Apply canonical source-surface cleaning.** Ignore vocalization/tatweel for parsing, remove honorific and narrative frames, retain lexical source wording and pronouns, and never resolve identity in the extractor.
+7. **Expand co-transmitter levels.** A conjunction at one transmission level
+   creates source-ordered alternative branches. Two such levels form the
+   Cartesian set of valid routes; the paired names never become adjacent
+   teacher/student nodes merely because they share a clause.
 
 **FR-1.2** — New module exports a companion resolver:
 
 ```python
 def resolve_branches_to_indxs(
     branches: list[list[str]],
-    exact_index: dict, blocked_index: dict
-) -> list[list[str]]:
-    """Resolve each branch's surface forms to scholar_indx strings.
-    Skips unresolvable names per branch — does not drop the branch entirely.
-    Returns parallel list-of-lists (may contain empty inner lists)."""
+    resolve_narrator: Callable[[str], int | None]
+) -> list[list[int]]:
+    """Resolve all branches atomically through the cited narrator index."""
 ```
 
-Reuse the existing bilingual `resolve_narrator`. Per-branch: track attempted vs resolved counts in a module stats dict.
+Reuse the existing bilingual `resolve_narrator`. Any unresolved, ambiguous,
+invalid, or non-positive value raises `UnresolvedNarratorError`; callers may
+record telemetry and emit an empty whole-row cell, but never a partial branch.
 
 **FR-1.3** — Unit-tested with the cases:
 - (a) Tirmidhi #1 — 2-branch convergence at Smāk
@@ -181,7 +215,9 @@ Reuse the existing bilingual `resolve_narrator`. Per-branch: track attempted vs 
 - (f) An empty `text_ar` — returns `[]`
 - (g) Text with ح inside a quoted matn (not an isnad ح) — should not split
 
-Acceptance: live Tirmidhi #1 chain in Neo4j post-fullregen has Branch A = [Qutayba, Abū ʿAwāna, Smāk, Muṣʿab b. Saʿd, Ibn ʿUmar] (+ optionally a Prophet anchor depending on FR-4 below), Branch B = [Hannād, Wakīʿ, Isrāʾīl, Smāk, Muṣʿab b. Saʿd, Ibn ʿUmar].
+Acceptance first occurs in a disposable local graph: Tirmidhi #1 has Branch A
+= [Qutayba, Abū ʿAwāna, Smāk, Muṣʿab b. Saʿd, Ibn ʿUmar] and Branch B =
+[Hannād, Wakīʿ, Isrāʾīl, Smāk, Muṣʿab b. Saʿd, Ibn ʿUmar].
 
 ### FR-2 — Multi-branch `chain_indx` CSV format
 
@@ -215,16 +251,17 @@ Change `UnifiedRow.chain_indx` type from `number[]` to `number[][]`. Update `bui
 **FR-3.1** — In `regen_unified_csvs.py`, replace the three divergent `chain_indx` writers with a single call:
 
 ```python
-def _compute_chain_indx(text_ar: str, fallback_sanad_list: list[str] | None,
-                       exact_index, blocked_index, stats: dict) -> str:
-    """Uniform chain_indx computation. Returns the CSV cell string.
-    Prefers text_ar (full isnad with taḥwīl handling); falls back to
-    fallback_sanad_list (already-segmented narrator forms with no taḥwīl)."""
+def _compute_chain_indx(text_ar: str, fallback=None,
+                       resolve_narrator=None) -> str:
+    """Resolve canonical Arabic branches atomically into a CSV cell."""
 ```
 
 Call sites that change:
-- `_enrich()` Sunni branch (W1's Fix A) — drop the sidecar-driven `chain_indx` rebuild, use `_compute_chain_indx(text_ar=urow['text_ar'], fallback=side['sanad'] if side else None, ...)`. Keep the `sanad` display-string assignment as-is.
-- `openiti_to_clean_row` / `openiti_to_shia_row` (W3's Fix C) — drop `_openiti_chain_indx`, use `_compute_chain_indx(text_ar=h.get('text_ar'), fallback=[d['name_ar'] for d in h.get('sanad_detail', []) if d.get('name_ar')] if h.get('sanad_detail') else h.get('sanad') if isinstance(h.get('sanad'), list) else None, ...)`.
+- K6 assembly — overwrite legacy `chain_indx` from Arabic. Keep sidecar
+  `sanad`/`matn_ar` enrichment for display only; never use it as an ID fallback
+  when Arabic exists.
+- `openiti_to_clean_row` / `openiti_to_shia_row` — call the canonical Arabic
+  resolver and retain structured upstream sanad only for display/cross-checks.
 - `load_classical_sunni_rows` (existing Musnad Ahmad path) — replace the inline `extract_classical_isnad` + flat `','.join(resolved_indxs)` with `_compute_chain_indx(text_ar=chain_text, fallback=None, ...)`.
 
 **FR-3.2** — `datasets/hadith-data/shia-hadith/build_csv.py` (W2's Fix B output): the current `thaqalaynSanad` English-string path produces low resolution (~14%) because English ibn/bn variants don't match the rawi `name` field cleanly. **Replace** it with reading `arabicText` from the v2_books JSON and running the new uniform extractor on it. The v2_books data has `arabicText` populated on 100% of rows per the 2026-06-05 survey — that's a higher-quality input than the English `thaqalaynSanad`.
@@ -333,7 +370,10 @@ Test: run mode-repair against a Neo4j that has been hand-augmented with an extra
 
 This track owns (a). Add a chain-grouped variant of `getFullChainGraph` and update the UI to render N chain-rows when N > 1.
 
-**NFR-3** — Test coverage for the extractor. ≥ 12 unit tests covering single-chain, 2-branch, 3-branch, no-convergence, embedded-ح-in-quoted-matn, honorific stripping, و prefix on ح-following verb (`ح وحدثنا`), and per-branch resolution. Use the existing test conventions in `src/scripts/__tests__/regen-*.test.ts` plus a Python `pytest` file for the Python extractor.
+**NFR-3** — Test coverage uses Python standard-library `unittest` and covers
+single/multi-chain extraction, co-transmitter alternatives, no-convergence,
+embedded ح, honorific stripping, atomic resolution, exact provenance, ordered
+quality, and per-tradition floors.
 
 **NFR-4** — Performance. The extractor runs on 99,283 hadiths during CSV rebuild. Per-hadith budget: ≤ 50ms. Total: ≤ 90 min for full CSV rebuild on the user's machine (current rebuild is ~10 min — taḥwīl handling adds parse cost but resolution rate goes up, so net should be comparable).
 
@@ -353,7 +393,9 @@ Each is an acceptance criterion with a test.
 
 **G-7 — Non-destructive repair.** Mode-repair never performs a global edge wipe. Tested by: (a) hand-augmenting a test Neo4j with a `:INCLUDES` edge of `r.source = 'human:hitl-test'`, (b) running mode-repair on Tirmidhi #1, (c) asserting the human edge survives. Plus: no `:Hadith` that had ≥1 `:Chain` before repair has 0 `:Chain` after (counted across all 99,283 rows; assert via Cypher delta query).
 
-**G-6 — Per-tradition coverage floor.** After fullregen, the per-source `with_chain` rate from `diagnose-chain-data.ts` meets FR-6.2's thresholds. CI-style test: run the diagnose script, assert thresholds.
+**G-6 — Per-tradition coverage floor.** The local candidate manifest emits
+present/missing/invalid/unknown-reference counts by tradition, and the local
+graph dry run meets approved coverage floors before any cutover request.
 
 ## 6. Out of Scope
 
@@ -405,4 +447,6 @@ Each is an acceptance criterion with a test.
 | G-6 | Per-tradition coverage floors | Diagnose script |
 | G-7 | Non-destructive repair (human edges preserved, zero hadiths lose all chains) | Cypher delta + injected-human-edge fixture |
 
-Pass all seven → ship.
+Pass all seven plus the independent evaluator and local dry run → request a
+separately approved production cutover. No gate automatically authorizes a
+remote write.

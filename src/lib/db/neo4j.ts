@@ -85,9 +85,9 @@ export async function closeDriver(): Promise<void> {
     }
 }
 
-export async function runQuery<T = any>(
+export async function runQuery<T = Record<string, unknown>>(
     query: string,
-    params: Record<string, any> = {}
+    params: Record<string, unknown> = {}
 ): Promise<T[]> {
     const driver = getDriver();
     const session: Session = driver.session();
@@ -110,9 +110,9 @@ export async function runQuery<T = any>(
 // that cost 60× throughput. 120s is comfortably above observed peak.
 const WRITE_TX_TIMEOUT_MS = 120_000;
 
-export async function runWrite<T = any>(
+export async function runWrite<T = Record<string, unknown>>(
     query: string,
-    params: Record<string, any> = {}
+    params: Record<string, unknown> = {}
 ): Promise<T[]> {
     const driver = getDriver();
     const session: Session = driver.session();
@@ -129,7 +129,7 @@ export async function runWrite<T = any>(
 
 // Helper to execute multiple queries in a transaction
 export async function runTransaction(
-    queries: Array<{ query: string; params?: Record<string, any> }>
+    queries: Array<{ query: string; params?: Record<string, unknown> }>
 ): Promise<void> {
     const driver = getDriver();
     const session: Session = driver.session();

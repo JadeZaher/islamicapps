@@ -28,7 +28,7 @@
 import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs';
-import { runQuery, runWrite } from '../../../lib/db/neo4j';
+import { runQuery } from '../../../lib/db/neo4j';
 import { buildPipelineKey } from '../../../lib/db/neo4j-helpers';
 import { initializeSchema } from '../../../lib/db/schema';
 import {
@@ -38,9 +38,10 @@ import {
     type UnifiedRow,
     type LoadContext,
 } from './io';
-import { mergeDatasetVersion, deactivateOtherVersions } from './dataset-version';
+import { markDatasetVersionNonReleaseLoaded, mergeDatasetVersion } from './dataset-version';
 import { loadHadith } from './load-hadith';
 import { tombstoneByKey } from './tombstone';
+import { assertDevIncompleteFullregenTarget } from './mode-fullregen';
 import type { CliArgs } from '../../regen-isnad-graph';
 
 // ─── Dataset path resolution ──────────────────────────────────────────────────
@@ -159,6 +160,10 @@ async function fetchAllLiveBusinessKeys(): Promise<Set<string>> {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function runModeDiff(args: CliArgs): Promise<void> {
+    if (!args.devAllowIncompleteData) {
+        throw new Error('[diff] Diff mode requires the disposable-development acknowledgement');
+    }
+    assertDevIncompleteFullregenTarget(args.devAllowIncompleteData);
     console.log('='.repeat(64));
     console.log('  Isnad/Narrator Graph — Diff Mode');
     console.log('='.repeat(64));
@@ -168,8 +173,10 @@ export async function runModeDiff(args: CliArgs): Promise<void> {
     const { hadithPath, rawiPath } = resolveDatasetPaths();
     console.log(`\n[diff] Hadith CSV: ${hadithPath}`);
 
-    const unifiedHash = sha256File(hadithPath);
-    const rawisHash = fs.existsSync(rawiPath) ? sha256File(rawiPath) : '';
+    const [unifiedHash, rawisHash] = await Promise.all([
+        sha256File(hadithPath),
+        fs.existsSync(rawiPath) ? sha256File(rawiPath) : Promise.resolve(''),
+    ]);
     const contentHash = crypto
         .createHash('sha256')
         .update(`unified:${unifiedHash}\nrawis:${rawisHash}`)
@@ -181,9 +188,12 @@ export async function runModeDiff(args: CliArgs): Promise<void> {
         perTraditionCounts: {},
         contentHash,
         versionLabel: `diff-${contentHash.slice(0, 16)}`,
+        activateImmediately: false,
+        releaseEligible: false,
+        nonReleaseReason: 'legacy_diff_mode',
+        loadPurpose: 'legacy_diff',
     });
-    await deactivateOtherVersions(dvId);
-    console.log(`[diff] DatasetVersion id: ${dvId}`);
+    console.log(`[diff] DatasetVersion id: ${dvId} (non-release)`);
 
     const logger = createRegenLogger('diff', dvId);
     const ctx: LoadContext = {
@@ -270,10 +280,11 @@ export async function runModeDiff(args: CliArgs): Promise<void> {
     }
 
     logger.close();
+    await markDatasetVersionNonReleaseLoaded(dvId, 'legacy_diff', 'legacy_diff_mode');
 
-    const summary = { added, updated, unchanged, tombstoned };
+    const summary = { added, updated, unchanged, tombstoned, release_state: 'non_release_loaded' };
     console.log('\n' + '='.repeat(64));
-    console.log('  Diff Mode Complete');
+    console.log('  Diff Mode Finished (Non-Release)');
     console.log('='.repeat(64));
     console.log(`  added=${added} updated=${updated} unchanged=${unchanged} tombstoned=${tombstoned}`);
     console.log('');

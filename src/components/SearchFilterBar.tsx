@@ -1,12 +1,14 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useCallback, useTransition } from 'react';
+import { useState, useEffect, useCallback, useId, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 
 export interface FilterOption {
     label: string;
     value: string;
+    /** Exact URL/database values represented by this canonical option. */
+    aliases?: readonly string[];
 }
 
 export interface FilterConfig {
@@ -16,6 +18,8 @@ export interface FilterConfig {
     label: string;
     /** Available options. First option is usually "All" with value "" */
     options: FilterOption[];
+    /** Read-only URL aliases that should be normalized on the next filter change. */
+    legacyKeys?: string[];
 }
 
 interface SearchFilterBarProps {
@@ -38,16 +42,13 @@ export function SearchFilterBar({
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
+    const searchId = useId();
 
     const currentSearch = searchParams.get('q') || '';
-    const [searchInput, setSearchInput] = useState(currentSearch);
+    const [searchDraft, setSearchDraft] = useState({ source: currentSearch, value: currentSearch });
+    const searchInput = searchDraft.source === currentSearch ? searchDraft.value : currentSearch;
 
-    // Sync input when URL changes externally
-    useEffect(() => {
-        setSearchInput(searchParams.get('q') || '');
-    }, [searchParams]);
-
-    const updateParams = useCallback((updates: Record<string, string>) => {
+    const updateParams = useCallback((updates: Record<string, string>, removeKeys: string[] = []) => {
         const params = new URLSearchParams(searchParams.toString());
         for (const [key, value] of Object.entries(updates)) {
             if (value) {
@@ -56,6 +57,7 @@ export function SearchFilterBar({
                 params.delete(key);
             }
         }
+        removeKeys.forEach((key) => params.delete(key));
         // Reset to page 1 on any filter/search change
         params.delete('page');
         startTransition(() => {
@@ -73,51 +75,75 @@ export function SearchFilterBar({
         return () => clearTimeout(timer);
     }, [searchInput, currentSearch, updateParams]);
 
-    const handleFilterChange = (key: string, value: string) => {
-        updateParams({ [key]: value });
+    const handleFilterChange = (filter: FilterConfig, value: string) => {
+        updateParams({ [filter.key]: value }, filter.legacyKeys);
     };
 
-    const hasActiveFilters = filters.some(f => searchParams.get(f.key)) || currentSearch;
+    const getFilterValue = (filter: FilterConfig): string => {
+        const rawValue = searchParams.get(filter.key) ||
+            filter.legacyKeys?.map((key) => searchParams.get(key)).find(Boolean) || '';
+        const matchingOption = filter.options.find((option) =>
+            option.value === rawValue || option.aliases?.includes(rawValue),
+        );
+        return matchingOption?.value ?? rawValue;
+    };
+
+    const hasActiveFilters = filters.some((filter) => Boolean(getFilterValue(filter))) || Boolean(currentSearch);
 
     const clearAll = () => {
-        const params = new URLSearchParams();
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('q');
+        params.delete('page');
+        filters.forEach((filter) => {
+            params.delete(filter.key);
+            filter.legacyKeys?.forEach((key) => params.delete(key));
+        });
         startTransition(() => {
             router.push(`?${params.toString()}`);
         });
-        setSearchInput('');
+        setSearchDraft({ source: currentSearch, value: '' });
     };
 
     return (
-        <div className="space-y-3 mb-6">
-            <div className="flex flex-wrap items-center gap-3">
+        <section className="mb-6 space-y-3" aria-label="Search and filters" aria-busy={isPending}>
+            <div className="flex flex-wrap items-end gap-3">
                 {showSearch && (
                     <div className="relative flex-1 min-w-[200px] max-w-md">
+                        <label htmlFor={searchId} className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
+                            Search
+                        </label>
                         <input
-                            type="text"
+                            id={searchId}
+                            type="search"
                             value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
+                            onChange={(e) => setSearchDraft({ source: currentSearch, value: e.target.value })}
                             placeholder={searchPlaceholder}
-                            className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/25 text-sm"
+                            className="w-full min-h-11 rounded-md border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
                         />
                         {isPending && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="absolute right-3 top-9 size-4 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" role="status" aria-label="Updating results" />
                         )}
                     </div>
                 )}
 
                 {filters.map((filter) => (
-                    <select
-                        key={filter.key}
-                        value={searchParams.get(filter.key) || ''}
-                        onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                        className="px-3 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500/50 cursor-pointer"
-                    >
-                        {filter.options.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
+                    <div key={filter.key} className="min-w-44">
+                        <label htmlFor={`${searchId}-${filter.key}`} className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
+                            {filter.label}
+                        </label>
+                        <select
+                            id={`${searchId}-${filter.key}`}
+                            value={getFilterValue(filter)}
+                            onChange={(e) => handleFilterChange(filter, e.target.value)}
+                            className="min-h-11 w-full cursor-pointer rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+                        >
+                            {filter.options.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 ))}
 
                 {hasActiveFilters && (
@@ -125,7 +151,7 @@ export function SearchFilterBar({
                         variant="outline"
                         size="sm"
                         onClick={clearAll}
-                        className="border-slate-600 text-slate-400 hover:text-white hover:bg-slate-800"
+                        className="min-h-11 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-cyan-300"
                     >
                         Clear filters
                     </Button>
@@ -133,11 +159,11 @@ export function SearchFilterBar({
             </div>
 
             {totalResults !== undefined && (
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400" aria-live="polite" aria-atomic="true">
                     {totalResults.toLocaleString()} result{totalResults !== 1 ? 's' : ''}
                     {isPending && ' (updating...)'}
                 </p>
             )}
-        </div>
+        </section>
     );
 }

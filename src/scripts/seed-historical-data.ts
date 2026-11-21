@@ -1,8 +1,7 @@
 import { runWrite, closeDriver } from '../lib/db/neo4j';
-import { randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 
 interface Location {
-  id: string;
   name: string;
   name_arabic: string;
   latitude: number;
@@ -13,7 +12,6 @@ interface Location {
 }
 
 interface HistoricalEvent {
-  id: string;
   title: string;
   title_arabic: string;
   description: string;
@@ -26,9 +24,16 @@ interface HistoricalEvent {
   location_name: string;
 }
 
+function stableSeedId(namespace: string, ...parts: Array<string | number>): string {
+  const normalized = parts
+    .map((part) => String(part).normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' '))
+    .join('|');
+  const digest = createHash('sha256').update(`${namespace}|${normalized}`).digest('hex').slice(0, 24);
+  return `${namespace}:${digest}`;
+}
+
 const LOCATIONS: Location[] = [
   {
-    id: randomUUID(),
     name: 'Makkah',
     name_arabic: 'مكة المكرمة',
     latitude: 21.4225,
@@ -38,7 +43,6 @@ const LOCATIONS: Location[] = [
     description: 'The holiest city in Islam, birthplace of Prophet Muhammad and home to the Kaaba. Center of Islamic pilgrimage and spiritual significance.'
   },
   {
-    id: randomUUID(),
     name: 'Medina',
     name_arabic: 'المدينة المنورة',
     latitude: 24.5247,
@@ -48,7 +52,6 @@ const LOCATIONS: Location[] = [
     description: 'City of the Prophet, destination of the Hijra, and capital of the early Islamic state. Contains the Masjid al-Nabawi.'
   },
   {
-    id: randomUUID(),
     name: 'Jerusalem',
     name_arabic: 'القدس',
     latitude: 31.7683,
@@ -58,7 +61,6 @@ const LOCATIONS: Location[] = [
     description: 'Third holiest city in Islam, site of Al-Aqsa Mosque and the Dome of the Rock. Central to Islamic, Jewish, and Christian traditions.'
   },
   {
-    id: randomUUID(),
     name: 'Damascus',
     name_arabic: 'دمشق',
     latitude: 33.5138,
@@ -68,7 +70,6 @@ const LOCATIONS: Location[] = [
     description: 'Capital of the Umayyad Caliphate, major center of Islamic scholarship and Quran compilation. Home to the Umayyad Mosque.'
   },
   {
-    id: randomUUID(),
     name: 'Baghdad',
     name_arabic: 'بغداد',
     latitude: 33.3128,
@@ -78,7 +79,6 @@ const LOCATIONS: Location[] = [
     description: 'Capital of the Abbasid Caliphate, center of Islamic learning and the House of Wisdom. One of the greatest cities of the medieval world.'
   },
   {
-    id: randomUUID(),
     name: 'Kufa',
     name_arabic: 'الكوفة',
     latitude: 32.0106,
@@ -88,7 +88,6 @@ const LOCATIONS: Location[] = [
     description: 'Major city founded during the Rashidun period, important center of Quranic studies and Islamic jurisprudence.'
   },
   {
-    id: randomUUID(),
     name: 'Basra',
     name_arabic: 'البصرة',
     latitude: 30.5273,
@@ -98,7 +97,6 @@ const LOCATIONS: Location[] = [
     description: 'Strategic port city founded during Rashidun era, major center of trade, Hadith scholarship, and Arabic linguistics.'
   },
   {
-    id: randomUUID(),
     name: 'Fustat',
     name_arabic: 'الفسطاط',
     latitude: 30.0444,
@@ -108,7 +106,6 @@ const LOCATIONS: Location[] = [
     description: 'Early Islamic capital of Egypt, predecessor to Cairo. Major center of Islamic administration and learning.'
   },
   {
-    id: randomUUID(),
     name: 'Bukhara',
     name_arabic: 'بخارى',
     latitude: 39.7750,
@@ -118,7 +115,6 @@ const LOCATIONS: Location[] = [
     description: 'Major center of Islamic learning and Hadith scholarship. Birthplace of Imam Bukhari and hub of the Silk Road.'
   },
   {
-    id: randomUUID(),
     name: 'Nishapur',
     name_arabic: 'نيسابور',
     latitude: 36.2140,
@@ -128,7 +124,6 @@ const LOCATIONS: Location[] = [
     description: 'Important center of Islamic scholarship and Hadith collection. Hometown of Imam Muslim and numerous scholars.'
   },
   {
-    id: randomUUID(),
     name: 'Samarkand',
     name_arabic: 'سمرقند',
     latitude: 39.6548,
@@ -138,7 +133,6 @@ const LOCATIONS: Location[] = [
     description: 'Major crossroads of the Silk Road and center of Islamic science, astronomy, and mathematics.'
   },
   {
-    id: randomUUID(),
     name: 'Karbala',
     name_arabic: 'كربلاء',
     latitude: 32.5086,
@@ -148,7 +142,6 @@ const LOCATIONS: Location[] = [
     description: 'Holy city in Shia Islam, site of the martyrdom of Husayn ibn Ali. Major pilgrimage destination.'
   },
   {
-    id: randomUUID(),
     name: 'Abyssinia',
     name_arabic: 'الحبشة',
     latitude: 9.1450,
@@ -158,7 +151,6 @@ const LOCATIONS: Location[] = [
     description: 'Christian kingdom that provided refuge for early Muslims fleeing Meccan persecution. Important in early Islamic history.'
   },
   {
-    id: randomUUID(),
     name: 'Sana\'a',
     name_arabic: 'صنعاء',
     latitude: 15.3694,
@@ -168,7 +160,6 @@ const LOCATIONS: Location[] = [
     description: 'Major Islamic city and cultural center in Yemen, important for trade and Islamic governance.'
   },
   {
-    id: randomUUID(),
     name: 'Taif',
     name_arabic: 'الطائف',
     latitude: 21.2716,
@@ -178,7 +169,6 @@ const LOCATIONS: Location[] = [
     description: 'Mountain city near Makkah, site of Prophet Muhammad\'s preaching mission and important in early Islam.'
   },
   {
-    id: randomUUID(),
     name: 'Badr',
     name_arabic: 'بدر',
     latitude: 24.3544,
@@ -188,7 +178,6 @@ const LOCATIONS: Location[] = [
     description: 'Site of the Battle of Badr, first major military victory of Muslims against the Quraysh.'
   },
   {
-    id: randomUUID(),
     name: 'Uhud',
     name_arabic: 'أحد',
     latitude: 24.6067,
@@ -198,7 +187,6 @@ const LOCATIONS: Location[] = [
     description: 'Mountain north of Medina, site of the Battle of Uhud where Muslims faced temporary defeat.'
   },
   {
-    id: randomUUID(),
     name: 'Khaybar',
     name_arabic: 'خيبر',
     latitude: 25.1925,
@@ -208,7 +196,6 @@ const LOCATIONS: Location[] = [
     description: 'Fortress and Jewish settlement conquered by Muslims, significant in establishing Islamic authority.'
   },
   {
-    id: randomUUID(),
     name: 'Hudaybiyyah',
     name_arabic: 'الحديبية',
     latitude: 21.8694,
@@ -218,7 +205,6 @@ const LOCATIONS: Location[] = [
     description: 'Coastal location where the Treaty of Hudaybiyyah was signed, peace accord between Muslims and Quraysh.'
   },
   {
-    id: randomUUID(),
     name: 'Yarmouk',
     name_arabic: 'اليرموك',
     latitude: 32.7567,
@@ -228,7 +214,6 @@ const LOCATIONS: Location[] = [
     description: 'Site of the decisive Battle of Yarmouk, victory that secured Muslim control of the Levant.'
   },
   {
-    id: randomUUID(),
     name: 'Qadisiyyah',
     name_arabic: 'القادسية',
     latitude: 31.9500,
@@ -238,7 +223,6 @@ const LOCATIONS: Location[] = [
     description: 'Site of the Battle of Qadisiyyah, major victory that led to the conquest of Persia.'
   },
   {
-    id: randomUUID(),
     name: 'Siffin',
     name_arabic: 'صفين',
     latitude: 35.2389,
@@ -248,7 +232,6 @@ const LOCATIONS: Location[] = [
     description: 'Site of the Battle of Siffin between Ali and Mu\'awiya, major conflict in early Islamic history.'
   },
   {
-    id: randomUUID(),
     name: 'Termez',
     name_arabic: 'الترمذ',
     latitude: 37.2622,
@@ -258,7 +241,6 @@ const LOCATIONS: Location[] = [
     description: 'Ancient city on the Silk Road, birthplace of Imam Tirmidhi, major center of Islamic learning.'
   },
   {
-    id: randomUUID(),
     name: 'Qazvin',
     name_arabic: 'قزوين',
     latitude: 36.2665,
@@ -268,7 +250,6 @@ const LOCATIONS: Location[] = [
     description: 'Historic Persian city and center of Islamic learning, birthplace of Ibn Majah.'
   },
   {
-    id: randomUUID(),
     name: 'Ray',
     name_arabic: 'الري',
     latitude: 35.6667,
@@ -278,7 +259,6 @@ const LOCATIONS: Location[] = [
     description: 'Historic Persian city and major center of Islamic scholarship, near modern-day Tehran.'
   },
   {
-    id: randomUUID(),
     name: 'Isfahan',
     name_arabic: 'أصفهان',
     latitude: 32.6769,
@@ -288,7 +268,6 @@ const LOCATIONS: Location[] = [
     description: 'Major Persian city and center of Islamic arts, sciences, and architecture.'
   },
   {
-    id: randomUUID(),
     name: 'Herat',
     name_arabic: 'هرات',
     latitude: 34.3425,
@@ -298,7 +277,6 @@ const LOCATIONS: Location[] = [
     description: 'Important center of Islamic learning and trade on the Silk Road.'
   },
   {
-    id: randomUUID(),
     name: 'Cordoba',
     name_arabic: 'قرطبة',
     latitude: 37.8882,
@@ -308,7 +286,6 @@ const LOCATIONS: Location[] = [
     description: 'Capital of the Islamic Umayyad Caliphate in Spain, center of Islamic learning and culture in medieval Europe.'
   },
   {
-    id: randomUUID(),
     name: 'Fez',
     name_arabic: 'فاس',
     latitude: 34.0333,
@@ -318,7 +295,6 @@ const LOCATIONS: Location[] = [
     description: 'Major Islamic city in Morocco, center of learning and culture. Home to Al-Qarawiyyin University.'
   },
   {
-    id: randomUUID(),
     name: 'Cairo',
     name_arabic: 'القاهرة',
     latitude: 30.0444,
@@ -328,7 +304,6 @@ const LOCATIONS: Location[] = [
     description: 'Capital of Egypt built on the foundation of Fustat, major center of Islamic civilization and learning.'
   },
   {
-    id: randomUUID(),
     name: 'Cave Hira',
     name_arabic: 'غار حراء',
     latitude: 21.5011,
@@ -338,7 +313,6 @@ const LOCATIONS: Location[] = [
     description: 'Mountain cave near Makkah where the Prophet Muhammad received the first revelation.'
   },
   {
-    id: randomUUID(),
     name: 'Tours',
     name_arabic: 'تور',
     latitude: 47.3915,
@@ -352,7 +326,6 @@ const LOCATIONS: Location[] = [
 const HISTORICAL_EVENTS: HistoricalEvent[] = [
   // Prophetic Era
   {
-    id: randomUUID(),
     title: 'Birth of Prophet Muhammad',
     title_arabic: 'ميلاد الرسول محمد صلى الله عليه وسلم',
     description: 'Birth of Prophet Muhammad, founder of Islam. Born in Makkah on a Monday, year 53 BH (Before Hijra).',
@@ -363,7 +336,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Makkah'
   },
   {
-    id: randomUUID(),
     title: 'First Revelation (Bi\'thah)',
     title_arabic: 'أول الوحي والبعثة الشريفة',
     description: 'The Prophet Muhammad received the first divine revelation in Cave Hira, beginning his prophetic mission.',
@@ -374,7 +346,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Cave Hira'
   },
   {
-    id: randomUUID(),
     title: 'Migration to Abyssinia',
     title_arabic: 'الهجرة الأولى إلى الحبشة',
     description: 'A group of Muslims migrated to Abyssinia (Ethiopia) seeking refuge from Meccan persecution under the protection of the Christian king Najashi.',
@@ -385,7 +356,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Abyssinia'
   },
   {
-    id: randomUUID(),
     title: 'Isra and Mi\'raj',
     title_arabic: 'الإسراء والمعراج',
     description: 'The Night Journey where Prophet Muhammad traveled from Makkah to Jerusalem and then ascended to heaven, receiving the command of five daily prayers.',
@@ -396,7 +366,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Makkah'
   },
   {
-    id: randomUUID(),
     title: 'The Hijra (Migration to Medina)',
     title_arabic: 'الهجرة النبوية الشريفة',
     description: 'Prophet Muhammad and Muslims migrated from Makkah to Medina, marking the start of the Islamic calendar and the establishment of the first Islamic state.',
@@ -407,7 +376,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Battle of Badr',
     title_arabic: 'معركة بدر الكبرى',
     description: 'First major military engagement where about 313 Muslims defeated a Meccan army of approximately 1000, establishing Islamic military authority.',
@@ -418,7 +386,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Badr'
   },
   {
-    id: randomUUID(),
     title: 'Battle of Uhud',
     title_arabic: 'معركة أحد',
     description: 'Muslims faced temporary defeat at Mount Uhud north of Medina, learning important lessons about military discipline.',
@@ -429,7 +396,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Uhud'
   },
   {
-    id: randomUUID(),
     title: 'Battle of the Trench (Khandaq)',
     title_arabic: 'معركة الخندق',
     description: 'Muslims defended Medina by digging a trench, successfully repelling a large Meccan siege force through tactical innovation.',
@@ -440,7 +406,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Treaty of Hudaybiyyah',
     title_arabic: 'صلح الحديبية',
     description: 'Peace treaty between Muslims and Quraysh, establishing framework for coexistence and enabling Islamic expansion.',
@@ -451,7 +416,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Hudaybiyyah'
   },
   {
-    id: randomUUID(),
     title: 'Conquest of Makkah',
     title_arabic: 'فتح مكة المكرمة',
     description: 'Muslims conquered Makkah and purified the Kaaba from idolatry, spreading Islam throughout Arabia.',
@@ -462,7 +426,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Makkah'
   },
   {
-    id: randomUUID(),
     title: 'Farewell Pilgrimage',
     title_arabic: 'حجة الوداع',
     description: 'Prophet Muhammad\'s final pilgrimage to Makkah, where he delivered the Farewell Sermon establishing Islamic principles of equality and unity.',
@@ -473,7 +436,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Makkah'
   },
   {
-    id: randomUUID(),
     title: 'Death of Prophet Muhammad',
     title_arabic: 'وفاة رسول الله صلى الله عليه وسلم',
     description: 'Prophet Muhammad passed away in Medina after completing his divine mission and establishing Islamic civilization.',
@@ -486,7 +448,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
 
   // Rashidun Caliphate
   {
-    id: randomUUID(),
     title: 'Abu Bakr becomes Caliph',
     title_arabic: 'خلافة أبي بكر الصديق',
     description: 'Abu Bakr al-Siddiq became the first Caliph, establishing the precedent for Islamic leadership succession.',
@@ -497,7 +458,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Wars of Apostasy (Ridda)',
     title_arabic: 'حروب الردة',
     description: 'Abu Bakr unified Arabia by defeating various apostate groups who rejected Islam after the Prophet\'s death.',
@@ -510,7 +470,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Makkah'
   },
   {
-    id: randomUUID(),
     title: 'Compilation of Quran (First)',
     title_arabic: 'جمع القرآن الكريم',
     description: 'Abu Bakr initiated the first official collection of the Quran into a single standardized manuscript.',
@@ -521,7 +480,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Umar becomes Caliph',
     title_arabic: 'خلافة عمر بن الخطاب',
     description: 'Umar ibn al-Khattab became the second Caliph, known for administrative genius and Islamic expansion.',
@@ -532,7 +490,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Battle of Yarmouk',
     title_arabic: 'معركة اليرموك',
     description: 'Decisive Muslim victory over Byzantine forces, securing control of the Levant and Syria for the Islamic caliphate.',
@@ -543,7 +500,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Yarmouk'
   },
   {
-    id: randomUUID(),
     title: 'Conquest of Jerusalem',
     title_arabic: 'فتح بيت المقدس',
     description: 'Muslim forces under Umar conquered Jerusalem, the third holiest city in Islam, establishing tolerance for Christian and Jewish populations.',
@@ -554,7 +510,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Jerusalem'
   },
   {
-    id: randomUUID(),
     title: 'Conquest of Persia (Battle of Qadisiyyah)',
     title_arabic: 'معركة القادسية',
     description: 'Muslim forces defeated the Sassanid Persian army at Qadisiyyah, leading to the conquest of Persia and its integration into the Islamic empire.',
@@ -565,7 +520,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Qadisiyyah'
   },
   {
-    id: randomUUID(),
     title: 'Foundation of Kufa',
     title_arabic: 'تأسيس مدينة الكوفة',
     description: 'Umar established the garrison city of Kufa as a military and administrative center in Iraq.',
@@ -576,7 +530,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Kufa'
   },
   {
-    id: randomUUID(),
     title: 'Foundation of Basra',
     title_arabic: 'تأسيس مدينة البصرة',
     description: 'Umar founded Basra as a strategic port city and garrison, becoming a major center of trade and Islamic learning.',
@@ -587,7 +540,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Basra'
   },
   {
-    id: randomUUID(),
     title: 'Foundation of Fustat',
     title_arabic: 'تأسيس مدينة الفسطاط',
     description: 'Muslims established Fustat as the first Islamic capital of Egypt, serving as the administrative center for centuries.',
@@ -598,7 +550,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Fustat'
   },
   {
-    id: randomUUID(),
     title: 'Uthman becomes Caliph',
     title_arabic: 'خلافة عثمان بن عفان',
     description: 'Uthman ibn Affan became the third Caliph, expanding Islamic territory and standardizing the Quran.',
@@ -609,7 +560,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Standardization of Quran (Uthmanic Codex)',
     title_arabic: 'جمع القرآن الكريم على مصحف واحد',
     description: 'Uthman standardized the Quranic text into an official canonical version distributed throughout the Islamic empire.',
@@ -620,7 +570,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Assassination of Uthman',
     title_arabic: 'مقتل عثمان بن عفان',
     description: 'Third Caliph Uthman was assassinated by rebels, leading to civil conflict in the Islamic community.',
@@ -631,7 +580,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Ali becomes Caliph',
     title_arabic: 'خلافة علي بن أبي طالب',
     description: 'Ali ibn Abi Talib became the fourth and final Rashidun Caliph, facing significant opposition and civil war.',
@@ -642,7 +590,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Battle of the Camel',
     title_arabic: 'معركة الجمل',
     description: 'Civil war between Ali\'s supporters and those of Aisha, wife of the Prophet, fought near Basra.',
@@ -653,7 +600,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Basra'
   },
   {
-    id: randomUUID(),
     title: 'Battle of Siffin',
     title_arabic: 'معركة صفين',
     description: 'Major conflict between Ali and Mu\'awiya, ending in arbitration that divided the Islamic community.',
@@ -664,7 +610,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Siffin'
   },
   {
-    id: randomUUID(),
     title: 'Assassination of Ali',
     title_arabic: 'مقتل علي بن أبي طالب',
     description: 'Fourth Caliph Ali was assassinated, ending the Rashidun Caliphate and establishing Mu\'awiya\'s Umayyad rule.',
@@ -677,7 +622,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
 
   // Umayyad Period
   {
-    id: randomUUID(),
     title: 'Mu\'awiya founds Umayyad Caliphate',
     title_arabic: 'تأسيس الخلافة الأموية',
     description: 'Mu\'awiya ibn Abi Sufyan established the Umayyad Dynasty with Damascus as its capital, creating a hereditary caliphate.',
@@ -688,7 +632,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Damascus'
   },
   {
-    id: randomUUID(),
     title: 'Martyrdom of Husayn at Karbala',
     title_arabic: 'مقتل الحسين بن علي',
     description: 'Husayn ibn Ali, grandson of Prophet Muhammad, was martyred at Karbala, a defining moment in Islamic history.',
@@ -699,7 +642,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Karbala'
   },
   {
-    id: randomUUID(),
     title: 'Siege of Makkah',
     title_arabic: 'حصار مكة',
     description: 'Umayyad forces besieged Makkah to suppress opposition, damaging the Kaaba in the process.',
@@ -710,7 +652,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Makkah'
   },
   {
-    id: randomUUID(),
     title: 'Construction of Dome of the Rock',
     title_arabic: 'بناء قبة الصخرة',
     description: 'Caliph Abd al-Malik completed the Dome of the Rock in Jerusalem, one of Islam\'s greatest architectural achievements.',
@@ -721,7 +662,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Jerusalem'
   },
   {
-    id: randomUUID(),
     title: 'Umar ibn Abd al-Aziz\'s Caliphate',
     title_arabic: 'خلافة عمر بن عبد العزيز',
     description: 'Umayyad Caliph known for justice, piety, and administrative reforms. Compilation of Islamic law advanced during his reign.',
@@ -732,7 +672,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Damascus'
   },
   {
-    id: randomUUID(),
     title: 'Conquest of Spain',
     title_arabic: 'فتح الأندلس',
     description: 'Muslim forces under Tariq ibn Ziyad crossed from North Africa and conquered much of the Iberian Peninsula.',
@@ -743,7 +682,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Cordoba'
   },
   {
-    id: randomUUID(),
     title: 'Battle of Tours',
     title_arabic: 'معركة تور',
     description: 'Frankish forces under Charles Martel halted Muslim expansion in France at the Battle of Tours.',
@@ -756,7 +694,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
 
   // Abbasid Era & Major Scholarly Events
   {
-    id: randomUUID(),
     title: 'Abbasid Revolution',
     title_arabic: 'الثورة العباسية',
     description: 'The Abbasid Dynasty overthrew the Umayyad Caliphate, establishing a new era of Islamic civilization.',
@@ -767,7 +704,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Kufa'
   },
   {
-    id: randomUUID(),
     title: 'Foundation of Baghdad',
     title_arabic: 'تأسيس مدينة بغداد',
     description: 'Caliph al-Mansur founded Baghdad as the new capital of the Abbasid Caliphate, becoming center of Islamic learning.',
@@ -778,7 +714,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Baghdad'
   },
   {
-    id: randomUUID(),
     title: 'Death of Imam Abu Hanifa',
     title_arabic: 'وفاة الإمام أبي حنيفة',
     description: 'Death of Abu Hanifa, founder of the Hanafi school of Islamic jurisprudence.',
@@ -789,7 +724,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Baghdad'
   },
   {
-    id: randomUUID(),
     title: 'Death of Imam Malik',
     title_arabic: 'وفاة الإمام مالك',
     description: 'Death of Malik ibn Anas, founder of the Maliki school of Islamic jurisprudence.',
@@ -800,7 +734,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Medina'
   },
   {
-    id: randomUUID(),
     title: 'Death of Imam al-Shafi\'i',
     title_arabic: 'وفاة الإمام الشافعي',
     description: 'Death of Muhammad ibn Idris al-Shafi\'i, founder of the Shafi\'i school of Islamic jurisprudence.',
@@ -811,7 +744,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Egypt'
   },
   {
-    id: randomUUID(),
     title: 'Ahmad ibn Hanbal and the Mihna',
     title_arabic: 'محنة الإمام أحمد بن حنبل',
     description: 'Imam Ahmad ibn Hanbal faced persecution during the Mihna (inquisition) for defending traditional Islamic doctrine.',
@@ -822,7 +754,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Baghdad'
   },
   {
-    id: randomUUID(),
     title: 'Death of Imam Ahmad ibn Hanbal',
     title_arabic: 'وفاة الإمام أحمد بن حنبل',
     description: 'Death of Ahmad ibn Hanbal, founder of the Hanbali school of Islamic jurisprudence.',
@@ -833,7 +764,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Baghdad'
   },
   {
-    id: randomUUID(),
     title: 'Imam Bukhari compiles Sahih',
     title_arabic: 'تصنيف صحيح البخاري',
     description: 'Imam Muhammad ibn Ismail al-Bukhari compiled his famous Sahih, one of the most authentic collections of hadith.',
@@ -844,7 +774,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Bukhara'
   },
   {
-    id: randomUUID(),
     title: 'Imam Muslim compiles Sahih',
     title_arabic: 'تصنيف صحيح مسلم',
     description: 'Imam Muslim ibn al-Hajjaj compiled Sahih Muslim, second most authoritative hadith collection.',
@@ -855,7 +784,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Nishapur'
   },
   {
-    id: randomUUID(),
     title: 'Abu Dawud compiles Sunan',
     title_arabic: 'تصنيف سنن أبي داود',
     description: 'Abu Dawud al-Sijistani compiled his Sunan, one of the six canonical hadith collections.',
@@ -866,7 +794,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Basra'
   },
   {
-    id: randomUUID(),
     title: 'Tirmidhi compiles Jami\'',
     title_arabic: 'تصنيف جامع الترمذي',
     description: 'Imam al-Tirmidhi compiled his Jami\' (al-Jami\' as-Sahih), one of the six canonical hadith collections.',
@@ -877,7 +804,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Termez'
   },
   {
-    id: randomUUID(),
     title: 'Nasa\'i compiles Sunan',
     title_arabic: 'تصنيف سنن النسائي',
     description: 'Imam al-Nasa\'i compiled his Sunan, one of the six canonical hadith collections.',
@@ -888,7 +814,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Egypt'
   },
   {
-    id: randomUUID(),
     title: 'Ibn Majah compiles Sunan',
     title_arabic: 'تصنيف سنن ابن ماجه',
     description: 'Ibn Majah compiled his Sunan, later recognized as one of the six canonical hadith collections.',
@@ -899,7 +824,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Qazvin'
   },
   {
-    id: randomUUID(),
     title: 'Fall of Baghdad to Mongols',
     title_arabic: 'سقوط بغداد على يد المغول',
     description: 'Mongol forces under Hulagu Khan conquered Baghdad, destroying the Abbasid Caliphate and its vast libraries.',
@@ -912,7 +836,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
 
   // Later Scholarly Milestones
   {
-    id: randomUUID(),
     title: 'Ibn Taymiyyah\'s Era',
     title_arabic: 'عصر ابن تيمية',
     description: 'Era of Ibn Taymiyyah, influential Islamic scholar who reformed Islamic theology and jurisprudence.',
@@ -923,7 +846,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Damascus'
   },
   {
-    id: randomUUID(),
     title: 'Al-Nawawi writes Sharh Sahih Muslim',
     title_arabic: 'شرح النووي على صحيح مسلم',
     description: 'Imam al-Nawawi wrote his comprehensive commentary on Sahih Muslim, providing deep Islamic jurisprudential analysis.',
@@ -934,7 +856,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Damascus'
   },
   {
-    id: randomUUID(),
     title: 'Al-Dhahabi writes Siyar A\'lam al-Nubala',
     title_arabic: 'سير أعلام النبلاء للذهبي',
     description: 'Imam al-Dhahabi compiled his biographical dictionary of Islamic scholars and righteous figures.',
@@ -945,7 +866,6 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
     location_name: 'Damascus'
   },
   {
-    id: randomUUID(),
     title: 'Ibn Hajar al-Asqalani writes Fath al-Bari',
     title_arabic: 'فتح الباري شرح صحيح البخاري',
     description: 'Ibn Hajar al-Asqalani wrote Fath al-Bari, the most comprehensive commentary on Sahih Bukhari.',
@@ -957,12 +877,35 @@ const HISTORICAL_EVENTS: HistoricalEvent[] = [
   }
 ];
 
+function assertSeedIntegrity(): void {
+  const locationIds = new Set<string>();
+  const locationNames = new Set<string>();
+  for (const location of LOCATIONS) {
+    const id = stableSeedId('location', location.name);
+    if (locationIds.has(id)) throw new Error(`Duplicate deterministic location seed: ${location.name}`);
+    locationIds.add(id);
+    locationNames.add(location.name);
+  }
+
+  const eventIds = new Set<string>();
+  for (const event of HISTORICAL_EVENTS) {
+    const id = stableSeedId('historical-event', event.title, event.year_hijri);
+    if (eventIds.has(id)) throw new Error(`Duplicate deterministic historical event seed: ${event.title}`);
+    if (!locationNames.has(event.location_name)) {
+      throw new Error(`Historical event references an unknown location: ${event.title} -> ${event.location_name}`);
+    }
+    eventIds.add(id);
+  }
+}
+
 async function seedLocations() {
   console.log('Seeding locations...');
 
   const locationQueries = LOCATIONS.map(location => ({
     query: `
       MERGE (l:Location {id: $id})
+      ON CREATE SET l.created_at = datetime(),
+                    l.verification_status = 'unverified_seed'
       SET l.name = $name,
           l.name_arabic = $name_arabic,
           l.latitude = $latitude,
@@ -970,11 +913,11 @@ async function seedLocations() {
           l.modern_country = $modern_country,
           l.region = $region,
           l.description = $description,
-          l.created_at = datetime()
+          l.updated_at = datetime()
       RETURN l.id as id
     `,
     params: {
-      id: location.id,
+      id: stableSeedId('location', location.name),
       name: location.name,
       name_arabic: location.name_arabic,
       latitude: location.latitude,
@@ -998,28 +941,38 @@ async function seedHistoricalEvents() {
   const eventQueries = HISTORICAL_EVENTS.map(event => ({
     query: `
       MERGE (e:HistoricalEvent {id: $id})
-      SET e.title = $title,
-          e.title_arabic = $title_arabic,
-          e.description = $description,
-          e.year_hijri = $year_hijri,
-          e.year_gregorian = $year_gregorian,
-          e.end_year_hijri = $end_year_hijri,
-          e.end_year_gregorian = $end_year_gregorian,
-          e.category = $category,
-          e.significance = $significance,
-          e.location_name = $location_name,
-          e.created_at = datetime()
+      ON CREATE SET e.created_at = datetime(),
+                    e.verification_status = 'unverified_seed',
+                    e.publication_ready = false
+      WITH e,
+           e.verification_status = 'unverified_seed'
+             AND e.publication_ready = false AS seed_editable
+      FOREACH (_ IN CASE WHEN seed_editable THEN [1] ELSE [] END |
+        SET e.title = $title,
+            e.title_arabic = $title_arabic,
+            e.description = $description,
+            e.year_hijri = $year_hijri,
+            e.year_gregorian = $year_gregorian,
+            e.start_year_hijri = $year_hijri,
+            e.start_year_gregorian = $year_gregorian,
+            e.end_year_hijri = $end_year_hijri,
+            e.end_year_gregorian = $end_year_gregorian,
+            e.category = $category,
+            e.significance = $significance,
+            e.location_name = $location_name,
+            e.updated_at = datetime()
+      )
       RETURN e.id as id
     `,
     params: {
-      id: event.id,
+      id: stableSeedId('historical-event', event.title, event.year_hijri),
       title: event.title,
       title_arabic: event.title_arabic,
       description: event.description,
       year_hijri: event.year_hijri,
       year_gregorian: event.year_gregorian,
-      end_year_hijri: event.end_year_hijri || null,
-      end_year_gregorian: event.end_year_gregorian || null,
+      end_year_hijri: event.end_year_hijri ?? null,
+      end_year_gregorian: event.end_year_gregorian ?? null,
       category: event.category,
       significance: event.significance,
       location_name: event.location_name
@@ -1041,17 +994,17 @@ async function linkEventsToLocations() {
   for (const event of HISTORICAL_EVENTS) {
     const query = `
       MATCH (e:HistoricalEvent {id: $event_id})
-      MATCH (l:Location {name: $location_name})
+      MATCH (l:Location {id: $location_id})
       MERGE (e)-[:OCCURRED_AT]->(l)
       RETURN e.id as event_id, l.id as location_id
     `;
 
     const result = await runWrite(query, {
-      event_id: event.id,
-      location_name: event.location_name
+      event_id: stableSeedId('historical-event', event.title, event.year_hijri),
+      location_id: stableSeedId('location', event.location_name)
     });
 
-    if (result) {
+    if (result.length > 0) {
       linkedCount++;
     }
   }
@@ -1063,17 +1016,19 @@ async function main() {
   try {
     console.log('Starting historical data seeding...\n');
 
+    assertSeedIntegrity();
+
     await seedLocations();
     await seedHistoricalEvents();
     await linkEventsToLocations();
 
     console.log('\n✓ Historical data seeding completed successfully!');
-  } catch (error) {
-    console.error('Error seeding historical data:', error);
-    throw error;
   } finally {
     await closeDriver();
   }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error('Error seeding historical data:', error);
+  process.exitCode = 1;
+});

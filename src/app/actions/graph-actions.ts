@@ -1,6 +1,8 @@
 'use server';
 
 import { runQuery, runWrite, runTransaction } from '@/lib/db/neo4j';
+import { getTraditionFilterValues } from '@/lib/constants/traditions';
+import { getSourceFilterValues } from '@/lib/constants/sources';
 import { randomUUID } from 'crypto';
 import { type PaginationParams, type PaginatedResult, toSkipLimit, paginate } from '@/lib/pagination';
 
@@ -30,11 +32,22 @@ export interface HistoricalEventData {
   title: string;
   title_arabic?: string;
   description: string;
+  /** Legacy start-year aliases retained while historical records migrate. */
   year_hijri?: number;
   year_gregorian?: number;
+  start_year_hijri?: number;
+  start_year_gregorian?: number;
+  end_year_hijri?: number;
+  end_year_gregorian?: number;
   category: string;
   significance?: string;
   location_name?: string;
+  verification_status?: 'unverified' | 'unverified_seed' | 'human_verified' | 'source_verified';
+  publication_ready?: boolean;
+  citation_source?: string;
+  citation_locator?: string;
+  citation_url?: string;
+  citation_retrieved_at?: string;
 }
 
 export interface CommentaryData {
@@ -50,23 +63,181 @@ export interface CommentaryData {
 
 export interface LocationData {
   name: string;
+  name_arabic?: string;
   modern_country?: string;
   region?: string;
   latitude?: number;
   longitude?: number;
+  description?: string;
+}
+
+export type LegacyNarratorReliability = 'THIQA' | 'SADUQ' | 'DAIF' | 'MAJHUL' | 'KADHAB';
+
+interface Neo4jEntity {
+  properties: Record<string, unknown>;
+}
+
+export interface HadithDetails extends Record<string, unknown> {
+  id: string;
+  title?: string | null;
+  primary_topic?: string | null;
+  chapter?: string;
+  category?: string;
+  source?: string;
+  tradition?: string;
+  text_english?: string | null;
+  text_arabic?: string | null;
+}
+
+export interface HistoricalEvent extends HistoricalEventData, Record<string, unknown> {
+  id: string;
+}
+
+export interface Commentary extends CommentaryData, Record<string, unknown> {
+  id: string;
+  hadith?: HadithDetails | null;
+  narrator?: NarratorDetails | null;
+}
+
+export interface Location extends LocationData, Record<string, unknown> {
+  id: string;
+}
+
+export interface NarratorDetails extends Record<string, unknown> {
+  id: string;
+  name_english: string;
+  name_arabic: string;
+  reliability?: LegacyNarratorReliability;
+  tabaqah: string;
+  birth_year_hijri?: number;
+  birth_year_gregorian?: number;
+  death_year_hijri?: number;
+  death_year_gregorian?: number;
+  birth_date_hijri?: number;
+  birth_date_gregorian?: number;
+  birth_date_source_text?: string;
+  birth_date_provenance?: string;
+  birth_date_review_status?: string;
+  death_date_hijri?: number;
+  death_date_gregorian?: number;
+  death_date_source_text?: string;
+  death_date_provenance?: string;
+  death_date_review_status?: string;
+  bio?: string;
+  biographical_narrative?: string;
+  geographic_region?: string;
+  is_prophet?: boolean;
+  is_companion?: boolean;
+  name_arabic_clean?: string;
+  name_english_clean?: string;
+  kunya?: string;
+  nasab?: string;
+  nisba?: string;
+  bio_summary?: string;
+  bio_tadil?: string;
+  bio_jarh?: string;
+  reliability_consensus?: string;
+  reliability_disagreement?: boolean;
+  critic_quote_count?: number;
+  bio_provenance?: string;
+}
+
+export interface NarratorHadithSummary extends Record<string, unknown> {
+  id: string;
+  title: string;
+  primary_topic?: string;
+  display_grade?: string;
+}
+
+export interface EnhancedNarratorDetails extends NarratorDetails {
+  other_hadiths: NarratorHadithSummary[];
+  locations: Array<Record<string, unknown>>;
+  teacher_student_network: {
+    teachers: Array<Record<string, unknown>>;
+    students: Array<Record<string, unknown>>;
+  };
 }
 
 // ============ READ HELPERS ============
 
-export async function getNarratorById(id: string) {
-  const result = await runQuery(`
+function optionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function optionalBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function legacyReliability(value: unknown): LegacyNarratorReliability | undefined {
+  const normalized = optionalString(value)?.toUpperCase();
+  return normalized === 'THIQA' || normalized === 'SADUQ' || normalized === 'DAIF' ||
+    normalized === 'MAJHUL' || normalized === 'KADHAB'
+    ? normalized
+    : undefined;
+}
+
+function withNarratorDateAliases(props: Record<string, unknown>): NarratorDetails {
+  const birthHijri = optionalNumber(props.birth_date_hijri) ?? optionalNumber(props.birth_year_hijri);
+  const birthGregorian = optionalNumber(props.birth_date_gregorian) ?? optionalNumber(props.birth_year_gregorian);
+  const deathHijri = optionalNumber(props.death_date_hijri) ?? optionalNumber(props.death_year_hijri);
+  const deathGregorian = optionalNumber(props.death_date_gregorian) ?? optionalNumber(props.death_year_gregorian);
+  return {
+    ...props,
+    id: optionalString(props.id) ?? '',
+    name_english: optionalString(props.name_english) ?? optionalString(props.name) ?? '',
+    name_arabic: optionalString(props.name_arabic) ?? '',
+    reliability: legacyReliability(props.reliability),
+    tabaqah: optionalString(props.tabaqah) ?? '',
+    birth_date_hijri: optionalNumber(props.birth_date_hijri),
+    birth_date_gregorian: optionalNumber(props.birth_date_gregorian),
+    birth_date_source_text: optionalString(props.birth_date_source_text),
+    birth_date_provenance: optionalString(props.birth_date_provenance),
+    birth_date_review_status: optionalString(props.birth_date_review_status),
+    death_date_hijri: optionalNumber(props.death_date_hijri),
+    death_date_gregorian: optionalNumber(props.death_date_gregorian),
+    death_date_source_text: optionalString(props.death_date_source_text),
+    death_date_provenance: optionalString(props.death_date_provenance),
+    death_date_review_status: optionalString(props.death_date_review_status),
+    birth_year_hijri: birthHijri,
+    birth_year_gregorian: birthGregorian,
+    death_year_hijri: deathHijri,
+    death_year_gregorian: deathGregorian,
+    bio: optionalString(props.bio),
+    biographical_narrative: optionalString(props.biographical_narrative),
+    geographic_region: optionalString(props.geographic_region),
+    is_prophet: optionalBoolean(props.is_prophet),
+    is_companion: optionalBoolean(props.is_companion),
+    name_arabic_clean: optionalString(props.name_arabic_clean),
+    name_english_clean: optionalString(props.name_english_clean),
+    kunya: optionalString(props.kunya),
+    nasab: optionalString(props.nasab),
+    nisba: optionalString(props.nisba),
+    bio_summary: optionalString(props.bio_summary),
+    bio_tadil: optionalString(props.bio_tadil),
+    bio_jarh: optionalString(props.bio_jarh),
+    reliability_consensus: optionalString(props.reliability_consensus),
+    reliability_disagreement: optionalBoolean(props.reliability_disagreement),
+    critic_quote_count: optionalNumber(props.critic_quote_count),
+    bio_provenance: optionalString(props.bio_provenance),
+  };
+}
+
+export async function getNarratorById(id: string): Promise<NarratorDetails | null> {
+  const result = await runQuery<{ n: Neo4jEntity }>(`
     MATCH (n:Narrator {id: $id})
     RETURN n
   `, { id });
-  return result[0]?.n.properties || null;
+  const props = result[0]?.n.properties as Record<string, unknown> | undefined;
+  return props ? withNarratorDateAliases(props) : null;
 }
 
-export async function getAllNarrators(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+export async function getAllNarrators(
+  pagination?: PaginationParams,
+): Promise<PaginatedResult<NarratorDetails>> {
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (n:Narrator) WHERE n.is_prophet IS NULL OR n.is_prophet = false RETURN count(n) as total`),
@@ -74,11 +245,16 @@ export async function getAllNarrators(pagination?: PaginationParams): Promise<Pa
       MATCH (n:Narrator)
       WHERE n.is_prophet IS NULL OR n.is_prophet = false
       RETURN n
-      ORDER BY n.name_english
+      ORDER BY coalesce(n.name_english, n.name)
       SKIP $skip LIMIT $limit
     `, { skip, limit }),
   ]);
-  return paginate(result.map((r) => r.n.properties), countResult[0]?.total ?? 0, page, pageSize);
+  return paginate(
+    result.map((r) => withNarratorDateAliases(r.n.properties)),
+    countResult[0]?.total ?? 0,
+    page,
+    pageSize,
+  );
 }
 
 // --- HADITH ---
@@ -100,10 +276,13 @@ export async function getHadithById(id: string) {
 
   // Backward-compatible aliases so existing UI bindings keep rendering.
   // v2 schema is authoritative; the v1 names are mirrored for the read layer only.
-  const text_en = props.text_en as string | null | undefined;
-  const text_ar = props.text_ar as string | null | undefined;
-  const chapter = props.chapter as string | null | undefined;
-  const category = props.category as string | null | undefined;
+  const text_en = optionalString(props.text_en) ?? optionalString(props.text_english);
+  const text_ar = optionalString(props.text_ar) ?? optionalString(props.text_arabic);
+  const chapter = optionalString(props.chapter);
+  const category = optionalString(props.category);
+  const canonicalSanad = optionalString(props.sanad) ??
+    optionalString(props.isnad_arabic) ??
+    optionalString(props.chain_text_arabic);
 
   // Build a "variations" array for legacy UI bindings: if no MatnVariation
   // children exist, synthesise one from the Hadith's own matn fields so the
@@ -117,8 +296,8 @@ export async function getHadithById(id: string) {
     const synthesized: Record<string, unknown> = {
       id: `${props.id}::synthesized`,
       // Prefer matn_* (the canonical narrative text in v2), fall back to text_*
-      text_arabic: (props.matn_ar as string) || text_ar || null,
-      text_english: (props.matn_en as string) || text_en || null,
+      text_arabic: optionalString(props.matn_ar) ?? text_ar ?? null,
+      text_english: optionalString(props.matn_en) ?? text_en ?? null,
       source: 'hadith_node',
     };
     variations = [synthesized];
@@ -127,20 +306,23 @@ export async function getHadithById(id: string) {
   return {
     ...props,
     // v1 aliases for legacy UI bindings
-    title: chapter || category || null,
-    primary_topic: category || null,
+    title: optionalString(props.title) ?? chapter ?? category ?? null,
+    primary_topic: optionalString(props.primary_topic) ?? category ?? null,
     text_english: text_en ?? null,
     text_arabic: text_ar ?? null,
     // v2 fields the UI should start reading directly
-    isnad_arabic: (props.sanad as string) ?? null,
-    chain_text_arabic: (props.sanad as string) ?? null,
-    matn_ar: (props.matn_ar as string) ?? null,
-    matn_en: (props.matn_en as string) ?? null,
+    sanad: canonicalSanad ?? null,
+    isnad_arabic: optionalString(props.isnad_arabic) ?? canonicalSanad ?? null,
+    chain_text_arabic: optionalString(props.chain_text_arabic) ?? canonicalSanad ?? null,
+    matn_ar: optionalString(props.matn_ar) ?? null,
+    matn_en: optionalString(props.matn_en) ?? null,
     variations,
   };
 }
 
-export async function getAllHadiths(pagination?: PaginationParams): Promise<PaginatedResult<any>> {
+export async function getAllHadiths(
+  pagination?: PaginationParams,
+): Promise<PaginatedResult<HadithDetails>> {
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (h:Hadith) RETURN count(h) as total`),
@@ -159,42 +341,73 @@ export async function getFullChainGraph(hadithId: string) {
   // v2 schema: direct (h)-[:HAS_CHAIN]->(:Chain)-[:INCLUDES]->(:Narrator) traversal.
   // Transmission edges between narrators are :NARRATED_FROM (with confidence +
   // temporal_plausibility + extraction_method + source). The legacy v1 path
-  // (HAS_VARIATION → MatnVariation → TRANSMITTED_VIA → Chain) and the v1 edge
-  // type (:HEARD_FROM) are NOT present after the v2 fullregen.
+  // (HAS_VARIATION → MatnVariation → TRANSMITTED_VIA → Chain) remains a
+  // read-only fallback. Legacy :HEARD_FROM edges are global rather than
+  // chain-scoped, so they are deliberately not used to infer chain order.
   //
   // Order nodes by chain position (the :INCLUDES.position property). Cypher's
   // `collect()` and `RETURN DISTINCT n` do NOT preserve insertion order, so
   // without an explicit ORDER BY the narrators come back scrambled and the
   // isnad renders in the wrong sequence on the page.
-  const nodes = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i:INCLUDES]->(n:Narrator)
-    WITH n, min(i.position) AS pos
-    RETURN n, pos
-    ORDER BY pos
-  `, { hadithId });
+  const params = { hadithId };
+  const [directNodes, directEdges] = await Promise.all([
+    runQuery<{ n: Neo4jEntity }>(`
+      MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i:INCLUDES]->(n:Narrator)
+      RETURN DISTINCT coalesce(c.id, c.pipeline_key, toString(id(c))) AS chainId,
+             c.chain_index AS chainIndex, i.position AS position, n
+      ORDER BY coalesce(c.chain_index, 0), chainId, position, n.id
+    `, params),
+    runQuery(`
+      MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i1:INCLUDES]->(n1:Narrator)
+      MATCH (n1)-[r:NARRATED_FROM]->(n2:Narrator)
+      MATCH (c)-[i2:INCLUDES]->(n2)
+      WHERE i1.position IS NULL OR i2.position IS NULL OR i2.position = i1.position + 1
+      RETURN DISTINCT coalesce(c.id, c.pipeline_key, toString(id(c))) AS chainId,
+             c.chain_index AS chainIndex, i1.position AS sourcePosition,
+             i2.position AS targetPosition, n1, r, n2
+      ORDER BY coalesce(c.chain_index, 0), chainId, sourcePosition
+    `, params),
+  ]);
 
-  const edges = await runQuery(`
-    MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i:INCLUDES]->(n1:Narrator)
-    MATCH (n1)-[r:NARRATED_FROM]->(n2:Narrator)
-    WHERE (c)-[:INCLUDES]->(n2)
-    RETURN DISTINCT n1, r, n2, i.position AS pos
-    ORDER BY pos
-  `, { hadithId });
+  let schema: 'v2' | 'legacy' = 'v2';
+  let nodeRows = directNodes;
+  let edgeRows = directEdges;
+
+  if (directNodes.length === 0) {
+    schema = 'legacy';
+    nodeRows = await runQuery(`
+      MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(:MatnVariation)
+            -[:TRANSMITTED_VIA]->(c:Chain)-[i:INCLUDES]->(n:Narrator)
+      RETURN DISTINCT coalesce(c.id, c.pipeline_key, toString(id(c))) AS chainId,
+             c.chain_index AS chainIndex, i.position AS position, n
+      ORDER BY coalesce(c.chain_index, 0), chainId, position, n.id
+    `, params);
+    edgeRows = [];
+  }
 
   return {
-    nodes: nodes.map((r) => ({
-      ...r.n.properties,
-      // Surface the position so the UI can also sort if it shuffles.
-      chain_position: typeof r.pos === 'number' ? r.pos : (r.pos?.toNumber?.() ?? null),
+    nodes: nodeRows.map((row) => ({
+      ...row.n.properties,
+      chain_id: String(row.chainId),
+      chain_index: typeof row.chainIndex === 'number' ? row.chainIndex : null,
+      position: typeof row.position === 'number' ? row.position : null,
+      chain_position: typeof row.position === 'number' ? row.position : null,
+      chain_schema: schema,
     })),
-    edges: edges.map((r) => ({
-      source: r.n1.properties.id,
-      target: r.n2.properties.id,
+    edges: edgeRows.map((row) => ({
+      source: row.n1.properties.id,
+      target: row.n2.properties.id,
+      type: schema === 'v2' ? 'NARRATED_FROM' : 'HEARD_FROM',
+      chain_id: String(row.chainId),
+      chain_index: typeof row.chainIndex === 'number' ? row.chainIndex : null,
+      source_position: typeof row.sourcePosition === 'number' ? row.sourcePosition : null,
+      target_position: typeof row.targetPosition === 'number' ? row.targetPosition : null,
       // v2: status now comes from temporal_plausibility ('plausible'|'impossible'|'unknown').
       // Fall back to legacy r.status if a partial-migration edge still carries it.
-      status: r.r.properties.temporal_plausibility ?? r.r.properties.status ?? null,
-      confidence: r.r.properties.confidence ?? null,
-      extraction_method: r.r.properties.extraction_method ?? null,
+      status: row.r.properties.temporal_plausibility ?? row.r.properties.status ?? null,
+      confidence: row.r.properties.confidence ?? null,
+      extraction_method: row.r.properties.extraction_method ?? null,
+      chain_schema: schema,
     })),
   };
 }
@@ -252,6 +465,8 @@ export async function searchNarrators(searchTerm: string = '', filters?: {
  */
 export async function createHistoricalEvent(data: HistoricalEventData): Promise<string> {
   const id = randomUUID();
+  const startYearHijri = data.start_year_hijri ?? data.year_hijri ?? null;
+  const startYearGregorian = data.start_year_gregorian ?? data.year_gregorian ?? null;
   await runWrite(`
     CREATE (e:HistoricalEvent {
       id: $id,
@@ -260,21 +475,41 @@ export async function createHistoricalEvent(data: HistoricalEventData): Promise<
       description: $description,
       year_hijri: $year_hijri,
       year_gregorian: $year_gregorian,
+      start_year_hijri: $start_year_hijri,
+      start_year_gregorian: $start_year_gregorian,
+      end_year_hijri: $end_year_hijri,
+      end_year_gregorian: $end_year_gregorian,
       category: $category,
       significance: $significance,
       location_name: $location_name,
+      verification_status: $verification_status,
+      publication_ready: $publication_ready,
+      citation_source: $citation_source,
+      citation_locator: $citation_locator,
+      citation_url: $citation_url,
+      citation_retrieved_at: $citation_retrieved_at,
       created_at: datetime()
     })
   `, {
     id,
     title: data.title,
-    title_arabic: data.title_arabic || null,
+    title_arabic: data.title_arabic ?? null,
     description: data.description,
-    year_hijri: data.year_hijri || null,
-    year_gregorian: data.year_gregorian || null,
+    year_hijri: startYearHijri,
+    year_gregorian: startYearGregorian,
+    start_year_hijri: startYearHijri,
+    start_year_gregorian: startYearGregorian,
+    end_year_hijri: data.end_year_hijri ?? null,
+    end_year_gregorian: data.end_year_gregorian ?? null,
     category: data.category,
-    significance: data.significance || null,
-    location_name: data.location_name || null,
+    significance: data.significance ?? null,
+    location_name: data.location_name ?? null,
+    verification_status: data.verification_status ?? 'unverified',
+    publication_ready: data.publication_ready ?? false,
+    citation_source: data.citation_source ?? null,
+    citation_locator: data.citation_locator ?? null,
+    citation_url: data.citation_url ?? null,
+    citation_retrieved_at: data.citation_retrieved_at ?? null,
   });
   return id;
 }
@@ -296,7 +531,10 @@ export async function getAllHistoricalEvents(filters?: {
     params.category = filters.category;
   }
   if (filters?.yearRange) {
-    conditions.push('e.year_hijri >= $minYear AND e.year_hijri <= $maxYear');
+    conditions.push(
+      'coalesce(e.end_year_hijri, e.start_year_hijri, e.year_hijri) >= $minYear ' +
+      'AND coalesce(e.start_year_hijri, e.year_hijri) <= $maxYear',
+    );
     params.minYear = filters.yearRange[0];
     params.maxYear = filters.yearRange[1];
   }
@@ -307,7 +545,7 @@ export async function getAllHistoricalEvents(filters?: {
 
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (e:HistoricalEvent)${whereClause} RETURN count(e) as total`, params),
-    runQuery(`MATCH (e:HistoricalEvent)${whereClause} RETURN e ORDER BY e.year_hijri SKIP $skip LIMIT $limit`, params),
+    runQuery(`MATCH (e:HistoricalEvent)${whereClause} RETURN e ORDER BY coalesce(e.start_year_hijri, e.year_hijri) SKIP $skip LIMIT $limit`, params),
   ]);
   return paginate(result.map((r) => r.e.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
@@ -316,10 +554,23 @@ export async function deleteHistoricalEvent(eventId: string): Promise<void> {
   await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) DETACH DELETE e`, { eventId });
 }
 
-const HISTORICAL_EVENT_KEYS = ['title', 'title_arabic', 'description', 'year_hijri', 'year_gregorian', 'category', 'significance', 'location_name'] as const;
+const HISTORICAL_EVENT_KEYS = [
+  'title', 'title_arabic', 'description',
+  'year_hijri', 'year_gregorian',
+  'start_year_hijri', 'start_year_gregorian',
+  'end_year_hijri', 'end_year_gregorian',
+  'category', 'significance', 'location_name',
+  'verification_status', 'publication_ready',
+  'citation_source', 'citation_locator', 'citation_url', 'citation_retrieved_at',
+] as const;
 
 export async function updateHistoricalEvent(eventId: string, data: Partial<HistoricalEventData>): Promise<void> {
-  const safe = safeKeys(data, HISTORICAL_EVENT_KEYS);
+  const normalized: Partial<HistoricalEventData> = { ...data };
+  if (data.start_year_hijri !== undefined) normalized.year_hijri = data.start_year_hijri;
+  else if (data.year_hijri !== undefined) normalized.start_year_hijri = data.year_hijri;
+  if (data.start_year_gregorian !== undefined) normalized.year_gregorian = data.start_year_gregorian;
+  else if (data.year_gregorian !== undefined) normalized.start_year_gregorian = data.year_gregorian;
+  const safe = safeKeys(normalized, HISTORICAL_EVENT_KEYS);
   const setClause = buildSetClause('e', safe);
   if (!setClause) return;
   await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) SET ${setClause}`, { eventId, ...safe });
@@ -327,15 +578,33 @@ export async function updateHistoricalEvent(eventId: string, data: Partial<Histo
 
 /**
  * Get historical events during a narrator's lifetime
+ *
+ * The legacy seed is intentionally hidden: only explicitly publishable,
+ * reviewed events with a source plus locator or stable URL may reach readers.
  */
 export async function getHistoricalEventsForNarrator(narratorId: string) {
   const result = await runQuery(`
     MATCH (n:Narrator {id: $narratorId})
+    WITH n,
+         coalesce(n.birth_date_hijri, n.birth_year_hijri) AS birthYear,
+         coalesce(n.death_date_hijri, n.death_year_hijri) AS deathYear
     MATCH (e:HistoricalEvent)
-    WHERE (n.birth_year_hijri IS NULL OR e.year_hijri >= n.birth_year_hijri)
-      AND (n.death_year_hijri IS NULL OR e.year_hijri <= n.death_year_hijri)
-    RETURN DISTINCT e
-    ORDER BY e.year_hijri
+    WITH e, birthYear, deathYear,
+         coalesce(e.start_year_hijri, e.year_hijri) AS eventStart,
+         coalesce(e.end_year_hijri, e.start_year_hijri, e.year_hijri) AS eventEnd
+    WHERE (birthYear IS NOT NULL OR deathYear IS NOT NULL)
+      AND eventStart IS NOT NULL
+      AND e.publication_ready = true
+      AND e.verification_status IN ['human_verified', 'source_verified']
+      AND trim(coalesce(e.citation_source, '')) <> ''
+      AND (
+        trim(coalesce(e.citation_locator, '')) <> '' OR
+        trim(coalesce(e.citation_url, '')) <> ''
+      )
+      AND (birthYear IS NULL OR eventEnd >= birthYear)
+      AND (deathYear IS NULL OR eventStart <= deathYear)
+    RETURN DISTINCT e, eventStart AS sortYear
+    ORDER BY sortYear
   `, { narratorId });
   return result.map((r) => r.e.properties);
 }
@@ -364,8 +633,15 @@ export async function getTimelineForNarrator(narratorId: string) {
 
   const involvedEvents = await runQuery(`
     MATCH (n:Narrator {id: $narratorId})-[r:INVOLVED_IN]->(e:HistoricalEvent)
+    WHERE e.publication_ready = true
+      AND e.verification_status IN ['human_verified', 'source_verified']
+      AND trim(coalesce(e.citation_source, '')) <> ''
+      AND (
+        trim(coalesce(e.citation_locator, '')) <> '' OR
+        trim(coalesce(e.citation_url, '')) <> ''
+      )
     RETURN e, r.role as role
-    ORDER BY e.year_hijri
+    ORDER BY coalesce(e.start_year_hijri, e.year_hijri)
   `, { narratorId });
 
   return {
@@ -574,23 +850,31 @@ export async function linkNarratorToLocation(
 /**
  * Get enhanced narrator details with commentaries, events, locations, and teacher-student network
  */
-export async function getEnhancedNarratorDetails(narratorId: string) {
+export async function getEnhancedNarratorDetails(
+  narratorId: string,
+): Promise<EnhancedNarratorDetails | null> {
   const narrator = await getNarratorById(narratorId);
   if (!narrator) return null;
 
-  const hadiths = await runQuery(`
+  const hadiths = await runQuery<{ h: { properties: Record<string, unknown> } }>(`
     MATCH (n:Narrator {id: $narratorId})<-[:INCLUDES]-(c:Chain)<-[:HAS_CHAIN]-(h:Hadith)
     RETURN DISTINCT h
     ORDER BY h.chapter, h.category
     LIMIT 100
   `, { narratorId });
 
-  const locations = await runQuery(`
+  const locations = await runQuery<{
+    l: { properties: Record<string, unknown> };
+    relationType: string;
+  }>(`
     MATCH (n:Narrator {id: $narratorId})-[r]->(l:Location)
     RETURN l, type(r) as relationType
   `, { narratorId });
 
-  const network = await runQuery(`
+  const network = await runQuery<{
+    teachers: Array<Record<string, unknown>>;
+    students: Array<Record<string, unknown>>;
+  }>(`
     MATCH (n:Narrator {id: $narratorId})
     OPTIONAL MATCH (n)-[:NARRATED_FROM]->(teacher:Narrator)
     OPTIONAL MATCH (student:Narrator)-[:NARRATED_FROM]->(n)
@@ -599,24 +883,27 @@ export async function getEnhancedNarratorDetails(narratorId: string) {
       collect(DISTINCT student {.id, .name_english, .name_arabic, .reliability, .tabaqah}) as students
   `, { narratorId });
 
-  const other_hadiths = hadiths.map((r) => {
+  const other_hadiths: NarratorHadithSummary[] = hadiths.map((r) => {
     const props = r.h.properties as Record<string, unknown>;
     return {
       ...props,
+      id: optionalString(props.id) ?? '',
       // v1 aliases for legacy UI
-      title: (props.chapter as string) || (props.category as string) || null,
-      primary_topic: props.category || null,
+      title: optionalString(props.chapter) ?? optionalString(props.category) ?? '',
+      primary_topic: optionalString(props.category),
+      display_grade: optionalString(props.display_grade),
       text_english: (props.text_en as string) ?? null,
       text_arabic: (props.text_ar as string) ?? null,
     };
   });
 
-  return {
+  const details: EnhancedNarratorDetails = {
     ...narrator,
     other_hadiths,
     locations: locations.map((r) => ({ ...r.l.properties, relationship: r.relationType })),
     teacher_student_network: network[0] || { teachers: [], students: [] },
   };
+  return details;
 }
 
 /**
@@ -659,7 +946,7 @@ export async function getSourceStats() {
  */
 export async function searchHadiths(
   searchTerm: string = '',
-  filters?: { source?: string; chapter?: string; school?: string },
+  filters?: { source?: string; chapter?: string; tradition?: string; school?: string },
   pagination?: PaginationParams,
 ): Promise<PaginatedResult<any>> {
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
@@ -671,16 +958,17 @@ export async function searchHadiths(
     params.searchTerm = searchTerm;
   }
   if (filters?.source) {
-    conditions.push('h.source = $source');
-    params.source = filters.source;
+    conditions.push('trim(h.source) IN $sourceValues');
+    params.sourceValues = getSourceFilterValues(filters.source);
   }
   if (filters?.chapter) {
     conditions.push('h.category = $chapter');
     params.chapter = filters.chapter;
   }
-  if (filters?.school) {
-    conditions.push('h.tradition = $school');
-    params.school = filters.school;
+  const tradition = filters?.tradition ?? filters?.school;
+  if (tradition) {
+    conditions.push('h.tradition IN $traditionValues');
+    params.traditionValues = getTraditionFilterValues(tradition);
   }
 
   const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
@@ -708,7 +996,7 @@ export async function searchHadiths(
 // ============ EXPORT ============
 
 export interface ExportConfig {
-  filters: { source?: string; school?: string; searchTerm?: string };
+  filters: { source?: string; tradition?: string; school?: string; searchTerm?: string };
   /** Which metadata fields to include */
   fields: string[];
   /** Which related edges to include as extra columns */
@@ -743,12 +1031,13 @@ export async function exportHadiths(config: ExportConfig): Promise<Record<string
     params.searchTerm = config.filters.searchTerm;
   }
   if (config.filters.source) {
-    conditions.push('h.source = $source');
-    params.source = config.filters.source;
+    conditions.push('trim(h.source) IN $sourceValues');
+    params.sourceValues = getSourceFilterValues(config.filters.source);
   }
-  if (config.filters.school) {
-    conditions.push('h.tradition = $school');
-    params.school = config.filters.school;
+  const tradition = config.filters.tradition ?? config.filters.school;
+  if (tradition) {
+    conditions.push('h.tradition IN $traditionValues');
+    params.traditionValues = getTraditionFilterValues(tradition);
   }
 
   const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';

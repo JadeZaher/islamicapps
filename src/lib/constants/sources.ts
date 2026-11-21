@@ -10,6 +10,8 @@ export interface SourceEntry {
   arabic: string;
   /** Human-friendly display label for UI */
   displayLabel: string;
+  /** Exact historical database labels accepted by read-only filters. */
+  aliases?: readonly string[];
   /** Compiler/author */
   compiler: string;
   /** Islamic tradition: Sunni, Imami, Zaydi, Ibadi */
@@ -24,6 +26,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Sahih Bukhari',
     arabic: 'صحيح البخاري',
     displayLabel: 'Sahih Bukhari',
+    aliases: ['Sahih al-Bukhari'],
     compiler: 'Muhammad ibn Ismail al-Bukhari',
     tradition: 'Sunni',
     school: 'Bukhara',
@@ -40,6 +43,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: "Sunan Abi Da'ud",
     arabic: 'سنن أبي داود',
     displayLabel: 'Sunan Abu Dawud',
+    aliases: ['Sunan Abi Dawud'],
     compiler: "Sulaiman ibn al-Ash'ath as-Sijistani",
     tradition: 'Sunni',
     school: 'Sijistan',
@@ -56,6 +60,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: "Sunan an-Nasa'i",
     arabic: 'سنن النسائي',
     displayLabel: 'Sunan an-Nasai',
+    aliases: ["Sunan al-Nasa'i"],
     compiler: "Ahmad ibn Shuaib an-Nasa'i",
     tradition: 'Sunni',
     school: 'Nasa',
@@ -80,6 +85,10 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'al-Jami al-Sahih (Musnad al-Rabi ibn Habib)',
     arabic: 'الجامع الصحيح مسند الإمام الربيع بن حبيب',
     displayLabel: 'Musnad al-Rabi',
+    aliases: [
+      'Musnad al-Rabi ibn Habib',
+      "al-Jāmiʿ al-Ṣaḥīḥ — Musnad al-Imām al-Rabīʿ b. Ḥabīb",
+    ],
     compiler: "al-Rabi ibn Habib al-Azdi",
     tradition: 'Ibadi',
     school: 'Basra',
@@ -114,6 +123,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Al-Kafi',
     arabic: 'الكافي',
     displayLabel: 'Al-Kafi',
+    aliases: ['Al-Kāfi'],
     compiler: 'Muhammad ibn Ya\'qub al-Kulayni',
     tradition: 'Imami',
     school: 'Baghdad/Qum',
@@ -122,6 +132,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Man La Yahduruhu al-Faqih',
     arabic: 'من لا يحضره الفقيه',
     displayLabel: 'Man La Yahduruhu al-Faqih',
+    aliases: ['Man Lā Yaḥḍuruh al-Faqīh'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
     school: 'Qum',
@@ -130,6 +141,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Nahj al-Balagha',
     arabic: 'نهج البلاغة',
     displayLabel: 'Nahj al-Balagha',
+    aliases: ['Nahj al-Balāgha'],
     compiler: 'Al-Sharif al-Radi',
     tradition: 'Imami',
     school: 'Baghdad',
@@ -138,6 +150,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Al-Amali (Saduq)',
     arabic: 'الأمالي',
     displayLabel: 'Al-Amali (Saduq)',
+    aliases: ['Al-Amālī'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -145,6 +158,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Al-Amali (Mufid)',
     arabic: 'الأمالي',
     displayLabel: 'Al-Amali (Mufid)',
+    aliases: ['Al-Amālī'],
     compiler: 'Muhammad ibn Muhammad al-Mufid',
     tradition: 'Imami',
   },
@@ -152,6 +166,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Al-Khisal',
     arabic: 'الخصال',
     displayLabel: 'Al-Khisal',
+    aliases: ['Al-Khiṣāl'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -159,6 +174,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kitab al-Ghayba (Tusi)',
     arabic: 'كتاب الغيبة',
     displayLabel: 'Kitab al-Ghayba (Tusi)',
+    aliases: ['Kitāb al-Ghayba'],
     compiler: 'Muhammad ibn al-Hasan al-Tusi',
     tradition: 'Imami',
   },
@@ -166,6 +182,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kitab al-Ghayba (Nu\'mani)',
     arabic: 'كتاب الغيبة',
     displayLabel: 'Kitab al-Ghayba (Nu\'mani)',
+    aliases: ['Kitāb al-Ghayba'],
     compiler: 'Muhammad ibn Ibrahim al-Nu\'mani',
     tradition: 'Imami',
   },
@@ -173,6 +190,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Thawab al-A\'mal',
     arabic: 'ثواب الأعمال',
     displayLabel: 'Thawab al-A\'mal',
+    aliases: ['Thawāb al-Aʿmāl wa ʿiqāb al-Aʿmāl'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -180,6 +198,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: '\'Uyun Akhbar al-Rida',
     arabic: 'عيون أخبار الرضا',
     displayLabel: '\'Uyun Akhbar al-Rida',
+    aliases: ['ʿUyūn akhbār al-Riḍā'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -187,6 +206,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Ma\'ani al-Akhbar',
     arabic: 'معاني الأخبار',
     displayLabel: 'Ma\'ani al-Akhbar',
+    aliases: ['Maʿānī al-ʾAkhbār'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -194,6 +214,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kamil al-Ziyarat',
     arabic: 'كامل الزيارات',
     displayLabel: 'Kamil al-Ziyarat',
+    aliases: ['Kāmil al-Ziyārāt'],
     compiler: 'Ja\'far ibn Muhammad al-Qummi',
     tradition: 'Imami',
   },
@@ -201,6 +222,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kamal al-Din',
     arabic: 'كمال الدين وتمام النعمة',
     displayLabel: 'Kamal al-Din',
+    aliases: ['Kamāl al-Dīn wa Tamām al-Niʿma'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -208,6 +230,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Al-Tawhid (Saduq)',
     arabic: 'التوحيد',
     displayLabel: 'Al-Tawhid',
+    aliases: ['Al-Tawḥīd'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -215,6 +238,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Mu\'jam al-Ahadith al-Mu\'tabara',
     arabic: 'معجم الأحاديث المعتبرة',
     displayLabel: 'Mu\'jam al-Ahadith al-Mu\'tabara',
+    aliases: ['Muʿjam al-Aḥādīth al-Muʿtabara'],
     compiler: 'Muhammad Asif al-Muhsini',
     tradition: 'Imami',
   },
@@ -222,6 +246,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kitab al-Zuhd',
     arabic: 'كتاب الزهد',
     displayLabel: 'Kitab al-Zuhd',
+    aliases: ['Kitāb al-Zuhd'],
     compiler: 'Husayn ibn Sa\'id al-Ahwazi',
     tradition: 'Imami',
   },
@@ -229,6 +254,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kitab al-Du\'afa',
     arabic: 'كتاب الضعفاء',
     displayLabel: 'Kitab al-Du\'afa',
+    aliases: ['Kitāb al-Ḍuʿafāʾ'],
     compiler: 'Ahmad ibn al-Husayn al-Ghadairi',
     tradition: 'Imami',
   },
@@ -236,6 +262,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Kitab al-Mu\'min',
     arabic: 'كتاب المؤمن',
     displayLabel: 'Kitab al-Mu\'min',
+    aliases: ['Kitāb al-Muʾmin'],
     compiler: 'Husayn ibn Sa\'id al-Ahwazi',
     tradition: 'Imami',
   },
@@ -243,6 +270,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Sifat al-Shi\'a',
     arabic: 'صفات الشيعة',
     displayLabel: 'Sifat al-Shi\'a',
+    aliases: ['Ṣifāt al-Shīʿa'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -250,6 +278,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Fada\'il al-Shi\'a',
     arabic: 'فضائل الشيعة',
     displayLabel: 'Fada\'il al-Shi\'a',
+    aliases: ['Faḍaʾil al-Shīʿa'],
     compiler: 'Muhammad ibn Ali ibn Babawayh al-Saduq',
     tradition: 'Imami',
   },
@@ -257,6 +286,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     canonical: 'Risalat al-Huquq',
     arabic: 'رسالة الحقوق',
     displayLabel: 'Risalat al-Huquq',
+    aliases: ['Risālat al-Ḥuqūq'],
     compiler: 'Ali ibn al-Husayn Zayn al-Abidin',
     tradition: 'Imami',
   },
@@ -275,7 +305,7 @@ export const CANONICAL_SOURCES: Record<string, SourceEntry> = {
     arabic: 'صحيفة الإمام علي الرضا',
     displayLabel: 'Sahifat al-Rida',
     compiler: 'Abd al-Wasit ibn Yahya al-Wasiti (arranger)',
-    tradition: 'Zaydi',
+    tradition: 'Imami',
     school: 'Medina/Khorasan',
   },
 };
@@ -287,13 +317,55 @@ export function getCanonicalName(slug: string): string {
   return entry.canonical;
 }
 
-/** Get all source filter options for UI dropdowns */
-export function getSourceFilterOptions(): Array<{ label: string; value: string }> {
+export interface SourceFilterOption {
+  label: string;
+  value: string;
+  aliases?: readonly string[];
+}
+
+const AMBIGUOUS_LEGACY_SOURCE_LABELS: Record<string, string> = {
+  'Al-Amālī': 'Al-Amālī · legacy work not distinguished',
+  'Kitāb al-Ghayba': 'Kitāb al-Ghayba · legacy work not distinguished',
+};
+
+function entriesMatchingSource(value: string): SourceEntry[] {
+  const normalized = value.trim().toLowerCase();
+  return Object.values(CANONICAL_SOURCES).filter((source) =>
+    source.canonical.toLowerCase() === normalized ||
+    source.aliases?.some((alias) => alias.toLowerCase() === normalized),
+  );
+}
+
+function isUniqueSourceAlias(alias: string): boolean {
+  return entriesMatchingSource(alias).length === 1;
+}
+
+/** Expand a canonical or unambiguous legacy label to exact live graph values. */
+export function getSourceFilterValues(source: string): readonly string[] {
+  const normalized = source.trim();
+  const matches = entriesMatchingSource(normalized);
+  if (matches.length !== 1) return [normalized];
+  const match = matches[0];
   return [
-    { label: 'All Sources', value: '' },
-    ...Object.values(CANONICAL_SOURCES).map((s) => ({
-      label: s.displayLabel,
-      value: s.canonical,
-    })),
+    match.canonical,
+    ...(match.aliases ?? []).filter(isUniqueSourceAlias),
+  ];
+}
+
+/** Get source-work options without assigning ambiguous legacy labels to a work. */
+export function getSourceFilterOptions(): SourceFilterOption[] {
+  const canonicalOptions = Object.values(CANONICAL_SOURCES).map((source) => ({
+    label: source.displayLabel,
+    value: source.canonical,
+    aliases: (source.aliases ?? []).filter(isUniqueSourceAlias),
+  }));
+  const ambiguousOptions = Object.entries(AMBIGUOUS_LEGACY_SOURCE_LABELS).map(([value, label]) => ({
+    label,
+    value,
+  }));
+  return [
+    { label: 'All source works', value: '' },
+    ...canonicalOptions,
+    ...ambiguousOptions,
   ];
 }

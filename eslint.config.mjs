@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".pytest_cache/**",
+    "src/scripts/archive/**",
+    "datasets/hadith-data/archive/**",
   ]),
 ]);
 

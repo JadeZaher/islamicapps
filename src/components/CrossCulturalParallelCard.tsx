@@ -15,10 +15,10 @@ interface CrossCulturalParallelCardProps {
         parallel_type: string;
         isra_iliyyat_status: string;
         confidence_level: string;
-        hadith_excerpt_en?: string;
-        source_text_original?: string;
-        source_text_en?: string;
-        scholarly_analysis?: string;
+        hadith_excerpt_en?: string | null;
+        source_text_original?: string | null;
+        source_text_en?: string | null;
+        scholarly_analysis?: string | null;
     };
     tradition: {
         id: string;
@@ -27,8 +27,8 @@ interface CrossCulturalParallelCardProps {
     sourceText: {
         id: string;
         title: string;
-        canonical_reference?: string;
-        tradition_name?: string;
+        canonical_reference?: string | null;
+        tradition_name?: string | null;
     };
     hadith?: {
         id: string;

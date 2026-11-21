@@ -5,7 +5,7 @@ loadEnv();
 (async () => {
     try {
         console.log('\n=== Hadith IN_SCHOOL ===');
-        const h = await runQuery<any>(
+        const h = await runQuery<{ school: string; n: unknown }>(
             `MATCH (h:Hadith)-[:IN_SCHOOL]->(s:SchoolOfThought)
              RETURN s.name AS school, count(*) AS n
              ORDER BY n DESC`
@@ -13,7 +13,7 @@ loadEnv();
         for (const r of h) console.log(`  ${r.school.padEnd(14)} ${Number(r.n)}`);
 
         console.log('\n=== Narrator ACCEPTED_IN ===');
-        const n = await runQuery<any>(
+        const n = await runQuery<{ school: string; c: unknown }>(
             `MATCH (n:Narrator)-[:ACCEPTED_IN]->(s:SchoolOfThought)
              RETURN s.name AS school, count(*) AS c
              ORDER BY c DESC`
@@ -21,7 +21,7 @@ loadEnv();
         for (const r of n) console.log(`  ${r.school.padEnd(14)} ${Number(r.c)}`);
 
         console.log('\n=== Source CANON_OF ===');
-        const sc = await runQuery<any>(
+        const sc = await runQuery<{ school: string; c: unknown }>(
             `MATCH (s:Source)-[:CANON_OF]->(o:SchoolOfThought)
              RETURN o.name AS school, count(*) AS c
              ORDER BY c DESC`
@@ -29,17 +29,17 @@ loadEnv();
         for (const r of sc) console.log(`  ${r.school.padEnd(14)} ${Number(r.c)}`);
 
         console.log('\n=== Orphan counts ===');
-        const orphH = await runQuery<any>(
+        const orphH = await runQuery<{ c: unknown }>(
             `MATCH (h:Hadith) WHERE NOT (h)-[:IN_SCHOOL]->(:SchoolOfThought) RETURN count(h) AS c`
         );
         console.log(`  Hadith without IN_SCHOOL   : ${Number(orphH[0].c)}`);
 
-        const orphN = await runQuery<any>(
+        const orphN = await runQuery<{ c: unknown }>(
             `MATCH (n:Narrator) WHERE NOT (n)-[:ACCEPTED_IN]->(:SchoolOfThought) RETURN count(n) AS c`
         );
         console.log(`  Narrator without ACCEPTED_IN: ${Number(orphN[0].c)}`);
 
-        const orphS = await runQuery<any>(
+        const orphS = await runQuery<{ c: unknown }>(
             `MATCH (s:Source) WHERE NOT (s)-[:CANON_OF]->(:SchoolOfThought) RETURN count(s) AS c`
         );
         console.log(`  Source without CANON_OF    : ${Number(orphS[0].c)}`);

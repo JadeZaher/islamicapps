@@ -26,10 +26,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadEnv } from '../lib/env';
-import { runQuery, runWrite, closeDriver } from '../../lib/db/neo4j';
-
-loadEnv();
 
 // ─── Harness ─────────────────────────────────────────────────────────────────
 
@@ -308,11 +304,7 @@ async function main(): Promise<void> {
   testT1_coverage_computation_logic();
   testT2_threshold_constants();
 
-  try {
-    await testT3_live_coverage();
-  } finally {
-    await closeDriver();
-  }
+  await testT3_live_coverage();
 
   console.log('\n' + '='.repeat(64));
   console.log('  Summary');

@@ -1,0 +1,295 @@
+{
+  "registry_version": "2026.07.23",
+  "schema_version": 1,
+  "scope": "Complete immutable source-work identity contract for the 34 works represented by schema-v2.",
+  "sources": [
+    {
+      "name": "Jami' al-Sahih / OpenITI snapshot",
+      "provenance_prefixes": [
+        "ibadi-hadith/parsed_hadiths.json"
+      ],
+      "slug": "jami-sahih-rabi-openiti"
+    },
+    {
+      "name": "Musnad al-Rida / OpenITI snapshot",
+      "provenance_prefixes": [
+        "rida-hadith/parsed_hadiths.json"
+      ],
+      "slug": "musnad-rida-openiti"
+    },
+    {
+      "name": "Musnad Zayd / OpenITI snapshot",
+      "provenance_prefixes": [
+        "zaydi-hadith/parsed_hadiths.json"
+      ],
+      "slug": "musnad-zayd-openiti"
+    },
+    {
+      "name": "Local narrator lexicon",
+      "provenance_prefixes": [],
+      "slug": "narrator-lexicon"
+    },
+    {
+      "name": "Pure Canon Authentica snapshot",
+      "provenance_prefixes": [
+        "archive/sheikahmad-pure-canon/pure_canon.jsonl"
+      ],
+      "slug": "sheikahmad-pure-canon"
+    },
+    {
+      "name": "Sunnah.com K6 snapshot",
+      "provenance_prefixes": [
+        "all_hadiths_clean.csv.gz:k6_snapshot",
+        "legacy_k6_source_export"
+      ],
+      "slug": "sunnah-com"
+    },
+    {
+      "name": "Thaqalayn API V2 snapshot",
+      "provenance_prefixes": [
+        "shia-hadith/v2_books"
+      ],
+      "slug": "thaqalayn-api"
+    }
+  ],
+  "source_works": [
+    {
+      "canonical_source": "Sahih Bukhari",
+      "slug": "bukhari",
+      "source_slug": "sunnah-com",
+      "source_work_id": "sunni:bukhari",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Sahih Muslim",
+      "slug": "muslim",
+      "source_slug": "sunnah-com",
+      "source_work_id": "sunni:muslim",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Sunan Abi Da'ud",
+      "slug": "abudawud",
+      "source_slug": "sunnah-com",
+      "source_work_id": "sunni:abudawud",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Jami' al-Tirmidhi",
+      "slug": "tirmidhi",
+      "source_slug": "sunnah-com",
+      "source_work_id": "sunni:tirmidhi",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Sunan an-Nasa'i",
+      "slug": "nasai",
+      "source_slug": "sunnah-com",
+      "source_work_id": "sunni:nasai",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Sunan Ibn Majah",
+      "slug": "ibnmajah",
+      "source_slug": "sunnah-com",
+      "source_work_id": "sunni:ibnmajah",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Musnad Ahmad",
+      "slug": "ahmad",
+      "source_slug": "sheikahmad-pure-canon",
+      "source_work_id": "sunni:ahmad",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Muwatta' Malik",
+      "slug": "muwatta",
+      "source_slug": "sheikahmad-pure-canon",
+      "source_work_id": "sunni:muwatta",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Sunan al-Darimi",
+      "slug": "darimi",
+      "source_slug": "sheikahmad-pure-canon",
+      "source_work_id": "sunni:darimi",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "Musnad al-Shafi'i",
+      "slug": "shafii",
+      "source_slug": "sheikahmad-pure-canon",
+      "source_work_id": "sunni:shafii",
+      "tradition": "Sunni"
+    },
+    {
+      "canonical_source": "al-Jami al-Sahih (Musnad al-Rabi ibn Habib)",
+      "slug": "musnad_rabi",
+      "source_slug": "jami-sahih-rabi-openiti",
+      "source_work_id": "ibadi:musnad-rabi",
+      "tradition": "Ibadi"
+    },
+    {
+      "canonical_source": "Al-Kafi",
+      "slug": "kafi",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:al-kafi",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Man La Yahduruhu al-Faqih",
+      "slug": "faqih",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:man-la-yahduruhu-al-faqih",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Nahj al-Balagha",
+      "slug": "nahj_balagha",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:nahj-al-balagha",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Al-Amali (Saduq)",
+      "slug": "amali_saduq",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:al-amali-saduq",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Al-Amali (Mufid)",
+      "slug": "amali_mufid",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:al-amali-mufid",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Al-Khisal",
+      "slug": "khisal",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:al-khisal",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kitab al-Ghayba (Tusi)",
+      "slug": "ghayba_tusi",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kitab-al-ghayba-tusi",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kitab al-Ghayba (Nu'mani)",
+      "slug": "ghayba_numani",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kitab-al-ghayba-numani",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Thawab al-A'mal",
+      "slug": "thawab_amal",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:thawab-al-amal",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "'Uyun Akhbar al-Rida",
+      "slug": "uyun_rida",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:uyun-akhbar-al-rida",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Ma'ani al-Akhbar",
+      "slug": "maani_akhbar",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:maani-al-akhbar",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kamil al-Ziyarat",
+      "slug": "kamil_ziyarat",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kamil-al-ziyarat",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kamal al-Din",
+      "slug": "kamal_din",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kamal-al-din",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Al-Tawhid (Saduq)",
+      "slug": "tawhid_saduq",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:al-tawhid-saduq",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Mu'jam al-Ahadith al-Mu'tabara",
+      "slug": "mujam_mutabara",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:mujam-al-ahadith-al-mutabara",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kitab al-Zuhd",
+      "slug": "zuhd_ahwazi",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kitab-al-zuhd",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kitab al-Du'afa",
+      "slug": "duafa_ghadairi",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kitab-al-duafa",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Kitab al-Mu'min",
+      "slug": "mumin_ahwazi",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:kitab-al-mumin",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Sifat al-Shi'a",
+      "slug": "sifat_shia",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:sifat-al-shia",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Fada'il al-Shi'a",
+      "slug": "fadail_shia",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:fadail-al-shia",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Risalat al-Huquq",
+      "slug": "huquq_abidin",
+      "source_slug": "thaqalayn-api",
+      "source_work_id": "imami:risalat-al-huquq",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Sahifat al-Imam Ali al-Rida",
+      "slug": "sahifat_rida",
+      "source_slug": "musnad-rida-openiti",
+      "source_work_id": "imami:sahifat-al-imam-ali-al-rida",
+      "tradition": "Imami"
+    },
+    {
+      "canonical_source": "Musnad al-Imam Zayd ibn Ali",
+      "slug": "musnad_zayd",
+      "source_slug": "musnad-zayd-openiti",
+      "source_work_id": "zaydi:musnad-zayd",
+      "tradition": "Zaydi"
+    }
+  ]
+}

@@ -1,3 +1,7 @@
+---
+type: track-index
+---
+
 # Conductor Tracks
 
 Tracks are listed in chronological order. Check the box when a track is complete.
@@ -346,3 +350,35 @@ Builds an annotation instruction kit + SOP so the taḥwīl gold-set expansion (
 Six enforceable guardrails: (G-1) non-engineer test reader scores ≥0.85 on 2 calibration cases; (G-2) calibration scorer flags deliberately-wrong annotation; (G-3) validator catches 5 hand-crafted bad annotations; (G-4) IAA tooling shows κ≈0.7 on synthetic 30%-disagreement set; (G-5) pull script enforces source + ح-count stratification; (G-6) end-to-end dogfood — 5 new annotations pass validator and don't regress bake-off Jaccard.
 
 **Why this track exists:** the 2026-06-12 research mission ([report.md](../../.omc/research/uniform-isnad/research-session/report.md)) concluded that guaranteed extraction coverage is provably unreachable due to scholarly ambiguity in Ibn al-Salah's two ح readings (تحويل vs الحديث). The honest path forward is a larger annotated gold set that lets us correctly calibrate where the algorithm should defer to HITL — and that requires making annotation a non-heroic workflow.
+
+---
+
+## [ ] Track: Hadith Dataset Consolidation and Neo4j Import Bundle [hadith_dataset_consolidation_20260723]
+
+**Type:** Feature / data engineering  
+**Status:** In progress  
+**Created:** 2026-07-23  
+**Priority:** P0  
+**Depends on:** `uniform_isnad_extraction_20260609`,
+`neo4j_isnad_graph_regen_20260516`  
+**Production cutover:** Out of scope
+
+Builds one deterministic, versioned Neo4j bulk-import bundle for the current
+99,283-report corpus across Sunni, Imami, Zaydi, and Ibadi traditions. The
+first bundle is explicitly `development_nonrelease` because the stable-ID,
+37-column source is an incomplete-curation artifact while the preserved
+canonical GZIP still uses the legacy 26-column schema.
+
+The export separates reports, people, source assets, collections, books,
+chapters, traditions, translations, chain branches, source-surface name
+mentions, aliases, evidence, and citations. It preserves every extractable
+ordered isnad branch without inventing person resolutions, keeps candidate
+translations and aliases outside canonical files, and leaves reviewed
+biography/place/event files header-only until citation evidence exists.
+
+Acceptance requires zero orphan edges, stable namespaced IDs, exact
+source/tradition coverage, lossless Arabic, chain-scoped ordered adjacency,
+translation provenance/review state, deterministic hashes, a complete
+manifest, a dry-run-first import command, and one integrated verification
+sweep. See
+`conductor/tracks/hadith_dataset_consolidation_20260723/{spec,plan}.md`.

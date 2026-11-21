@@ -25,10 +25,6 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { loadEnv } from '../lib/env';
-import { runQuery, runWrite, closeDriver } from '../../lib/db/neo4j';
-
-loadEnv();
 
 // ─── Harness ─────────────────────────────────────────────────────────────────
 
@@ -263,11 +259,7 @@ async function main(): Promise<void> {
   testMI1_distinct_isnad_detection();
   testMI2_chain_key_derivation();
 
-  try {
-    await testMI3_live_neo4j();
-  } finally {
-    await closeDriver();
-  }
+  await testMI3_live_neo4j();
 
   console.log('\n' + '='.repeat(64));
   console.log('  Summary');

@@ -16,6 +16,12 @@ import 'dotenv/config';
 
 const TARGET_HADITH = '626a2cb0-2268-4c79-9ffb-d9f6eaf42ec9';
 
+function numericValue(value: unknown): number {
+    if (typeof value === 'number') return value;
+    if (neo4j.isInt(value)) return value.toNumber();
+    return 0;
+}
+
 async function main() {
     const uri = process.env.NEO4J_URL!;
     const fullUri = uri.startsWith('bolt://') || uri.startsWith('neo4j://') ? uri : `bolt://${uri}`;
@@ -62,16 +68,16 @@ async function main() {
             console.log('    method      :', rec.get('method'));
             console.log('    chain.source:', rec.get('chain_source'));
             console.log('    narrators   :', rec.get('narrator_count').toNumber());
-            const narrators = rec.get('narrators') as Array<{ pos: any; id: string; name_en: string; name_ar: string }>;
+            const narrators = rec.get('narrators') as Array<{ pos: unknown; id: string; name_en: string; name_ar: string }>;
             narrators
                 .filter(n => n.id)
                 .sort((a, b) => {
-                    const pa = a.pos?.toNumber?.() ?? a.pos ?? 0;
-                    const pb = b.pos?.toNumber?.() ?? b.pos ?? 0;
+                    const pa = numericValue(a.pos);
+                    const pb = numericValue(b.pos);
                     return pa - pb;
                 })
                 .forEach(n => {
-                    const pos = n.pos?.toNumber?.() ?? n.pos;
+                    const pos = numericValue(n.pos);
                     console.log(`      [pos=${pos}] ${n.name_en} / ${n.name_ar} (${n.id})`);
                 });
         }

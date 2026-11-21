@@ -23,6 +23,7 @@ export interface CliArgs {
   source: string;
   stagingPath: string;
   allowKnownGaps: boolean;
+  devAllowIncompleteData: boolean;
   batchSize: number;
   concurrency: number;
   list: boolean;
@@ -33,9 +34,12 @@ export interface CliArgs {
 const MODE_DESCRIPTIONS: Record<string, string> = {
   test:      'Read-only: run all spec §9b + G-1..G-6 guardrail checks; emit JSON summary.',
   fullregen: 'Full idempotent regen: migrate legacy scalars, stream unified CSV, build all nodes/edges/assessments, flag temporal plausibility.',
-  diff:      'Incremental: compare CSV to DB on biz key; MERGE only new/changed rows; emit added/updated/unchanged/tombstoned summary.',
+  diff:      'DEV ONLY (legacy positional identity): compare CSV to DB and emit a change summary.',
   enrich:    'Field enrichment: apply a JSONL source to fill one empty field on :Hadith; never overwrites populated values.',
 };
+
+const ATTRIBUTION_DISCLAIMER =
+  'kathrat al-riwaya describes transmission volume only; it is not a judgment of narrator reliability or hadith authenticity.';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -52,7 +56,8 @@ function parseArgs(): CliArgs {
   const args: CliArgs = {
     mode: null, field: '', source: '', stagingPath: '',
     allowKnownGaps: false,
-    batchSize: parseInt(process.env['BATCH_SIZE'] ?? '500', 10) || 500,
+    devAllowIncompleteData: false,
+    batchSize: process.env['BATCH_SIZE'] === undefined ? 500 : Number(process.env['BATCH_SIZE']),
     concurrency: parseInt(process.env['CONCURRENCY'] ?? '4', 10) || 4,
     list: false,
   };
@@ -61,6 +66,7 @@ function parseArgs(): CliArgs {
     const a = argv[i];
     if (a === '--list') { args.list = true; continue; }
     if (a === '--allow-known-gaps') { args.allowKnownGaps = true; continue; }
+    if (a === '--dev-allow-incomplete-data') { args.devAllowIncompleteData = true; continue; }
 
     const mode = getArg(argv, '--mode', i);
     if (mode !== undefined) {
@@ -76,7 +82,7 @@ function parseArgs(): CliArgs {
     const staging = getArg(argv, '--staging-path', i);
     if (staging !== undefined) { args.stagingPath = staging; if (!a.includes('=')) i++; continue; }
     const batch = getArg(argv, '--batch-size', i);
-    if (batch !== undefined) { args.batchSize = parseInt(batch, 10) || args.batchSize; if (!a.includes('=')) i++; continue; }
+    if (batch !== undefined) { args.batchSize = Number(batch); if (!a.includes('=')) i++; continue; }
     const conc = getArg(argv, '--concurrency', i);
     if (conc !== undefined) { args.concurrency = parseInt(conc, 10) || args.concurrency; if (!a.includes('=')) i++; continue; }
   }
@@ -93,6 +99,13 @@ function validate(args: CliArgs): boolean {
     if (!args.field) { console.error('Error: --field required for --mode=enrich'); return false; }
     if (!args.source) { console.error('Error: --source required for --mode=enrich'); return false; }
   }
+  if (args.mode === 'diff' && !args.devAllowIncompleteData) {
+    console.error(
+      'Error: --mode=diff is legacy positional tooling and is not release-safe; ' +
+      'use clean-target --mode=fullregen for production or add the disposable-dev override.',
+    );
+    return false;
+  }
   return true;
 }
 
@@ -107,6 +120,7 @@ function printList(): void {
   console.log('  --source=<path>      Required for enrich. Path to JSONL source.');
   console.log('  --staging-path=<p>   Path to er-staging.jsonl (default: datasets/hadith-data/er-staging.jsonl)');
   console.log('  --allow-known-gaps   Skip documented known-gap test failures.');
+  console.log('  --dev-allow-incomplete-data  LOCAL TEST ONLY: requires direct bolt:// loopback and disposable acknowledgements.');
   console.log('  --batch-size=N       Rows per batch (default: 500 or env BATCH_SIZE).');
   console.log('  --concurrency=N      Parallel workers (default: 4 or env CONCURRENCY).');
   console.log('  --list               Print this help and exit.\n');
@@ -141,6 +155,7 @@ async function main(): Promise<void> {
       break;
     }
   }
+  console.log(`\n[regen] Disclaimer: ${ATTRIBUTION_DISCLAIMER}`);
 }
 
 const invokedDirectly = /regen-isnad-graph\.(ts|js)$/.test(process.argv[1] ?? '');
@@ -153,10 +168,8 @@ if (invokedDirectly) {
 // ─── runRegen — programmatic entry point (used by tests) ─────────────────────
 
 /**
- * Programmatic entry point for tests. Accepts the legacy fixture-test shape
- * { limit?, noWrite?, versionLabel? } and dispatches to runModeFullregen.
- * The `limit` and `noWrite` fields are accepted for API compatibility but
- * are not yet plumbed into the mode (fullregen always runs to completion).
+ * Programmatic full-load entry point. Legacy fixture-only options are rejected
+ * because silently ignoring them could turn a subset test into a clean-target load.
  */
 export interface RunRegenOpts {
   limit?: number;
@@ -165,13 +178,19 @@ export interface RunRegenOpts {
 }
 
 export async function runRegen(opts: RunRegenOpts = {}): Promise<void> {
+  if (opts.limit !== undefined || opts.noWrite !== undefined || opts.versionLabel !== undefined) {
+    throw new Error(
+      '[regen] Legacy fixture options are not implemented by fullregen; refusing to run a full clean-target load under subset-test assumptions.',
+    );
+  }
   const args: CliArgs = {
     mode: 'fullregen',
     field: '',
     source: '',
     stagingPath: '',
     allowKnownGaps: false,
-    batchSize: parseInt(process.env['BATCH_SIZE'] ?? '500', 10) || 500,
+    devAllowIncompleteData: false,
+    batchSize: process.env['BATCH_SIZE'] === undefined ? 500 : Number(process.env['BATCH_SIZE']),
     concurrency: parseInt(process.env['CONCURRENCY'] ?? '4', 10) || 4,
     list: false,
   };

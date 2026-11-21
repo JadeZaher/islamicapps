@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://islamicapps.local/schemas/hadith-evidence-curation-v1.json",
+  "title": "Hadith graph citation-bound evidence curation bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "citations", "biographical_assertions", "source_author_assertions", "historical_event_assertions", "epoch_assertions"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "citations": {"type": "array", "items": {"$ref": "#/$defs/citation"}},
+    "biographical_assertions": {"type": "array", "items": {"$ref": "#/$defs/biographicalAssertion"}},
+    "source_author_assertions": {"type": "array", "items": {"$ref": "#/$defs/sourceAuthorAssertion"}},
+    "historical_event_assertions": {"type": "array", "items": {"$ref": "#/$defs/temporalAssertion"}},
+    "epoch_assertions": {"type": "array", "items": {"$ref": "#/$defs/temporalAssertion"}}
+  },
+  "$defs": {
+    "stableId": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*:[a-z0-9][a-z0-9._:-]*$"},
+    "review": {"enum": ["human_verified", "source_verified"]},
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["citation_id", "work_id", "edition_id", "locator", "review_status"],
+      "properties": {
+        "citation_id": {"$ref": "#/$defs/stableId"},
+        "work_id": {"$ref": "#/$defs/stableId"},
+        "edition_id": {"$ref": "#/$defs/stableId"},
+        "locator": {"type": "string", "minLength": 1},
+        "volume": {"type": ["string", "null"]},
+        "page": {"type": ["string", "null"]},
+        "passage": {"type": ["string", "null"]},
+        "url": {"type": ["string", "null"], "format": "uri"},
+        "retrieved_at": {"type": ["string", "null"], "format": "date-time"},
+        "review_status": {"$ref": "#/$defs/review"}
+      }
+    },
+    "biographicalAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assertion_id", "person_id", "predicate", "calendar", "precision", "uncertainty", "citation_id", "review_status"],
+      "properties": {
+        "assertion_id": {"$ref": "#/$defs/stableId"},
+        "person_id": {"$ref": "#/$defs/stableId"},
+        "predicate": {"enum": ["birth", "death", "name", "role"]},
+        "calendar": {"enum": ["AH", "CE", "unspecified"]},
+        "year_min": {"type": ["integer", "null"]},
+        "year_max": {"type": ["integer", "null"]},
+        "precision": {"enum": ["exact", "year", "range", "unknown"]},
+        "uncertainty": {"enum": ["none", "approximate", "disputed", "unknown"]},
+        "citation_id": {"$ref": "#/$defs/stableId"},
+        "review_status": {"$ref": "#/$defs/review"},
+        "supersedes_assertion_id": {"anyOf": [{"$ref": "#/$defs/stableId"}, {"type": "null"}]}
+      }
+    },
+    "sourceAuthorAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assertion_id", "source_work_id", "author_person_id", "role", "citation_id", "review_status"],
+      "properties": {
+        "assertion_id": {"$ref": "#/$defs/stableId"},
+        "source_work_id": {"$ref": "#/$defs/stableId"},
+        "author_person_id": {"$ref": "#/$defs/stableId"},
+        "role": {"enum": ["compiler", "arranger", "editor", "attributed_author"]},
+        "citation_id": {"$ref": "#/$defs/stableId"},
+        "review_status": {"$ref": "#/$defs/review"}
+      }
+    },
+    "temporalAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assertion_id", "subject_id", "subject_type", "calendar", "precision", "uncertainty", "citation_id", "review_status"],
+      "properties": {
+        "assertion_id": {"$ref": "#/$defs/stableId"},
+        "subject_id": {"$ref": "#/$defs/stableId"},
+        "subject_type": {"enum": ["historical_event", "epoch"]},
+        "calendar": {"enum": ["AH", "CE", "unspecified"]},
+        "year_min": {"type": ["integer", "null"]},
+        "year_max": {"type": ["integer", "null"]},
+        "precision": {"enum": ["exact", "year", "range", "unknown"]},
+        "uncertainty": {"enum": ["none", "approximate", "disputed", "unknown"]},
+        "citation_id": {"$ref": "#/$defs/stableId"},
+        "review_status": {"$ref": "#/$defs/review"}
+      }
+    }
+  }
+}

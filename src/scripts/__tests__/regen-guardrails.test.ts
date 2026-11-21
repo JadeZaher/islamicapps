@@ -33,10 +33,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadEnv } from '../lib/env';
-import { runQuery, runWrite, closeDriver } from '../../lib/db/neo4j';
-
-loadEnv();
+import { runQuery, closeDriver } from '../../lib/db/neo4j';
+import { configureLiveNeo4jTest } from './neo4j-test-env';
 
 // ─── Harness ─────────────────────────────────────────────────────────────────
 
@@ -435,7 +433,7 @@ function testGU6_temporal_plausibility_flagged_tombstoned_not_deleted(): void {
 
 async function probeNeo4j(): Promise<boolean> {
   try {
-    await runWrite('RETURN 1 AS ok');
+    await runQuery('RETURN 1 AS ok');
     return true;
   } catch {
     return false;
@@ -444,6 +442,18 @@ async function probeNeo4j(): Promise<boolean> {
 
 async function testGL_guardrails(): Promise<void> {
   console.log('\n[GL] Live Cypher guardrail tests');
+
+  const gate = configureLiveNeo4jTest();
+  if (!gate.enabled) {
+    const reason = `live Neo4j tests disabled: ${gate.reason}`;
+    defer('G1_no_scalar_grade_on_identity_nodes (Cypher)', reason);
+    defer('G2_every_edge_has_confidence_and_extraction_method (Cypher)', reason);
+    defer('G3_disclaimer_present_no_global_authenticity_scalar (Cypher)', reason);
+    defer('G4_all_edges_have_source_provenance (Cypher)', reason);
+    defer('G5_no_same_as_without_reviewed_by (Cypher)', reason);
+    defer('G6_temporal_plausibility_flagged_tombstoned_not_deleted (Cypher)', reason);
+    return;
+  }
 
   const live = await probeNeo4j();
   if (!live) {

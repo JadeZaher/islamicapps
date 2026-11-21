@@ -217,6 +217,38 @@ function blockedKey(name: string): string {
     .split(/\s+/)[0] ?? n;  // use first token of core name as the block key
 }
 
+interface RawiLookupIndexes {
+  normIndex: Map<string, RawiRecord[]>;
+  blockIndex: Map<string, RawiRecord[]>;
+}
+
+/** Cache immutable per-run vocabulary indexes instead of rebuilding them per hadith. */
+const rawiLookupCache = new WeakMap<Map<number, RawiRecord>, RawiLookupIndexes>();
+
+function getRawiLookupIndexes(rawis: Map<number, RawiRecord>): RawiLookupIndexes {
+  const cached = rawiLookupCache.get(rawis);
+  if (cached) return cached;
+
+  const normIndex = new Map<string, RawiRecord[]>();
+  const blockIndex = new Map<string, RawiRecord[]>();
+  for (const rawi of rawis.values()) {
+    const nk = norm(rawi.name);
+    const exact = normIndex.get(nk);
+    if (exact) exact.push(rawi);
+    else normIndex.set(nk, [rawi]);
+
+    const bk = blockedKey(rawi.name);
+    if (bk.length <= 2) continue;
+    const blocked = blockIndex.get(bk);
+    if (blocked) blocked.push(rawi);
+    else blockIndex.set(bk, [rawi]);
+  }
+
+  const indexes = { normIndex, blockIndex };
+  rawiLookupCache.set(rawis, indexes);
+  return indexes;
+}
+
 /**
  * Ambiguous-core kunya patterns whose collisions require HITL.
  * These names map to multiple valid scholars and cannot be auto-resolved.
@@ -414,22 +446,7 @@ export async function resolveNarrators(
   let dominantMethod: ErTier = 'lexicon_exact';
   let anyResolved = false;
 
-  // Build a normalized-name index for fast exact lookup.
-  // (This is built per-call; callers should cache rawis Map and pass it.)
-  const normIndex = new Map<string, RawiRecord[]>();
-  const blockIndex = new Map<string, RawiRecord[]>();
-
-  for (const rawi of rawis.values()) {
-    const nk = norm(rawi.name);
-    if (!normIndex.has(nk)) normIndex.set(nk, []);
-    normIndex.get(nk)!.push(rawi);
-
-    const bk = blockedKey(rawi.name);
-    if (bk.length > 2) {
-      if (!blockIndex.has(bk)) blockIndex.set(bk, []);
-      blockIndex.get(bk)!.push(rawi);
-    }
-  }
+  const { normIndex, blockIndex } = getRawiLookupIndexes(rawis);
 
   let position = 0;
   for (const token of nameTokens) {

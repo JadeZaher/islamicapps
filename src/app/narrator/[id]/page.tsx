@@ -71,7 +71,9 @@ export default async function NarratorPage({ params }: PageProps) {
                                         {narratorDetails.name_arabic}
                                     </p>
                                     <div className="flex flex-wrap gap-3">
-                                        <ReliabilityBadge reliability={narratorDetails.reliability} />
+                                        {narratorDetails.reliability && (
+                                            <ReliabilityBadge reliability={narratorDetails.reliability} />
+                                        )}
                                         <div className="px-4 py-2 rounded-lg bg-cyan-500/15 border border-cyan-500/25">
                                             <span className="text-sm text-cyan-200">
                                                 {narratorDetails.tabaqah}
