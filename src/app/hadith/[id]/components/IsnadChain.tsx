@@ -6,21 +6,12 @@ import Link from 'next/link';
 import { ArabicText } from '@/components/ArabicText';
 import { narratorNameParts } from '@/components/NarratorName';
 import { TraditionBadge } from '@/components/TraditionBadge';
+import { BasisMark, IDENTITY_BASIS_LABEL, NarratorNode, type NarratorNodeKind } from '@/components/marks';
 import type { ChainGraph, ChainMentionCandidate, ChainNode, IdentityBasis } from '@/db/queries/contracts';
 import { IdentityCredit } from './family/SourceCredits';
 
-/**
- * Plain labels for where an identity comes from (owner decisions 2026-11-21; see src/db/AGENTS.md §Identity candidates).
- * "Verified" is reserved for a reviewer's decision; the automatic top tier is machine review.
- */
-const BASIS_LABEL: Record<IdentityBasis, string> = {
-    reviewer_decision: 'verified by a reviewer',
-    source_index_confirmed_by_text: "machine-reviewed: matches the source's index and the text",
-    source_index: 'source index',
-    name_exact: 'matched by name',
-    name_spelling_fold: 'matched by name',
-    name_kunya_only: 'matched by kunya only',
-};
+/** Basis wording is IDENTITY_BASIS_LABEL (src/components/marks/BasisMark.tsx), one copy; owner decisions 2026-11-21, src/db/AGENTS.md §Identity candidates. */
+const BASIS_LABEL: Record<IdentityBasis, string> = IDENTITY_BASIS_LABEL;
 
 interface IdentityGroup {
     narratorId: string;
@@ -53,19 +44,42 @@ function groupByNarrator(candidates: ChainMentionCandidate[]): IdentityGroup[] {
     return [...groups.values()];
 }
 
+/** Basis lines (DESIGN.md §Identity basis labels): mark, then wording; one line per distinct wording. */
+function BasisLines({ bases }: { bases: IdentityBasis[] }) {
+    const seen = new Set<string>();
+    const lines = bases.filter((basis) => {
+        const label = BASIS_LABEL[basis];
+        if (!label || seen.has(label)) return false;
+        seen.add(label);
+        return true;
+    });
+    return (
+        <>
+            {lines.map((basis) => (
+                <p key={basis} className="relative mt-1 ps-[1.125rem] text-ink-muted">
+                    <BasisMark basis={basis} decorative className="absolute start-0 top-[0.3125rem]" />
+                    {BASIS_LABEL[basis]}
+                </p>
+            ))}
+        </>
+    );
+}
+
 function IdentityLink({ group }: { group: IdentityGroup }) {
     return (
         <div>
-        <span className="inline-flex flex-wrap items-baseline gap-x-2">
-            <Link
-                href={`/narrator/${encodeURIComponent(group.narratorId)}`}
-                className="rounded-sm text-sm text-slate-200 underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-emerald-400"
-            >
-                {group.latin || <ArabicText>{group.arabic || group.narratorId}</ArabicText>}
-            </Link>
-            <span className="text-xs text-slate-500">{group.labels.join(' · ')}</span>
-        </span>
-        <IdentityCredit bases={group.bases} className="!text-xs" />
+            <span className="inline-flex flex-wrap items-baseline gap-x-2">
+                <Link href={`/narrator/${encodeURIComponent(group.narratorId)}`} className="link-row font-semibold text-ink">
+                    {group.latin || <ArabicText>{group.arabic || group.narratorId}</ArabicText>}
+                </Link>
+                {group.latin && group.arabic && (
+                    <bdi lang="ar" dir="rtl" className="font-arabic text-[1.0625rem] text-ink-muted">
+                        {group.arabic}
+                    </bdi>
+                )}
+            </span>
+            <BasisLines bases={group.bases} />
+            <IdentityCredit bases={group.bases} className="mt-1 !text-xs !leading-4" />
         </div>
     );
 }
@@ -79,15 +93,15 @@ function MentionIdentityCell({ node }: { node: ChainNode }) {
     const contesting = groups.filter((group) => !group.kunyaOnly);
     const notes = contesting.length > 0 ? groups.filter((group) => group.kunyaOnly) : [];
     const primary = contesting.length > 0 ? contesting : groups;
-    if (primary.length === 0) return <span className="text-sm text-slate-500">Not yet identified</span>;
+    if (primary.length === 0) return <p className="pt-1.5 type-small text-ink-muted">Not yet identified</p>;
     return (
-        <div className="space-y-1">
+        <div className="space-y-2 pt-1.5 type-small">
             {primary.length === 1 ? (
                 <IdentityLink group={primary[0]} />
             ) : (
                 <>
-                    <p className="text-xs text-slate-500">Sources differ on who this is</p>
-                    <div className="flex flex-wrap gap-x-5 gap-y-1">
+                    <p className="text-ink-muted">Sources differ on who this is</p>
+                    <div className="space-y-3">
                         {primary.map((group) => (
                             <IdentityLink key={group.narratorId} group={group} />
                         ))}
@@ -95,12 +109,12 @@ function MentionIdentityCell({ node }: { node: ChainNode }) {
                 </>
             )}
             {notes.length > 0 && (
-                <p className="text-xs text-slate-500">
+                <p className="text-ink-muted">
                     Also{' '}
                     {notes.map((group, index) => (
                         <span key={group.narratorId}>
                             {index > 0 && ', '}
-                            <Link href={`/narrator/${encodeURIComponent(group.narratorId)}`} className="underline-offset-4 hover:underline">
+                            <Link href={`/narrator/${encodeURIComponent(group.narratorId)}`} className="link-row">
                                 {group.latin || (group.arabic ? <ArabicText>{group.arabic}</ArabicText> : group.narratorId)}
                             </Link>
                         </span>
@@ -109,10 +123,17 @@ function MentionIdentityCell({ node }: { node: ChainNode }) {
                 </p>
             )}
             {notes.length > 0 && (
-                <IdentityCredit bases={['name_kunya_only']} className="!text-xs" />
+                <IdentityCredit bases={['name_kunya_only']} className="!text-xs !leading-4" />
             )}
         </div>
     );
+}
+
+/** The rail mark of a position (DESIGN.md §Isnad list): outline when unidentified, two bars when sources differ. */
+function nodeKind(node: ChainNode): NarratorNodeKind {
+    const groups = groupByNarrator(node.candidates);
+    if (groups.length === 0) return 'unidentified';
+    return groups.filter((group) => !group.kunyaOnly).length > 1 ? 'contested' : 'identified';
 }
 
 interface IsnadChainProps {
@@ -141,14 +162,15 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
     return (
         <div className="space-y-8">
             {(chain?.tradition || chain?.source_work) && (
-                <p className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
+                <p className="flex flex-wrap items-center gap-2 type-small text-ink-muted">
                     {chain.tradition && <TraditionBadge tradition={chain.tradition} size="sm" />}
+                    {chain.tradition && chain.source_work && <span aria-hidden="true">·</span>}
                     {chain.source_work && <span>{chain.source_work}</span>}
                 </p>
             )}
 
             {sourceSanad && (
-                <ArabicText as="p" className="whitespace-pre-line text-xl text-slate-300">
+                <ArabicText as="p" variant="reading" className="whitespace-pre-line text-ink-muted">
                     {sourceSanad}
                 </ArabicText>
             )}
@@ -156,24 +178,33 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
             {branches.map((branch, branchIndex) => (
                 <div key={branch.id}>
                     {(branches.length > 1 || sourceSanad) && (
-                        <p className="mb-3 text-sm text-slate-400">{branches.length > 1 ? `Branch ${branchIndex + 1}` : 'Narrators'}</p>
+                        <p className="mb-2 type-h3 text-ink">{branches.length > 1 ? `Branch ${branchIndex + 1}` : 'Narrators'}</p>
                     )}
                     <ol
                         aria-label={[
                             chainLabel,
                             branches.length > 1 ? `chain branch ${branchIndex + 1}` : 'narrators in this chain',
                         ].filter(Boolean).join(', ').replace(/^./, (first) => first.toUpperCase())}
-                        className="relative ms-1.5 border-s border-slate-700"
                     >
-                        {branch.nodes.map((node) => (
-                            <li key={node.node_id} className="relative ps-5">
+                        {branch.nodes.map((node, nodeIndex) => (
+                            <li key={node.node_id} className="group/position grid grid-cols-[1.5rem_0.75rem_minmax(0,1fr)] items-start gap-x-3">
+                                <span aria-hidden="true" className="text-end text-xs leading-8 tabular-nums text-ink-muted">
+                                    {nodeIndex + 1}
+                                </span>
+                                {/* Rail: a faint hairline through the node marks; the order itself is the ordered list. */}
                                 <span
                                     aria-hidden="true"
-                                    className="absolute -start-[5px] top-3.5 size-2.5 rounded-full border-2 border-slate-950 bg-slate-500"
-                                />
-                                <div className="-mx-2 flex flex-col gap-x-6 gap-y-1 rounded-md px-2 py-1.5 sm:flex-row sm:items-baseline sm:justify-between">
-                                    {/* Arabic as written leads on phones; on wider screens it sits at the right edge, where Arabic reads from. */}
-                                    <ArabicText className="order-first text-lg leading-relaxed text-slate-100 sm:order-last">
+                                    className="relative self-stretch before:absolute before:inset-y-0 before:start-[calc(50%-0.5px)] before:w-px before:bg-ink-faint group-first/position:before:top-4 group-last/position:before:bottom-auto group-last/position:before:h-4"
+                                >
+                                    <NarratorNode
+                                        kind={nodeKind(node)}
+                                        decorative
+                                        size={12}
+                                        className="relative mx-auto mt-[calc(1rem-6px)] text-ink"
+                                    />
+                                </span>
+                                <div className="grid grid-cols-1 border-b border-rule pb-3 group-last/position:border-b-0 sm:grid-cols-[minmax(9rem,2fr)_minmax(0,3fr)] sm:gap-x-6">
+                                    <ArabicText as="p" variant="inline" className="text-ink">
                                         {node.surface_ar}
                                     </ArabicText>
                                     <MentionIdentityCell node={node} />

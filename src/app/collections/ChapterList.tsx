@@ -26,7 +26,7 @@ export function ChapterList({ chapters, basePath }: { chapters: ChapterSummary[]
               <li key={chapter.key} className="border-b border-[color:var(--archive-rule)]">
                 <Link
                   href={`${basePath}/${encodeURIComponent(chapter.key)}`}
-                  className="archive-focus grid grid-cols-[4rem_1fr_auto] items-baseline gap-[var(--archive-space-3)] py-[var(--archive-space-2)] hover:text-[color:var(--archive-accent)]"
+                  className="grid grid-cols-[4rem_1fr_auto] items-baseline gap-[var(--archive-space-3)] py-[var(--archive-space-2)] hover:bg-sunken"
                 >
                   <span className="text-sm tabular-nums text-[color:var(--archive-muted)]">{chapter.number ?? '—'}</span>
                   <span className="min-w-0">{chapter.name ? <BilingualTitle text={chapter.name} /> : 'Untitled chapter'}</span>

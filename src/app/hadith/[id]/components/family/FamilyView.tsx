@@ -34,15 +34,15 @@ export function FamilyView({ family, mode, container: Container = 'main', timeli
   const reviewHrefBase = mode === 'curator' ? '/admin/correspondences/review' : undefined;
   const backHref = hadithPath(focal.hadith_id);
   return (
-    <Container className={`${styles.family} mx-auto max-w-5xl px-6 pb-24 pt-10`}>
-      <header className="pb-8">
-        <p className="text-sm">
+    <Container className={`${styles.family} wrap pb-12`}>
+      <header className="page-header !pt-4">
+        <p className="type-small">
           <Link href={backHref} className={styles.link}>{tellingReference(focal)}</Link>
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Tellings and chains</h1>
-        <div className="mt-4 max-w-3xl">
+        <h1 className="type-h1 mt-3">Tellings and chains</h1>
+        <div className="mt-3 max-w-[var(--measure-wide)]">
           <FamilySummaryLine family={family} />
-          <p className={`mt-2 text-sm ${styles.muted}`}>
+          <p className={`mt-2 type-small ${styles.muted}`}>
             Correspondences are found by shared wording and are evidence, not rulings: they say nothing about which telling
             is earlier or more authentic. Each chain stays with the tradition and work it comes from.{' '}
             <Link href="/glossary#report-correspondence" className={styles.link}>How tellings are matched</Link>
@@ -53,7 +53,7 @@ export function FamilyView({ family, mode, container: Container = 'main', timeli
       {text && (
         <section className={styles.section} aria-labelledby="focal-heading">
           <h2 id="focal-heading" className={styles.label}>This report</h2>
-          <ArabicText as="p" className={`max-w-3xl whitespace-pre-line ${styles.arabic}`}>{text}</ArabicText>
+          <ArabicText as="p" variant="reading" className="max-w-[var(--measure-reading)] whitespace-pre-line text-ink">{text}</ArabicText>
           <p className={styles.meta}>{isMatn ? 'Report text, chain omitted' : 'Text as in the source, chain included'}</p>
           <TextCredit hadithId={focal.hadith_id} className="mt-2" />
         </section>
@@ -61,7 +61,7 @@ export function FamilyView({ family, mode, container: Container = 'main', timeli
 
       <section className={styles.section} aria-labelledby="tellings-heading">
         <h2 id="tellings-heading" className={styles.label}>Tellings of this report</h2>
-        <div className="max-w-3xl">
+        <div className="max-w-[var(--measure-wide)]">
           <TellingsList tellings={family.tellings} mode={mode} reviewHrefBase={reviewHrefBase} />
         </div>
       </section>
@@ -75,11 +75,11 @@ export function FamilyView({ family, mode, container: Container = 'main', timeli
 
       <section id={listsId} className={styles.section} aria-labelledby="chains-heading">
         <h2 id="chains-heading" className={styles.label}>All chains</h2>
-        <p className={`mb-6 max-w-3xl text-sm ${styles.muted}`}>
+        <p className={`mb-6 max-w-[var(--measure-reading)] type-small ${styles.muted}`}>
           Every chain of every telling, in order from the compiler&apos;s informant to the earliest narrator, with each
           name as written. This is the same content as the diagram above.
         </p>
-        <div className="max-w-3xl">
+        <div className="max-w-[var(--measure-reading)]">
           <AllChains tellings={family.tellings} />
         </div>
       </section>

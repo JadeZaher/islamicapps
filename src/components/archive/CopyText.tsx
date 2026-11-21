@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import './archive.css';
+import { CheckIcon, CopyIcon } from '@/components/marks';
 
 /** Plain copyable text with one Copy action; the text stays selectable without JavaScript. */
 export function CopyText({ label, text }: { label: string; text: string }) {
@@ -10,13 +10,13 @@ export function CopyText({ label, text }: { label: string; text: string }) {
     <div>
       <pre
         aria-label={label}
-        className="whitespace-pre-wrap break-words border-l border-[color:var(--archive-rule)] pl-[var(--archive-space-3)] font-sans text-sm leading-relaxed text-[color:var(--archive-ink)]"
+        className="max-w-[var(--measure-reading)] whitespace-pre-wrap break-words border-s-2 border-rule ps-4 font-sans type-small text-ink"
       >
         {text}
       </pre>
       <button
         type="button"
-        className="archive-focus mt-[var(--archive-space-2)] border border-[color:var(--archive-rule)] px-3 py-1 text-sm text-[color:var(--archive-ink)] hover:border-[color:var(--archive-accent)]"
+        className="mt-3 inline-flex h-10 items-center gap-2 border border-ink px-4 text-sm font-semibold text-ink transition-colors duration-[var(--motion-fast)] hover:bg-ink hover:text-paper"
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(text);
@@ -27,6 +27,7 @@ export function CopyText({ label, text }: { label: string; text: string }) {
           }
         }}
       >
+        {copied ? <CheckIcon decorative /> : <CopyIcon decorative />}
         {copied ? 'Copied' : 'Copy citation'}
       </button>
       <span aria-live="polite" className="sr-only">

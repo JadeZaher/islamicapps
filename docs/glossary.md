@@ -787,7 +787,7 @@ The four principal Imami collections: al-Kafi of al-Kulayni, Man la yahduruhu al
 
 The study of narrators’ lives and reliability (ʿilm al-rijal), and the books that record it, giving each narrator’s name, teachers, students, dates and critics’ verdicts.
 
-- **In this archive:** Narrator data comes partly from a narrator lexicon whose biographies are not yet reviewed and are hidden on public pages by default.
+- **In this archive:** Narrator data comes partly from a narrator lexicon (the Muslim Scholars Database). Its dates and places are shown on narrator pages labelled “narrator lexicon, not yet cited”; a death year that Ibn Hajar’s Taqrib contradicts is held back until reviewed, and its prose biographies stay hidden.
 - **Across traditions:** Each tradition has its own rijal works, such as those of al-Najashi and al-Tusi for Imami narrators and those of Ibn Abi Hatim and Ibn Hajar for Sunni narrators.
 - **Related:** [al-jarh wa al-taʿdil](#jarh-wa-tadil), [rawi](#rawi), [Narrator verdict](#narrator-verdict)
 - **Data values:** `narrator_authority.imami_rijal`
@@ -1313,9 +1313,9 @@ Not yet checked by a person against its source.
 
 Produced by software, such as a translation model or an automated comparison, and not yet reviewed by a person.
 
-- **In this archive:** Always labelled. No identity, grade, date or translation is asserted by a machine.
+- **In this archive:** Always labelled. A machine translation is shown only for works whose recorded English policy allows it, as “Unreviewed machine translation” with the model that produced it, or “model not recorded”. No identity, grade, date or translation is asserted by a machine.
 - **Related:** [Candidate](#candidate), [Unreviewed](#unreviewed), [Parallel](#parallel)
-- **Data values:** `translation_state.machine_unreviewed`, `record_origin.ai_research`
+- **Data values:** `translation_state.machine_unreviewed`, `record_origin.ai_research`, `english_policy.source_provided_and_machine_allowed`
 
 <a id="proposed"></a>
 
@@ -1332,7 +1332,7 @@ Entered by a curator or a tool and awaiting review before it can be published.
 
 Supplied with the source data, such as an English translation from the provider, but not yet checked by the archive.
 
-- **In this archive:** Source-provided English is shown only for works where the owner has recorded that it may be, and is labelled with where it came from.
+- **In this archive:** Source-provided English is shown only for works whose recorded English policy allows it, labelled “Source-provided English, not reviewed here” and credited to its source and translator.
 - **Related:** [Source verified](#source-verified), [Human verified](#human-verified), [Unreviewed](#unreviewed)
 - **Data values:** `translation_state.source_provided`, `evidence_review_state.source_provided`, `english_policy.source_provided_allowed`, `english_policy.reviewed_only`
 

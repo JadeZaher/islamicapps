@@ -37,3 +37,21 @@ CC BY-NC-SA 4.0 allow attribution "by providing a URI or hyperlink to a resource
 information", which is what the record is. Helpers: `sourceForDatabaseSlug`, `sourceCodeForHadithId`,
 `sourceForIdentityBasis` (name bases → `MSD`, source-index bases → `K6I`, reviewer → `SWI`), `sourceForGrading`.
 `browse-flows.test.ts` fails if a loaded or registered work, or a `datasets/sources/*.md` card, lacks a record.
+
+## Site origin (`site-origin.ts`, `site-url.ts`)
+
+Every absolute URL the site emits (citation address, canonical link, robots sitemap line, sitemap, redirect `Location`
+in `src/proxy.ts`, the sign-in and sign-out routes and the throttled sign-in answer) goes through `siteOriginFor` /
+`siteUrlFor` (edge-safe) or `siteOrigin()` (server components).
+
+- **Production uses `SITE_URL` only.** Request headers (`Host`, `X-Forwarded-Host`, `X-Forwarded-Proto`) never decide an
+  absolute URL there: a client could otherwise plant its own host in canonical links, citations, cached pages and
+  redirects (host-header injection, cache poisoning; security review 2026-11-21). `src/instrumentation.ts` refuses to
+  start in production when `SITE_URL` is missing, not absolute, not https (http only for a loopback host, so local
+  `next start` tests run), or carries a path, query or credentials (`siteUrlProblem`).
+- **Development and tests** use `SITE_URL` when set, else the request host only if it is a loopback host, else
+  `http://localhost:3000`.
+- **Internal rewrites** clone `request.nextUrl` (`internalRewriteUrl` in the proxy), so a rewrite can never target
+  another origin.
+- Tested over HTTP in `switches-http.test.ts` ("site origin"): forged `Host` and `X-Forwarded-Host` leave the cite
+  block, canonical link and a 308 `Location` on `SITE_URL`, and production without `SITE_URL` exits 1.

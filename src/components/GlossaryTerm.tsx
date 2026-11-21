@@ -28,7 +28,7 @@ export function GlossaryTerm({ slug, children, className }: GlossaryTermProps) {
         title={entry.definition}
         aria-describedby={descriptionId}
         className={cn(
-          'rounded-sm underline decoration-slate-600 decoration-dotted underline-offset-4 outline-none hover:decoration-slate-300 focus-visible:ring-2 focus-visible:ring-emerald-400',
+          'link-term',
           className,
         )}
       >

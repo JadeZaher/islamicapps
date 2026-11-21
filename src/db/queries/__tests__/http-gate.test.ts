@@ -306,6 +306,8 @@ async function main() {
     NEO4J_URL: 'bolt://127.0.0.1:1',
     NEO4J_USERNAME: 'unused',
     NEO4J_PASSWORD: 'unused',
+    // Production refuses to start without SITE_URL (src/lib/site-origin.ts); a loopback http origin is accepted.
+    SITE_URL: BASE,
     NODE_ENV: 'production',
   };
   await startServer(env);

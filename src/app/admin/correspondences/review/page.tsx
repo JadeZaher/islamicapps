@@ -16,11 +16,11 @@ interface PageProps {
 function Side({ side, label }: { side: PairSide; label: string }) {
   const matn = ownMatn(side.matn_ar, side.text_ar);
   return (
-    <section aria-label={`Report ${label}`} className="min-w-0 border-t border-slate-700 pt-4">
+    <section aria-label={`Report ${label}`} className="min-w-0 border-t border-rule pt-4">
       <h2 className="text-sm font-semibold">
         {label} · {side.tradition} · {side.source_work} {side.hadith_no ?? ''}
       </h2>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-ink-muted">
         {side.record_id} · {side.public ? 'published' : 'not published'} ·{' '}
         <Link href={`/admin/correspondences/family/${encodeURIComponent(side.hadith_id)}`} className="underline-offset-4 hover:underline">
           family preview
@@ -28,12 +28,12 @@ function Side({ side, label }: { side: PairSide; label: string }) {
       </p>
       {matn && (
         <>
-          <p className="mt-4 text-xs uppercase tracking-[0.12em] text-slate-500">Report text, chain omitted</p>
+          <p className="mt-4 text-xs uppercase tracking-[0.12em] text-ink-muted">Report text, chain omitted</p>
           <ArabicText as="p" className="mt-1 whitespace-pre-line text-xl leading-[2.1]">{matn}</ArabicText>
         </>
       )}
-      <p className="mt-4 text-xs uppercase tracking-[0.12em] text-slate-500">Text as in the source</p>
-      <ArabicText as="p" className="mt-1 whitespace-pre-line text-lg leading-[2] text-slate-300">{side.text_ar}</ArabicText>
+      <p className="mt-4 text-xs uppercase tracking-[0.12em] text-ink-muted">Text as in the source</p>
+      <ArabicText as="p" className="mt-1 whitespace-pre-line text-lg leading-[2] text-ink">{side.text_ar}</ArabicText>
     </section>
   );
 }
@@ -48,14 +48,14 @@ export default async function CorrespondenceReviewPage({ searchParams }: PagePro
   const live = pair.decisions.find((decision) => !decision.retired_at) ?? null;
 
   return (
-    <div className="space-y-8 text-slate-100">
+    <div className="space-y-8 text-ink">
       <header>
-        <p className="text-sm"><Link href="/admin/correspondences" className="text-slate-400 underline-offset-4 hover:underline">Review queue</Link></p>
+        <p className="text-sm"><Link href="/admin/correspondences" className="text-ink-muted underline-offset-4 hover:underline">Review queue</Link></p>
         <h1 className="mt-2 text-2xl font-semibold">
           {pair.candidate ? CORRESPONDENCE_LABEL[pair.candidate.relation_class] : 'No machine candidate'}
         </h1>
         {pair.candidate && (
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-ink-muted">
             Shared wording {Math.round(pair.candidate.jaccard * 100)}% · {Math.round(pair.candidate.containment * 100)}% of the
             shorter text · {pair.candidate.scope.replace(/_/g, ' ')} · {pair.candidate.shown ? 'shown to readers' : 'below the display threshold'}
           </p>
@@ -67,10 +67,10 @@ export default async function CorrespondenceReviewPage({ searchParams }: PagePro
         <Side side={pair.b} label="B" />
       </div>
 
-      <section aria-labelledby="decision-heading" className="max-w-2xl border-t border-slate-700 pt-6">
+      <section aria-labelledby="decision-heading" className="max-w-2xl border-t border-rule pt-6">
         <h2 id="decision-heading" className="text-sm font-semibold">Decision</h2>
         {live && (
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-ink-muted">
             Current: {live.decision}
             {live.reviewed_relation ? ` (${live.reviewed_relation.replace(/_/g, ' ')})` : ''} by {live.decided_by.replace(/^curator:/, '')}
             {live.bound ? '' : ' — the texts have changed since; this decision no longer applies until reviewed again'}
@@ -84,7 +84,7 @@ export default async function CorrespondenceReviewPage({ searchParams }: PagePro
           current={live?.bound ? live.decision : null}
         />
         {pair.decisions.length > 1 && (
-          <details className="mt-6 text-sm text-slate-400">
+          <details className="mt-6 text-sm text-ink-muted">
             <summary className="cursor-pointer">Earlier decisions ({pair.decisions.length - (live ? 1 : 0)})</summary>
             <ul className="mt-2 space-y-1">
               {pair.decisions.filter((decision) => decision.retired_at).map((decision) => (

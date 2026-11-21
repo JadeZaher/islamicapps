@@ -21,7 +21,7 @@ lead reviewing, verifying and committing at each join.
 | Area | State |
 | --- | --- |
 | Branch | `refactor/postgres-drizzle`, local only, not pushed. Checkpoint of the pre-refactor tree is `af2f90b` |
-| Live site | Unchanged. Still the 22 July build reading Neo4j. Nothing has been deployed this session |
+| Live site | Still the 22 July build reading Neo4j until `main` is pushed. Production database ready: see "Production state" below |
 | Build | `npx tsc --noEmit` clean, `npx next build` succeeds. 64 lint errors remain in pre-existing admin code |
 | Postgres | Railway service `Postgres` (official image, PostgreSQL 18.6, SSL) in project `hadith-ontology`. Two databases: `railway` (production, schema only) and `islamicapps_dev` (development, safe to load and reset). Both migrated: 40 tables, 5 views, 1 materialized view; extensions `vector`, `pg_trgm`, `unaccent` |
 | Schema code | `src/db/` (Drizzle schema, client, migrator, `verify.ts`), migrations in `drizzle/core/` |
@@ -93,6 +93,52 @@ lead reviewing, verifying and committing at each join.
 - Curator names are decided at cutover.
 - Code is committed to the branch at each join. Nothing is pushed or deployed
   without the owner asking.
+
+## Production state (2026-11-21, go-live pass)
+
+The production database (`railway` on the Railway Postgres) is migrated, loaded and ready; the live service still runs
+the July build until the session lead merges `refactor/postgres-drizzle` to `main` and pushes.
+
+| What | State |
+| --- | --- |
+| Migrations | `0000` to `0009` on both databases; `db:verify` passes on both |
+| Dataset version | `e2430eae674e77c54303186fc5e88a81f86ee3df9a2ac8017d5e5283f7cd89f4` (projection `2026.11.21.3`, `development/pg-load-2026-11-21/projection-v3`), current and complete on both databases; production load log `prod-load-2.log` beside the development logs (`prod-load-1.log`: first attempt, cancelled and rolled back) |
+| Preview approval | Recorded on both for that version: by `owner`, "preview while data is under review; approved 2026-11-21" |
+| Rights | All 34 works `cleared`, English policy `source_provided_and_machine_allowed`, actor `system:owner-decision` (`npm run db:record-rights`) |
+| Public | 99,273 reports (Sunni 64,348, Imami 33,223, Ibadi 1,004, Zaydi 698); 55,359 English texts, all source-provided (Sunni 22,926, Imami 32,433); 114,594 chains; 85,277 machine-reviewed links; 10,835 teacher-student links; 66,666 correspondence pairs shown; 0 eras and 0 events (38 eras and 54 events seeded, unpublished until cited); 21 biographies seeded, unpublished |
+| Search indexes | `indexes-heavy.sql` built on production |
+| Server tuning | Applied with `ALTER SYSTEM` and reloaded; `shared_buffers`, `max_connections`, `huge_pages` wait for a Postgres restart |
+| Service variables | `SITE_URL=https://islamicapps-production.up.railway.app` and `NEXT_TELEMETRY_DISABLED=1` set with `--skip-deploys`; `AUTH_ENABLED` and `PRIVATE_PREVIEW` absent (off) |
+| Config | `railway.json`: Dockerfile builder, health check `/api/health` (120 s), restart on failure. Migrations stay manual (no pre-deploy command) |
+
+### Deploy (session lead)
+
+1. Pick-up checks: `npx tsc --noEmit`, `npm run db:verify` (development), and the same `db:verify` with `DATABASE_URL`
+   set to the production URL.
+2. Merge `refactor/postgres-drizzle` into `main` and push. Railway builds the Dockerfile and deploys; the deploy
+   succeeds only when `/api/health` answers 200 (the database is reachable).
+3. Check the live site: `/`, `/collections`, a report per tradition, `/narrator/narrator%3Arawi%3A20001`, `/sources`,
+   `/glossary`, `/api/health`; `/admin` and `/sign-in` answer 404.
+4. Restart the Postgres service once, at a quiet moment, so `shared_buffers = 64MB`, `max_connections = 40` and
+   `huge_pages = off` take effect; then `select name, setting, pending_restart from pg_settings where pending_restart`
+   returns no rows.
+5. After the first deploy, remove the old variables (each deletion redeploys): `NEO4J_URL`, `NEO4J_USERNAME`,
+   `NEO4J_PASSWORD`, `NEO4J_PLUGINS`, `HEAP_INITIAL_SIZE`, `HEAP_MAX_SIZE`, `PAGECACHE_SIZE`, `NODE_CSV_URLS`,
+   `RELATION_CSV_URLS` (inspect the two CSV URLs for embedded credentials first), `YOU_API_KEY`. Keep the Neo4j
+   service itself until the owner approves its removal (cutover track, phase 5).
+6. Before 2026-12-01: Railway now warns that `railway.json` keeps working only until that date; translate it with
+   `railway config migrate` and review the result.
+
+### Roll back
+
+- **App:** in Railway, redeploy the previous deployment of `islamicapps` (the July Neo4j build) from the deployments
+  list, or revert the merge on `main` and push. Neo4j and its variables are still in place, so the old build runs as
+  before; do not delete the `NEO4J_*` variables until the new build has been stable.
+- **Data:** the production database can be reset to "nothing public" without losing anything:
+  `npx tsx src/scripts/db/approve-preview.ts --revoke --by owner --reason "<why>" --database production --confirm-production`
+  hides every report at once (the gate in `public_hadiths`). A bad load rolls back by itself (one transaction; the
+  version row is marked `failed`).
+- **Migrations:** expand only; `0009` adds an enum value and redefines one view, so the July build is unaffected.
 
 ## Remove after the first release
 

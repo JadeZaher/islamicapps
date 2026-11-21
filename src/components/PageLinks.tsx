@@ -8,9 +8,10 @@ interface PageLinksProps {
   params?: Record<string, string | undefined>;
 }
 
+// DESIGN.md §Buttons: secondary (1px ink border, fills with ink on hover); a disabled end shows a rule border.
 const linkClass =
-  'rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-200 outline-none transition-colors hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-400';
-const disabledClass = 'rounded-md border border-slate-800 px-3 py-1.5 text-sm text-slate-600';
+  'inline-flex h-10 items-center border border-ink px-4 text-sm font-semibold text-ink no-underline transition-colors duration-[var(--motion-fast)] hover:bg-ink hover:text-paper';
+const disabledClass = 'inline-flex h-10 items-center border border-rule px-4 text-sm font-semibold text-ink-muted';
 
 /** Server-rendered Previous / Next pager: plain links, works without JS and keeps filters. */
 export function PageLinks({ basePath, page, totalPages, params = {} }: PageLinksProps) {
@@ -27,7 +28,7 @@ export function PageLinks({ basePath, page, totalPages, params = {} }: PageLinks
   };
 
   return (
-    <nav aria-label="Pagination" className="mt-8 flex items-center justify-between">
+    <nav aria-label="Pagination" className="mt-8 flex items-center justify-between gap-4">
       {page > 1 ? (
         <Link href={hrefFor(page - 1)} rel="prev" aria-label="Previous page" className={linkClass}>
           Previous
@@ -35,7 +36,7 @@ export function PageLinks({ basePath, page, totalPages, params = {} }: PageLinks
       ) : (
         <span aria-hidden="true" className={disabledClass}>Previous</span>
       )}
-      <span aria-current="page" className="text-sm text-slate-400">
+      <span aria-current="page" className="text-sm tabular-nums text-ink-muted">
         Page {page} of {totalPages.toLocaleString()}
       </span>
       {page < totalPages ? (

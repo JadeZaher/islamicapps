@@ -1041,7 +1041,7 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     definition:
       'The study of narrators’ lives and reliability (ʿilm al-rijal), and the books that record it, giving each narrator’s name, teachers, students, dates and critics’ verdicts.',
     inArchive:
-      'Narrator data comes partly from a narrator lexicon whose biographies are not yet reviewed and are hidden on public pages by default.',
+      'Narrator data comes partly from a narrator lexicon (the Muslim Scholars Database). Its dates and places are shown on narrator pages labelled “narrator lexicon, not yet cited”; a death year that Ibn Hajar’s Taqrib contradicts is held back until reviewed, and its prose biographies stay hidden.',
     acrossTraditions:
       'Each tradition has its own rijal works, such as those of al-Najashi and al-Tusi for Imami narrators and those of Ibn Abi Hatim and Ibn Hajar for Sunni narrators.',
     related: ['jarh-wa-tadil', 'rawi', 'narrator-verdict'],
@@ -1674,10 +1674,15 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     section: 'archive',
     term: 'Machine-proposed',
     definition: 'Produced by software, such as a translation model or an automated comparison, and not yet reviewed by a person.',
-    inArchive: 'Always labelled. No identity, grade, date or translation is asserted by a machine.',
+    inArchive:
+      'Always labelled. A machine translation is shown only for works whose recorded English policy allows it, as “Unreviewed machine translation” with the model that produced it, or “model not recorded”. No identity, grade, date or translation is asserted by a machine.',
     related: ['candidate', 'unreviewed', 'parallel'],
     aliases: ['machine translation', 'ai'],
-    enumValues: ['translation_state.machine_unreviewed', 'record_origin.ai_research'],
+    enumValues: [
+      'translation_state.machine_unreviewed',
+      'record_origin.ai_research',
+      'english_policy.source_provided_and_machine_allowed',
+    ],
   },
   {
     slug: 'proposed',
@@ -1693,7 +1698,7 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     term: 'Source provided',
     definition: 'Supplied with the source data, such as an English translation from the provider, but not yet checked by the archive.',
     inArchive:
-      'Source-provided English is shown only for works where the owner has recorded that it may be, and is labelled with where it came from.',
+      'Source-provided English is shown only for works whose recorded English policy allows it, labelled “Source-provided English, not reviewed here” and credited to its source and translator.',
     related: ['source-verified', 'human-verified', 'unreviewed'],
     enumValues: [
       'translation_state.source_provided',

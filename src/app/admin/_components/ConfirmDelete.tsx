@@ -53,7 +53,7 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
                 variant="outline"
                 onClick={() => setIsConfirming(true)}
                 aria-label={`Retire ${itemName}`}
-                className="border-red-600/30 text-red-400 hover:bg-red-500/10"
+                className="border-danger text-danger hover:bg-transparent"
             >
                 <Archive className="w-4 h-4" aria-hidden="true" />
             </Button>
@@ -67,11 +67,11 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
             onKeyDown={(event) => {
                 if (event.key === 'Escape' && !isDeleting) cancel();
             }}
-            className="max-w-xs rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm"
+            className="max-w-xs border border-danger bg-transparent p-3 text-sm"
         >
-            <p className="text-red-200">{consequence}</p>
+            <p className="text-danger">{consequence}</p>
             {errorMessage && (
-                <p role="alert" className="mt-2 text-red-300">{errorMessage}</p>
+                <p role="alert" className="mt-2 text-danger">{errorMessage}</p>
             )}
             <div className="mt-3 flex justify-end gap-2">
                 <Button
@@ -80,7 +80,7 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
                     variant="outline"
                     onClick={cancel}
                     disabled={isDeleting}
-                    className="border-slate-600 text-slate-300"
+                    className="border-rule text-ink"
                 >
                     Cancel
                 </Button>
@@ -88,7 +88,7 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
                     size="sm"
                     onClick={confirm}
                     disabled={isDeleting}
-                    className="bg-red-600 text-white hover:bg-red-700"
+                    className="bg-danger text-paper border-danger hover:bg-ink hover:border-ink"
                 >
                     {isDeleting ? 'Retiring...' : `Retire ${itemName}`}
                 </Button>

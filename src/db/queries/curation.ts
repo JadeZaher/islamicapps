@@ -71,32 +71,97 @@ export async function setCollectionRights(actor: string, collectionId: string, i
       tx,
       sql`select to_jsonb(r) as image from collection_rights r where r.collection_id = ${collectionId} for update`,
     );
-    const [after] = await tx
-      .insert(collectionRights)
-      .values({
-        collectionId,
+    await upsertRights(tx, actor, collectionId, input, before?.image);
+  });
+}
+
+/** Upserts one work's rights row and appends its `set_rights` audit row, inside the caller's transaction. */
+async function upsertRights(
+  tx: Transaction,
+  actor: string,
+  collectionId: string,
+  input: CollectionRightsInput,
+  before: Record<string, unknown> | undefined,
+): Promise<void> {
+  const [after] = await tx
+    .insert(collectionRights)
+    .values({
+      collectionId,
+      rightsStatus: input.rights_status,
+      englishPolicy: input.english_policy,
+      rightsNote: input.rights_note ?? null,
+      citation: input.citation ?? null,
+      createdBy: actor,
+      updatedBy: actor,
+    })
+    .onConflictDoUpdate({
+      target: collectionRights.collectionId,
+      set: {
         rightsStatus: input.rights_status,
         englishPolicy: input.english_policy,
         rightsNote: input.rights_note ?? null,
         citation: input.citation ?? null,
-        createdBy: actor,
+        updatedAt: new Date(),
         updatedBy: actor,
-      })
-      .onConflictDoUpdate({
-        target: collectionRights.collectionId,
-        set: {
-          rightsStatus: input.rights_status,
-          englishPolicy: input.english_policy,
-          rightsNote: input.rights_note ?? null,
-          citation: input.citation ?? null,
-          updatedAt: new Date(),
-          updatedBy: actor,
-          retiredAt: null,
-          retiredBy: null,
-        },
-      })
-      .returning();
-    await audit(tx, { actor, action: 'set_rights', entityType: 'collection_rights', entityId: collectionId, before: before?.image, after });
+        retiredAt: null,
+        retiredBy: null,
+      },
+    })
+    .returning();
+  await audit(tx, { actor, action: 'set_rights', entityType: 'collection_rights', entityId: collectionId, before, after });
+}
+
+export interface RightsDecision extends CollectionRightsInput {
+  /** `collections.source_work_id` of the work the decision is about. */
+  source_work_id: string;
+}
+
+export interface RightsDecisionsOutcome {
+  written: string[];
+  unchanged: string[];
+}
+
+/**
+ * Records many rights decisions in ONE transaction, idempotently: a work whose live row already says the same is left
+ * untouched (no write, no audit row), so a re-run changes nothing. Refuses when any named work is not loaded or when
+ * a loaded work has no decision, so a partial record can never be committed.
+ */
+export async function recordRightsDecisions(actor: string, decisions: readonly RightsDecision[]): Promise<RightsDecisionsOutcome> {
+  return curationWrite(actor, async (tx) => {
+    const works = await txRows<{ id: string; source_work_id: string }>(
+      tx,
+      sql`select id, source_work_id from collections where retired_at is null order by source_work_id`,
+    );
+    const byWork = new Map(works.map((work) => [work.source_work_id, work.id]));
+    const unknown = decisions.filter((decision) => !byWork.has(decision.source_work_id)).map((decision) => decision.source_work_id);
+    if (unknown.length > 0) throw new CurationError('not_found', `Works not loaded in this database: ${unknown.join(', ')}.`);
+    const named = new Set(decisions.map((decision) => decision.source_work_id));
+    const missing = works.filter((work) => !named.has(work.source_work_id)).map((work) => work.source_work_id);
+    if (missing.length > 0) throw new CurationError('refused', `Loaded works without a decision: ${missing.join(', ')}.`);
+
+    const outcome: RightsDecisionsOutcome = { written: [], unchanged: [] };
+    for (const decision of decisions) {
+      const collectionId = byWork.get(decision.source_work_id)!;
+      const [before] = await txRows<{ image: Record<string, unknown> }>(
+        tx,
+        sql`select to_jsonb(r) as image from collection_rights r where r.collection_id = ${collectionId} for update`,
+      );
+      const image = before?.image;
+      const same =
+        image !== undefined &&
+        image.retired_at === null &&
+        image.rights_status === decision.rights_status &&
+        image.english_policy === decision.english_policy &&
+        image.rights_note === (decision.rights_note ?? null) &&
+        image.citation === (decision.citation ?? null);
+      if (same) {
+        outcome.unchanged.push(decision.source_work_id);
+        continue;
+      }
+      await upsertRights(tx, actor, collectionId, decision, image);
+      outcome.written.push(decision.source_work_id);
+    }
+    return outcome;
   });
 }
 

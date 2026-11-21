@@ -18,7 +18,7 @@ export default async function CuratorFamilyPage({ params }: PageProps) {
   if (!family) notFound();
   return (
     <div>
-      <p className="border-b border-slate-800 pb-3 text-sm text-slate-400">
+      <p className="border-b border-rule pb-3 text-sm text-ink-muted">
         Curator preview: includes reports not yet published.
       </p>
       <FamilyView family={family} mode="curator" container="div" />

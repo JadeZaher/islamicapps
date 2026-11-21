@@ -14,7 +14,7 @@ import { VerdictsByTradition } from './components/VerdictsByTradition';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
-    return <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{children}</h2>;
+    return <h2 className="section-rule type-label mb-4">{children}</h2>;
 }
 
 export interface NarratorClientPageProps {
@@ -114,11 +114,11 @@ export interface NarratorClientPageProps {
 const HADITH_QUERY_LIMIT = 100;
 
 const TAB_TRIGGER_CLASS =
-    'flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-1 pb-3 pt-1 text-sm font-medium text-slate-400 shadow-none ' +
-    'hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-emerald-400 data-[state=active]:border-emerald-400 data-[state=active]:bg-transparent data-[state=active]:text-slate-100 data-[state=active]:shadow-none';
+    'flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-1 pb-3 pt-1 text-sm font-medium text-ink-muted ' +
+    'hover:text-ink data-[state=active]:border-ink data-[state=active]:bg-transparent data-[state=active]:text-ink ';
 
 const LINK_ROW_CLASS =
-    '-mx-3 block rounded-md px-3 py-2.5 outline-none transition-colors hover:bg-slate-900 focus-visible:ring-2 focus-visible:ring-emerald-400';
+    '-mx-3 block px-3 py-2.5 transition-colors hover:bg-sunken ';
 
 /** Narrator tabs. Every section renders only what the record holds; unknowns say "Unknown". See src/components/AGENTS.md §Narrator detail. */
 export default function NarratorClientPage({
@@ -148,7 +148,7 @@ export default function NarratorClientPage({
         <VerdictsByTradition verdicts={verdicts} />
         <Tabs defaultValue="biography" className="w-full">
             {/* A tab bar with one tab is noise: show it only when there is somewhere else to go. */}
-            <div className={hasOtherTabs ? 'mb-8 overflow-x-auto border-b border-slate-800 [scrollbar-width:none]' : 'sr-only'}>
+            <div className={hasOtherTabs ? 'mb-8 overflow-x-auto border-b border-rule [scrollbar-width:none]' : 'sr-only'}>
                 <TabsList className="h-auto w-max min-w-full justify-start gap-6 rounded-none bg-transparent p-0">
                     <TabsTrigger value="biography" className={TAB_TRIGGER_CLASS}>Biography</TabsTrigger>
                     {hasNetwork && <TabsTrigger value="network" className={TAB_TRIGGER_CLASS}>Teachers and students</TabsTrigger>}
@@ -158,20 +158,20 @@ export default function NarratorClientPage({
                 </TabsList>
             </div>
 
-            <TabsContent value="biography" className="space-y-10">
+            <TabsContent value="biography" className="max-w-[var(--measure-wide)] space-y-10">
                 {summary && (
                     <section>
                         <SectionHeading>Summary</SectionHeading>
-                        <p className="whitespace-pre-line leading-relaxed text-slate-200" dir="auto">{summary}</p>
+                        <p className="whitespace-pre-line leading-relaxed text-ink" dir="auto">{summary}</p>
                         {!narratorDetails.bio_summary && narratorDetails.bio && narratorDetails.biographical_narrative &&
                             narratorDetails.bio !== narratorDetails.biographical_narrative && (
-                            <p className="mt-4 whitespace-pre-line leading-relaxed text-slate-300" dir="auto">{narratorDetails.bio}</p>
+                            <p className="mt-4 whitespace-pre-line leading-relaxed text-ink" dir="auto">{narratorDetails.bio}</p>
                         )}
                     </section>
                 )}
 
                 {narratorDetails.is_prophet && (
-                    <p className="border-s-2 border-slate-700 ps-4 text-sm leading-relaxed text-slate-400">
+                    <p className="border-s-2 border-rule ps-4 text-sm leading-relaxed text-ink-muted">
                         The Prophet is the source of the corpus and is not assessed within narrator criticism (jarḥ wa taʿdīl).
                     </p>
                 )}
@@ -183,38 +183,38 @@ export default function NarratorClientPage({
                             <div className="mb-2 flex flex-wrap items-center gap-2">
                                 <ConsensusBadge verdict={narratorDetails.reliability_consensus} />
                                 {narratorDetails.reliability_disagreement && (
-                                    <span className="rounded border border-slate-700 px-2 py-0.5 text-xs text-slate-300">critics disagree</span>
+                                    <span className="type-label">critics disagree</span>
                                 )}
                                 {narratorDetails.is_companion && (
-                                    <span className="rounded border border-slate-700 px-2 py-0.5 text-xs text-slate-300">ṣaḥābī</span>
+                                    <span className="type-label">ṣaḥābī</span>
                                 )}
                             </div>
                         )}
                         {narratorDetails.reliability_consensus && (
-                            <p className="mb-4 text-xs text-slate-500">
+                            <p className="mb-4 text-xs text-ink-muted">
                                 Hand-entered summary label. The tradition and critic it belongs to are not yet recorded.
                             </p>
                         )}
                         {narratorDetails.is_companion && (
-                            <p className="mb-6 text-sm leading-relaxed text-slate-400">
+                            <p className="mb-6 text-sm leading-relaxed text-ink-muted">
                                 In Sunni rijāl literature Companions are not individually assessed (ʿadālat al-ṣaḥāba).
                                 Assessments from other traditions are listed where recorded.
                             </p>
                         )}
                         {narratorDetails.bio_tadil && (
                             <div className="mb-6">
-                                <h3 className="mb-2 text-sm font-medium text-slate-200">Taʿdīl · statements of trust</h3>
-                                <p className="whitespace-pre-line leading-loose text-slate-300" dir="auto">{narratorDetails.bio_tadil}</p>
+                                <h3 className="mb-2 text-sm font-medium text-ink">Taʿdīl · statements of trust</h3>
+                                <p className="whitespace-pre-line leading-loose text-ink" dir="auto">{narratorDetails.bio_tadil}</p>
                             </div>
                         )}
                         {narratorDetails.bio_jarh && (
                             <div className="mb-6">
-                                <h3 className="mb-2 text-sm font-medium text-slate-200">Jarḥ · statements of criticism</h3>
-                                <p className="whitespace-pre-line leading-loose text-slate-300" dir="auto">{narratorDetails.bio_jarh}</p>
+                                <h3 className="mb-2 text-sm font-medium text-ink">Jarḥ · statements of criticism</h3>
+                                <p className="whitespace-pre-line leading-loose text-ink" dir="auto">{narratorDetails.bio_jarh}</p>
                             </div>
                         )}
                         {narratorDetails.bio_provenance && (
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-ink-muted">
                                 {narratorDetails.bio_provenance === 'manual_phase_0'
                                     ? 'Uncited manual entry: edition, volume and page are pending.'
                                     : `Provenance: ${narratorDetails.bio_provenance}`}
@@ -244,17 +244,17 @@ export default function NarratorClientPage({
                         <section key={title}>
                             <SectionHeading>{title} ({people.length})</SectionHeading>
                             {people.length === 0 ? (
-                                <p className="text-sm text-slate-500">None recorded.</p>
+                                <p className="text-sm text-ink-muted">None recorded.</p>
                             ) : (
-                                <ul className="divide-y divide-slate-800/70">
+                                <ul className="divide-y divide-rule">
                                     {people.map((person) => (
                                         <li key={person.id}>
                                             <Link href={`/narrator/${encodeURIComponent(person.id)}`} className={LINK_ROW_CLASS}>
                                                 <NarratorName
                                                     english={person.name_english}
                                                     arabic={person.name_arabic}
-                                                    latinClassName="text-sm font-medium text-slate-100"
-                                                    arabicClassName="text-lg leading-relaxed text-slate-400"
+                                                    latinClassName="text-sm font-medium text-ink"
+                                                    arabicClassName="text-lg leading-relaxed text-ink-muted"
                                                 />
                                             </Link>
                                         </li>
@@ -268,15 +268,15 @@ export default function NarratorClientPage({
 
             {otherHadiths.length > 0 && (
                 <TabsContent value="hadiths">
-                    <ul className="divide-y divide-slate-800/70">
+                    <ul className="divide-y divide-rule">
                         {otherHadiths.map((hadith) => (
                             <li key={hadith.id}>
                                 <Link href={hadithPath(hadith.id)} className={LINK_ROW_CLASS}>
-                                    <span className="block font-medium text-slate-100">
+                                    <span className="block font-medium text-ink">
                                         {hadith.title ? <BilingualTitle text={hadith.title} /> : 'Untitled hadith'}
                                     </span>
                                     {hadith.primary_topic && hadith.primary_topic !== hadith.title && (
-                                        <span className="mt-0.5 block text-sm text-slate-400">{hadith.primary_topic}</span>
+                                        <span className="mt-0.5 block text-sm text-ink-muted">{hadith.primary_topic}</span>
                                     )}
                                 </Link>
                             </li>
@@ -300,9 +300,9 @@ export default function NarratorClientPage({
                                 <li key={tradition.id}>
                                     <TraditionBadge tradition={tradition.name} size="md" />
                                     {tradition.name_arabic && (
-                                        <ArabicText as="p" className="mt-1 text-slate-400">{tradition.name_arabic}</ArabicText>
+                                        <ArabicText as="p" className="mt-1 text-ink-muted">{tradition.name_arabic}</ArabicText>
                                     )}
-                                    {tradition.description && <p className="mt-1 text-sm text-slate-400">{tradition.description}</p>}
+                                    {tradition.description && <p className="mt-1 text-sm text-ink-muted">{tradition.description}</p>}
                                 </li>
                             ))}
                         </ul>
@@ -310,17 +310,17 @@ export default function NarratorClientPage({
                     {traditionConnections.hadiths_with_parallels.length > 0 && (
                         <section>
                             <SectionHeading>Hadith in these chains with recorded parallels</SectionHeading>
-                            <ul className="divide-y divide-slate-800/70">
+                            <ul className="divide-y divide-rule">
                                 {traditionConnections.hadiths_with_parallels.map((item) => (
                                     <li key={`${item.hadith.id}:${item.parallel.id}`}>
                                         <Link href={hadithPath(item.hadith.id)} className={LINK_ROW_CLASS}>
-                                            <span className="block font-medium text-slate-100">{item.hadith.title}</span>
+                                            <span className="block font-medium text-ink">{item.hadith.title}</span>
                                             <span className="mt-2 flex flex-wrap gap-2">
                                                 <TraditionBadge tradition={item.tradition.name} />
                                                 <ParallelTypeBadge type={item.parallel.parallel_type} />
                                                 <IsraIliyyatBadge status={item.parallel.isra_iliyyat_status} />
                                             </span>
-                                            <span className="mt-1.5 block text-xs text-slate-400">
+                                            <span className="mt-1.5 block text-xs text-ink-muted">
                                                 {item.source_text.title}
                                                 {item.source_text.canonical_reference && ` · ${item.source_text.canonical_reference}`}
                                             </span>

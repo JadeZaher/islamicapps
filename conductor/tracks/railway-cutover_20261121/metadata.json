@@ -1,7 +1,7 @@
 {
   "id": "railway-cutover_20261121",
   "title": "Railway cutover and observation",
-  "status": "planned",
+  "status": "in_progress",
   "priority": "P0",
   "created": "2026-11-21",
   "design_steps": "8, 9",
@@ -23,11 +23,11 @@
     "owns": [
       {
         "path": "src/db/ops/railway-tuning.sql",
-        "status": "future"
+        "status": "exists"
       },
       {
         "path": "src/scripts/db/approve-preview.ts",
-        "status": "future"
+        "status": "exists"
       },
       {
         "path": "src/scripts/db/backup-curation.ts",
@@ -36,6 +36,18 @@
       {
         "path": "src/scripts/db/export-decisions.ts",
         "status": "future"
+      },
+      {
+        "path": "src/db/ops/apply-tuning.ts",
+        "status": "exists"
+      },
+      {
+        "path": "src/scripts/db/record-rights.ts",
+        "status": "exists"
+      },
+      {
+        "path": "src/db/target-database.ts",
+        "status": "exists"
       }
     ],
     "serialized_with": {
@@ -48,5 +60,6 @@
       "Removing the Neo4j service, volume or variables needs recorded owner approval.",
       "Public Access on the Postgres service is on only for a load window."
     ]
-  }
+  },
+  "updated": "2026-11-21"
 }

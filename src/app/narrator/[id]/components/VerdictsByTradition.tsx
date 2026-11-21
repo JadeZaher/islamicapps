@@ -11,16 +11,16 @@ export function VerdictsByTradition({ verdicts }: { verdicts: NarratorVerdict[] 
     }
     if (groups.size === 0) return null;
     return (
-        <dl className="mb-8 space-y-2 text-sm">
+        <dl className="mb-8 type-small">
             {[...groups.entries()].map(([tradition, entries]) => (
-                <div key={tradition} className="flex flex-wrap items-center gap-2">
+                <div key={tradition} className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-rule py-2">
                     <dt>
                         <TraditionBadge tradition={tradition} />
                     </dt>
                     {entries.map((verdict) => (
                         <dd key={verdict.id} className="flex items-center gap-2">
                             <ConsensusBadge verdict={verdict.verdict} />
-                            {verdict.critic && <span className="text-slate-400">{verdict.critic}</span>}
+                            {verdict.critic && <span className="text-ink-muted">{verdict.critic}</span>}
                         </dd>
                     ))}
                 </div>

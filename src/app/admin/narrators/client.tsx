@@ -47,9 +47,9 @@ function VerdictsByTradition({ verdicts }: { verdicts: NarratorVerdict[] }) {
                     {entries.map((verdict) => (
                         <span key={verdict.id} className="flex items-center gap-1.5">
                             <ConsensusBadge verdict={verdict.verdict} />
-                            {verdict.critic && <span className="text-xs text-slate-400">{verdict.critic}</span>}
+                            {verdict.critic && <span className="text-xs text-ink-muted">{verdict.critic}</span>}
                             {verdict.status !== 'published' && (
-                                <span className="text-xs capitalize text-slate-500">{verdict.status}</span>
+                                <span className="text-xs capitalize text-ink-muted">{verdict.status}</span>
                             )}
                         </span>
                     ))}
@@ -63,7 +63,7 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-white">Narrators</h1>
+                <h1 className="text-3xl font-bold text-ink">Narrators</h1>
             </div>
 
             <SearchFilterBar
@@ -108,31 +108,31 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
 
             <div className="space-y-3">
                 {narrators.map((n) => (
-                    <Card key={n.id} className="bg-slate-900 border-slate-700 p-5 hover:border-slate-600 transition-colors">
+                    <Card key={n.id} className="pb-6">
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
                                 <h3 className="mb-1.5">
                                     <NarratorName
                                         english={n.name_english || 'Unnamed record'}
                                         arabic={n.name_arabic}
-                                        latinClassName="text-base font-semibold text-white"
-                                        arabicClassName="text-lg leading-relaxed text-slate-400"
+                                        latinClassName="text-base font-semibold text-ink"
+                                        arabicClassName="text-lg leading-relaxed text-ink-muted"
                                     />
                                 </h3>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <VerdictsByTradition verdicts={n.verdicts ?? []} />
                                     {n.tabaqah && (
-                                        <Badge className="bg-slate-800 text-slate-300 border-slate-600">
+                                        <Badge className="bg-sunken text-ink border-rule">
                                             {TABAQAH_LABELS[n.tabaqah] || n.tabaqah}
                                         </Badge>
                                     )}
                                     {n.death_year_hijri && (
-                                        <span className="text-xs text-slate-500">
+                                        <span className="text-xs text-ink-muted">
                                             d. {n.death_year_hijri} AH
                                         </span>
                                     )}
                                     {n.geographic_region && (
-                                        <span className="text-xs text-slate-500">
+                                        <span className="text-xs text-ink-muted">
                                             {n.geographic_region}
                                         </span>
                                     )}
@@ -142,7 +142,7 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
                                 asChild
                                 size="sm"
                                 variant="outline"
-                                className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 shrink-0 ml-4"
+                                className="border-rule text-ink hover:text-ink hover:bg-sunken shrink-0 ml-4"
                             >
                                 <Link href={`/narrator/${n.id}`} aria-label={`View ${n.name_english || 'narrator'}`}>View</Link>
                             </Button>
@@ -151,8 +151,8 @@ export function NarratorsClient({ narrators, pagination }: NarratorsClientProps)
                 ))}
 
                 {narrators.length === 0 && (
-                    <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
-                        <p className="text-center text-slate-400">No narrators found.</p>
+                    <Card className="border-rule border-dashed py-8">
+                        <p className="text-center text-ink-muted">No narrators found.</p>
                     </Card>
                 )}
 

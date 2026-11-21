@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Amiri } from "next/font/google";
+import { Inter, JetBrains_Mono, Amiri } from "next/font/google";
 import { PreviewNotice } from "@/components/PreviewNotice";
 import { CrawlPolicy, PrivatePreviewBanner, SiteFooter } from "@/components/archive/SiteChrome";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Font variables sit on <html> because design-tokens.css resolves them at :root (DESIGN.md §Typography).
+const inter = Inter({
+  variable: "--font-inter-face",
   subsets: ["latin"],
+  axes: ["opsz"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono-face",
   subsets: ["latin"],
 });
 
 const amiri = Amiri({
-  variable: "--font-amiri",
+  variable: "--font-amiri-face",
   subsets: ["arabic", "latin"],
   weight: ["400", "700"],
 });
@@ -35,16 +37,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // No theme class: the tokens follow the visitor's system setting (DESIGN.md §Tokens, owner decision).
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${amiri.variable} antialiased`}
-      >
+    <html lang="en" className={`${inter.variable} ${jetBrainsMono.variable} ${amiri.variable}`}>
+      <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-[60] focus:bg-paper focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink"
+        >
+          Skip to content
+        </a>
         <PrivatePreviewBanner />
         <CrawlPolicy />
         <SiteHeader />
         <PreviewNotice />
-        {children}
+        <div id="main-content" tabIndex={-1} className="outline-none">
+          {children}
+        </div>
         <SiteFooter />
       </body>
     </html>

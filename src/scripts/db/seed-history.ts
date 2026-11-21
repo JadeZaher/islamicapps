@@ -7,11 +7,10 @@
  *   npx tsx --conditions=react-server src/scripts/db/seed-history.ts            # writes
  *   npx tsx --conditions=react-server src/scripts/db/seed-history.ts --dry-run  # prints the plan only
  *
- * Targets DATABASE_URL only; refuses the production database.
+ * Targets the development database; production needs --database production --confirm-production.
  */
 import { createHash } from 'node:crypto';
-import path from 'node:path';
-import { config as loadEnvironment } from 'dotenv';
+import { resolveTargetDatabase } from '../../db/target-database';
 import type { SeedContent, SeedOutcome, SeedRow } from '../../db/queries/history-seed';
 
 export const SEED_ACTOR = 'system:seed';
@@ -352,12 +351,9 @@ export async function seedHistory(actor = SEED_ACTOR): Promise<{ locations: Seed
 }
 
 async function main() {
-  loadEnvironment({ path: path.resolve(process.cwd(), '.env.local'), quiet: true });
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error('DATABASE_URL is not set.');
-  if ((process.env.DATABASE_URL_PRODUCTION && url === process.env.DATABASE_URL_PRODUCTION) || new URL(url).pathname === '/railway') {
-    throw new Error('DATABASE_URL points at the production database; the seed is not run against production from here.');
-  }
+  // Development by default; production only with --database production --confirm-production (src/db/target-database.ts).
+  const target = resolveTargetDatabase(process.argv, { required: false });
+  console.log(`Target: ${target.name} database.`);
   const events = eventSeedRows();
   console.log(`Plan: ${LEGACY_LOCATIONS.length} locations, ${events.rows.length} events, ${EPOCHS.length} epochs (all unverified seed).`);
   console.log('Events loaded without a location link (no seeded location has that name; not guessed):');

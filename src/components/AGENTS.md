@@ -28,21 +28,23 @@ Display rules every public screen follows, and why. Standard: `C:/Users/atooz/.g
 ## Hadith detail
 
 One reading column (`max-w-3xl`, about 70 Arabic characters a line): header (reference, chapter), isnad
-(written sanad, then the identified narrators as an ordered rail), matn (Arabic first, the English labelled as an
-unreviewed translation), assessments by tradition, variant texts, parallels only when present, reference list.
-`loading.tsx` mirrors this column so nothing shifts when data arrives.
+Page header, then from 1024px an 8-column reading column (text, then isnad as an ordered rail with node and basis
+marks) beside a 4-column facts margin (the reference list); wide sections (timeline, tellings, assessments, variants,
+parallels) follow across all 12. DESIGN.md §Report reading column. `loading.tsx` mirrors this layout with flat
+placeholders so nothing shifts when data arrives.
 
 ## Narrator detail
 
-Same rhythm as the hadith page: uppercase section labels, no nested cards, one emerald accent. The tab bar is
+Same rhythm as the hadith page: uppercase section labels, no nested cards, one emerald accent (the design token
+`--color-accent`). The tab bar is
 hidden (kept for screen readers) when Biography is the only tab. `TabaqahTimeline` is an inline five-step scale
 that highlights only a recorded generation.
 
 ## Time and place (`timeline/`, `TabaqahTimeline.tsx`)
 
 Server components, no client JavaScript. Swiss style (owner direction 2026-11-21): flat SVG geometry, hairline rules,
-type carries hierarchy, one accent; every colour and spacing value is a variable on `.root` in
-`timeline/timeline.module.css`, so a design pass retunes it there. The SVG is `aria-hidden`; every datum is repeated in
+type carries hierarchy, one accent; every colour and spacing value on `.root` in `timeline/timeline.module.css` is a
+design token, and faint is never used for text. The SVG is `aria-hidden`; every datum is repeated in
 the lists below it (the accessible equivalent). Geometry is stretched (`preserveAspectRatio="none"`) with
 `non-scaling-stroke` hairlines; all text is HTML.
 
@@ -56,8 +58,9 @@ the lists below it (the accessible equivalent). Geometry is stretched (`preserve
 
 ## Route states
 
-Every `error.tsx` renders `RouteError` and every `not-found.tsx` renders `RouteMessage` (`RouteState.tsx`). One
-layout, one emerald primary action, one secondary link. `RouteError` logs only the digest (an error message can
+Every `error.tsx` renders `RouteError` and every `not-found.tsx` renders `RouteMessage` (`RouteState.tsx`): a label,
+a 20px title, one reason, one primary action (the default `Button`) and one quiet link; errors carry the 2px danger
+rule. `primaryActionClass` is kept empty for existing call sites. `RouteError` logs only the digest (an error message can
 carry query text) and retries once after two seconds, which covers a database waking from idle.
 
 Design system (tokens, typography, marks, diagrams): read and keep current `DESIGN.md` at the repository root before any UI change.
@@ -66,8 +69,8 @@ Design system (tokens, typography, marks, diagrams): read and keep current `DESI
 
 New surfaces (browse, report context, sources, banner, footer) follow the Swiss direction (owner, 2026-11-21): strict
 column, hairline rules instead of cards, flat fills, typography for hierarchy, one accent, flat geometric SVG marks
-(`Marks.tsx`). Colours and spacing are CSS variables scoped to `.archive` in `archive.css`, so the design-system pass
-can retune them in one place; `globals.css` and older components are untouched.
+(`Marks.tsx`, which re-exports the design-system marks). `archive.css` aliases its variables to the tokens and is
+imported by `globals.css` into the components layer, so utilities override it; do not import it from components.
 
 - `ReportTrail` / `ReportFooter` are mounted by `src/app/hadith/[id]/layout.tsx` (the page is another lane's): trail
   and canonical link above; previous/next in source order, source references, "Cite this report" and the dataset

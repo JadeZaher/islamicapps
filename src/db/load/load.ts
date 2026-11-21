@@ -160,6 +160,13 @@ export async function loadProjection(sql: LoaderSql, options: LoadOptions): Prom
           log(`  merged ${table.name}: +${merged.inserted} ~${merged.updated} derived ${merged.derivedUpdated} retired ${merged.retired}`);
         }
       });
+      // Statistics for the rows this transaction wrote (ANALYZE sees its own transaction's rows), so the facet, network
+      // and check queries are planned on real sizes; see src/db/load/AGENTS.md §Decisions (first load into an empty database).
+      await timed('analyze', async () => {
+        for (const entry of merge) {
+          if (entry.inserted + entry.updated + entry.derivedUpdated + entry.retired > 0) await tx.unsafe(`analyze ${quoteIdentifier(entry.table)}`);
+        }
+      });
       const [{ changed: facetRowsChanged }] = await timed('facets', () =>
         tx.unsafe<{ changed: number }[]>('select refresh_publication_facets(array(select id from hadiths)) as changed'),
       );

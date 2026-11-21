@@ -1,135 +1,182 @@
 /* Scan src/ only: the repo root holds large and OS-locked dataset files. */
 @import "tailwindcss" source("..");
-@import "tw-animate-css";
 @plugin "@tailwindcss/typography";
+/* Design tokens (DESIGN.md §Tokens). Unlayered, so they win over Tailwind's layered theme variables. */
+@import "./design-tokens.css";
+/* Archive surfaces, layered so utilities can override them. */
+@import "../components/archive/archive.css" layer(components);
 
-@custom-variant dark (&:is(.dark *));
+/* `.dark` on <html> forces dark; otherwise the tokens follow the system through light-dark(). */
+@custom-variant dark (&:where(:root.dark, :root.dark *));
 
+/* shadcn names used by src/components/ui/*, aliased onto the tokens. */
 @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --font-sans: var(--font-geist-sans);
-    --font-mono: var(--font-geist-mono);
-    --font-arabic: var(--font-amiri), "Noto Naskh Arabic", "Times New Roman", serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-    --radius-2xl: calc(var(--radius) + 8px);
-    --radius-3xl: calc(var(--radius) + 12px);
-    --radius-4xl: calc(var(--radius) + 16px);
+    --color-background: var(--color-paper);
+    --color-foreground: var(--color-ink);
+    --color-card: var(--color-surface);
+    --color-card-foreground: var(--color-ink);
+    --color-popover: var(--color-surface);
+    --color-popover-foreground: var(--color-ink);
+    --color-primary: var(--color-accent);
+    --color-primary-foreground: var(--color-on-accent);
+    --color-secondary: var(--color-sunken);
+    --color-secondary-foreground: var(--color-ink);
+    --color-muted: var(--color-sunken);
+    --color-muted-foreground: var(--color-ink-muted);
+    --color-accent-foreground: var(--color-ink);
+    --color-destructive: var(--color-danger);
+    --color-border: var(--color-rule);
+    --color-input: var(--color-control);
+    --color-ring: var(--color-focus);
+
+    --font-sans: var(--font-latin);
+
+    --radius-xs: 0;
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius-2xl: 0;
+    --radius-3xl: 0;
+    --radius-4xl: 0;
+
+    /* No shadows, glows, blurs or entrance motion (DESIGN.md §Principles). */
+    --shadow-*: initial;
+    --inset-shadow-*: initial;
+    --drop-shadow-*: initial;
+    --text-shadow-*: initial;
+    --blur-*: initial;
+    --animate-*: initial;
+
+    /*
+     * One palette (DESIGN.md §Colour, "legacy palette aliases"). The app was written dark-only in Tailwind's
+     * palette; each palette name now resolves to the token that played its role, so unconverted screens follow
+     * both themes and carry one accent. New code uses the token utilities below, never palette names.
+     */
+    --color-white: var(--color-ink);
+    --color-black: var(--color-paper);
+    --color-slate-50: var(--color-ink);
+    --color-slate-100: var(--color-ink);
+    --color-slate-200: var(--color-ink);
+    --color-slate-300: var(--color-ink-muted);
+    --color-slate-400: var(--color-ink-muted);
+    --color-slate-500: var(--color-ink-muted);
+    --color-slate-600: var(--color-control);
+    --color-slate-700: var(--color-rule);
+    --color-slate-800: var(--color-rule);
+    --color-slate-900: var(--color-sunken);
+    --color-slate-950: var(--color-paper);
+    --color-gray-300: var(--color-ink-muted);
+    --color-gray-400: var(--color-ink-muted);
+    --color-gray-500: var(--color-ink-muted);
+    --color-emerald-50: var(--color-accent-wash);
+    --color-emerald-100: var(--color-accent);
+    --color-emerald-200: var(--color-accent);
+    --color-emerald-300: var(--color-accent);
+    --color-emerald-400: var(--color-accent);
+    --color-emerald-500: var(--color-accent);
+    --color-emerald-600: var(--color-accent);
+    --color-emerald-700: var(--color-accent);
+    --color-emerald-800: var(--color-accent);
+    --color-emerald-900: var(--color-accent-wash);
+    --color-emerald-950: var(--color-accent-wash);
+    --color-red-200: var(--color-danger);
+    --color-red-300: var(--color-danger);
+    --color-red-400: var(--color-danger);
+    --color-red-500: var(--color-danger);
+    --color-red-600: var(--color-danger);
+    --color-red-700: var(--color-danger);
+    --color-red-900: var(--color-danger);
+    --color-red-950: var(--color-danger);
+    --color-rose-300: var(--color-danger);
+    --color-rose-400: var(--color-danger);
+    --color-rose-500: var(--color-danger);
+    --color-amber-200: var(--color-ink-muted);
+    --color-amber-300: var(--color-ink-muted);
+    --color-amber-400: var(--color-ink-muted);
+    --color-amber-500: var(--color-ink-muted);
+    --color-amber-600: var(--color-ink-muted);
+    --color-amber-700: var(--color-ink-muted);
+    --color-amber-900: var(--color-sunken);
+    --color-amber-950: var(--color-sunken);
+    --color-orange-300: var(--color-ink-muted);
+    --color-orange-400: var(--color-ink-muted);
+    --color-orange-500: var(--color-ink-muted);
+    --color-yellow-300: var(--color-ink-muted);
+    --color-yellow-400: var(--color-ink-muted);
+    --color-yellow-500: var(--color-ink-muted);
+    --color-green-300: var(--color-ink-muted);
+    --color-green-400: var(--color-ink-muted);
+    --color-green-500: var(--color-ink-muted);
+    --color-teal-300: var(--color-ink-muted);
+    --color-teal-400: var(--color-ink-muted);
+    --color-teal-500: var(--color-ink-muted);
+    --color-cyan-300: var(--color-ink-muted);
+    --color-cyan-400: var(--color-ink-muted);
+    --color-cyan-500: var(--color-ink-muted);
+    --color-cyan-700: var(--color-rule);
+    --color-sky-300: var(--color-ink-muted);
+    --color-sky-400: var(--color-ink-muted);
+    --color-sky-500: var(--color-ink-muted);
+    --color-sky-700: var(--color-rule);
+    --color-blue-300: var(--color-ink-muted);
+    --color-blue-400: var(--color-ink-muted);
+    --color-blue-500: var(--color-ink-muted);
+    --color-indigo-300: var(--color-ink-muted);
+    --color-indigo-400: var(--color-ink-muted);
+    --color-indigo-500: var(--color-ink-muted);
+    --color-violet-300: var(--color-ink-muted);
+    --color-violet-400: var(--color-ink-muted);
+    --color-violet-500: var(--color-ink-muted);
+    --color-purple-300: var(--color-ink-muted);
+    --color-purple-400: var(--color-ink-muted);
+    --color-purple-500: var(--color-ink-muted);
+    --color-fuchsia-300: var(--color-ink-muted);
+    --color-fuchsia-500: var(--color-ink-muted);
+    --color-pink-300: var(--color-ink-muted);
+    --color-pink-500: var(--color-ink-muted);
+    --color-lime-300: var(--color-ink-muted);
+    --color-lime-500: var(--color-ink-muted);
 }
 
-:root {
-    --radius: 0.5rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+/* Token utilities (bg-paper, text-ink-muted, border-rule, ...). `reference` emits no variables: the tokens own them. */
+@theme inline reference {
+    --color-paper: var(--color-paper);
+    --color-surface: var(--color-surface);
+    --color-sunken: var(--color-sunken);
+    --color-band-alternate: var(--color-band-alternate);
+    --color-ink: var(--color-ink);
+    --color-ink-muted: var(--color-ink-muted);
+    --color-ink-faint: var(--color-ink-faint);
+    --color-rule: var(--color-rule);
+    --color-rule-strong: var(--color-rule-strong);
+    --color-control: var(--color-control);
+    --color-accent: var(--color-accent);
+    --color-accent-wash: var(--color-accent-wash);
+    --color-on-accent: var(--color-on-accent);
+    --color-focus: var(--color-focus);
+    --color-danger: var(--color-danger);
+    --color-notice: var(--color-notice);
+    --color-on-notice: var(--color-on-notice);
 
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dark {
-    /* slate-950: one page background, matching the site header. */
-    --background: oklch(0.129 0.042 264.695);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --font-mono: var(--font-mono);
+    --font-arabic: var(--font-arabic);
 }
 
 @layer base {
     * {
-        @apply border-border outline-ring/50;
+        @apply border-border;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
     }
 
     body {
-        @apply bg-background text-foreground font-sans;
+        background: var(--color-paper);
+        color: var(--color-ink);
+        font: 400 var(--text-body) / var(--leading-body) var(--font-latin);
+        font-optical-sizing: auto;
         -webkit-font-smoothing: antialiased;
     }
 
@@ -140,48 +187,277 @@
     h5,
     h6 {
         font-weight: 600;
-        letter-spacing: -0.02em;
+        letter-spacing: var(--tracking-heading);
     }
 
-    /* Arabic: harakat need ~2x line height; any letter-spacing breaks letter joining; never justified. */
+    :focus-visible {
+        outline: var(--focus-width) solid var(--color-focus);
+        outline-offset: var(--focus-offset);
+    }
+
+    ::selection {
+        background: var(--color-accent-wash);
+        color: var(--color-ink);
+    }
+
+    /* Arabic (DESIGN.md §Arabic beside Latin): Amiri, line height 2, never letter-spaced, justified or transformed. */
     :lang(ar),
     [dir="rtl"] {
+        font-family: var(--font-arabic);
         line-height: 2;
         letter-spacing: 0;
         word-spacing: normal;
         text-align: start;
         text-transform: none;
+        font-style: normal;
+    }
+
+    /* A Latin code inside Arabic keeps the Latin face. */
+    :lang(ar) :lang(en) {
+        font-family: var(--font-latin);
     }
 }
 
+/* Type roles and shared patterns from DESIGN.md; components compose these rather than repeating utility strings. */
 @layer components {
-    .animate-fade-in {
-        animation: fadeIn var(--transition-base) ease-in;
+    .wrap {
+        max-width: calc(var(--grid-max) + 2 * var(--page-margin));
+        margin-inline: auto;
+        padding-inline: var(--page-margin);
     }
 
-    .animate-slide-up {
-        animation: slideUp var(--transition-slow) ease-out;
+    .type-label {
+        font-size: var(--text-label);
+        line-height: var(--leading-label);
+        font-weight: 600;
+        letter-spacing: var(--tracking-label);
+        text-transform: uppercase;
+        color: var(--color-ink-muted);
     }
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
+    .type-small {
+        font-size: var(--text-small);
+        line-height: var(--leading-small);
+    }
+
+    .type-reading {
+        font-size: var(--text-reading);
+        line-height: var(--leading-reading);
+    }
+
+    .type-h1 {
+        font-size: var(--text-heading-1);
+        line-height: var(--leading-heading-1);
+        font-weight: 800;
+        letter-spacing: var(--tracking-heading);
+    }
+
+    .type-h2 {
+        font-size: var(--text-heading-2);
+        line-height: var(--leading-heading-2);
+        font-weight: 700;
+        letter-spacing: var(--tracking-heading);
+    }
+
+    .type-h3 {
+        font-size: var(--text-heading-3);
+        line-height: var(--leading-heading-3);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .type-display {
+        font-size: var(--text-display);
+        line-height: var(--leading-display);
+        font-weight: 800;
+        letter-spacing: var(--tracking-display);
+    }
+
+    .type-code {
+        font: 500 var(--text-label) / var(--leading-label) var(--font-mono);
+        letter-spacing: 0.02em;
+    }
+
+    .arabic-inline {
+        font-family: var(--font-arabic);
+        font-size: var(--text-arabic-inline);
+        line-height: var(--leading-arabic-inline);
+    }
+
+    .arabic-reading {
+        font-family: var(--font-arabic);
+        font-size: var(--text-arabic-reading);
+        line-height: var(--leading-arabic-reading);
+    }
+
+    .arabic-display {
+        font-family: var(--font-arabic);
+        font-size: var(--text-arabic-display);
+        line-height: var(--leading-arabic-display);
+    }
+
+    /* Page header: breadcrumbs, title, one metadata line, closed by a 2px ink rule. */
+    .page-header {
+        padding-block: var(--space-6) var(--space-5);
+        border-bottom: var(--rule-strong) solid var(--color-rule-strong);
+    }
+
+    /* A section opens with a 1px ink rule above its label. */
+    .section-rule {
+        padding-top: var(--space-3);
+        border-top: var(--rule-hairline) solid var(--color-rule-strong);
+    }
+
+    .link-prose {
+        color: var(--color-accent);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+    }
+
+    .link-row {
+        text-decoration: underline;
+        text-decoration-color: var(--color-rule);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+        transition: text-decoration-color var(--motion-fast) var(--motion-ease);
+    }
+
+    .link-row:hover {
+        text-decoration-color: var(--color-accent);
+    }
+
+    .link-term {
+        text-decoration: underline dotted;
+        text-decoration-color: var(--color-ink-muted);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.25em;
+    }
+
+    .link-term:hover {
+        text-decoration-color: var(--color-accent);
+    }
+
+    /* Data table (DESIGN.md §Tables): stacks into label/value rows below 640px, never scrolls sideways. */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--text-small);
+        line-height: var(--leading-small);
+    }
+
+    .data-table th {
+        text-align: start;
+        font-size: var(--text-label);
+        line-height: var(--leading-label);
+        font-weight: 600;
+        letter-spacing: var(--tracking-label);
+        text-transform: uppercase;
+        color: var(--color-ink-muted);
+        padding: 0 var(--space-3) var(--space-2) 0;
+        border-bottom: var(--rule-hairline) solid var(--color-rule-strong);
+        vertical-align: bottom;
+    }
+
+    .data-table td {
+        padding: var(--space-2) var(--space-3) var(--space-2) 0;
+        border-bottom: var(--rule-hairline) solid var(--color-rule);
+        vertical-align: baseline;
+    }
+
+    .data-table .num-cell {
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .data-table tr[aria-current] td,
+    .data-table tr.is-current td {
+        background: var(--color-accent-wash);
+    }
+
+    .data-table tr[aria-current] td:first-child,
+    .data-table tr.is-current td:first-child {
+        box-shadow: inset 2px 0 0 var(--color-accent);
+        padding-inline-start: var(--space-2);
+    }
+
+    @media (max-width: 39.99rem) {
+        .data-table thead {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
         }
 
-        to {
-            opacity: 1;
+        .data-table,
+        .data-table tbody,
+        .data-table tr,
+        .data-table td {
+            display: block;
+            width: 100%;
+        }
+
+        .data-table tr {
+            padding-block: var(--space-2);
+            border-bottom: var(--rule-hairline) solid var(--color-rule);
+        }
+
+        .data-table td {
+            border: 0;
+            padding: 0 0 0 7.75rem;
+            position: relative;
+        }
+
+        .data-table td[data-label]::before {
+            content: attr(data-label);
+            color: var(--color-ink-muted);
+            position: absolute;
+            inset-inline-start: 0;
+            width: 7rem;
+        }
+
+        .data-table td:not([data-label]) {
+            padding-inline-start: 0;
+        }
+
+        .data-table .num-cell {
+            text-align: start;
+        }
+
+        .data-table tr[aria-current],
+        .data-table tr.is-current {
+            background: var(--color-accent-wash);
+            box-shadow: inset 2px 0 0 var(--color-accent);
+            padding-inline-start: var(--space-3);
+        }
+
+        .data-table tr[aria-current] td,
+        .data-table tr.is-current td,
+        .data-table tr[aria-current] td:first-child,
+        .data-table tr.is-current td:first-child {
+            background: none;
+            box-shadow: none;
+            padding-inline-start: 7.75rem;
         }
     }
 
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
+    /* Loading placeholder: a flat sunken bar, no shimmer or pulse. */
+    .placeholder-bar {
+        background: var(--color-sunken);
+        height: 0.75rem;
+    }
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .placeholder-bar[data-script="ar"] {
+        height: 1.25rem;
+    }
+}
+
+/* Coarse pointers get 44px targets (DESIGN.md §Accessibility). */
+@media (pointer: coarse) {
+    [data-slot="button"],
+    [data-slot="input"],
+    select {
+        min-height: 2.75rem;
     }
 }

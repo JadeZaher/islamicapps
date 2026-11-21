@@ -58,7 +58,7 @@ function toForm(epoch: EpochRecord): FormState {
     };
 }
 
-const FIELD = 'mt-1 bg-slate-800 border-slate-700 text-white';
+const FIELD = 'mt-1 bg-surface border-control text-ink';
 
 /** Era list grouped by reckoning, with an inline editor for one era at a time. */
 export function EpochsManagerClient({ available, epochs }: { available: boolean; epochs: EpochRecord[] }) {
@@ -71,8 +71,8 @@ export function EpochsManagerClient({ available, epochs }: { available: boolean;
     if (!available) {
         return (
             <div>
-                <h1 className="mb-4 text-3xl font-bold text-white">Eras</h1>
-                <p className="text-slate-400">
+                <h1 className="mb-4 text-3xl font-bold text-ink">Eras</h1>
+                <p className="text-ink-muted">
                     The eras table is not in this database yet. Its migration is pending (src/db/ops/pending/epochs.pending.sql).
                 </p>
             </div>
@@ -104,7 +104,7 @@ export function EpochsManagerClient({ available, epochs }: { available: boolean;
 
     const input = (key: keyof FormState, label: string, type = 'text') => (
         <div>
-            <Label htmlFor={`epoch-${key}`} className="text-slate-300">{label}</Label>
+            <Label htmlFor={`epoch-${key}`} className="text-ink">{label}</Label>
             <Input id={`epoch-${key}`} type={type} value={String(form?.[key] ?? '')} className={FIELD}
                 onChange={(event) => setForm((current) => (current ? { ...current, [key]: event.target.value } : current))} />
         </div>
@@ -112,32 +112,32 @@ export function EpochsManagerClient({ available, epochs }: { available: boolean;
 
     return (
         <div>
-            <h1 className="mb-2 text-3xl font-bold text-white">Eras</h1>
-            <p className="mb-8 text-sm text-slate-400">
+            <h1 className="mb-2 text-3xl font-bold text-ink">Eras</h1>
+            <p className="mb-8 text-sm text-ink-muted">
                 Hijri years. Where a boundary is disputed it is a range. Publishing needs a reviewed state and a citation.
             </p>
             {[...groups.entries()].map(([group, rows]) => (
                 <section key={group} className="mb-10">
-                    <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{group}</h2>
-                    <ul className="divide-y divide-slate-800 border-y border-slate-800">
+                    <h2 className="mb-3 type-label">{group}</h2>
+                    <ul className="divide-y divide-rule border-y border-rule">
                         {rows.map((epoch) => (
                             <li key={epoch.id} className={`py-3 ${epoch.parent_epoch_id ? 'ps-6' : ''}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <p className="font-medium text-slate-100">{epoch.name}</p>
-                                        <p className="text-sm text-slate-400">
+                                        <p className="font-medium text-ink">{epoch.name}</p>
+                                        <p className="text-sm text-ink-muted">
                                             Start {yearRange(epoch.start_year_hijri, epoch.start_year_hijri_latest)} · End{' '}
                                             {epoch.end_year_hijri === null ? 'continuing' : yearRange(epoch.end_year_hijri, epoch.end_year_hijri_latest)} ·{' '}
                                             {stateLabel(epoch.verification_status)}{epoch.publication_ready ? ', published' : ''}
                                         </p>
                                         {epoch.alternate_names.length > 0 && (
-                                            <p className="text-xs text-slate-500">
+                                            <p className="text-xs text-ink-muted">
                                                 Also called {epoch.alternate_names.map((alternate) => `${alternate.name} (${alternate.used_by})`).join('; ')}
                                             </p>
                                         )}
                                     </div>
                                     <div className="flex shrink-0 gap-2">
-                                        <Button size="sm" variant="outline" className="border-slate-600 text-slate-300"
+                                        <Button size="sm" variant="outline" className="border-rule text-ink"
                                             aria-label={`Edit ${epoch.name}`}
                                             onClick={() => { setEditingId(epoch.id); setForm(toForm(epoch)); setError(null); }}>
                                             Edit
@@ -149,9 +149,9 @@ export function EpochsManagerClient({ available, epochs }: { available: boolean;
                                 </div>
                                 {editingId === epoch.id && form && (
                                     <form onSubmit={save} className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2" aria-busy={saving}>
-                                        {error && <p role="alert" className="text-sm text-red-400 md:col-span-2">{error}</p>}
+                                        {error && <p role="alert" className="text-sm text-danger md:col-span-2">{error}</p>}
                                         {epoch.verification_status === 'unverified_seed' && (
-                                            <p className="text-xs text-slate-400 md:col-span-2">
+                                            <p className="text-xs text-ink-muted md:col-span-2">
                                                 This is seed data. Saving takes it out of the seed, so later seed runs leave it alone.
                                             </p>
                                         )}
@@ -162,34 +162,34 @@ export function EpochsManagerClient({ available, epochs }: { available: boolean;
                                         {input('end_year_hijri', 'End (earliest; blank if continuing)', 'number')}
                                         {input('end_year_hijri_latest', 'End (latest, if disputed)', 'number')}
                                         <div className="md:col-span-2">
-                                            <Label htmlFor="epoch-boundary_note" className="text-slate-300">Boundary note</Label>
+                                            <Label htmlFor="epoch-boundary_note" className="text-ink">Boundary note</Label>
                                             <Textarea id="epoch-boundary_note" value={form.boundary_note} className={FIELD}
                                                 onChange={(event) => setForm({ ...form, boundary_note: event.target.value })} />
                                         </div>
                                         <div className="md:col-span-2">
-                                            <Label htmlFor="epoch-overview" className="text-slate-300">Overview</Label>
+                                            <Label htmlFor="epoch-overview" className="text-ink">Overview</Label>
                                             <Textarea id="epoch-overview" value={form.overview} className={FIELD}
                                                 onChange={(event) => setForm({ ...form, overview: event.target.value })} />
                                         </div>
                                         <div>
-                                            <Label htmlFor="epoch-verification_status" className="text-slate-300">Review state</Label>
+                                            <Label htmlFor="epoch-verification_status" className="text-ink">Review state</Label>
                                             <select id="epoch-verification_status" value={form.verification_status}
                                                 onChange={(event) => setForm({ ...form, verification_status: event.target.value })}
-                                                className="mt-1 w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-white">
+                                                className="mt-1 w-full border border-rule bg-sunken px-3 py-2 text-ink">
                                                 {VERIFICATION_STATES.map((state) => <option key={state.value} value={state.value}>{state.label}</option>)}
                                             </select>
                                         </div>
                                         {input('citation_id', 'Citation id')}
-                                        <label className="flex items-center gap-2 text-sm text-slate-300">
+                                        <label className="flex items-center gap-2 text-sm text-ink">
                                             <input type="checkbox" checked={form.publication_ready}
                                                 onChange={(event) => setForm({ ...form, publication_ready: event.target.checked })} />
                                             Ready to publish
                                         </label>
                                         <div className="flex gap-3 md:col-span-2">
-                                            <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+                                            <Button type="submit" disabled={saving} className="bg-accent text-on-accent hover:bg-ink hover:text-paper">
                                                 {saving ? 'Saving...' : 'Save'}
                                             </Button>
-                                            <Button type="button" variant="outline" disabled={saving} className="border-slate-600 text-slate-300"
+                                            <Button type="button" variant="outline" disabled={saving} className="border-rule text-ink"
                                                 onClick={() => { setEditingId(null); setForm(null); }}>
                                                 Cancel
                                             </Button>

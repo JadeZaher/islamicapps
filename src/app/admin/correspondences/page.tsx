@@ -53,10 +53,10 @@ export default async function CorrespondenceQueuePage({ searchParams }: PageProp
   };
 
   return (
-    <div className="space-y-6 text-slate-100">
+    <div className="space-y-6 text-ink">
       <header>
         <h1 className="text-2xl font-semibold">Report correspondences</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-ink-muted">
           Machine-found pairs of reports with shared wording, weakest overlap first. Confirm a pair only when the two texts
           carry the same report or passage; reject a shared formula, verse or ruling. Overlap is shared wording for same and
           variant wording, and the share of the shorter text for a shared passage.
@@ -72,28 +72,29 @@ export default async function CorrespondenceQueuePage({ searchParams }: PageProp
             ['shown', 'Display', SHOWN, filters.shown],
           ] as const
         ).map(([name, label, options, value]) => (
-          <label key={name} className="flex flex-col gap-1 text-slate-400">
+          <label key={name} className="flex flex-col gap-1 text-ink-muted">
             {label}
-            <select name={name} defaultValue={value} className="border border-slate-700 bg-slate-950 px-2 py-1 text-slate-100">
+            <select name={name} defaultValue={value} className="border border-rule bg-paper px-2 py-1 text-ink">
               {Object.entries(options).map(([key, text]) => (
                 <option key={key} value={key}>{text}</option>
               ))}
             </select>
           </label>
         ))}
-        <button type="submit" className="border border-slate-600 px-3 py-1 text-slate-100 hover:border-slate-400">Apply</button>
+        <button type="submit" className="h-10 border border-ink px-4 text-sm font-semibold text-ink hover:bg-ink hover:text-paper">Apply</button>
       </form>
 
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-ink-muted">
         {result.totalCapped ? `${result.total.toLocaleString('en')}+` : result.total.toLocaleString('en')} pairs
       </p>
 
       {result.items.length === 0 ? (
-        <p className="text-slate-400">No pairs match these filters.</p>
+        <p className="text-ink-muted">No pairs match these filters.</p>
       ) : (
+        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Correspondence pairs">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-slate-700 text-left text-slate-400">
+            <tr className="border-b border-rule text-left text-ink-muted">
               <th className="py-2 pr-4 font-medium">Report A</th>
               <th className="py-2 pr-4 font-medium">Report B</th>
               <th className="py-2 pr-4 font-medium">Class</th>
@@ -104,18 +105,18 @@ export default async function CorrespondenceQueuePage({ searchParams }: PageProp
           </thead>
           <tbody>
             {result.items.map((item) => (
-              <tr key={item.id} className="border-b border-slate-800">
-                <td className="py-2 pr-4">{item.a.tradition} · {item.a.source_work} {item.a.hadith_no ?? <span className="text-slate-500">{item.a.hadith_id.replace(/^hadith:/, '')}</span>}</td>
-                <td className="py-2 pr-4">{item.b.tradition} · {item.b.source_work} {item.b.hadith_no ?? <span className="text-slate-500">{item.b.hadith_id.replace(/^hadith:/, '')}</span>}</td>
+              <tr key={item.id} className="border-b border-rule">
+                <td className="py-2 pr-4">{item.a.tradition} · {item.a.source_work} {item.a.hadith_no ?? <span className="text-ink-muted">{item.a.hadith_id.replace(/^hadith:/, '')}</span>}</td>
+                <td className="py-2 pr-4">{item.b.tradition} · {item.b.source_work} {item.b.hadith_no ?? <span className="text-ink-muted">{item.b.hadith_id.replace(/^hadith:/, '')}</span>}</td>
                 <td className="py-2 pr-4">{CORRESPONDENCE_LABEL[item.relation_class]}{item.shown ? '' : ' (below threshold)'}</td>
                 <td className="py-2 pr-4 text-right tabular-nums" title={item.relation_class === 'partial_overlap' ? 'Share of the shorter text inside the longer' : 'Shared wording (Jaccard)'}>
                   {Math.round(item.measure * 100)}%
                 </td>
-                <td className="py-2 pr-4 text-slate-400">{item.decision ?? '—'}</td>
+                <td className="py-2 pr-4 text-ink-muted">{item.decision ?? '—'}</td>
                 <td className="py-2">
                   <Link
                     href={`/admin/correspondences/review?a=${encodeURIComponent(item.a.hadith_id)}&b=${encodeURIComponent(item.b.hadith_id)}`}
-                    className="text-emerald-400 underline-offset-4 hover:underline"
+                    className="text-accent underline-offset-4 hover:underline"
                   >
                     Review
                   </Link>
@@ -124,11 +125,12 @@ export default async function CorrespondenceQueuePage({ searchParams }: PageProp
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       <nav aria-label="Pages" className="flex gap-4 text-sm">
         {page > 1 && <Link href={query({ page: page - 1 })} className="underline-offset-4 hover:underline">Previous</Link>}
-        <span className="text-slate-500">Page {result.page} of {result.totalPages}</span>
+        <span className="text-ink-muted">Page {result.page} of {result.totalPages}</span>
         {page < result.totalPages && <Link href={query({ page: page + 1 })} className="underline-offset-4 hover:underline">Next</Link>}
       </nav>
     </div>

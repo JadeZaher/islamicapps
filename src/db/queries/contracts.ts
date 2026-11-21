@@ -1,4 +1,5 @@
 /** Read contracts the query layer returns (section 9.4). Types only, safe to import from client components. */
+import type { SourceReference } from '@/lib/sources/report-credit';
 import type { HadithTraditionCode, Paginated } from './sql-helpers';
 
 export type { HadithTraditionCode, Paginated };
@@ -53,10 +54,15 @@ export interface HadithVariation {
   source: 'hadith_node';
 }
 
+/** How a report's English was obtained, its label and its credit (owner decision 2026-11-21). */
 export interface EnglishAttribution {
   state: string;
   source: string | null;
   translator: string | null;
+  model: string | null;
+  /** "Source-provided English, not reviewed here" or "Unreviewed machine translation (<model> | model not recorded)". */
+  label: string;
+  reference: SourceReference | null;
 }
 
 /** Hadith detail; `assessments` replaces display_grade / auto_calculated_grade / transmission_type. */
@@ -172,15 +178,24 @@ export interface NarratorBio {
   bio_summary: string | null;
 }
 
-/** What the rawi lexicon says; a lexicon claim, never shown on public pages by default (Q4). */
+/**
+ * What the narrator lexicon (MSD) says: a lexicon claim, never a cited fact. Public pages show the dates and places
+ * labelled "narrator lexicon, not yet cited" (owner, 2026-11-21); `held_back` names fields withheld there because a
+ * rijal work disagrees (src/db/queries/AGENTS.md §Lexicon on public narrator pages). `bio` is reviewer-only.
+ */
 export interface NarratorLexicon {
   review_state: string;
   birth_year_hijri: number | null;
   death_year_hijri: number | null;
   birth_year_gregorian: number | null;
   death_year_gregorian: number | null;
+  birth_place: string | null;
+  death_place: string | null;
   geographic_region: string | null;
   bio: string | null;
+  /** Where in the lexicon the row comes from, e.g. `all_rawis.csv#scholar_indx=10`. */
+  source_locator: string | null;
+  held_back: Array<{ field: 'death_year'; reason: string; taqrib_entry: string | null }>;
 }
 
 export interface NarratorHadithSummary {
@@ -208,7 +223,7 @@ export interface NarratorDetail {
   verdicts: NarratorVerdict[];
   /** Published bio on public pages; any live bio in reviewer mode. */
   bio: NarratorBio | null;
-  /** Null on public pages (Q4); present in reviewer mode. */
+  /** Dates and places on public pages (held-back fields removed); everything in reviewer mode; null when no row. */
   lexicon: NarratorLexicon | null;
   hadiths: Paginated<NarratorHadithSummary>;
   locations: NarratorLocation[];

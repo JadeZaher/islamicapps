@@ -9,5 +9,6 @@ without text) live in `DESIGN.md` at the repository root, §Marks; change the dr
   before the basis label. Only diagram legends pair a mark with its words once and then use the mark alone.
 - Marks are fixed glyphs and are not mirrored in right-to-left text. `ArrowIcon` is physical; swap direction at
   the call site for "back"/"next" in RTL.
-- `IDENTITY_BASIS_LABEL` duplicates `BASIS_LABEL` in `src/app/hadith/[id]/components/IsnadChain.tsx` until the
-  application pass (DESIGN.md §Applying the system) makes this file the single copy.
+- `IDENTITY_BASIS_LABEL` is the single copy of the basis wording; `IsnadChain.tsx` imports it.
+- `TRADITION_DASH` is the single set of tradition line patterns; the family view's `labels.ts` derives from it.
+- `ProductMark` is the header wordmark (proposed in DESIGN.md §Site header).

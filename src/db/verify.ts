@@ -275,6 +275,13 @@ async function main() {
     expect(shown.includes("'rejected'") && shown.includes("'confirmed'"), 'report_correspondence_shown_pairs lost the reviewer-decision rule');
     expect(shown.includes('bound_arabic_sha256_a'), 'report_correspondence_shown_pairs no longer binds decisions to the Arabic');
 
+    // The English publication rule (0009): machine English only under the new policy, unknown provenance never.
+    const [{ english }] = await sql<{ english: string }[]>`select pg_get_viewdef('public_translations'::regclass) as english`;
+    expect(english.includes("'machine_unreviewed'") && english.includes("'source_provided_and_machine_allowed'"),
+      'public_translations does not carry the 0009 machine-English policy');
+    expect(!english.includes('unknown_provenance'), 'public_translations exposes English of unknown provenance');
+    expect(english.includes("'complete'") && english.includes('arabic_sha256'), 'public_translations lost the quality or hash gate');
+
     console.log(
       [
         `server:              ${(await sql<{ version: string }[]>`select current_setting('server_version') as version`)[0].version}`,

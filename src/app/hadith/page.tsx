@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next';
+import { HADITH_TRADITIONS, TraditionMark } from '@/components/marks';
 import Link from 'next/link';
 import { searchVisibleHadiths } from '@/db/queries/hadith';
 import { requestVisibility } from '@/lib/auth/visibility';
@@ -13,6 +14,9 @@ import { TraditionBadge } from '@/components/badges';
 import { Button } from '@/components/ui/button';
 import { HADITH_TRADITION_OPTIONS } from '@/lib/constants/traditions';
 
+// "All" first, then alphabetical: no tradition is listed as the default (DESIGN.md §Principles).
+const TRADITION_FILTERS = [...HADITH_TRADITION_OPTIONS].sort((a, b) => (a.value === '' ? -1 : b.value === '' ? 1 : a.value.localeCompare(b.value)));
+
 export const metadata: Metadata = { title: 'Hadith' };
 
 interface PageProps {
@@ -24,6 +28,12 @@ const EXCERPT_LENGTH = 220;
 function excerpt(text: string | null | undefined): string {
   const flat = (text ?? '').replace(/\s+/g, ' ').trim();
   return flat.length > EXCERPT_LENGTH ? `${flat.slice(0, EXCERPT_LENGTH).trimEnd()}...` : flat;
+}
+
+/** Tradition mark inside a filter chip; "All traditions" has none. */
+function ChipMark({ value }: { value: string }) {
+  const known = HADITH_TRADITIONS.find((name) => name === value);
+  return known ? <TraditionMark tradition={known} decorative /> : null;
 }
 
 export default async function HadithIndexPage({ searchParams }: PageProps) {
@@ -45,10 +55,10 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
   };
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10 text-slate-100">
-      <h1 className="text-3xl font-semibold">Hadith</h1>
+    <main className="wrap pb-12">
+      <h1 className="page-header type-h1">Hadith</h1>
 
-      <form action="/hadith" role="search" className="mt-6 flex gap-2">
+      <form action="/hadith" role="search" className="mt-8 flex max-w-[var(--measure-reading)] gap-2">
         {tradition && <input type="hidden" name="tradition" value={tradition} />}
         <input
           type="search"
@@ -56,34 +66,34 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
           defaultValue={q}
           aria-label="Search hadith"
           placeholder="Search by chapter, topic or text"
-          className="h-10 w-full rounded-md border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          dir="auto"
+          className="h-10 w-full border border-control bg-surface px-3 text-base text-ink placeholder:text-ink-muted focus-visible:border-focus focus-visible:outline-offset-0"
         />
-        <Button type="submit" className="h-10 bg-emerald-600 text-white hover:bg-emerald-500">
+        <Button type="submit">
           Search
         </Button>
       </form>
 
       <nav aria-label="Filter by tradition" className="mt-4 flex flex-wrap gap-2">
-        {HADITH_TRADITION_OPTIONS.map((option) => {
+        {TRADITION_FILTERS.map((option) => {
           const isActive = option.value === tradition;
           return (
             <Link
               key={option.value || 'all'}
               href={traditionHref(option.value)}
               aria-current={isActive ? 'true' : undefined}
-              className={`rounded-full border px-3 py-1 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-400 ${
-                isActive
-                  ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-200'
-                  : 'border-slate-700 text-slate-400 hover:text-slate-100'
+              className={`inline-flex min-h-10 items-center gap-2 border px-3 text-sm no-underline transition-colors duration-[var(--motion-fast)] ${
+                isActive ? 'border-ink text-ink shadow-[inset_0_0_0_1px_var(--color-ink)]' : 'border-control text-ink-muted hover:text-ink'
               }`}
             >
+              <ChipMark value={option.value} />
               {option.value || option.label}
             </Link>
           );
         })}
       </nav>
 
-      <p className="mt-6 text-sm text-slate-400" aria-live="polite">
+      <p className="mt-6 type-small tabular-nums text-ink-muted" aria-live="polite">
         {result.total.toLocaleString()}
         {result.totalCapped ? '+' : ''} {result.total === 1 && !result.totalCapped ? 'hadith' : 'hadiths'}
       </p>
@@ -102,7 +112,7 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
           }
         />
       ) : (
-        <ul className="-mx-3 mt-3 divide-y divide-slate-800 border-y border-slate-800">
+        <ul className="mt-3 border-t border-rule-strong">
           {hadiths.map((hadith) => {
             const english = excerpt((hadith.text_english as string | null) ?? null);
             const arabic = excerpt((hadith.text_arabic as string | null) ?? null);
@@ -113,22 +123,22 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
               <li key={hadith.id}>
                 <Link
                   href={hadithPath(hadith.id)}
-                  className="block px-3 py-4 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
+                  className="group block border-b border-rule py-4 no-underline transition-colors duration-[var(--motion-fast)] hover:bg-sunken"
                 >
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
-                    <span>{reference || 'Hadith'}</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 type-small text-ink-muted">
+                    <span className="font-semibold text-ink underline decoration-rule decoration-1 underline-offset-[0.2em] group-hover:decoration-accent">{reference || 'Hadith'}</span>
                     {hadith.tradition && <TraditionBadge tradition={hadith.tradition} />}
                   </div>
                   {hadith.title && (
-                    <p className="mt-1 font-medium text-slate-100">
+                    <p className="mt-1 font-medium text-ink">
                       <BilingualTitle text={String(hadith.title)} />
                     </p>
                   )}
                   {english ? (
-                    <p className="mt-1 text-sm leading-relaxed text-slate-300">{english}</p>
+                    <p className="mt-1 max-w-[var(--measure-wide)] type-small text-ink-muted">{english}</p>
                   ) : (
                     arabic && (
-                      <ArabicText as="p" className="mt-1 text-lg text-slate-300">
+                      <ArabicText as="p" variant="inline" className="mt-1 max-w-[var(--measure-reading)] text-ink">
                         {arabic}
                       </ArabicText>
                     )

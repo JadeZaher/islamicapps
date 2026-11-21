@@ -3,19 +3,15 @@ import { connection } from 'next/server';
 import { getCurrentDatasetVersion, isIndexable } from '@/db/queries/dataset-version';
 import { privatePreviewEnabled } from '@/lib/auth/switches';
 import { SquareMark } from './Marks';
-import './archive.css';
 
 /** Persistent strip on every page while PRIVATE_PREVIEW is on. Resolved per request, never at build time. */
 export async function PrivatePreviewBanner() {
   await connection();
   if (!privatePreviewEnabled()) return null;
   return (
-    <div
-      role="status"
-      className="archive sticky top-0 z-50 bg-[color:var(--archive-accent)] text-[color:var(--archive-ground)]"
-    >
-      <p className="archive-column flex items-center gap-[var(--archive-space-2)] py-[var(--archive-space-2)] text-sm font-medium">
-        <SquareMark />
+    <div role="status" className="sticky top-0 z-50 bg-notice text-on-notice">
+      <p className="archive-column flex items-center gap-2 py-2 type-small font-medium">
+        <SquareMark className="shrink-0" />
         Private curator preview. This site shows unpublished material and works not cleared for publication. Do not share.
       </p>
     </div>
@@ -36,17 +32,19 @@ export async function CrawlPolicy() {
 /** Site footer: the sources reference page, linked from every page. */
 export function SiteFooter() {
   return (
-    <footer className="archive archive-rule mt-[var(--archive-space-5)]">
-      <div className="archive-column flex flex-wrap gap-x-[var(--archive-space-4)] gap-y-[var(--archive-space-2)] py-[var(--archive-space-4)] text-sm text-[color:var(--archive-muted)]">
-        <Link href="/sources" className="archive-link text-[color:var(--archive-muted)]">
-          Sources and licences
-        </Link>
-        <Link href="/collections" className="archive-link text-[color:var(--archive-muted)]">
-          Collections
-        </Link>
-        <Link href="/glossary" className="archive-link text-[color:var(--archive-muted)]">
-          Glossary
-        </Link>
+    <footer className="archive mt-24">
+      <div className="archive-column">
+        <div className="archive-rule flex flex-wrap gap-x-6 gap-y-2 pb-12 pt-6 type-small text-ink-muted">
+          <Link href="/sources" className="archive-link text-ink-muted">
+            Sources and licences
+          </Link>
+          <Link href="/collections" className="archive-link text-ink-muted">
+            Collections
+          </Link>
+          <Link href="/glossary" className="archive-link text-ink-muted">
+            Glossary
+          </Link>
+        </div>
       </div>
     </footer>
   );

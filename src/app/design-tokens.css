@@ -1,6 +1,6 @@
 /*
  * Shura wa Istehsan design tokens. Authoritative spec: DESIGN.md (repository root).
- * Not imported anywhere yet; DESIGN.md "Applying the system: first pass" step 1 wires it in.
+ * Imported by src/app/globals.css, which aliases the shadcn names and Tailwind's palette onto these.
  *
  * Colour tokens use light-dark(): one declaration holds both themes. The page follows the
  * operating system by default (color-scheme: light dark); `.light` / `.dark` on <html> force one.
@@ -75,10 +75,10 @@
   --color-notice: var(--color-ink);                   /* preview notice band (inverted) */
   --color-on-notice: var(--color-paper);
 
-  /* Typography: families */
-  --font-latin: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
-  --font-arabic: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif;
+  /* Typography: families. The --font-*-face variables are set by next/font on <html> (src/app/layout.tsx). */
+  --font-latin: var(--font-inter-face, "Inter"), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-jetbrains-mono-face, "JetBrains Mono"), ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --font-arabic: var(--font-amiri-face, "Amiri"), "Noto Naskh Arabic", "Times New Roman", serif;
 
   /* Typography: Latin scale (size / line height on a 4px baseline) */
   --text-label: 0.75rem;     --leading-label: 1rem;      /* 12/16 uppercase, 600, +0.08em */
@@ -144,8 +144,8 @@
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
-.light { color-scheme: light; }
-.dark { color-scheme: dark; }
+:root.light { color-scheme: light; }
+:root.dark { color-scheme: dark; }
 
 @media (prefers-reduced-motion: reduce) {
   :root {

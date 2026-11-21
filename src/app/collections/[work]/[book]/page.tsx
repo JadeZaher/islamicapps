@@ -50,7 +50,7 @@ export default async function BookPage({ params, searchParams }: PageProps) {
           { label: book.label },
         ]}
       />
-      <h1 className="mt-[var(--archive-space-3)] text-3xl font-semibold tracking-tight">
+      <h1 className="mt-[var(--archive-space-3)] type-h1">
         {book.title ? <BilingualTitle text={book.title} /> : `${work.name}, ${book.label}`}
       </h1>
       <p className="mt-[var(--archive-space-2)] text-sm text-[color:var(--archive-muted)]">

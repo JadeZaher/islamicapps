@@ -6,6 +6,8 @@ import { getPublicParallelsForHadith } from '@/db/queries/comparative';
 import type { HadithDetail } from '@/db/queries/contracts';
 import { getChainGraph } from '@/db/queries/isnad';
 import { requestVisibility } from '@/lib/auth/visibility';
+import { hadithPath } from '@/lib/hadith-address';
+import { siteOrigin } from '@/lib/site-url';
 import { ChainFamilyTimelineSection } from '@/components/timeline/ChainFamilyTimelineSection';
 import { HadithClientPage } from './client-page';
 import { loadFamily, loadHadith } from './data';
@@ -35,7 +37,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const hadith = await loadHadith(id).catch(() => null);
     if (!hadith) return { title: 'Hadith not found' };
     const reference = [hadith.source, hadith.hadith_no].filter(Boolean).join(' ');
-    return { title: hadith.title?.trim() || reference || 'Hadith' };
+    // The canonical address is built from SITE_URL (never a request header in production): src/lib/site-origin.ts.
+    return {
+        title: hadith.title?.trim() || reference || 'Hadith',
+        alternates: { canonical: `${await siteOrigin()}${hadithPath(hadith.id)}` },
+    };
 }
 
 export default async function HadithPage({ params }: PageProps) {

@@ -1,9 +1,15 @@
-/** Node-only start-up check: exit when private preview is on without working curator sign-in. */
+/** Node-only start-up refusals (src/instrumentation.ts): unsafe private preview; missing or unsafe SITE_URL in production. */
+import { siteUrlProblem } from '../site-origin';
 import { previewConfigurationProblem } from './switches';
 
-export function refuseUnsafePreview(): void {
-  const problem = previewConfigurationProblem();
-  if (!problem) return;
-  console.error(`Refusing to start: ${problem}`);
-  process.exit(1);
+/** Every reason the server must not start; empty when it may. */
+export function startupProblems(env: NodeJS.ProcessEnv = process.env): string[] {
+  const problems: string[] = [];
+  const preview = previewConfigurationProblem();
+  if (preview) problems.push(preview);
+  if (env.NODE_ENV === 'production') {
+    const site = siteUrlProblem(env.SITE_URL);
+    if (site) problems.push(site);
+  }
+  return problems;
 }

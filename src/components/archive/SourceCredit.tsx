@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { sourceByCode, sourceRecordHref, type SourceCode } from '@/lib/sources/registry';
 import type { SourceReference } from '@/lib/sources/report-credit';
-import './archive.css';
 
 interface SourceCreditProps {
   code: SourceCode;
@@ -17,19 +16,20 @@ interface SourceCreditProps {
 /**
  * The one short source reference: role, code and source name linking to its record on /sources, the licence, and
  * an optional detail. Full required wording lives on the record. Shared by every surface that shows borrowed material.
+ * Layout: DESIGN.md §Source short references.
  */
 export function SourceCredit({ code, role, detail, external, className }: SourceCreditProps) {
   const record = sourceByCode(code);
   return (
-    <p data-source-ref={code} className={`text-sm leading-relaxed text-[color:var(--archive-muted)] ${className ?? ''}`}>
-      {role && <span className="text-[color:var(--archive-ink)]">{`${role}: `}</span>}
-      <Link href={sourceRecordHref(code)} className="archive-link text-[color:var(--archive-muted)]">
+    <p data-source-ref={code} className={`type-small text-ink-muted ${className ?? ''}`}>
+      {role && <span className="text-ink">{`${role}: `}</span>}
+      <Link href={sourceRecordHref(code)} className="archive-link text-ink-muted">
         <span className="archive-code">{code}</span> {record.name}
       </Link>
       {detail && <span> · {detail}</span>}
       <span> · </span>
       {record.licence.url ? (
-        <a href={record.licence.url} className="archive-link text-[color:var(--archive-muted)]" rel="license noopener" target="_blank">
+        <a href={record.licence.url} className="archive-link text-ink-muted" rel="license noopener" target="_blank">
           {record.licence.name}
         </a>
       ) : (
@@ -38,7 +38,7 @@ export function SourceCredit({ code, role, detail, external, className }: Source
       {external && (
         <>
           <span> · </span>
-          <a href={external} className="archive-link text-[color:var(--archive-muted)]" rel="noopener" target="_blank">
+          <a href={external} className="archive-link text-ink-muted" rel="noopener" target="_blank">
             View at source
           </a>
         </>

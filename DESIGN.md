@@ -78,7 +78,28 @@ replacement.
 
 **Themes.** Each colour token is one `light-dark(light, dark)` declaration, so the two values sit side by side and
 cannot drift apart. `:root { color-scheme: light dark }` follows the operating system; `.light` or `.dark` on
-`<html>` forces one theme. No JavaScript is needed to follow the system.
+`<html>` forces one theme (the selectors are `:root.light` / `:root.dark`, so a library's own `.light`/`.dark` class,
+such as React Flow's, cannot force part of the page). No JavaScript is needed to follow the system.
+
+**How the app reaches the tokens.** `src/app/globals.css` imports the token file and exposes three layers:
+
+- **Token utilities** (`bg-paper`, `bg-sunken`, `text-ink`, `text-ink-muted`, `border-rule`, `border-rule-strong`,
+  `border-control`, `text-accent`, `bg-accent-wash`, `text-danger`, `bg-notice`, `font-mono`, `font-arabic`), declared
+  with `@theme inline reference` so Tailwind emits no duplicate variables. New code uses these.
+- **shadcn aliases** (`--color-background` → paper, `--color-primary` → accent, ...) so `src/components/ui/*` keep
+  their class names. `bg-accent` is the design accent (emerald), not shadcn's hover grey; hover grounds use
+  `bg-sunken`.
+- **Legacy palette aliases.** Tailwind's palette names resolve to the token that played the same role in the old
+  dark-only interface (`slate-100` → ink, `slate-400` → ink muted, `slate-800` → rule, `slate-900` → sunken,
+  `emerald-*` → accent, `red-*` → danger, every other hue → ink muted). A screen not yet converted therefore still
+  follows both themes with one accent and red only for errors. Never write a palette name in new code; the aliases
+  exist only as a safety net and are deleted once `rg "slate-|emerald-|amber-" src` is empty.
+- `rounded-*` resolve to 0; `shadow-*`, `blur-*` (and so `backdrop-blur-*`) and `animate-*` generate nothing.
+
+Shared type roles are component classes in `globals.css`: `type-label`, `type-small`, `type-reading`, `type-h1`..`h3`,
+`type-display`, `type-code`, `arabic-inline`, `arabic-reading`, `arabic-display`, `page-header`, `section-rule`,
+`link-prose`, `link-row`, `link-term`, `data-table` and `placeholder-bar`. `archive.css` is imported by
+`globals.css` into the components layer, so utilities override it.
 
 ### Colour
 
@@ -132,7 +153,9 @@ Rules for colour:
 Every line height is a multiple of 4px.
 
 **Faces.** Inter (variable, optical size on) for all Latin. JetBrains Mono for codes. Both are used by Neos, are
-under the SIL Open Font License, and load through `next/font/google`. Amiri for all Arabic (unchanged, OFL), with
+under the SIL Open Font License, and load through `next/font/google`. `next/font` serves them under generated family
+names, so `layout.tsx` sets `--font-inter-face`, `--font-jetbrains-mono-face` and `--font-amiri-face` on `<html>` and
+the token stacks read those first (`var(--font-inter-face, "Inter")`). Amiri for all Arabic (unchanged, OFL), with
 Noto Naskh Arabic as fallback. Inter replaces Geist: both references use Inter, and its optical sizes hold up at 12px.
 
 ### Arabic beside Latin
@@ -141,6 +164,8 @@ Noto Naskh Arabic as fallback. Inter replaces Geist: both references use Inter, 
   single names inside English sentences (`ArabicText`, `NarratorName`, `BilingualTitle` already split mixed strings).
 - **Size.** About 1.25 times the Latin it sits beside, because Arabic letterforms are smaller at the same font size:
   22px reading text in a 16px interface, 18px names beside 14–16px Latin, 28px for a quoted report.
+  `ArabicText variant="inline" | "reading" | "display"` applies the three roles; an Arabic run inside a Latin title
+  (`BilingualTitle`) is set at 1.15em.
 - **Line height.** 2 (22/44, 18/32 rounds to the grid, 28/56). Harakat above and below need the room.
 - **Alignment.** `text-align: start` with `dir="rtl"`, so Arabic blocks align right and Latin blocks align left
   inside the same flush-left column. Never `justify`: kashida-less justification stretches the gaps between words
@@ -280,7 +305,7 @@ The label sits above the control (14px, 600). Inputs and selects are 40px tall (
 filters are checkboxes inside bordered chips: native checkbox with `accent-color`, then the mark and the name. A
 checked chip has a doubled ink border. An error turns the border and a 2px inner bottom rule red, with the message
 below in danger text, linked by `aria-describedby`. Actions: one primary (accent fill), then a quiet text button
-("Clear"). A disabled control shows faint text and a rule-coloured border.
+("Clear"). A disabled control shows muted text and a rule-coloured border (faint is never text).
 
 ### Buttons and links (`ui/button.tsx`)
 
@@ -352,6 +377,12 @@ or has a summary `<title>`, so assistive technology reads the list, not the draw
 - **Small screens.** The graph keeps a minimum width of 46rem and scrolls sideways inside a focusable, labelled
   region; the page itself never scrolls sideways. A one-line hint says so, and the same chains are in the table above.
 - **Omissions** are stated under the graph ("Not drawn here: …").
+- **As built (2026-11-21).** The diagram is React Flow over a Sugiyama layout (`family/TransmissionDiagram.tsx`), not
+  the static SVG of the specimen. It follows the node shapes, faint 1px edges, 15px Amiri labels, 11px work labels and
+  accent-only selection above; traditions are not separate groups in that layout, so edges carry `TRADITION_DASH` and
+  the legend names each pattern. Not yet built: the attribution rule at the top, per-tradition groups, the selection
+  details panel and the 46rem scroll region (the canvas pans and zooms instead). React Flow's `colorMode` is fixed to
+  `light` so server and client agree; the tokens carry the theme.
 
 ### Chain timeline (`timeline/*`)
 
@@ -372,9 +403,11 @@ Where lanes from several traditions share the axis, the lane's line uses `TRADIT
 | `ChainConnector` | vertical rail segment: continuous, gap, tradition dash, 2px emphasis |
 | `ArrowIcon`, `SearchIcon`, `ExternalIcon`, `CopyIcon`, `CheckIcon`, `CloseIcon`, `ChevronIcon`, `MenuIcon` | interface icons |
 | `MarkSvg` | shared frame: `currentColor`, `<title>` by default, `decorative` hides it |
+| `ProductMark` | the wordmark's 2x2 square of the four tradition modules (site header) |
 
-All are server-safe (no client hooks other than `useId`), flat, single-colour through `currentColor`, and not yet used
-by any page.
+All are server-safe (no client hooks other than `useId`), flat, single-colour through `currentColor`. In use: tradition
+marks (`TraditionBadge`, tellings, all-chains, timeline group labels, filter chips, home), basis marks and nodes
+(`IsnadChain`), nodes (diagram and legend), icons (search fields, copy citation, report pager).
 
 ## Accessibility
 
@@ -392,53 +425,25 @@ by any page.
 - **Reduced motion:** motion tokens drop to 0; nothing depends on animation.
 - **Zoom and reflow:** usable at 320px wide and at 200% zoom without sideways page scroll.
 
-## Applying the system: first pass
+## Applying the system: what remains
 
-*Removable: delete this section once every step is done and recorded in the change log.*
+*Removable: delete this section once every item is done and recorded in the change log.* The first pass (change log,
+2026-11-21, second entry) applied tokens, primitives, marks and every route. Remaining, in priority order:
 
-Order matters: tokens first, so every later step only swaps class names. Each step lists what changes visibly.
-
-1. **`src/app/globals.css`.** Add `@import "./design-tokens.css";` after the Tailwind imports. Replace the shadcn
-   `:root` and `.dark` blocks with aliases (`--background: var(--color-paper)` and so on, per the mapping in the token
-   file header) so `ui/*` keeps working. In `@theme inline`, point `--font-sans`, `--font-mono` and `--font-arabic` at
-   the new families, set every `--radius-*` to `0`, and drop `--color-chart-*` and `--color-sidebar-*`. Change the dark
-   variant to `@custom-variant dark (&:where(.dark, .dark *))`. Remove `.animate-fade-in` and `.animate-slide-up`.
-   Point the Arabic base rule at `--leading-arabic-reading`. *Visible:* warm paper and ink, square corners, emerald
-   focus.
-2. **`src/app/layout.tsx`.** Replace `Geist`/`Geist_Mono` with `Inter` (axes `opsz`) and `JetBrains_Mono` from
-   `next/font/google`, keep `Amiri`. Remove `className="dark"` from `<html>` so the system preference applies (**owner
-   decision**: today the site is forced dark; keeping `.dark` is a one-word revert). *Visible:* Inter text; light theme
-   for light-mode readers.
-3. **Shared primitives.** `src/components/ui/button.tsx`, `badge.tsx`, `input.tsx`, `label.tsx`, `tabs.tsx`,
-   `textarea.tsx`, `card.tsx`: radius 0, the button variants above, the input rules above. `card.tsx` loses its
-   border and background. `src/components/archive/Marks.tsx` re-exports `ArrowIcon` and `NarratorNode` from
-   `marks/`. *Visible:* flat controls.
-4. **Local token sets.** `src/components/archive/archive.css` and `src/components/timeline/timeline.module.css`:
-   replace each local value with its token (`--archive-accent: var(--color-accent)`, and so on), then delete the
-   aliases once no class uses them. *Visible:* the red archive accent becomes emerald; the timeline takes both themes.
-5. **Chrome.** `SiteHeader.tsx` (nav rules above, current-page underline), `archive/SiteChrome.tsx` footer (hairline,
-   small muted), `PreviewNoticeBar.tsx` (inverted ink band). *Visible:* new header and notice on every page.
-6. **Arabic and names.** `ArabicText.tsx`, `NarratorName.tsx`, `BilingualTitle`: size classes for the three Arabic
-   roles; `<bdi>` for inline runs.
-7. **Tradition and basis.** `TraditionBadge.tsx` renders `TraditionMark` and the name for the four traditions and
-   muted text for the rest. `IsnadChain.tsx` uses `BasisMark` and imports `IDENTITY_BASIS_LABEL` (delete its local
-   `BASIS_LABEL`). `badges.tsx` and `ConsensusBadge.tsx` become labels.
-8. **Report page.** `hadith/[id]/client-page.tsx` and `loading.tsx`: 12-column layout with the facts margin, sections
-   per the reading-column rules, `loading.tsx` mirroring it. `components/family/*`: tellings table rules,
-   `TransmissionDiagram.tsx` per the graph rules (node shapes from `NarratorNodeShape`, selection, scroll region).
-   `Assessments.tsx`, `GradingPanel.tsx`: labels and hairlines.
-9. **Other routes**, one at a time: `narrator/[id]`, `collections/**`, `hadith` (list), `comparative`, `sources`,
-   `glossary`, then `sign-in` and `admin/**` (same tokens, lowest priority).
-10. **States.** `RouteState.tsx`, `EmptyState.tsx`, every `error.tsx`/`not-found.tsx`/`loading.tsx` per the state
-    rules.
-11. **Docs.** Update `src/components/AGENTS.md` ("one emerald accent" stays true; replace slate/amber references) and
-    this file's change log.
-
-**Checks, once, at the end** (per the repository's single-sweep rule): `npx tsc --noEmit`; `npx next build`; lint;
-`rg "rounded-|shadow-|emerald-|slate-|amber-|bg-gradient" src` returns nothing outside `admin/` (or each remaining hit
-is justified); screenshots of `/`, a report, a narrator, `/collections`, `/sources` and `/glossary` at 390 and
-1440 in light and dark, with `scrollWidth === clientWidth` at both; keyboard pass (skip link, visible focus on every
-control, graph region reachable); `prefers-reduced-motion` emulated; contrast re-run if any colour token changed.
+1. **Transmission graph.** The attribution rule, per-tradition groups, selection panel with `aria-live`, and the 46rem
+   scroll region (see §Transmission graph, "As built"). This is layout logic, not styling.
+2. **Tellings as a table.** The tellings list keeps its rows (with text excerpts) rather than the specimen's five-column
+   table; converting it changes what each row shows.
+3. **Isnad extras.** The section note "As written, nearest the compiler first", per-chain counts ("5 names, 1
+   identified") and the shared node with "in N chains of this report" need new wording or a cross-chain count; the
+   list uses identified, unidentified and contested nodes today.
+4. **Facts margin contents.** It holds the existing reference rows; tellings count, address and "Copy citation" stay
+   where they are (summary line, trail, report footer).
+5. **Admin.** On tokens through the legacy aliases and a class sweep, but still uses Lucide icons and some sunken
+   panels; replace icons with `marks/Icons.tsx` and move palette names to token utilities, then delete the aliases.
+6. **Chain timeline.** Lane lines in `TRADITION_DASH` where traditions share the axis (lanes are bars today; the
+   group label carries the tradition mark). The section itself is very long on large families (one row per transmitter
+   for up to 12 tellings), a content decision for the history lane.
 
 ## Maintaining this file
 
@@ -454,6 +459,20 @@ control, graph region reachable); `prefers-reduced-motion` emulated; contrast re
 
 ## Change log
 
+- **2026-11-21 (application pass):** Applied the system to the whole app. Tokens imported in `globals.css` with token
+  utilities, shadcn aliases and legacy palette aliases (§Tokens); radii 0, no shadows, blurs or animations; Inter and
+  JetBrains Mono through `next/font` (`--font-*-face` on `<html>`, token stacks read them first); the forced `dark`
+  class removed, so the site follows the system theme (owner decision); a skip link. Primitives (`ui/*`) flattened to
+  the button, input and label rules; badges are labels; `TraditionBadge` renders `TraditionMark`; `IsnadChain` uses
+  `BasisMark`, `NarratorNode` and `IDENTITY_BASIS_LABEL` (local copy deleted); the family view and timeline use the
+  marks' `TRADITION_DASH` (the family view's own patterns were replaced, legend wording updated to match); `ProductMark`
+  added and used in the header. `archive.css`, `timeline.module.css` and `family.module.css` alias every value to
+  tokens; the archive's red accent is now emerald; faint text in the timeline, footer and family view moved to muted
+  (faint measured 4.29:1, below text contrast). Every route restyled: home, collections, hadith list, report (page
+  header, 8+4 grid with facts margin, text before isnad), chains view and diagram, narrator list and page, comparative,
+  glossary, sources (tables stack below 640px), sign-in, admin, not-found, error, global error and loading states
+  (flat placeholders, no pulse). Rule changes: `.light`/`.dark` scoped to `:root`; disabled text is muted, not faint;
+  tradition options sorted alphabetically at the call sites. No colour token changed, so the contrast table stands.
 - **2026-11-21:** First version. Studied Neos and Taawun (`docs/design/reference-study.md`); defined tokens
   (`src/app/design-tokens.css`, not yet imported), marks (`src/components/marks/`, not yet used) and the static
   specimen (`docs/design/preview.html`). Contrast computed for all pairs in both themes; all pass, with light faint at

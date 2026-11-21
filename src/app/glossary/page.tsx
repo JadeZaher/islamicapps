@@ -32,27 +32,28 @@ export default async function GlossaryPage({ searchParams }: PageProps) {
   })).filter((section) => section.entries.length > 0);
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10 text-slate-100">
-      <h1 className="text-3xl font-semibold">Glossary</h1>
+    <main className="wrap pb-12 text-ink">
+      <h1 className="page-header type-h1">Glossary</h1>
 
-      <form action="/glossary" role="search" className="mt-6 flex gap-2">
+      <form action="/glossary" role="search" className="mt-8 flex max-w-[var(--measure-reading)] gap-2">
         <input
           type="search"
           name="q"
           defaultValue={q}
           aria-label="Filter terms"
           placeholder="Filter terms, in English, transliteration or Arabic"
-          className="h-10 w-full rounded-md border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          dir="auto"
+          className="h-10 w-full border border-control bg-surface px-3 text-base text-ink placeholder:text-ink-muted focus-visible:border-focus focus-visible:outline-offset-0"
         />
-        <Button type="submit" className="h-10 bg-emerald-600 text-white hover:bg-emerald-500">
+        <Button type="submit">
           Filter
         </Button>
       </form>
 
       {q && (
-        <p className="mt-4 text-sm text-slate-400" aria-live="polite">
+        <p className="mt-4 text-sm text-ink-muted" aria-live="polite">
           {entries.length} {entries.length === 1 ? 'term' : 'terms'} matching “{q}” ·{' '}
-          <Link href="/glossary" className="text-slate-300 underline underline-offset-2 hover:text-white">
+          <Link href="/glossary" className="link-row text-ink">
             Show all
           </Link>
         </p>
@@ -72,12 +73,12 @@ export default async function GlossaryPage({ searchParams }: PageProps) {
       ) : (
         <>
           <nav aria-label="Glossary sections" className="mt-6">
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            <ul className="flex flex-wrap gap-x-5 gap-y-1 type-small">
               {sections.map((section) => (
                 <li key={section.id}>
                   <a
                     href={`#section-${section.id}`}
-                    className="rounded-sm text-slate-400 outline-none hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    className="link-row inline-block py-2 text-ink-muted hover:text-ink"
                   >
                     {section.title}
                   </a>
@@ -87,10 +88,10 @@ export default async function GlossaryPage({ searchParams }: PageProps) {
           </nav>
 
           {sections.map((section) => (
-            <section key={section.id} aria-labelledby={`section-${section.id}`} className="mt-10">
+            <section key={section.id} aria-labelledby={`section-${section.id}`} className="section-rule mt-12 max-w-[var(--measure-reading)]">
               <h2
                 id={`section-${section.id}`}
-                className="scroll-mt-6 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                className="type-label scroll-mt-6"
               >
                 {section.title}
               </h2>
@@ -104,7 +105,7 @@ export default async function GlossaryPage({ searchParams }: PageProps) {
         </>
       )}
 
-      <p className="mt-12 border-t border-slate-800 pt-4 text-xs leading-relaxed text-slate-500">{TRANSLITERATION_NOTE}</p>
+      <p className="mt-12 max-w-[var(--measure-reading)] border-t border-rule pt-4 type-small text-ink-muted">{TRANSLITERATION_NOTE}</p>
     </main>
   );
 }
@@ -120,35 +121,35 @@ function GlossaryEntryArticle({ entry }: { entry: GlossaryEntry }) {
     <article
       id={entry.slug}
       aria-labelledby={`${entry.slug}-term`}
-      className="-mx-3 scroll-mt-6 rounded-md border-t border-slate-800 px-3 py-5 target:bg-slate-900"
+      className="scroll-mt-6 border-t border-rule py-5 first:border-t-0 target:bg-accent-wash target:shadow-[inset_2px_0_0_var(--color-accent)] target:px-3"
     >
       <h3 id={`${entry.slug}-term`} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="text-lg font-medium text-slate-100">{entry.term}</span>
-        {entry.english && <span className="text-sm text-slate-400">{entry.english}</span>}
-        {entry.arabic && <ArabicText className="text-xl text-slate-300">{entry.arabic}</ArabicText>}
+        <span className="type-h3 text-ink">{entry.term}</span>
+        {entry.english && <span className="text-sm text-ink-muted">{entry.english}</span>}
+        {entry.arabic && <ArabicText variant="inline" className="text-ink">{entry.arabic}</ArabicText>}
       </h3>
-      <p className="mt-1 text-slate-200">{entry.definition}</p>
+      <p className="mt-2 text-ink">{entry.definition}</p>
       {entry.inArchive && (
-        <p className="mt-2 text-sm text-slate-400">
-          <span className="font-medium text-slate-300">In this archive. </span>
+        <p className="mt-2 text-sm text-ink-muted">
+          <span className="font-medium text-ink">In this archive. </span>
           {entry.inArchive}
         </p>
       )}
       {entry.acrossTraditions && (
-        <p className="mt-2 text-sm text-slate-400">
-          <span className="font-medium text-slate-300">Across traditions. </span>
+        <p className="mt-2 text-sm text-ink-muted">
+          <span className="font-medium text-ink">Across traditions. </span>
           {entry.acrossTraditions}
         </p>
       )}
       {related.length > 0 && (
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-ink-muted">
           Related:{' '}
           {related.map((target, index) => (
             <span key={target.slug}>
               {index > 0 && ', '}
               <a
                 href={`/glossary#${target.slug}`}
-                className="rounded-sm text-slate-300 underline decoration-slate-600 underline-offset-2 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-400"
+                className="link-row text-ink"
               >
                 {target.term}
               </a>

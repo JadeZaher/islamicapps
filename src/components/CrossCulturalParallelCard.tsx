@@ -42,19 +42,19 @@ interface CrossCulturalParallelCardProps {
 }
 
 const CONFIDENCE_COLORS: Record<string, string> = {
-    HIGH: 'text-green-400',
-    MEDIUM: 'text-yellow-400',
-    LOW: 'text-red-400',
+    HIGH: 'text-accent',
+    MEDIUM: 'text-ink-muted',
+    LOW: 'text-danger',
 };
 
 const MOTIF_CATEGORY_COLORS: Record<string, string> = {
-    ESCHATOLOGY: 'bg-red-500/10 text-red-300',
-    CREATION: 'bg-green-500/10 text-green-300',
-    PROPHETIC_STORIES: 'bg-blue-500/10 text-blue-300',
-    LEGAL: 'bg-orange-500/10 text-orange-300',
-    WISDOM: 'bg-teal-500/10 text-teal-300',
-    PERSIAN_INFLUENCE: 'bg-amber-500/10 text-amber-300',
-    COSMOLOGY: 'bg-indigo-500/10 text-indigo-300',
+    ESCHATOLOGY: 'bg-transparent text-danger',
+    CREATION: 'bg-sunken text-accent',
+    PROPHETIC_STORIES: 'bg-sunken text-ink-muted',
+    LEGAL: 'bg-sunken text-ink-muted',
+    WISDOM: 'bg-accent-wash text-accent',
+    PERSIAN_INFLUENCE: 'bg-sunken text-ink-muted',
+    COSMOLOGY: 'bg-sunken text-ink-muted',
 };
 
 /** True when the record is flagged as machine-proposed (provenance field) or explicitly unreviewed. */
@@ -64,7 +64,7 @@ export function isMachineProposed(parallel: { provenance?: string | null; review
 
 export function MachineProposedBadge() {
     return (
-        <span className="inline-block px-2 py-0.5 rounded border border-dashed border-slate-400/50 text-xs font-medium text-slate-300">
+        <span className="inline-block px-2 py-0.5 type-label">
             Machine-proposed · unreviewed
         </span>
     );
@@ -79,7 +79,7 @@ export function CrossCulturalParallelCard({
     showHadithLink = false,
 }: CrossCulturalParallelCardProps) {
     return (
-        <Card className="bg-white/5 border-white/10">
+        <Card className="pb-4">
             <CardContent className="pt-5 space-y-4">
                 {/* Header badges */}
                 <div className="flex flex-wrap gap-2 items-center">
@@ -89,7 +89,7 @@ export function CrossCulturalParallelCard({
                     {isMachineProposed(parallel) && <MachineProposedBadge />}
                     {parallel.confidence_level && (
                         <span
-                            className={`text-xs font-medium ${CONFIDENCE_COLORS[parallel.confidence_level] ?? 'text-slate-400'}`}
+                            className={`text-xs font-medium ${CONFIDENCE_COLORS[parallel.confidence_level] ?? 'text-ink-muted'}`}
                         >
                             {parallel.confidence_level} confidence
                         </span>
@@ -97,8 +97,8 @@ export function CrossCulturalParallelCard({
                 </div>
 
                 {/* Source reference */}
-                <div className="text-xs text-slate-400">
-                    <span className="font-semibold text-slate-300">{sourceText.title}</span>
+                <div className="text-xs text-ink-muted">
+                    <span className="font-semibold text-ink">{sourceText.title}</span>
                     {sourceText.canonical_reference && (
                         <span> · {sourceText.canonical_reference}</span>
                     )}
@@ -108,11 +108,11 @@ export function CrossCulturalParallelCard({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Hadith excerpt */}
                     {parallel.hadith_excerpt_en && (
-                        <div className="p-4 bg-slate-800/50 border border-slate-600/30 rounded-lg">
-                            <p className="text-xs font-semibold text-cyan-300 uppercase tracking-wide mb-2">
+                        <div className="p-4 bg-sunken border border-rule">
+                            <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">
                                 Hadith Text
                             </p>
-                            <p className="text-sm text-white/80 leading-relaxed whitespace-pre-line">
+                            <p className="text-sm text-ink-muted leading-relaxed whitespace-pre-line">
                                 {parallel.hadith_excerpt_en}
                             </p>
                         </div>
@@ -120,20 +120,20 @@ export function CrossCulturalParallelCard({
 
                     {/* Source text from other tradition */}
                     {(parallel.source_text_en || parallel.source_text_original) && (
-                        <div className="p-4 bg-amber-900/20 border border-amber-500/20 rounded-lg overflow-hidden">
-                            <p className="text-xs font-semibold text-amber-300 uppercase tracking-wide mb-2 wrap-break-word">
+                        <div className="p-4 bg-sunken border border-rule overflow-hidden">
+                            <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2 wrap-break-word">
                                 {tradition.name} Source
                             </p>
                             {parallel.source_text_original && (
-                                <p dir="auto" className="text-sm text-amber-100/80 leading-relaxed mb-2 font-serif whitespace-pre-line text-start">
+                                <p dir="auto" className="text-sm text-ink-muted/80 leading-relaxed mb-2 font-serif whitespace-pre-line text-start">
                                     {parallel.source_text_original}
                                 </p>
                             )}
                             {parallel.source_text_en && parallel.source_text_original && (
-                                <hr className="border-amber-500/20 my-2" />
+                                <hr className="border-rule my-2" />
                             )}
                             {parallel.source_text_en && (
-                                <p className="text-sm text-white/70 leading-relaxed italic whitespace-pre-line">
+                                <p className="text-sm text-ink-muted leading-relaxed italic whitespace-pre-line">
                                     {parallel.source_text_en}
                                 </p>
                             )}
@@ -143,11 +143,11 @@ export function CrossCulturalParallelCard({
 
                 {/* Scholarly analysis */}
                 {parallel.scholarly_analysis && (
-                    <div className="p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg">
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                    <div className="p-3 bg-sunken border border-rule">
+                        <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-1">
                             Scholarly Analysis
                         </p>
-                        <div className="text-sm text-slate-300 leading-relaxed prose prose-invert prose-sm max-w-none prose-p:my-2 prose-headings:text-slate-200 prose-strong:text-white prose-a:text-cyan-400">
+                        <div className="text-sm text-ink leading-relaxed prose prose-invert prose-sm max-w-none prose-p:my-2 prose-headings:text-ink prose-strong:text-ink prose-a:text-accent">
                             <ReactMarkdown>{parallel.scholarly_analysis}</ReactMarkdown>
                         </div>
                     </div>
@@ -159,7 +159,7 @@ export function CrossCulturalParallelCard({
                         {motifTags.map((tag) => (
                             <span
                                 key={tag.id}
-                                className={`text-xs px-2 py-0.5 rounded ${MOTIF_CATEGORY_COLORS[tag.category] ?? 'bg-slate-700/40 text-slate-400'}`}
+                                className={`text-xs px-2 py-0.5  ${MOTIF_CATEGORY_COLORS[tag.category] ?? 'bg-sunken text-ink-muted'}`}
                             >
                                 {tag.name}
                             </span>
@@ -169,14 +169,14 @@ export function CrossCulturalParallelCard({
 
                 {/* Link to hadith */}
                 {showHadithLink && hadith && (
-                    <div className="pt-2 border-t border-white/10">
+                    <div className="pt-2 border-t border-rule">
                         <Link
                             href={`/hadith/${hadith.id}`}
-                            className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                            className="text-sm text-accent hover:text-accent transition-colors"
                         >
                             → {hadith.title}
                             {hadith.display_grade && (
-                                <span className="ml-2 text-xs text-slate-400">({hadith.display_grade})</span>
+                                <span className="ml-2 text-xs text-ink-muted">({hadith.display_grade})</span>
                             )}
                         </Link>
                     </div>

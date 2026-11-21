@@ -6,6 +6,7 @@ import { hadithAssessmentsJson, verdictsJson, type VerdictMode } from './assessm
 import type {
   NarratorDetail,
   NarratorHadithSummary,
+  NarratorLexicon,
   NarratorListItem,
   NarratorNetwork,
   NetworkPeer,
@@ -27,6 +28,21 @@ import {
   type PageRequest,
 } from './sql-helpers';
 import { verdictModeFor, type ReadVisibility } from './visibility';
+import heldBackFile from './lexicon-held-back.json';
+
+/** Lexicon death years withheld on public pages (built by src/scripts/db/build-lexicon-held-back.ts). */
+const HELD_BACK_GAP: Record<string, string> = {
+  gross_conflict: 'differs by more than ten years',
+  differs_by_exactly_100: 'differs by exactly a century',
+  differ_3_10_years: 'differs by three to ten years',
+};
+const LEXICON_HELD_BACK = new Map<string, NarratorLexicon['held_back']>();
+for (const item of heldBackFile.held) {
+  const list = LEXICON_HELD_BACK.get(item.narrator_id) ?? [];
+  const gap = HELD_BACK_GAP[item.comparison] ?? 'differs';
+  list.push({ field: 'death_year', reason: `Ibn Hajar's Taqrib al-Tahdhib gives a year that ${gap}`, taqrib_entry: item.taqrib_entry });
+  LEXICON_HELD_BACK.set(item.narrator_id, list);
+}
 
 export interface NarratorFilters {
   /** Canonical verdict enum value (the action maps legacy THIQA-style codes). */
@@ -132,8 +148,8 @@ export async function searchNarratorsTypeahead(rawTerm: string): Promise<Narrato
 
 /**
  * Narrator detail in one statement: identity, verdicts, bio, locations and the first 100 hadiths through the
- * narrator with a capped total. Public mode reads published rows and `public_chain_links` only, and omits
- * the lexicon (question 4).
+ * narrator with a capped total. Public mode reads published rows and `public_chain_links` only, plus the lexicon's
+ * dates and places (labelled on the page; held-back values removed).
  */
 export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 'public'): Promise<NarratorDetail | null> {
   const linkedHadiths =
@@ -149,7 +165,11 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
       'bio', (select row_to_json(b) from narrator_bios b where b.narrator_id = n.id and ${bioGate(mode)}),
       'lexicon', ${
         mode === 'public'
-          ? sql`null`
+          ? sql`(select json_build_object('review_state', p.review_state, 'birth_year_hijri', p.birth_year_hijri,
+                   'death_year_hijri', p.death_year_hijri, 'birth_year_gregorian', p.birth_year_gregorian,
+                   'death_year_gregorian', p.death_year_gregorian, 'birth_place', p.birth_place, 'death_place', p.death_place,
+                   'geographic_region', p.geographic_region, 'source_locator', p.source_locator)
+                 from narrator_lexicon_profiles p where p.narrator_id = n.id and p.retired_at is null)`
           : sql`(select row_to_json(p) from narrator_lexicon_profiles p where p.narrator_id = n.id and p.retired_at is null)`
       },
       'locations', coalesce((
@@ -201,17 +221,7 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
     ...narratorNames(detail),
     verdicts: mapVerdicts(detail.verdicts),
     bio: mapNarratorBio(detail.bio),
-    lexicon: lexicon
-      ? {
-          review_state: String(lexicon.review_state),
-          birth_year_hijri: toInt(lexicon.birth_year_hijri),
-          death_year_hijri: toInt(lexicon.death_year_hijri),
-          birth_year_gregorian: toInt(lexicon.birth_year_gregorian),
-          death_year_gregorian: toInt(lexicon.death_year_gregorian),
-          geographic_region: text(lexicon.geographic_region),
-          bio: text(lexicon.bio),
-        }
-      : null,
+    lexicon: lexicon ? mapLexicon(String(detail.id), lexicon, mode) : null,
     hadiths: paginated(hadithItems, counted, { page: 1, pageSize: NARRATOR_HADITH_LIMIT, limit: NARRATOR_HADITH_LIMIT, offset: 0 }, true),
     locations: ((detail.locations as Record<string, unknown>[]) ?? []).map((location) => ({
       id: String(location.id),
@@ -219,6 +229,31 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
       name_arabic: text(location.name_arabic),
       relation: location.relation as 'born' | 'died' | 'resided',
     })),
+  };
+}
+
+/** A Hijri year the lexicon records; 0 is not a year (the Hijri count has none), so it is dropped. */
+function lexiconYear(value: unknown): number | null {
+  const year = toInt(value);
+  return year === 0 ? null : year;
+}
+
+/** Lexicon dates and places; on public pages the held-back death years are removed and the prose bio is never read. */
+function mapLexicon(narratorId: string, lexicon: Record<string, unknown>, mode: VerdictMode): NarratorLexicon {
+  const held = mode === 'public' ? (LEXICON_HELD_BACK.get(narratorId) ?? []) : [];
+  const deathHeld = held.some((item) => item.field === 'death_year');
+  return {
+    review_state: String(lexicon.review_state),
+    birth_year_hijri: lexiconYear(lexicon.birth_year_hijri),
+    death_year_hijri: deathHeld ? null : lexiconYear(lexicon.death_year_hijri),
+    birth_year_gregorian: toInt(lexicon.birth_year_gregorian),
+    death_year_gregorian: deathHeld ? null : toInt(lexicon.death_year_gregorian),
+    birth_place: text(lexicon.birth_place),
+    death_place: text(lexicon.death_place),
+    geographic_region: text(lexicon.geographic_region),
+    bio: mode === 'public' ? null : text(lexicon.bio),
+    source_locator: text(lexicon.source_locator),
+    held_back: held,
   };
 }
 

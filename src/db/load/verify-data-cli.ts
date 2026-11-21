@@ -1,15 +1,23 @@
-/** On-demand section 11.4 checks: `tsx src/db/load/verify-data-cli.ts [--bundle <projection dir>]`. Exits 1 on any failure. */
+/**
+ * On-demand section 11.4 checks: `tsx src/db/load/verify-data-cli.ts [--bundle <projection dir>]
+ * [--database production --confirm-production]`. Read-only; exits 1 on any failure.
+ */
 import { parseArgs } from 'node:util';
-import { developmentDatabaseUrl, openLoaderClient } from './connection';
+import { resolveTargetDatabase } from '../target-database';
+import { openLoaderClient } from './connection';
 import { verifyProjection } from './manifest';
 import { failedChecks, formatChecks, runDataChecks } from './verify-data';
 
 async function main() {
-  const { values } = parseArgs({ options: { bundle: { type: 'string' } } });
+  const { values } = parseArgs({
+    options: { bundle: { type: 'string' }, database: { type: 'string' }, 'confirm-production': { type: 'boolean' } },
+  });
   const expectedLiveRows = values.bundle
     ? Object.fromEntries((await verifyProjection(values.bundle)).manifest.files.map((file) => [file.table, file.row_count]))
     : undefined;
-  const sql = openLoaderClient(developmentDatabaseUrl());
+  const target = resolveTargetDatabase(process.argv, { required: false });
+  console.log(`[verify-data] target: ${target.name} database`);
+  const sql = openLoaderClient(target.url);
   try {
     const report = await runDataChecks(sql, { expectedLiveRows });
     console.log(formatChecks(report));

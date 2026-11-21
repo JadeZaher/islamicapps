@@ -26,10 +26,10 @@ export function AdminNav() {
                         key={href}
                         href={href}
                         aria-current={isActive ? 'page' : undefined}
-                        className={`flex shrink-0 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                        className={`flex shrink-0 items-center gap-3  px-3 py-2.5 text-sm font-medium  transition-colors   ${
                             isActive
-                                ? 'bg-emerald-500/15 text-emerald-300'
-                                : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                                ? 'bg-accent-wash text-accent'
+                                : 'text-ink hover:bg-sunken hover:text-ink'
                         }`}
                     >
                         <Icon className="h-4 w-4" aria-hidden="true" />

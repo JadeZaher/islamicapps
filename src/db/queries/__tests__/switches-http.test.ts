@@ -1,11 +1,13 @@
 /**
  * AUTH_ENABLED and PRIVATE_PREVIEW through the public HTTP seam of a production build (`next start`), on the
- * fixture schema: auth off (default), private preview on, and preview misconfigured. Requires `npx next build`.
+ * fixture schema: auth off (default), private preview on, preview misconfigured, and SITE_URL as the only origin in
+ * production. Requires `npx next build`.
  * Run: npx tsx --conditions=react-server src/db/queries/__tests__/switches-http.test.ts
  */
 import assert from 'node:assert/strict';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import http from 'node:http';
 import path from 'node:path';
 import { prepareFixtureDatabase, type FixtureDatabase } from './fixture-database';
 import { flow, runFlows } from './harness';
@@ -252,6 +254,87 @@ flow('preview misconfigured: the server refuses to start', async () => {
   });
   assert.equal(code, 1, `expected exit 1, output: ${output.slice(-400)}`);
   assert.match(output, /Refusing to start: PRIVATE_PREVIEW=1 needs ADMIN_SESSION_SECRET/);
+});
+
+// ---- Phase 4: SITE_URL is the only origin in production (host-header injection) ---------------------------------
+
+const SITE_PORT = PORT + 2;
+const SITE_URL = 'https://archive.example.org';
+const FORGED = 'attacker.example';
+
+/** Starts `next start` on `port` and waits for /api/health, or returns the exit code when it refuses to start. */
+async function startChild(env: NodeJS.ProcessEnv, port: number): Promise<{ child: ChildProcess; exitCode: number | null; output: () => string }> {
+  const child = spawn(process.execPath, [path.join(ROOT, 'node_modules/next/dist/bin/next'), 'start', '-p', String(port), '-H', '127.0.0.1'], {
+    cwd: ROOT,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let output = '';
+  child.stdout?.on('data', (chunk) => (output += chunk));
+  child.stderr?.on('data', (chunk) => (output += chunk));
+  let exitCode: number | null = null;
+  child.on('exit', (code) => (exitCode = code ?? -1));
+  for (let attempt = 0; attempt < 60 && exitCode === null; attempt++) {
+    try {
+      await nativeFetch(`http://127.0.0.1:${port}/api/health`);
+      return { child, exitCode: null, output: () => output };
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+  return { child, exitCode, output: () => output };
+}
+
+function killChild(child: ChildProcess): void {
+  if (!child.pid || child.exitCode !== null) return;
+  if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+  else child.kill('SIGTERM');
+}
+
+/** GET with forged Host and X-Forwarded-* headers (node:http, since fetch will not send a custom Host). */
+function forgedGet(port: number, pathname: string): Promise<{ status: number; location: string | null; body: string }> {
+  return new Promise((resolve, reject) => {
+    const request = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path: pathname,
+        headers: { Host: FORGED, 'X-Forwarded-Host': FORGED, 'X-Forwarded-Proto': 'http' },
+      },
+      (response) => {
+        let body = '';
+        response.setEncoding('utf8');
+        response.on('data', (chunk) => (body += chunk));
+        response.on('end', () => resolve({ status: response.statusCode ?? 0, location: response.headers.location ?? null, body }));
+      },
+    );
+    request.on('error', reject);
+    request.end();
+  });
+}
+
+flow('site origin: forged Host and X-Forwarded-Host never reach the cite block, canonical link or a redirect', async () => {
+  const started = await startChild({ ...baseEnv, SITE_URL }, SITE_PORT);
+  try {
+    assert.equal(started.exitCode, null, `server did not start: ${started.output().slice(-400)}`);
+    const report = await forgedGet(SITE_PORT, '/hadith/k6/10008');
+    assert.equal(report.status, 200);
+    assert.ok(report.body.includes(`rel="canonical" href="${SITE_URL}/hadith/k6/10008"`), 'canonical link uses SITE_URL');
+    assert.ok(report.body.includes(`${SITE_URL}/hadith/k6/10008. Accessed`), 'cite block address uses SITE_URL');
+    assert.ok(!report.body.includes(FORGED), 'no forged host anywhere in the page');
+    const legacy = await forgedGet(SITE_PORT, `/hadith/${encodeURIComponent('hadith:k6:10008')}`);
+    assert.equal(legacy.status, 308);
+    assert.equal(legacy.location, `${SITE_URL}/hadith/k6/10008`);
+  } finally {
+    killChild(started.child);
+  }
+});
+
+flow('site origin: production without SITE_URL refuses to start', async () => {
+  const started = await startChild({ ...baseEnv, SITE_URL: '' }, SITE_PORT + 1);
+  killChild(started.child);
+  assert.equal(started.exitCode, 1, `expected exit 1, output: ${started.output().slice(-400)}`);
+  assert.match(started.output(), /Refusing to start: SITE_URL is not set/);
 });
 
 async function main() {

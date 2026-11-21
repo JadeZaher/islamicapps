@@ -189,7 +189,9 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      join collection_rights r on r.collection_id = h.collection_id
      where t.quality_status <> 'complete' or t.arabic_sha256 <> h.arabic_sha256
         or not (t.state in ('human_verified', 'source_verified')
-                or (t.state = 'source_provided' and r.english_policy = 'source_provided_allowed'))`,
+                or (t.state = 'source_provided'
+                    and r.english_policy::text in ('source_provided_allowed', 'source_provided_and_machine_allowed'))
+                or (t.state = 'machine_unreviewed' and r.english_policy::text = 'source_provided_and_machine_allowed'))`,
   );
   await check(
     'no cross_parallels.source_translation_id outside translations',

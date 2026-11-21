@@ -4,6 +4,7 @@
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { canonicalForLegacyPath, internalHadithPath, parseHadithPath } from '@/lib/hadith-address';
+import { siteUrlFor } from '@/lib/site-origin';
 import { clientIp, consumeRead, isSignInBlocked } from '@/lib/auth/throttle';
 import { throttledSignInResponse } from '@/lib/auth/throttled-response';
 import { SESSION_COOKIE_NAME, verifyCuratorToken } from '@/lib/auth/session';
@@ -33,6 +34,13 @@ function withSecurityHeaders(response: NextResponse, noIndex: boolean): NextResp
   return response;
 }
 
+/** The request URL with its path replaced (query kept), for an internal rewrite. */
+function internalRewriteUrl(request: NextRequest, pathname: string): URL {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  return url;
+}
+
 function plain(body: string, status: number, extra: Record<string, string> = {}): NextResponse {
   return new NextResponse(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...extra } });
 }
@@ -54,7 +62,7 @@ export async function proxy(request: NextRequest) {
   // Not for our own rewrite: its internal path has the legacy shape, so redirecting it would loop.
   const canonical = request.headers.has(REWRITTEN_HEADER) ? null : canonicalForLegacyPath(pathname);
   if (canonical && (method === 'GET' || method === 'HEAD')) {
-    return withSecurityHeaders(NextResponse.redirect(new URL(canonical + search, request.url), 308), preview);
+    return withSecurityHeaders(NextResponse.redirect(siteUrlFor(canonical + search, request), 308), preview);
   }
 
   // Early answer for a blocked address; the sign-in route reserves the attempt itself (browsers land on /sign-in?error=throttled).
@@ -69,7 +77,7 @@ export async function proxy(request: NextRequest) {
   const previewGated = preview && !isPreviewOpenPath(pathname);
   if ((admin || pathname.startsWith('/api/export') || previewGated) && !session) {
     if ((admin || previewGated) && (method === 'GET' || method === 'HEAD')) {
-      const signIn = new URL('/sign-in', request.url);
+      const signIn = siteUrlFor('/sign-in', request);
       signIn.searchParams.set('next', pathname + search);
       return withSecurityHeaders(NextResponse.redirect(signIn, 303), true);
     }
@@ -91,7 +99,8 @@ export async function proxy(request: NextRequest) {
     const headers = new Headers(request.headers);
     headers.set(REWRITTEN_HEADER, '1');
     return withSecurityHeaders(
-      NextResponse.rewrite(new URL(internalHadithPath(report) + search, request.url), { request: { headers } }),
+      // Internal rewrite on this request's own URL object: the target can never be another origin.
+      NextResponse.rewrite(internalRewriteUrl(request, internalHadithPath(report)), { request: { headers } }),
       noIndex,
     );
   }

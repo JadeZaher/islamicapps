@@ -151,23 +151,23 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
 
     const getCategoryBadgeColor = (category: string): string => {
         const colors: Record<string, string> = {
-            POLITICAL: 'bg-red-500/20 text-red-400 border-red-500/30',
-            RELIGIOUS: 'bg-green-500/20 text-green-400 border-green-500/30',
-            MILITARY: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-            SCIENTIFIC: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-            CULTURAL: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
-            ECONOMIC: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-            SOCIAL: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+            POLITICAL: 'bg-transparent text-danger border-danger',
+            RELIGIOUS: 'bg-sunken text-accent border-rule',
+            MILITARY: 'bg-sunken text-ink-muted border-rule',
+            SCIENTIFIC: 'bg-sunken text-ink-muted border-rule',
+            CULTURAL: 'bg-accent-wash text-accent border-accent',
+            ECONOMIC: 'bg-sunken text-ink-muted border-rule',
+            SOCIAL: 'bg-sunken text-ink-muted border-rule',
         };
-        return colors[category] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+        return colors[category] || 'bg-sunken text-ink-muted border-gray-500/30';
     };
 
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Events</h1>
-                    <a href="/admin/epochs" className="text-sm text-slate-400 underline underline-offset-4 hover:text-slate-200">Eras</a>
+                    <h1 className="text-3xl font-bold text-ink">Events</h1>
+                    <a href="/admin/epochs" className="text-sm text-ink-muted underline underline-offset-4 hover:text-ink">Eras</a>
                 </div>
                 <Button
                     onClick={() => {
@@ -176,7 +176,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                         setFormError(null);
                         setFormData(EMPTY_FORM);
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-accent text-on-accent hover:bg-ink hover:text-paper"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     New Event
@@ -200,19 +200,19 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
 
             {/* Create/Edit Form */}
             {(isCreating || editingId) && (
-                <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
-                    <h2 className="text-xl font-semibold text-white mb-4">
+                <Card className="pb-6 mb-6">
+                    <h2 className="text-xl font-semibold text-ink mb-4">
                         {editingId ? 'Edit Event' : 'Create New Event'}
                     </h2>
                     <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4" aria-busy={isSaving}>
                         {formError && (
-                            <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                            <div role="alert" className="border border-danger bg-transparent p-3 text-sm text-danger">
                                 {formError}
                             </div>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="title" className="text-slate-300">
+                                <Label htmlFor="title" className="text-ink">
                                     Title (English)
                                 </Label>
                                 <Input
@@ -221,11 +221,11 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     placeholder="e.g., Battle of Badr"
                                     required
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="title_arabic" className="text-slate-300">
+                                <Label htmlFor="title_arabic" className="text-ink">
                                     Title (Arabic)
                                 </Label>
                                 <Input
@@ -235,13 +235,13 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     placeholder="e.g., غزوة بدر"
                                     lang="ar"
                                     dir="rtl"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <Label htmlFor="description" className="text-slate-300">
+                            <Label htmlFor="description" className="text-ink">
                                 Description
                             </Label>
                             <Textarea
@@ -250,13 +250,13 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder="Detailed description of the event"
                                 required
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                className="mt-2 bg-surface border-control text-ink"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="category" className="text-slate-300">
+                                <Label htmlFor="category" className="text-ink">
                                     Category
                                 </Label>
                                 <select
@@ -264,7 +264,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     value={formData.category}
                                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     required
-                                    className="w-full mt-2 bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
+                                    className="w-full mt-2 bg-surface border border-control text-ink px-3 py-2"
                                 >
                                     <option value="">Select Category</option>
                                     {EVENT_CATEGORIES.map((cat) => (
@@ -275,7 +275,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                 </select>
                             </div>
                             <div>
-                                <Label htmlFor="location" className="text-slate-300">
+                                <Label htmlFor="location" className="text-ink">
                                     Location
                                 </Label>
                                 <Input
@@ -283,14 +283,14 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     value={formData.location_name}
                                     onChange={(e) => setFormData({ ...formData, location_name: e.target.value })}
                                     placeholder="e.g., Badr"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <Label htmlFor="year_gregorian" className="text-slate-300">
+                                <Label htmlFor="year_gregorian" className="text-ink">
                                     Gregorian Year
                                 </Label>
                                 <Input
@@ -299,11 +299,11 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     value={formData.year_gregorian}
                                     onChange={(e) => setFormData({ ...formData, year_gregorian: e.target.value })}
                                     placeholder="e.g., 625"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="year_hijri" className="text-slate-300">
+                                <Label htmlFor="year_hijri" className="text-ink">
                                     Hijri Year
                                 </Label>
                                 <Input
@@ -312,11 +312,11 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     value={formData.year_hijri}
                                     onChange={(e) => setFormData({ ...formData, year_hijri: e.target.value })}
                                     placeholder="e.g., 2"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="significance" className="text-slate-300">
+                                <Label htmlFor="significance" className="text-ink">
                                     Significance
                                 </Label>
                                 <Input
@@ -324,25 +324,25 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     value={formData.significance}
                                     onChange={(e) => setFormData({ ...formData, significance: e.target.value })}
                                     placeholder="e.g., First major victory"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                         </div>
 
-                        <fieldset className="grid grid-cols-1 gap-4 border-t border-slate-800 pt-4 md:grid-cols-2">
-                            <legend className="text-sm font-medium text-slate-300">Review and citation</legend>
+                        <fieldset className="grid grid-cols-1 gap-4 border-t border-rule pt-4 md:grid-cols-2">
+                            <legend className="text-sm font-medium text-ink">Review and citation</legend>
                             {editingId && events.find((event) => event.id === editingId)?.verification_status === 'unverified_seed' && (
-                                <p className="text-xs text-slate-400 md:col-span-2">
+                                <p className="text-xs text-ink-muted md:col-span-2">
                                     This is seed data. Saving an edit takes it out of the seed, so later seed runs leave it alone.
                                 </p>
                             )}
                             <div>
-                                <Label htmlFor="verification_status" className="text-slate-300">Review state</Label>
+                                <Label htmlFor="verification_status" className="text-ink">Review state</Label>
                                 <select
                                     id="verification_status"
                                     value={formData.verification_status}
                                     onChange={(e) => setFormData({ ...formData, verification_status: e.target.value })}
-                                    className="w-full mt-2 bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
+                                    className="w-full mt-2 bg-surface border border-control text-ink px-3 py-2"
                                 >
                                     {VERIFICATION_STATES.map((state) => (
                                         <option key={state.value} value={state.value}>{state.label}</option>
@@ -350,44 +350,44 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                 </select>
                             </div>
                             <div>
-                                <Label htmlFor="end_year_hijri" className="text-slate-300">End year (Hijri)</Label>
+                                <Label htmlFor="end_year_hijri" className="text-ink">End year (Hijri)</Label>
                                 <Input
                                     id="end_year_hijri"
                                     type="number"
                                     value={formData.end_year_hijri}
                                     onChange={(e) => setFormData({ ...formData, end_year_hijri: e.target.value })}
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="citation_source" className="text-slate-300">Citation: work</Label>
+                                <Label htmlFor="citation_source" className="text-ink">Citation: work</Label>
                                 <Input
                                     id="citation_source"
                                     value={formData.citation_source}
                                     onChange={(e) => setFormData({ ...formData, citation_source: e.target.value })}
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="citation_locator" className="text-slate-300">Citation: volume and page</Label>
+                                <Label htmlFor="citation_locator" className="text-ink">Citation: volume and page</Label>
                                 <Input
                                     id="citation_locator"
                                     value={formData.citation_locator}
                                     onChange={(e) => setFormData({ ...formData, citation_locator: e.target.value })}
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="citation_url" className="text-slate-300">Citation: URL</Label>
+                                <Label htmlFor="citation_url" className="text-ink">Citation: URL</Label>
                                 <Input
                                     id="citation_url"
                                     type="url"
                                     value={formData.citation_url}
                                     onChange={(e) => setFormData({ ...formData, citation_url: e.target.value })}
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
-                            <label className="flex items-center gap-2 self-end text-sm text-slate-300">
+                            <label className="flex items-center gap-2 self-end text-sm text-ink">
                                 <input
                                     type="checkbox"
                                     checked={formData.publication_ready}
@@ -398,7 +398,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                         </fieldset>
 
                         <div className="flex gap-3">
-                            <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                            <Button type="submit" disabled={isSaving} className="bg-accent text-on-accent hover:bg-ink hover:text-paper">
                                 {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                             </Button>
                             <Button
@@ -410,7 +410,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                     setEditingId(null);
                                     setFormError(null);
                                 }}
-                                className="border-slate-600 text-slate-300"
+                                className="border-rule text-ink"
                             >
                                 Cancel
                             </Button>
@@ -423,14 +423,14 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             <div className="space-y-6">
                 {(Object.entries(groupedEvents) as [string, HistoricalEventRecord[]][]).map(([category, categoryEvents]) => (
                     <div key={category}>
-                        <h2 className="text-xl font-semibold text-white mb-3">{categoryLabel(category)}</h2>
+                        <h2 className="text-xl font-semibold text-ink mb-3">{categoryLabel(category)}</h2>
                         <div className="space-y-3">
                             {categoryEvents.map((event) => (
-                                <Card key={event.id} className="bg-slate-900 border-slate-700 p-6">
+                                <Card key={event.id} className="pb-6">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-semibold text-white">{event.title}</h3>
+                                                <h3 className="text-lg font-semibold text-ink">{event.title}</h3>
                                                 {event.category && (
                                                     <Badge className={getCategoryBadgeColor(event.category)}>
                                                         {categoryLabel(event.category)}
@@ -438,10 +438,10 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                                 )}
                                             </div>
                                             {event.title_arabic && (
-                                                <p className="text-sm text-slate-400 mb-2 font-arabic" lang="ar" dir="rtl">{event.title_arabic}</p>
+                                                <p className="text-sm text-ink-muted mb-2 font-arabic" lang="ar" dir="rtl">{event.title_arabic}</p>
                                             )}
-                                            <p className="text-sm text-slate-300 mb-3">{event.description}</p>
-                                            <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+                                            <p className="text-sm text-ink mb-3">{event.description}</p>
+                                            <div className="flex flex-wrap gap-2 text-xs text-ink-muted">
                                                 {event.year_gregorian != null && (
                                                     <span>{event.year_gregorian} CE</span>
                                                 )}
@@ -464,7 +464,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                                 variant="outline"
                                                 onClick={() => handleStartEdit(event)}
                                                 aria-label={`Edit ${event.title}`}
-                                                className="border-slate-600 text-slate-300"
+                                                className="border-rule text-ink"
                                             >
                                                 <Edit2 className="w-4 h-4" aria-hidden="true" />
                                             </Button>
@@ -482,8 +482,8 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                 ))}
 
                 {events.length === 0 && (
-                    <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
-                        <p className="text-center text-slate-400">
+                    <Card className="border-rule border-dashed py-8">
+                        <p className="text-center text-ink-muted">
                             No events found. Choose New Event to create one.
                         </p>
                     </Card>

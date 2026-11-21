@@ -10,6 +10,7 @@ import { getNarratorNetwork } from '@/db/queries/narrator';
 import type { Metadata } from 'next';
 import { loadNarrator } from './data';
 import { NarratorName } from '@/components/NarratorName';
+import { LexiconRecord } from './components/LexiconRecord';
 import { notFound } from 'next/navigation';
 import NarratorClientPage, { type NarratorClientPageProps } from './client-page';
 
@@ -20,8 +21,9 @@ interface PageProps {
 }
 
 /**
- * Adapts the public narrator contract to the client's keys. Only published bios and verdicts reach this page;
- * lexicon dates and biography stay hidden (question 4), and no single cross-tradition verdict is synthesized.
+ * Adapts the public narrator contract to the client's keys. Only published bios and verdicts reach this adapter; the
+ * lexicon's dates and places render separately in LexiconRecord with their label, and no single cross-tradition verdict
+ * is synthesized.
  */
 function toNarratorDetails(narrator: NarratorDetail): NarratorClientPageProps['narratorDetails'] {
     const bio = narrator.bio;
@@ -78,17 +80,19 @@ export default async function NarratorPage({ params }: PageProps) {
     };
 
     return (
-        <main className="mx-auto max-w-4xl px-6 pb-20 pt-10 text-slate-100">
-            <header className="mb-8">
+        <main className="wrap pb-12">
+            <header className="page-header mb-8">
                 <h1>
                     <NarratorName
                         english={narrator.name_english}
                         arabic={narrator.name_arabic}
-                        latinClassName="text-3xl font-semibold"
-                        arabicClassName="mt-1 text-end text-3xl font-normal leading-relaxed text-slate-200"
+                        latinClassName="type-h1"
+                        arabicClassName="mt-1 w-fit text-[length:var(--text-arabic-display)] leading-[var(--leading-arabic-display)] font-normal text-ink"
                     />
                 </h1>
             </header>
+
+            {narrator.lexicon && <LexiconRecord lexicon={narrator.lexicon} />}
 
             <NarratorClientPage
                 narratorDetails={toNarratorDetails(narrator)}

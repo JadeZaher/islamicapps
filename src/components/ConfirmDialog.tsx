@@ -66,15 +66,15 @@ export function ConfirmDialog({
         onClick={(event) => {
           if (event.target === dialogRef.current && !isPending) close();
         }}
-        className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-0 text-slate-100 backdrop:bg-black/60"
+        className="m-auto w-[calc(100%-2rem)] max-w-sm border border-rule bg-sunken p-0 text-ink backdrop:bg-black/60"
       >
         <div className="space-y-4 p-6">
           <h2 id={titleId} className="text-base font-semibold">
             {title}
           </h2>
-          {description && <p className="text-sm text-slate-400">{description}</p>}
+          {description && <p className="text-sm text-ink-muted">{description}</p>}
           {failed && (
-            <p role="alert" className="text-sm text-red-400">
+            <p role="alert" className="text-sm text-danger">
               Couldn&apos;t complete that. Try again.
             </p>
           )}

@@ -2,7 +2,6 @@ import { hadithPath } from '@/lib/hadith-address';
 import { siteOrigin } from '@/lib/site-url';
 import { Breadcrumbs, type Crumb } from './Breadcrumbs';
 import { loadReportContext } from './report-data';
-import './archive.css';
 
 /** Tradition > work > book > chapter trail above a report, plus its canonical address. */
 export async function ReportTrail({ id }: { id: string }) {
@@ -23,7 +22,7 @@ export async function ReportTrail({ id }: { id: string }) {
   }
   items.push({ label: context.reference });
   return (
-    <div className="archive archive-column pt-[var(--archive-space-4)]">
+    <div className="archive archive-column pt-6">
       <link rel="canonical" href={`${origin}${hadithPath(context.id)}`} />
       <Breadcrumbs items={items} />
     </div>

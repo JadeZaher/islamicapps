@@ -1,7 +1,11 @@
-/** `npm run db:load -- --bundle <projection dir> [--purpose <text>] [--report <file.json>]`. See src/db/load/AGENTS.md. */
+/**
+ * `npm run db:load -- --bundle <projection dir> [--purpose <text>] [--report <file.json>]
+ * [--database production --confirm-production]`. Development by default. See src/db/load/AGENTS.md.
+ */
 import { writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { developmentDatabaseUrl, openLoaderClient } from './connection';
+import { resolveTargetDatabase } from '../target-database';
+import { openLoaderClient } from './connection';
 import { loadProjection } from './load';
 import { formatChecks } from './verify-data';
 
@@ -11,10 +15,14 @@ async function main() {
       bundle: { type: 'string' },
       purpose: { type: 'string', default: 'development_load' },
       report: { type: 'string' },
+      database: { type: 'string' },
+      'confirm-production': { type: 'boolean' },
     },
   });
   if (!values.bundle) throw new Error('usage: npm run db:load -- --bundle <projection directory>');
-  const sql = openLoaderClient(developmentDatabaseUrl());
+  const target = resolveTargetDatabase(process.argv, { required: false });
+  console.log(`[load] target: ${target.name} database`);
+  const sql = openLoaderClient(target.url);
   const started = Date.now();
   try {
     const result = await loadProjection(sql, {

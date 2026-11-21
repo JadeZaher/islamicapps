@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { ArabicText } from '@/components/ArabicText';
+import { ReportSourceCredit } from '@/components/archive/SourceCredit';
 import { CrossCulturalParallelCard } from '@/components/CrossCulturalParallelCard';
 import { BilingualTitle } from '@/components/NarratorName';
 import { TraditionBadge } from '@/components/TraditionBadge';
@@ -15,17 +16,21 @@ import { ownMatn } from './matn';
 import { reportNumber, reportReference } from '@/lib/citation/reference';
 import type { HadithClientPageProps } from './types';
 
-/** Section heading used for every block on the page: one size, one weight. */
+/** Section heading used for every block on the page: a 12px uppercase label (DESIGN.md §Report reading column). */
 function SectionHeading({ id, children }: { id: string; children: React.ReactNode }) {
     return (
-        <h2 id={id} className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <h2 id={id} className="type-label mb-4">
             {children}
         </h2>
     );
 }
 
+/** A section opened by a 1px ink rule above its label. */
+const SECTION = 'section-rule mt-12';
+
 /**
- * Hadith reading page: one column, isnad before matn as in the sources, English secondary.
+ * Hadith reading page (DESIGN.md §Report reading column): page header, then from 1024px an 8-column reading column
+ * (text, then isnad) beside a 4-column facts margin; wide sections span all 12. English is secondary.
  * Computed signals (chain score, inferred marfūʿ) are deliberately not rendered; see src/components/AGENTS.md §Hadith detail.
  */
 export function HadithClientPage({ hadith, chain, parallels = [], family = null, timeline = null }: HadithClientPageProps) {
@@ -75,124 +80,141 @@ export function HadithClientPage({ hadith, chain, parallels = [], family = null,
     ].filter((row): row is [string, string] => Boolean(row[1]));
 
     return (
-        <main className="mx-auto max-w-3xl px-6 pb-20 pt-10 text-slate-100">
-            <header className="border-b border-slate-800 pb-6">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
-                    {hadith.tradition && <TraditionBadge tradition={hadith.tradition} />}
-                    {hadith.display_grade || hadith.transmission_type ? (
-                        <GradingPanel displayGrade={hadith.display_grade} transmissionType={hadith.transmission_type} />
-                    ) : null}
-                </div>
-                <h1 className="mt-3 text-3xl font-semibold">{heading}</h1>
-                {chapter && chapter !== heading && (
-                    <p className="mt-2 text-base text-slate-300">
-                        <BilingualTitle text={chapter} />
-                    </p>
+        <main className="wrap pb-12">
+            <header className="page-header !pt-4">
+                <h1 className="type-h1 text-ink">{heading}</h1>
+                {(hadith.tradition || (chapter && chapter !== heading) || hadith.display_grade || hadith.transmission_type) && (
+                    <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 type-small text-ink-muted">
+                        {hadith.tradition && <TraditionBadge tradition={hadith.tradition} />}
+                        {chapter && chapter !== heading && (
+                            <>
+                                {hadith.tradition && <span aria-hidden="true">·</span>}
+                                <BilingualTitle text={chapter} />
+                            </>
+                        )}
+                        {hadith.display_grade || hadith.transmission_type ? (
+                            <>
+                                <span aria-hidden="true">·</span>
+                                <GradingPanel displayGrade={hadith.display_grade} transmissionType={hadith.transmission_type} />
+                            </>
+                        ) : null}
+                    </div>
                 )}
-                {showTopic && <p className="mt-1 text-sm text-slate-400">{topic}</p>}
+                {showTopic && <p className="mt-1 type-small text-ink-muted">{topic}</p>}
             </header>
 
-            {showChain && (
-                <section aria-labelledby="isnad-heading" className="border-b border-slate-800 py-8">
-                    <SectionHeading id="isnad-heading">Isnad · chain of transmission</SectionHeading>
-                    <IsnadChain chain={chain} sourceSanadText={sourceSanadText} />
-                </section>
-            )}
-
-            {/* The chain on a time axis: recorded lifespans or generations, eras, and gaps between consecutive narrators. */}
-            {timeline}
-
-            {(arabicText || englishText) && (
-                <section aria-labelledby="matn-heading" className="py-8">
-                    <SectionHeading id="matn-heading">{isSegmented ? 'Matn · report text' : 'Text as in the source'}</SectionHeading>
-                    {arabicText && (
-                        <ArabicText as="p" className="whitespace-pre-line text-2xl leading-[2.1] text-slate-50">
-                            {arabicText}
-                        </ArabicText>
+            <div className="grid grid-cols-1 gap-x-6 lg:grid-cols-12">
+                <div className="min-w-0 lg:col-span-8">
+                    {(arabicText || englishText) && (
+                        <section aria-labelledby="matn-heading" className="mt-8 max-w-[var(--measure-reading)]">
+                            <SectionHeading id="matn-heading">{isSegmented ? 'Matn · report text' : 'Text as in the source'}</SectionHeading>
+                            {arabicText && (
+                                <ArabicText as="p" variant="reading" className="whitespace-pre-line text-ink">
+                                    {arabicText}
+                                </ArabicText>
+                            )}
+                            {englishText && (
+                                <div className={arabicText ? 'mt-6' : ''}>
+                                    <p className="mb-2 type-small text-ink-muted" data-english-label>
+                                        {hadith.english_attribution?.label ?? 'English translation, not yet reviewed'}
+                                        {segmentationDiffers && ' · includes the chain'}
+                                    </p>
+                                    <p className="whitespace-pre-line type-reading text-ink">{englishText}</p>
+                                    {hadith.english_attribution?.reference && (
+                                        <ReportSourceCredit reference={hadith.english_attribution.reference} />
+                                    )}
+                                </div>
+                            )}
+                        </section>
                     )}
-                    {englishText && (
-                        <div className={arabicText ? 'mt-8 border-t border-slate-800/70 pt-6' : ''}>
-                            <p className="mb-2 text-xs text-slate-500">
-                                English translation, not yet reviewed
-                                {segmentationDiffers && ' · includes the chain'}
-                            </p>
-                            <p className="whitespace-pre-line text-base leading-relaxed text-slate-300">{englishText}</p>
-                        </div>
+
+                    {showChain && (
+                        <section aria-labelledby="isnad-heading" className={`${SECTION} max-w-[var(--measure-reading)]`}>
+                            <SectionHeading id="isnad-heading">Isnad · chain of transmission</SectionHeading>
+                            <IsnadChain chain={chain} sourceSanadText={sourceSanadText} />
+                        </section>
                     )}
-                </section>
-            )}
+                </div>
 
-            {family && (
-                <section aria-labelledby="family-heading" className="border-t border-slate-800 py-8">
-                    <SectionHeading id="family-heading">Tellings of this report</SectionHeading>
-                    <ReportFamilySection family={family} hadithId={hadith.id} />
-                </section>
-            )}
-
-            {hadith.assessments && hadith.assessments.length > 0 && (
-                <section aria-labelledby="assessments-heading" className="border-t border-slate-800 py-8">
-                    <SectionHeading id="assessments-heading">Assessments by tradition</SectionHeading>
-                    <Assessments groups={hadith.assessments} hadithId={hadith.id} />
-                </section>
-            )}
-
-            {realVariations.length > 0 && (
-                <section aria-labelledby="variants-heading" className="border-t border-slate-800 py-8">
-                    <SectionHeading id="variants-heading">Variant texts</SectionHeading>
-                    <Tabs defaultValue="0" className="w-full">
-                        <TabsList className="mb-4">
-                            {realVariations.map((variation, index) => (
-                                <TabsTrigger key={index} value={index.toString()}>
-                                    {variation.source_book || `Variant ${index + 1}`}
-                                </TabsTrigger>
+                {referenceRows.length > 0 && (
+                    <aside aria-label="About this report" className="pt-8 lg:col-span-4 lg:col-start-9">
+                        <dl className="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-4 gap-y-2 type-small max-lg:border-t max-lg:border-rule-strong max-lg:pt-3">
+                            {referenceRows.map(([label, value]) => (
+                                <div key={label} className="contents">
+                                    <dt className="text-ink-muted">{label}</dt>
+                                    <dd className="min-w-0 text-ink [overflow-wrap:anywhere]">{value}</dd>
+                                </div>
                             ))}
-                        </TabsList>
-                        {realVariations.map((variation, index) => (
-                            <TabsContent key={index} value={index.toString()} className="space-y-6">
-                                {variation.text_arabic && (
-                                    <ArabicText as="p" className="text-xl text-slate-100">{variation.text_arabic}</ArabicText>
-                                )}
-                                {variation.text_english && (
-                                    <p className="text-base leading-relaxed text-slate-300">{variation.text_english}</p>
-                                )}
-                            </TabsContent>
-                        ))}
-                    </Tabs>
-                </section>
-            )}
+                        </dl>
+                    </aside>
+                )}
 
-            {parallels.length > 0 && (
-                <section aria-labelledby="parallels-heading" className="border-t border-slate-800 py-8">
-                    <div className="mb-4 flex items-baseline justify-between">
-                        <SectionHeading id="parallels-heading">Parallels in other traditions ({parallels.length})</SectionHeading>
-                        <Link href="/comparative" className="text-sm text-slate-400 underline-offset-4 hover:text-slate-100 hover:underline">
-                            All comparative studies
-                        </Link>
-                    </div>
-                    <div className="space-y-4">
-                        {parallels.map((parallel) => (
-                            <CrossCulturalParallelCard
-                                key={parallel.id}
-                                parallel={parallel}
-                                tradition={parallel.tradition}
-                                sourceText={parallel.source_text}
-                                motifTags={parallel.motif_tags}
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
+                <div className="min-w-0 lg:col-span-12">
+                    {/* The chain on a time axis: recorded lifespans or generations, eras, and gaps between consecutive narrators. */}
+                    {timeline && <div className={SECTION}>{timeline}</div>}
 
-            {referenceRows.length > 0 && (
-                <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 border-t border-slate-800 pt-6 text-sm">
-                    {referenceRows.map(([label, value]) => (
-                        <div key={label} className="contents">
-                            <dt className="text-slate-500">{label}</dt>
-                            <dd className="text-slate-300">{value}</dd>
-                        </div>
-                    ))}
-                </dl>
-            )}
+                    {family && (
+                        <section aria-labelledby="family-heading" className={SECTION}>
+                            <SectionHeading id="family-heading">Tellings of this report</SectionHeading>
+                            <ReportFamilySection family={family} hadithId={hadith.id} />
+                        </section>
+                    )}
+
+                    {hadith.assessments && hadith.assessments.length > 0 && (
+                        <section aria-labelledby="assessments-heading" className={`${SECTION} max-w-[var(--measure-wide)]`}>
+                            <SectionHeading id="assessments-heading">Assessments by tradition</SectionHeading>
+                            <Assessments groups={hadith.assessments} hadithId={hadith.id} />
+                        </section>
+                    )}
+
+                    {realVariations.length > 0 && (
+                        <section aria-labelledby="variants-heading" className={`${SECTION} max-w-[var(--measure-wide)]`}>
+                            <SectionHeading id="variants-heading">Variant texts</SectionHeading>
+                            <Tabs defaultValue="0" className="w-full">
+                                <TabsList className="mb-4">
+                                    {realVariations.map((variation, index) => (
+                                        <TabsTrigger key={index} value={index.toString()}>
+                                            {variation.source_book || `Variant ${index + 1}`}
+                                        </TabsTrigger>
+                                    ))}
+                                </TabsList>
+                                {realVariations.map((variation, index) => (
+                                    <TabsContent key={index} value={index.toString()} className="max-w-[var(--measure-reading)] space-y-6">
+                                        {variation.text_arabic && (
+                                            <ArabicText as="p" variant="reading" className="text-ink">{variation.text_arabic}</ArabicText>
+                                        )}
+                                        {variation.text_english && (
+                                            <p className="type-reading text-ink">{variation.text_english}</p>
+                                        )}
+                                    </TabsContent>
+                                ))}
+                            </Tabs>
+                        </section>
+                    )}
+
+                    {parallels.length > 0 && (
+                        <section aria-labelledby="parallels-heading" className={`${SECTION} max-w-[var(--measure-wide)]`}>
+                            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+                                <SectionHeading id="parallels-heading">Parallels in other traditions ({parallels.length})</SectionHeading>
+                                <Link href="/comparative" className="link-row type-small text-ink-muted">
+                                    All comparative studies
+                                </Link>
+                            </div>
+                            <div className="space-y-4">
+                                {parallels.map((parallel) => (
+                                    <CrossCulturalParallelCard
+                                        key={parallel.id}
+                                        parallel={parallel}
+                                        tradition={parallel.tradition}
+                                        sourceText={parallel.source_text}
+                                        motifTags={parallel.motif_tags}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            </div>
         </main>
     );
 }

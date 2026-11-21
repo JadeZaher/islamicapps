@@ -10,18 +10,12 @@ interface EmptyStateProps {
   className?: string;
 }
 
-/** Single empty-state style: dashed panel, short title, optional action. */
+/** Empty state (DESIGN.md §Empty, loading and error states): hairline above, a 20px title, one reason, one action. Flush left, no panel. */
 export function EmptyState({ title, description, action, className }: EmptyStateProps) {
   return (
-    <div
-      role="status"
-      className={cn(
-        'flex flex-col items-center gap-2 rounded-xl border border-dashed border-slate-700 px-6 py-12 text-center',
-        className,
-      )}
-    >
-      <p className="font-medium text-slate-200">{title}</p>
-      {description && <p className="max-w-md text-sm text-slate-400">{description}</p>}
+    <div role="status" className={cn('flex flex-col items-start gap-2 border-t border-rule pt-3', className)}>
+      <p className="type-h3 text-ink">{title}</p>
+      {description && <p className="max-w-[var(--measure-reading)] type-small text-ink-muted">{description}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );

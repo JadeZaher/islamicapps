@@ -8,6 +8,7 @@
 | `throttled-response.ts` | Blocked sign-in answer: browsers 303 to `/sign-in?error=throttled`, others 429 |
 | `require-curator.ts` | `requireCurator()` returns `curator:<name>` or throws `UnauthorizedError` |
 | `hash-passphrase.ts` | Operator CLI: passphrase on stdin, hash on stdout |
+| `startup-check.ts` | `startupProblems()`: the reasons `src/instrumentation.ts` refuses to start (unsafe private preview; missing or unsafe `SITE_URL` in production) |
 | `switches.ts` | `AUTH_ENABLED` and `PRIVATE_PREVIEW`, resolved in one place; auth surfaces; preview-open paths; `safeReturnPath` (edge-safe) |
 | `visibility.ts` | `requestVisibility()` / `visibilityForSessionToken()`: the only producer of curator read visibility |
 
@@ -44,6 +45,8 @@ request) and pass the result to the query layer, which picks public views or liv
 - `ADMIN_SESSION_SECRET` — at least 32 characters of randomness. Shorter or absent: sessions fail closed.
 
 - `CLIENT_IP_HEADER` (optional) — edge header that carries the client address; default `x-real-ip`.
+- `SITE_URL` — required in production (`https://islamicapps-production.up.railway.app` on Railway): the only origin used
+  for absolute URLs; start-up refuses without it (`startup-check.ts`, `src/lib/AGENTS.md` §Site origin).
 
 Create a hash: `npm run --silent auth:hash` with the passphrase on stdin. Full owner steps: `conductor/tracks/containment-and-access-control_20261121/railway-env-setup.md`.
 

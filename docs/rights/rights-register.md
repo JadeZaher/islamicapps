@@ -1,6 +1,7 @@
 ---
 type: rights-register
-status: proposal-awaiting-owner-approval
+status: decided-and-recorded
+decided: 2026-11-21
 prepared: 2026-11-21
 scope: the 34 source works of source_work_registry.json (registry 2026.07.23), the narrator lexicon, and the six OpenITI rijal texts
 ---
@@ -10,7 +11,13 @@ scope: the 34 source works of source_work_registry.json (registry 2026.07.23), t
 **What this is.** The evidence, per source work, for what the archive may publish, and a proposed status for
 each component. It is assembled for the owner's decision. **It is not legal advice.** Copyright in editions,
 translations and databases depends on the country and on facts not visible from here; where an answer turns on
-either, the status is `unclear`, not a guess. Nothing in this file has been recorded in any database.
+either, the status is `unclear`, not a guess.
+
+**Decided and recorded (2026-11-21).** The owner holds permission with full scope and cleared all 34 works for
+publication, Arabic and English (`conductor/RUNBOOK.md`, owner decisions, third round). `npm run db:record-rights`
+records that in `collection_rights` on both databases (`cleared`, English policy `source_provided_and_machine_allowed`,
+actor `system:owner-decision`); each row's note points at the section of this file that carries its work's evidence.
+The attribution wording below is what the site shows, through `/sources` and the per-report source references.
 
 Evidence files sit in [`evidence/`](./evidence/), one per fetched page, each headed with its URL, retrieval
 time (2026-11-21 UTC) and purpose. Local file identities are proven in

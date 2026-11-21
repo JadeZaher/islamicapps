@@ -29,14 +29,15 @@ npx next build
 # 6. HTTP gate: proxy, sign-in, actions with AUTH_ENABLED=1 (next start on port 3917)
 npx tsx --conditions=react-server src/db/queries/__tests__/http-gate.test.ts
 
-# 7. Switches over HTTP: auth off, private preview, crawl policy, start-up refusal (ports 3927, 3928)
+# 7. Switches over HTTP: auth off, private preview, crawl policy, start-up refusals, SITE_URL as the only origin
+#    under forged Host headers (ports 3927 to 3930)
 npx tsx --conditions=react-server src/db/queries/__tests__/switches-http.test.ts
 
 # 8. Python suites (standard library unittest; -I keeps the interpreter isolated). Discovery does not descend into
 #    folders without __init__.py, so each folder is named (test counts as of 2026-11-21).
 python -I datasets/hadith-data/pg_export/test_export_postgres.py
 python -I -m unittest discover -s datasets/hadith-data/__tests__ -p "test_*.py"                        # 182
-python -I -m unittest discover -s datasets/hadith-data/__tests__/fixtures/__tests__ -p "test_*.py"     # 4
+python -m pytest -q datasets/hadith-data/__tests__/fixtures/__tests__                                  # 36; these import pytest, which -I hides
 python -I -m unittest discover -s datasets/hadith-data/diagnostics -p "test_*.py"                      # 10
 python -I -m unittest discover -s datasets/hadith-data/diagnostics/biography-recovery -p "test_*.py"   # 5
 python -I -m unittest discover -s datasets/hadith-data/diagnostics/biography-verification -p "test_*.py"  # 9
@@ -56,6 +57,6 @@ Not added (shared file; the session lead edits it at a join):
 "test:flows": "tsx --conditions=react-server src/db/queries/__tests__/flows.test.ts && tsx --conditions=react-server src/db/queries/__tests__/browse-flows.test.ts",
 "test:glossary": "tsx src/lib/glossary/__tests__/glossary.test.ts",
 "test:http": "tsx --conditions=react-server src/db/queries/__tests__/http-gate.test.ts && tsx --conditions=react-server src/db/queries/__tests__/switches-http.test.ts",
-"test:python": "python -I datasets/hadith-data/pg_export/test_export_postgres.py && python -I -m unittest discover -s datasets/hadith-data/__tests__ -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/__tests__/fixtures/__tests__ -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics/biography-recovery -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics/biography-verification -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics/report-correspondence -p test_*.py",
+"test:python": "python -I datasets/hadith-data/pg_export/test_export_postgres.py && python -I -m unittest discover -s datasets/hadith-data/__tests__ -p test_*.py && python -m pytest -q datasets/hadith-data/__tests__/fixtures/__tests__ && python -I -m unittest discover -s datasets/hadith-data/diagnostics -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics/biography-recovery -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics/biography-verification -p test_*.py && python -I -m unittest discover -s datasets/hadith-data/diagnostics/report-correspondence -p test_*.py",
 "test": "npm run test:types && npm run test:flows && npm run test:glossary && npm run db:verify && next build && npm run test:http && npm run test:python"
 ```

@@ -70,6 +70,12 @@ flow('hadith detail: text, gated English and per-tradition grades with no defaul
   assert.match(bukhari.text_ar ?? '', /إنما الأعمال بالنيات/);
   assert.match(bukhari.text_english ?? '', /intentions/);
   assert.equal(bukhari.english_attribution?.state, 'source_provided');
+  // Labelled and credited to its source and translator (owner, 2026-11-21).
+  assert.equal(bukhari.english_attribution?.label, 'Source-provided English, not reviewed here');
+  assert.deepEqual(
+    [bukhari.english_attribution?.reference?.code, bukhari.english_attribution?.reference?.detail],
+    ['SUN', 'Translation: Muhammad Muhsin Khan'],
+  );
   assert.equal(bukhari.variations[0].source, 'hadith_node');
 
   // Sahih Muslim's provider English is not cleared for publication (english_policy reviewed_only).
@@ -145,7 +151,7 @@ flow('isnad: every name in order as written, every identity candidate with its b
   assert.ok(kafi.nodes.length > 0 && kafi.nodes.every((node) => node.identity === 'unidentified'));
 });
 
-flow('narrator: teachers and students from transmissions, tradition-scoped verdicts, lexicon hidden publicly', async () => {
+flow('narrator: teachers and students from transmissions, tradition-scoped verdicts, labelled lexicon dates', async () => {
   // Transmissions come only from verified links: Sunan al-Darimi k6:11880 reads الدارمي عن مروان عن الليث.
   const network = await getNarratorNetwork(MARWAN_BIN_MUHAMMAD);
   assert.deepEqual(network.teachers.map((peer) => peer.id), ['narrator:rawi:20023']);
@@ -164,7 +170,13 @@ flow('narrator: teachers and students from transmissions, tradition-scoped verdi
   const malik = await getNarratorDetail(MALIK);
   assert.ok(malik);
   assert.deepEqual(malik.verdicts.map((verdict) => [verdict.tradition, verdict.verdict, verdict.status]), [['Sunni', 'thiqa_thabt', 'published']]);
-  assert.equal(malik.lexicon, null, 'lexicon dates are hidden on public pages (question 4)');
+  // Lexicon dates and places are public, labelled on the page (owner, 2026-11-21); the prose bio is not.
+  assert.deepEqual(
+    [malik.lexicon?.birth_year_hijri, malik.lexicon?.death_year_hijri, malik.lexicon?.death_place, malik.lexicon?.source_locator],
+    [93, 179, 'Medina', 'all_rawis.csv#scholar_indx=20001'],
+  );
+  assert.equal(malik.lexicon?.bio, null, 'the lexicon prose biography stays reviewer-only');
+  assert.deepEqual(malik.lexicon?.held_back, [], 'Malik is not among the Taqrib conflicts');
 
   const reviewed = await getNarratorForReview(MALIK);
   assert.ok(reviewed);

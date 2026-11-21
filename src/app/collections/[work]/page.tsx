@@ -46,7 +46,7 @@ export default async function WorkPage({ params, searchParams }: PageProps) {
           { label: work.name },
         ]}
       />
-      <h1 className="mt-[var(--archive-space-3)] text-3xl font-semibold tracking-tight">{work.name}</h1>
+      <h1 className="mt-[var(--archive-space-3)] type-h1">{work.name}</h1>
       <p className="mt-[var(--archive-space-2)] text-sm text-[color:var(--archive-muted)]">
         {number(structure.reports)} reports
         {books.length > 1 && ` · ${number(books.length)} ${structure.namespace === 'k6' ? 'books' : 'volumes'}`}
@@ -66,7 +66,7 @@ export default async function WorkPage({ params, searchParams }: PageProps) {
               <li key={book.number} className="border-b border-[color:var(--archive-rule)]">
                 <Link
                   href={`${basePath}/${encodeURIComponent(book.number)}`}
-                  className="archive-focus grid grid-cols-[6rem_1fr_auto] items-baseline gap-[var(--archive-space-3)] py-[var(--archive-space-2)] hover:text-[color:var(--archive-accent)]"
+                  className="grid grid-cols-[6rem_1fr_auto] items-baseline gap-[var(--archive-space-3)] py-[var(--archive-space-2)] hover:bg-sunken"
                 >
                   <span className="text-sm text-[color:var(--archive-muted)]">{book.label}</span>
                   <span className="min-w-0">{book.title ? <BilingualTitle text={book.title} /> : null}</span>

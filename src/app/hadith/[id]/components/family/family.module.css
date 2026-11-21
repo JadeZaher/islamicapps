@@ -1,44 +1,48 @@
 /*
- * Report family view: Swiss (International Typographic) style. Every colour and spacing value is a variable on
- * .family so a later project-wide design pass can retune it here. Flat fills, hairline rules, no shadows or gradients.
+ * Report family view. Every value is a design token (src/app/design-tokens.css; DESIGN.md §Tables, §Transmission graph).
+ * Tertiary ink is text, so it maps to muted; faint is used only for diagram edges.
  * Rationale: src/app/hadith/[id]/AGENTS.md §Report family.
  */
 .family {
-  --family-ink: #f4f4f2;
-  --family-ink-secondary: #a3a3a0;
-  --family-ink-tertiary: #737370;
-  --family-paper: #0b0b0c;
-  --family-rule: #2a2a2b;
-  --family-accent: #34d399;
-  --family-dim: 0.14;
-  --family-space-1: 0.25rem;
-  --family-space-2: 0.5rem;
-  --family-space-3: 1rem;
-  --family-space-4: 1.5rem;
-  --family-space-5: 2.5rem;
-  --family-space-6: 4rem;
-  --family-hairline: 1px;
+  --family-ink: var(--color-ink);
+  --family-ink-secondary: var(--color-ink-muted);
+  --family-ink-tertiary: var(--color-ink-muted);
+  --family-faint: var(--color-ink-faint);
+  --family-paper: var(--color-paper);
+  --family-surface: var(--color-surface);
+  --family-rule: var(--color-rule);
+  --family-accent: var(--color-accent);
+  --family-accent-wash: var(--color-accent-wash);
+  --family-space-1: var(--space-1);
+  --family-space-2: var(--space-2);
+  --family-space-3: var(--space-4);
+  --family-space-4: var(--space-5);
+  --family-space-5: var(--space-7);
+  --family-space-6: var(--space-8);
+  --family-hairline: var(--rule-hairline);
   color: var(--family-ink);
-  font-family: var(--font-sans, ui-sans-serif, system-ui, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--font-latin);
 }
 
 .section {
-  border-top: var(--family-hairline) solid var(--family-rule);
-  padding-block: var(--family-space-5);
+  margin-top: var(--family-space-5);
+  padding-top: var(--space-3);
+  border-top: var(--family-hairline) solid var(--color-rule-strong);
 }
 
 .label {
-  margin-bottom: var(--family-space-4);
-  font-size: 0.75rem;
+  margin-bottom: var(--family-space-3);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--family-ink-tertiary);
 }
 
 .summary {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
   color: var(--family-ink-secondary);
 }
 
@@ -55,37 +59,39 @@
   color: var(--family-ink-secondary);
 }
 
+/* Row link (DESIGN.md §Buttons and links): ink with a rule-coloured underline that turns accent on hover. */
 .link {
   color: var(--family-ink);
   text-decoration: underline;
+  text-decoration-color: var(--family-rule);
   text-decoration-thickness: var(--family-hairline);
-  text-underline-offset: 0.25em;
-  outline: none;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--motion-fast) var(--motion-ease);
 }
 
 .link:hover {
-  color: var(--family-accent);
+  text-decoration-color: var(--family-accent);
 }
 
-.link:focus-visible,
-.button:focus-visible {
-  outline: 2px solid var(--family-accent);
-  outline-offset: 2px;
-}
-
+/* Secondary button: 1px ink border, fills with ink on hover; pressed is filled. */
 .button {
-  border: var(--family-hairline) solid var(--family-rule);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border: var(--family-hairline) solid var(--color-control);
   background: transparent;
-  color: var(--family-ink-secondary);
-  padding: var(--family-space-1) var(--family-space-2);
-  font-size: 0.8125rem;
-  line-height: 1.4;
+  color: var(--family-ink);
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1;
   cursor: pointer;
+  transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 
 .button:hover {
-  color: var(--family-ink);
-  border-color: var(--family-ink-tertiary);
+  border-color: var(--family-ink);
 }
 
 .button[aria-pressed='true'] {
@@ -94,38 +100,58 @@
   border-color: var(--family-ink);
 }
 
+@media (pointer: coarse) {
+  .button,
+  .select {
+    min-height: 2.75rem;
+  }
+}
+
 .textButton {
   background: none;
   border: 0;
-  padding: 0;
-  color: var(--family-ink-secondary);
-  font-size: 0.75rem;
+  padding: var(--space-2) 0;
+  color: var(--family-ink);
+  font-size: var(--text-small);
   text-decoration: underline;
+  text-decoration-color: var(--family-rule);
   text-decoration-thickness: var(--family-hairline);
-  text-underline-offset: 0.25em;
+  text-underline-offset: 0.2em;
   cursor: pointer;
+}
+
+.textButton:hover {
+  text-decoration-color: var(--family-accent);
 }
 
 .groupHeading {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: baseline;
-  border-bottom: var(--family-hairline) solid var(--family-ink-tertiary);
+  border-bottom: var(--family-hairline) solid var(--color-rule-strong);
   padding-bottom: var(--family-space-2);
-  font-size: 0.875rem;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   font-weight: 600;
-  letter-spacing: 0.04em;
 }
 
 .workHeading {
   margin-top: var(--family-space-4);
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   color: var(--family-ink-secondary);
 }
 
 .rows > li {
   border-top: var(--family-hairline) solid var(--family-rule);
-  padding-block: var(--family-space-4);
+  padding-block: var(--space-3);
+}
+
+/* The current report: accent-wash ground with a 2px accent bar at its start (DESIGN.md §Tables). */
+.rows > li[aria-current] {
+  background: var(--family-accent-wash);
+  box-shadow: inset 2px 0 0 var(--family-accent);
+  padding-inline: var(--space-3);
 }
 
 .rows > li:first-child {
@@ -147,8 +173,9 @@
 }
 
 .arabic {
-  font-size: 1.25rem;
-  line-height: 2.1;
+  max-width: var(--measure-reading);
+  font-size: var(--text-arabic-inline);
+  line-height: var(--leading-arabic-inline);
   color: var(--family-ink);
 }
 
@@ -162,16 +189,18 @@
 .meta {
   margin-top: var(--family-space-1);
   display: flex;
+  align-items: baseline;
   flex-wrap: wrap;
   column-gap: var(--family-space-3);
-  font-size: 0.75rem;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   color: var(--family-ink-tertiary);
 }
 
-/* Tradition mark: a short flat line in the tradition's dash pattern, ink only (TraditionMark, labels.ts). */
+/* Tradition mark (src/components/marks/TraditionMark.tsx) before a tradition name. */
 .mark {
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: -1px;
   margin-inline-end: var(--family-space-2);
   color: var(--family-ink);
 }
@@ -185,17 +214,24 @@
 }
 
 .select {
-  background: var(--family-paper);
+  min-height: 2.5rem;
+  background: var(--family-surface);
   color: var(--family-ink);
-  border: var(--family-hairline) solid var(--family-rule);
-  padding: var(--family-space-1) var(--family-space-2);
-  font-size: 0.8125rem;
+  border: var(--family-hairline) solid var(--color-control);
+  border-radius: 0;
+  padding: 0 var(--space-3);
+  font-size: var(--text-small);
   max-width: 100%;
+}
+
+.select:focus-visible {
+  outline-offset: 0;
+  border-color: var(--color-focus);
 }
 
 .canvas {
   /* height is set inline from the number of layers, capped at 78vh */
-  border: var(--family-hairline) solid var(--family-rule);
+  border-block: var(--family-hairline) solid var(--family-rule);
   background: var(--family-paper);
 }
 
@@ -203,9 +239,21 @@
   margin-top: var(--family-space-3);
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--family-space-2) var(--family-space-4);
-  font-size: 0.75rem;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   color: var(--family-ink-secondary);
+}
+
+.legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.legend svg {
+  color: var(--family-ink);
 }
 
 .chainBlock {
@@ -218,7 +266,9 @@
 }
 
 .chainHeading {
-  margin-bottom: var(--family-space-3);
-  font-size: 0.9375rem;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-heading-3);
+  line-height: var(--leading-heading-3);
   font-weight: 600;
+  letter-spacing: -0.01em;
 }

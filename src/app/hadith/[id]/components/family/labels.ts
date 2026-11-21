@@ -1,5 +1,6 @@
 /** Reader-facing wording for correspondences and traditions in the family view. Neutral: evidence, not rulings. */
 import type { FamilyTelling, HadithTraditionCode, TellingCorrespondence } from '@/db/queries/contracts';
+import { TRADITION_DASH as MARK_DASH } from '@/components/marks';
 import { reportReference } from '@/lib/citation/reference';
 
 export const CORRESPONDENCE_LABEL: Record<string, string> = {
@@ -30,14 +31,14 @@ export function correspondenceLabel(correspondence: TellingCorrespondence): { ki
 export const TRADITION_ORDER: HadithTraditionCode[] = ['Ibadi', 'Imami', 'Sunni', 'Zaydi'];
 
 /**
- * Line pattern per tradition, drawn in ink only (Swiss, legible in black and white): the pattern, not a hue, tells the
- * traditions apart, and the same pattern marks the tradition in every list heading.
+ * Line pattern per tradition, drawn in ink only (legible in black and white): the pattern, not a hue, tells the
+ * traditions apart. The patterns are the design system's (DESIGN.md §Tradition marks, `TRADITION_DASH` in marks/).
  */
 export const TRADITION_DASH: Record<HadithTraditionCode, { dash: string | undefined; name: string }> = {
-  Ibadi: { dash: '1 4', name: 'dotted line' },
-  Imami: { dash: '7 4', name: 'dashed line' },
-  Sunni: { dash: undefined, name: 'solid line' },
-  Zaydi: { dash: '9 3 1 3', name: 'dash-dot line' },
+  Ibadi: { dash: MARK_DASH.Ibadi, name: 'long-dash line' },
+  Imami: { dash: MARK_DASH.Imami, name: 'dotted line' },
+  Sunni: { dash: MARK_DASH.Sunni, name: 'dash-dot line' },
+  Zaydi: { dash: MARK_DASH.Zaydi, name: 'even-dash line' },
 };
 
 type ReferenceTelling = Pick<FamilyTelling, 'hadith_id' | 'source_work' | 'hadith_no' | 'numbering_citable' | 'record_id' | 'volume' | 'url' | 'page_ref'>;

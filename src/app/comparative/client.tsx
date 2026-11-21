@@ -101,23 +101,23 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
     const totalParallels = stats.reduce((sum: number, row: any) => sum + Number(row.count), 0);
 
     return (
-        <main className="px-6 py-10 text-slate-100">
-            <div className="mx-auto max-w-6xl">
+        <main className="wrap pb-12 text-ink">
+            <div>
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-semibold">Comparative studies</h1>
+                <div className="page-header mb-8">
+                    <h1 className="type-h1">Comparative studies</h1>
                 </div>
 
                 {/* Overview stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <Card className="bg-white/5 border-white/10 p-4">
-                        <p className="text-2xl font-bold text-white">{totalParallels.toLocaleString()}</p>
-                        <p className="text-sm text-slate-400">Parallels recorded</p>
+                    <Card className="pb-6">
+                        <p className="type-h2 tabular-nums text-ink">{totalParallels.toLocaleString()}</p>
+                        <p className="text-sm text-ink-muted">Parallels recorded</p>
                     </Card>
                     {statsByTradition.slice(0, 3).map(({ tradition, count }) => (
-                        <Card key={tradition.id} className="bg-white/5 border-white/10 p-4">
-                            <p className="text-2xl font-bold text-white">{count}</p>
-                            <p className="text-sm text-slate-400">{tradition.name} parallels</p>
+                        <Card key={tradition.id} className="pb-6">
+                            <p className="type-h2 tabular-nums text-ink">{count}</p>
+                            <p className="text-sm text-ink-muted">{tradition.name} parallels</p>
                         </Card>
                     ))}
                 </div>
@@ -127,14 +127,16 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                     <Button
                         onClick={() => setActiveView('results')}
                         aria-pressed={activeView === 'results'}
-                        className={activeView === 'results' ? 'bg-cyan-700 text-white' : 'bg-white/5 text-slate-300 hover:bg-white/10'}
+                        variant="outline"
+                        className={activeView === 'results' ? 'bg-ink text-paper' : ''}
                     >
                         Browse Parallels
                     </Button>
                     <Button
                         onClick={() => setActiveView('regional')}
                         aria-pressed={activeView === 'regional'}
-                        className={activeView === 'regional' ? 'bg-cyan-700 text-white' : 'bg-white/5 text-slate-300 hover:bg-white/10'}
+                        variant="outline"
+                        className={activeView === 'regional' ? 'bg-ink text-paper' : ''}
                     >
                         Regional Context
                     </Button>
@@ -143,46 +145,46 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                 {activeView === 'regional' ? (
                     /* Regional Context View */
                     <section aria-labelledby="regional-context-heading" className="space-y-4">
-                        <h2 id="regional-context-heading" className="text-xl font-semibold text-white">
+                        <h2 id="regional-context-heading" className="text-xl font-semibold text-ink">
                             Regional context
                         </h2>
                         {REGIONAL_CONTEXT.map((region) => (
-                            <Card key={region.school} className="bg-white/5 border-white/10">
+                            <Card key={region.school} className="pb-4">
                                 <CardContent className="pt-5">
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
-                                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                                            <p className="type-label mb-1">
                                                 Transmission School
                                             </p>
-                                            <p className="text-white font-semibold">{region.school}</p>
+                                            <p className="text-ink font-semibold">{region.school}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                                            <p className="type-label mb-1">
                                                 Traditions Present
                                             </p>
                                             <div className="flex flex-wrap gap-1">
                                                 {region.traditions.map((t) => (
-                                                    <span key={t} className="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                                    <span key={t} className="type-label">
                                                         {t}
                                                     </span>
                                                 ))}
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                                            <p className="type-label mb-1">
                                                 Key Narrators
                                             </p>
                                             <div className="space-y-0.5">
                                                 {region.narrators.map((n) => (
-                                                    <p key={n} className="text-sm text-slate-300">{n}</p>
+                                                    <p key={n} className="text-sm text-ink">{n}</p>
                                                 ))}
                                             </div>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                                            <p className="type-label mb-1">
                                                 Notes
                                             </p>
-                                            <p className="text-sm text-slate-400 leading-relaxed">{region.notes}</p>
+                                            <p className="text-sm text-ink-muted leading-relaxed">{region.notes}</p>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -194,14 +196,14 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                     <div className="flex flex-col gap-6 md:flex-row">
                         {/* Filter sidebar */}
                         <div className="space-y-5 md:w-56 md:shrink-0">
-                            <Card className="bg-white/5 border-white/10 p-4">
-                                <h3 className="text-sm font-semibold text-white mb-3">Tradition</h3>
+                            <Card className="pb-6">
+                                <h3 className="text-sm font-semibold text-ink mb-3">Tradition</h3>
                                 <div className="space-y-1.5">
                                     <button
                                         type="button"
                                         aria-pressed={!filters.tradition_id}
                                         onClick={() => applyFilters({ ...filters, tradition_id: '' })}
-                                        className={`w-full text-left text-sm px-2 py-1.5 rounded transition-colors ${!filters.tradition_id ? 'bg-cyan-700/50 text-white' : 'text-slate-400 hover:text-white'}`}
+                                        className={`w-full text-left text-sm px-2 py-1.5  transition-colors ${!filters.tradition_id ? 'bg-accent-wash text-ink shadow-[inset_2px_0_0_var(--color-accent)]' : 'text-ink-muted hover:text-ink'}`}
                                     >
                                         All Traditions
                                     </button>
@@ -210,7 +212,7 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                                             type="button"
                                             aria-pressed={filters.tradition_id === t.id}
                                             onClick={() => applyFilters({ ...filters, tradition_id: t.id })}
-                                            className={`w-full text-left text-sm px-2 py-1.5 rounded transition-colors ${filters.tradition_id === t.id ? 'bg-cyan-700/50 text-white' : 'text-slate-400 hover:text-white'}`}
+                                            className={`w-full text-left text-sm px-2 py-1.5  transition-colors ${filters.tradition_id === t.id ? 'bg-accent-wash text-ink shadow-[inset_2px_0_0_var(--color-accent)]' : 'text-ink-muted hover:text-ink'}`}
                                         >
                                             {t.name}
                                         </button>
@@ -219,15 +221,15 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                             </Card>
 
                             {SELECT_FILTERS.map(({ key, label, options }) => (
-                                <Card key={key} className="bg-white/5 border-white/10 p-4">
-                                    <label htmlFor={`parallel-filter-${key}`} className="block text-sm font-semibold text-white mb-3">
+                                <Card key={key} className="pb-6">
+                                    <label htmlFor={`parallel-filter-${key}`} className="block text-sm font-semibold text-ink mb-3">
                                         {label}
                                     </label>
                                     <select
                                         id={`parallel-filter-${key}`}
                                         value={filters[key]}
                                         onChange={(e) => applyFilters({ ...filters, [key]: e.target.value })}
-                                        className="w-full bg-slate-800 border border-slate-700 text-white rounded px-2 py-1.5 text-sm"
+                                        className="h-10 w-full bg-surface border border-control text-ink px-3 text-sm"
                                     >
                                         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                                     </select>
@@ -238,7 +240,7 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                                 <Button
                                     onClick={() => applyFilters({ tradition_id: '', parallel_type: '', isra_iliyyat_status: '', motif_category: '', confidence_level: '' })}
                                     variant="outline"
-                                    className="w-full border-slate-600 text-slate-300 text-sm"
+                                    className="w-full border-rule text-ink text-sm"
                                 >
                                     Clear Filters
                                 </Button>
@@ -247,12 +249,12 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
 
                         {/* Results */}
                         <div className="flex-1" aria-busy={isPending}>
-                            <p role="status" className="text-sm text-slate-400 mb-4">
+                            <p role="status" className="text-sm text-ink-muted mb-4">
                                 {isPending ? 'Searching...' : `${parallels.length} parallel${parallels.length !== 1 ? 's' : ''} found`}
                             </p>
 
                             {error && (
-                                <div role="alert" className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                                <div role="alert" className="mb-4 flex items-center justify-between gap-3 border border-danger bg-transparent px-4 py-3 text-sm text-danger">
                                     <span>{error}</span>
                                     <Button type="button" size="sm" variant="outline" onClick={() => applyFilters(filters)} disabled={isPending}>
                                         Retry
@@ -275,8 +277,8 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                                     ))}
                                 </div>
                             ) : (
-                                <Card className="bg-white/5 border-white/10 border-dashed p-12">
-                                    <p className="text-center text-slate-400">
+                                <Card className="border-rule border-dashed py-8">
+                                    <p className="text-center text-ink-muted">
                                         {isPending ? 'Searching...' : 'No parallels match these filters.'}
                                     </p>
                                 </Card>

@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useCallback, useId, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
+import { SearchIcon } from '@/components/marks';
 
 export interface FilterOption {
     label: string;
@@ -105,24 +106,26 @@ export function SearchFilterBar({
     };
 
     return (
-        <section className="mb-6 space-y-3" aria-label="Search and filters" aria-busy={isPending}>
-            <div className="flex flex-wrap items-end gap-3">
+        <section className="mb-8 space-y-3" aria-label="Search and filters" aria-busy={isPending}>
+            <div className="flex flex-wrap items-end gap-4">
                 {showSearch && (
                     <div className="flex-1 min-w-[200px] max-w-md">
-                        <label htmlFor={searchId} className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
+                        <label htmlFor={searchId} className="mb-2 block text-sm font-semibold text-ink">
                             Search
                         </label>
                         <div className="relative">
+                            <SearchIcon decorative className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-ink-muted" />
                             <input
                                 id={searchId}
                                 type="search"
+                                dir="auto"
                                 value={searchInput}
                                 onChange={(e) => setSearchDraft({ source: currentSearch, value: e.target.value })}
                                 placeholder={searchPlaceholder}
-                                className="w-full min-h-11 rounded-md border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+                                className="h-10 w-full border border-control bg-surface ps-9 pe-3 text-base text-ink placeholder:text-ink-muted focus-visible:border-focus focus-visible:outline-offset-0"
                             />
                             {isPending && (
-                                <div className="absolute right-10 top-1/2 size-4 -translate-y-1/2 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" role="status" aria-label="Updating results" />
+                                <span className="absolute end-px top-1/2 -translate-y-1/2 bg-surface px-3 type-label" role="status">Updating</span>
                             )}
                         </div>
                     </div>
@@ -130,14 +133,14 @@ export function SearchFilterBar({
 
                 {filters.map((filter) => (
                     <div key={filter.key} className="min-w-44">
-                        <label htmlFor={`${searchId}-${filter.key}`} className="mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
+                        <label htmlFor={`${searchId}-${filter.key}`} className="mb-2 block text-sm font-semibold text-ink">
                             {filter.label}
                         </label>
                         <select
                             id={`${searchId}-${filter.key}`}
                             value={getFilterValue(filter)}
                             onChange={(e) => handleFilterChange(filter, e.target.value)}
-                            className="min-h-11 w-full cursor-pointer rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
+                            className="h-10 w-full cursor-pointer border border-control bg-surface px-3 text-base text-ink focus-visible:border-focus focus-visible:outline-offset-0"
                         >
                             {filter.options.map((opt) => (
                                 <option key={opt.value} value={opt.value}>
@@ -149,19 +152,14 @@ export function SearchFilterBar({
                 ))}
 
                 {hasActiveFilters && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearAll}
-                        className="min-h-11 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-cyan-300"
-                    >
+                    <Button variant="link" onClick={clearAll}>
                         Clear filters
                     </Button>
                 )}
             </div>
 
             {totalResults !== undefined && (
-                <p className="text-xs text-slate-400" aria-live="polite" aria-atomic="true">
+                <p className="text-sm tabular-nums text-ink-muted" aria-live="polite" aria-atomic="true">
                     {totalResults.toLocaleString()} result{totalResults !== 1 ? 's' : ''}
                 </p>
             )}

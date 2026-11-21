@@ -59,9 +59,20 @@ flow('addresses: every ID shape round-trips; legacy and canonical paths map onto
 });
 
 flow('addresses: the proxy 308-redirects the old ID URL to the new address and serves the new one by rewrite', async () => {
-  const legacy = await m.proxy.proxy(new NextRequest(`http://archive.test/hadith/${encodeURIComponent('hadith:k6:10008')}?x=1`));
-  assert.equal(legacy.status, 308);
-  assert.equal(legacy.headers.get('location'), 'http://archive.test/hadith/k6/10008?x=1');
+  // The Location comes from SITE_URL, never from the request's host (src/lib/AGENTS.md §Site origin).
+  const previous = process.env.SITE_URL;
+  try {
+    process.env.SITE_URL = 'https://site.test';
+    const legacy = await m.proxy.proxy(new NextRequest(`http://forged.test/hadith/${encodeURIComponent('hadith:k6:10008')}?x=1`));
+    assert.equal(legacy.status, 308);
+    assert.equal(legacy.headers.get('location'), 'https://site.test/hadith/k6/10008?x=1');
+    delete process.env.SITE_URL;
+    const unset = await m.proxy.proxy(new NextRequest(`http://forged.test/hadith/${encodeURIComponent('hadith:k6:10008')}`));
+    assert.equal(unset.headers.get('location'), 'http://localhost:3000/hadith/k6/10008', 'outside production a non-loopback host is ignored');
+  } finally {
+    if (previous === undefined) delete process.env.SITE_URL;
+    else process.env.SITE_URL = previous;
+  }
   const canonical = await m.proxy.proxy(new NextRequest('http://archive.test/hadith/k6/10008'));
   assert.match(canonical.headers.get('x-middleware-rewrite') ?? '', /\/hadith\/hadith%3Ak6%3A10008$/);
 });
@@ -114,6 +125,19 @@ flow('report context: previous/next within the work, with none before the first 
   const middle = await m.browse.getReportContext(MUSLIM_IN_SOURCE_ORDER[2], m.visibility.PUBLIC_VISIBILITY);
   assert.equal(middle?.book?.label, 'Book 19');
   assert.equal(middle?.tradition, 'Sunni');
+});
+
+flow('English label and credit: source-provided credits the translator; machine names its model or says it is missing', async () => {
+  const cases: Array<[{ state: string; translator: string | null; model: string | null }, string, string, string]> = [
+    [{ state: 'source_provided', translator: null, model: null }, 'Source-provided English, not reviewed here', 'SUN', 'Translation: Muhammad Muhsin Khan'],
+    [{ state: 'machine_unreviewed', translator: null, model: 'tencent/hy-mt2-30b-a3b' }, 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)', 'SWI', 'Machine translation (tencent/hy-mt2-30b-a3b), not reviewed'],
+    [{ state: 'machine_unreviewed', translator: null, model: null }, 'Unreviewed machine translation (model not recorded)', 'SWI', 'Machine translation (model not recorded), not reviewed'],
+  ];
+  for (const [english, label, code, detail] of cases) {
+    assert.equal(m.credit.englishLabel(english), label);
+    const reference = m.credit.englishReference({ sourceSlug: 'sunnah-com', sourceWorkId: 'sunni:bukhari', english });
+    assert.deepEqual([reference?.role, reference?.code, reference?.detail], ['English', code, detail]);
+  }
 });
 
 flow('citation: names the work, reference, dataset version, address and access date, and credits the source', async () => {

@@ -25,7 +25,9 @@ the rationale that code comments point to, plus every decision taken while imple
 | `migrate.ts` | Programmatic migrator (`npm run db:migrate`); the pre-deploy command bundles it to `migrate.mjs` |
 | `verify.ts` | Catalog verification (`npm run db:verify`); exits 1 on any mismatch |
 | `advisory-locks.ts` | Fixed advisory-lock keys |
-| `ops/indexes-heavy.sql` | Concurrent heavy index builds, run by an operator after a load. Never a migration |
+| `ops/indexes-heavy.sql` | Concurrent heavy index builds, run by an operator after a load (`npm run db:heavy-indexes`). Never a migration |
+| `ops/railway-tuning.sql`, `ops/apply-tuning.ts` | Section 2.4 server settings via `ALTER SYSTEM`, applied by an operator; never a migration |
+| `target-database.ts` | `--database development|production` (+ `--confirm-production`) for every operator script |
 | `../../drizzle/core/` | The single migration stream (generated plus hand-written SQL) |
 
 ## Ownership and the reload contract
@@ -123,7 +125,8 @@ write decisions.
   and `refresh_publication_facets` redefined, `public_chain_mention_candidates` created, `narrator_transmissions`
   dropped and recreated with its two indexes) -> `0007_report_correspondences` (generated tables and enums, then the
   three hand-written views) -> `0008_epochs` (the history lane's pending `epochs` table and `published_epochs` view,
-  promoted from `ops/pending/`; idempotent). A `--custom` generate snapshots the previous schema: after promoting a
+  promoted from `ops/pending/`; idempotent) -> `0009_public_english_policy` (enum value
+  `source_provided_and_machine_allowed`, `public_translations` redefined; see §Public English). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.
@@ -218,18 +221,54 @@ Where the doc was ambiguous or contradicted the orchestrator brief, the stricter
 22. **Environment override:** the database is Railway PostgreSQL 18.6, used directly; the doc's local
     `pgvector:pg18` container on 5442 was not set up (orchestrator instruction).
 
+## Public English (0009; owner decision 2026-11-21)
+
+All 34 works are cleared with `english_policy = 'source_provided_and_machine_allowed'` (`npm run db:record-rights`).
+`public_translations` then exposes reviewed English, `source_provided` English and `machine_unreviewed` English, each row
+with its `state`, `source`, `translator` and `model`; `unknown_provenance` never (it cannot be credited). The page labels
+each row through `englishLabel`/`englishReference` (`src/lib/sources/report-credit.ts`): "Source-provided English, not
+reviewed here" credited to the text source and its translator (`WORK_CREDITS`), or "Unreviewed machine translation
+(<model>)" / "(model not recorded)" credited to `SWI`.
+
+- **Why the policy is compared as text.** The migrator runs every pending migration in one transaction, and Postgres
+  refuses an enum value as a literal in the transaction that added it ("unsafe use of new value"), so `0009` and the load
+  check compare `english_policy::text`. `db:verify` fails if the view loses the machine branch, gains
+  `unknown_provenance`, or drops the quality or hash gate.
+- **What is loaded.** The loader ingests only the canonical `translations` (66,776 rows, all `source_provided`: K6 and
+  Thaqalayn). Machine English stays in `candidates/translation_candidates.csv` (31,652 rows of projection
+  `2026.11.21.3`) because `translation_candidates` is not migrated, and the load check "no candidate-only rows in
+  canonical tables" keeps machine rows out of `translations`. So the machine branch of the view matches nothing today;
+  Ibadi, Zaydi, Pure Canon and Sahifat al-Rida show Arabic only until the candidate table ships.
+
+## Operator scripts and production
+
+Every operator script defaults to the development database (`DATABASE_URL`) and refuses the production database there.
+Production needs both `--database production` and `--confirm-production` (`target-database.ts`), which points
+`DATABASE_URL` at `DATABASE_URL_PRODUCTION` for that process only: `db:load`, `db:verify-data`, `db:heavy-indexes`,
+`db:seed-history`, `db:seed-narrator-bios`, `db:approve-preview`; `db:record-rights` and `apply-tuning.ts` require
+`--database` explicitly. `db:migrate` and `db:verify` read `DATABASE_URL` as before (set it for the one command). The
+production flag is deliberately two words: a script never writes production because one variable was mistyped.
+
+## Server tuning (section 2.4)
+
+`ops/railway-tuning.sql`, applied with `npx tsx src/db/ops/apply-tuning.ts --database production --confirm-production`
+(server-wide: development and production share the server), then `pg_reload_conf()`. Never restarts; prints what waits
+for a restart (`shared_buffers`, `max_connections`, `huge_pages`). Deviation: `max_connections = 40`, not 20, because the
+development database, its test fixtures and the loader share the server with the production app (decision 22). Restricted
+roles (`ops/roles.sql`) are still deferred, so every client is the template superuser and the 3 reserved slots are not
+headroom.
+
 ## Deferred
 
 - Identity candidates: mixed transmission pairs (one confirmed source-index neighbour, one human decision); whether a
   kunya-only candidate should contest a confirmed source identity (it does now); source-index claims that name a
   placeholder row are dropped and counted in the projection manifest, not emitted; the narrator page still lists
   only reports where the narrator is a verified link.
-- `ops/roles.sql` (`schema_owner`, `app_rw`, grants, `app_rw` timeouts) and `ops/railway-tuning.sql`. The step 4
+- `ops/roles.sql` (`schema_owner`, `app_rw`, grants, `app_rw` timeouts). The step 4
   migrations ran as the Railway template superuser, so every object is owned by it: `roles.sql` must
   `REASSIGN OWNED` / `ALTER ... OWNER TO schema_owner` before the app switches roles.
 - `apply_decision(unit_id)`: written with the loader's decision replay (step 5/6) so both share one SQL path,
   including the narrower-scope-wins rule and the position - 1 condition for `derived_relation`.
-- Running `ops/indexes-heavy.sql` (after the first load).
 - `src/db/load/*`, section 11.4 checks, `src/db/queries/*`, `withReadRetry`, the ESLint import rule, the
   Dockerfile `migrate.mjs` bundle and `railway.json` pre-deploy command.
 - The 7 later tables (decision 2).

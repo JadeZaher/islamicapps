@@ -49,6 +49,31 @@ function reference(role: SourceReference['role'], code: SourceCode, detail: stri
   return { role, code, name: record.name, href: sourceRecordHref(code), licence: record.licence, detail, external };
 }
 
+export type EnglishInput = NonNullable<ReportCreditInput['english']>;
+
+/** True for machine English: its state says so, or a model is recorded. */
+export function isMachineEnglish(english: EnglishInput): boolean {
+  return english.state === 'machine_unreviewed' || Boolean(english.model);
+}
+
+/** The label shown above English text (owner, 2026-11-21): machine with its model, or source-provided, or reviewed. */
+export function englishLabel(english: EnglishInput): string {
+  if (isMachineEnglish(english)) return `Unreviewed machine translation (${english.model ?? 'model not recorded'})`;
+  if (english.state === 'human_verified' || english.state === 'source_verified') return 'English translation, reviewed';
+  return 'Source-provided English, not reviewed here';
+}
+
+/** The English reference for a report: our own layer for machine English, else the text source with its translator. */
+export function englishReference(input: Pick<ReportCreditInput, 'sourceSlug' | 'sourceWorkId' | 'english'>): SourceReference | null {
+  const record = sourceForDatabaseSlug(input.sourceSlug);
+  if (!record || !input.english) return null;
+  if (isMachineEnglish(input.english)) {
+    return reference('English', 'SWI', `Machine translation (${input.english.model ?? 'model not recorded'}), not reviewed`, null);
+  }
+  const translator = input.english.translator ?? WORK_CREDITS[input.sourceWorkId]?.translator ?? 'translator not recorded in our copy';
+  return reference('English', record.code, `Translation: ${translator}`, null);
+}
+
 /** Text and (when shown) English references for a report; empty only for an unregistered source. */
 export function reportSourceReferences(input: ReportCreditInput): SourceReference[] {
   const record = sourceForDatabaseSlug(input.sourceSlug);
@@ -58,14 +83,8 @@ export function reportSourceReferences(input: ReportCreditInput): SourceReferenc
     record.code === 'THQ' ? thaqalaynLink(input.url) : record.code === 'SUN' ? sunnahLink(credit?.sunnahCollection, input.number) : null;
   const work = credit ? `${input.workName}, ${credit.author}` : input.workName;
   const references = [reference('Text', record.code, credit?.openitiUri ? `${work} (OpenITI ${credit.openitiUri})` : work, external)];
-  if (input.english) {
-    const machine = input.english.state === 'machine_unreviewed' || Boolean(input.english.model);
-    references.push(
-      machine
-        ? reference('English', 'SWI', `Machine translation${input.english.model ? ` (${input.english.model})` : ''}, not reviewed`, null)
-        : reference('English', record.code, `Translation: ${input.english.translator ?? credit?.translator ?? 'translator not recorded in our copy'}`, null),
-    );
-  }
+  const english = englishReference(input);
+  if (english) references.push(english);
   return references;
 }
 

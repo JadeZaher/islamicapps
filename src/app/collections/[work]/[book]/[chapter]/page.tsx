@@ -57,7 +57,7 @@ export default async function ChapterPage({ params, searchParams }: PageProps) {
           <BilingualTitle text={chapter.category} />
         </p>
       )}
-      <h1 className="mt-[var(--archive-space-2)] text-2xl font-semibold tracking-tight">
+      <h1 className="type-h1 mt-3">
         {chapter.name ? <BilingualTitle text={chapter.name} /> : 'Untitled chapter'}
       </h1>
       <p className="mt-[var(--archive-space-2)] text-sm text-[color:var(--archive-muted)]">{number(reports.total)} reports</p>

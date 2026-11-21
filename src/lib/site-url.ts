@@ -1,12 +1,12 @@
-/** The site's public origin: SITE_URL when set (deployments), else the request's host. */
+/** The site's public origin for server components: `SITE_URL` in production, never request headers. See site-origin.ts. */
 import 'server-only';
 import { headers } from 'next/headers';
+import { configuredSiteOrigin, siteOriginFor } from './site-origin';
 
 export async function siteOrigin(): Promise<string> {
-  const configured = process.env.SITE_URL?.trim().replace(/\/+$/, '');
-  if (configured) return configured;
+  const configured = configuredSiteOrigin();
+  if (configured || process.env.NODE_ENV === 'production') return siteOriginFor(null, null);
+  // Development and tests only: the request's host, accepted by siteOriginFor only when it is a loopback host.
   const store = await headers();
-  const host = store.get('x-forwarded-host') ?? store.get('host') ?? 'localhost';
-  const protocol = store.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https');
-  return `${protocol}://${host}`;
+  return siteOriginFor(store.get('host'), store.get('x-forwarded-proto'));
 }

@@ -13,14 +13,14 @@ export function ReportFamilySection({ family, hadithId }: { family: ReportFamily
   const href = `${hadithPath(hadithId)}/chains`;
   const hasOthers = family.tellings.length > 1;
   return (
-    <div className={styles.family}>
+    <div className={`${styles.family} max-w-[var(--measure-wide)]`}>
       <FamilySummaryLine family={family} />
       {hasOthers && (
         <div className="mt-6">
           <TellingsList tellings={family.tellings} mode="public" />
         </div>
       )}
-      <p className="mt-6 text-sm">
+      <p className="mt-6 type-small">
         <Link href={href} className={styles.link}>
           {hasOthers ? 'Every chain of every telling, with the combined diagram' : 'This report’s chains on one page'}
         </Link>

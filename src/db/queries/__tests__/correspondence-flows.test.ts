@@ -209,7 +209,7 @@ flow('route: /hadith/[id]/chains renders for a known report and answers not-foun
   if (!existsSync(path.join(ROOT, '.next/BUILD_ID'))) throw new Error('Run `npx next build` first: this flow drives the built route.');
   server = spawn(process.execPath, [path.join(ROOT, 'node_modules/next/dist/bin/next'), 'start', '-p', String(PORT), '-H', '127.0.0.1'], {
     cwd: ROOT,
-    env: { ...process.env, DATABASE_URL: fixture.url, NODE_ENV: 'production' },
+    env: { ...process.env, DATABASE_URL: fixture.url, SITE_URL: `http://127.0.0.1:${PORT}`, NODE_ENV: 'production' },
     stdio: 'ignore',
   });
   const base = `http://127.0.0.1:${PORT}`;

@@ -40,7 +40,7 @@ export function NarratorName({
   const parts = narratorNameParts(english, arabic);
   const latin = parts.latin && <span className={cn('block', latinClassName)}>{parts.latin}</span>;
   const arabicLine = parts.arabic && (
-    <ArabicText className={cn('block text-start', arabicClassName)}>{parts.arabic}</ArabicText>
+    <ArabicText variant="inline" className={cn('block text-start', arabicClassName)}>{parts.arabic}</ArabicText>
   );
   return (
     <span className={cn('flex min-w-0 flex-col', className)}>
@@ -50,16 +50,16 @@ export function NarratorName({
   );
 }
 
-/** Chapter and book titles stored as "English - Arabic": same text, Arabic run set in the Arabic face. */
+/** Chapter and book titles stored as "English - Arabic": same text, Arabic run set in the Arabic face about 1.15x the Latin. */
 export function BilingualTitle({ text, className }: { text: string; className?: string }) {
   const { latin, arabic } = splitLatinArabic(text);
   if (!latin || !arabic) {
-    return arabic ? <ArabicText className={className}>{arabic}</ArabicText> : <span className={className}>{latin}</span>;
+    return arabic ? <ArabicText className={cn('text-[1.15em]', className)}>{arabic}</ArabicText> : <span className={className}>{latin}</span>;
   }
   return (
     <span className={cn('inline-flex flex-wrap items-baseline gap-x-3', className)}>
       <span>{latin}</span>
-      <ArabicText className="font-normal">{arabic}</ArabicText>
+      <ArabicText className="text-[1.15em] font-normal">{arabic}</ArabicText>
     </span>
   );
 }

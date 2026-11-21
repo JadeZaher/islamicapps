@@ -226,19 +226,19 @@ export function CommentariesManagerClient({
 
     const getTypeBadgeColor = (type: string): string => {
         const colors: Record<string, string> = {
-            Explanation: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-            Critique: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-            Translation: 'bg-green-500/20 text-green-400 border-green-500/30',
-            'Historical Context': 'bg-teal-500/20 text-teal-400 border-teal-500/30',
-            'Legal Ruling': 'bg-red-500/20 text-red-400 border-red-500/30',
+            Explanation: 'bg-sunken text-ink-muted border-rule',
+            Critique: 'bg-sunken text-ink-muted border-rule',
+            Translation: 'bg-sunken text-accent border-rule',
+            'Historical Context': 'bg-accent-wash text-accent border-accent',
+            'Legal Ruling': 'bg-transparent text-danger border-danger',
         };
-        return colors[type] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+        return colors[type] || 'bg-sunken text-ink-muted border-gray-500/30';
     };
 
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-white">Commentaries</h1>
+                <h1 className="text-3xl font-bold text-ink">Commentaries</h1>
                 <Button
                     onClick={() => {
                         setIsCreating(true);
@@ -256,7 +256,7 @@ export function CommentariesManagerClient({
                             narrator_id: '',
                         });
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-accent text-on-accent hover:bg-ink hover:text-paper"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     New Commentary
@@ -265,19 +265,19 @@ export function CommentariesManagerClient({
 
             {/* Create/Edit Form */}
             {(isCreating || editingId) && (
-                <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
-                    <h2 className="text-xl font-semibold text-white mb-4">
+                <Card className="pb-6 mb-6">
+                    <h2 className="text-xl font-semibold text-ink mb-4">
                         {editingId ? 'Edit Commentary' : 'Create New Commentary'}
                     </h2>
                     <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4" aria-busy={isSaving}>
                         {formError && (
-                            <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                            <div role="alert" className="border border-danger bg-transparent p-3 text-sm text-danger">
                                 {formError}
                             </div>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="source_work" className="text-slate-300">
+                                <Label htmlFor="source_work" className="text-ink">
                                     Source Work
                                 </Label>
                                 <Input
@@ -286,11 +286,11 @@ export function CommentariesManagerClient({
                                     onChange={(e) => setFormData({ ...formData, source_work: e.target.value })}
                                     placeholder="e.g., Fath al-Bari"
                                     required
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="author" className="text-slate-300">
+                                <Label htmlFor="author" className="text-ink">
                                     Author
                                 </Label>
                                 <Input
@@ -299,13 +299,13 @@ export function CommentariesManagerClient({
                                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                                     placeholder="e.g., Ibn Hajar al-Asqalani"
                                     required
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <Label htmlFor="type" className="text-slate-300">
+                            <Label htmlFor="type" className="text-ink">
                                 Type
                             </Label>
                             <select
@@ -313,7 +313,7 @@ export function CommentariesManagerClient({
                                 value={formData.type}
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                 required
-                                className="w-full mt-2 bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
+                                className="w-full mt-2 bg-surface border border-control text-ink px-3 py-2"
                             >
                                 <option value="">Select Type</option>
                                 {COMMENTARY_TYPES.map((type) => (
@@ -325,7 +325,7 @@ export function CommentariesManagerClient({
                         </div>
 
                         <div>
-                            <Label htmlFor="text" className="text-slate-300">
+                            <Label htmlFor="text" className="text-ink">
                                 Commentary Text (English)
                             </Label>
                             <Textarea
@@ -334,12 +334,12 @@ export function CommentariesManagerClient({
                                 onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                                 placeholder="The commentary text"
                                 required
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                className="mt-2 bg-surface border-control text-ink"
                             />
                         </div>
 
                         <div>
-                            <Label htmlFor="text_arabic" className="text-slate-300">
+                            <Label htmlFor="text_arabic" className="text-ink">
                                 Commentary Text (Arabic)
                             </Label>
                             <Textarea
@@ -349,12 +349,12 @@ export function CommentariesManagerClient({
                                 placeholder="النص العربي"
                                 lang="ar"
                                 dir="rtl"
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                className="mt-2 bg-surface border-control text-ink"
                             />
                         </div>
 
                         <div>
-                            <Label htmlFor="reference" className="text-slate-300">
+                            <Label htmlFor="reference" className="text-ink">
                                 Reference
                             </Label>
                             <Input
@@ -362,13 +362,13 @@ export function CommentariesManagerClient({
                                 value={formData.reference}
                                 onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
                                 placeholder="e.g., Vol. 1, Page 45"
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                className="mt-2 bg-surface border-control text-ink"
                             />
                         </div>
 
                         {/* Search and Select Hadith */}
                         <div>
-                            <Label htmlFor="hadith-search" className="text-slate-300">
+                            <Label htmlFor="hadith-search" className="text-ink">
                                 Link to Hadith (Optional)
                             </Label>
                             {!editingId && (
@@ -377,14 +377,14 @@ export function CommentariesManagerClient({
                                     value={hadithSearch}
                                     onChange={(e) => setHadithSearch(e.target.value)}
                                     placeholder="Search hadith by title or topic..."
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             )}
 
                             {formData.hadith_id && (
-                                <div className="mt-2 p-2 bg-slate-800 rounded border border-slate-700">
+                                <div className="mt-2 p-2 bg-sunken border border-rule">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm text-slate-300">
+                                        <span className="text-sm text-ink">
                                             {linkedLabels.hadith ||
                                                 (() => {
                                                     const found = hadiths.find((h) => h.id === formData.hadith_id);
@@ -396,7 +396,7 @@ export function CommentariesManagerClient({
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, hadith_id: '' })}
                                                 aria-label="Remove linked hadith"
-                                                className="text-xs text-red-400 hover:text-red-300"
+                                                className="text-xs text-danger hover:text-danger"
                                             >
                                                 Remove
                                             </button>
@@ -416,7 +416,7 @@ export function CommentariesManagerClient({
                                                 setLinkedLabels((labels) => ({ ...labels, hadith: hadithLabel(hadith) }));
                                                 setHadithSearch('');
                                             }}
-                                            className="w-full text-left p-2 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-sm text-slate-300"
+                                            className="w-full text-left p-2 bg-sunken hover:bg-sunken border border-rule text-sm text-ink"
                                         >
                                             {hadithLabel(hadith)}
                                         </button>
@@ -427,7 +427,7 @@ export function CommentariesManagerClient({
 
                         {/* Search and Select Narrator */}
                         <div>
-                            <Label htmlFor="narrator-search" className="text-slate-300">
+                            <Label htmlFor="narrator-search" className="text-ink">
                                 Link to Narrator (Optional)
                             </Label>
                             {!editingId && (
@@ -436,14 +436,14 @@ export function CommentariesManagerClient({
                                     value={narratorSearch}
                                     onChange={(e) => setNarratorSearch(e.target.value)}
                                     placeholder="Search narrator by name..."
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             )}
 
                             {formData.narrator_id && (
-                                <div className="mt-2 p-2 bg-slate-800 rounded border border-slate-700">
+                                <div className="mt-2 p-2 bg-sunken border border-rule">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm text-slate-300">
+                                        <span className="text-sm text-ink">
                                             {linkedLabels.narrator ||
                                                 narrators.find((n) => n.id === formData.narrator_id)?.name_english ||
                                                 'Narrator selected'}
@@ -453,7 +453,7 @@ export function CommentariesManagerClient({
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, narrator_id: '' })}
                                                 aria-label="Remove linked narrator"
-                                                className="text-xs text-red-400 hover:text-red-300"
+                                                className="text-xs text-danger hover:text-danger"
                                             >
                                                 Remove
                                             </button>
@@ -473,7 +473,7 @@ export function CommentariesManagerClient({
                                                 setLinkedLabels((labels) => ({ ...labels, narrator: narrator.name_english }));
                                                 setNarratorSearch('');
                                             }}
-                                            className="w-full text-left p-2 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-sm text-slate-300"
+                                            className="w-full text-left p-2 bg-sunken hover:bg-sunken border border-rule text-sm text-ink"
                                         >
                                             {narrator.name_english}
                                             {narrator.tabaqah ? ` (${narrator.tabaqah})` : ''}
@@ -484,7 +484,7 @@ export function CommentariesManagerClient({
                         </div>
 
                         <div className="flex gap-3">
-                            <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                            <Button type="submit" disabled={isSaving} className="bg-accent text-on-accent hover:bg-ink hover:text-paper">
                                 {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                             </Button>
                             <Button
@@ -496,7 +496,7 @@ export function CommentariesManagerClient({
                                     setEditingId(null);
                                     setFormError(null);
                                 }}
-                                className="border-slate-600 text-slate-300"
+                                className="border-rule text-ink"
                             >
                                 Cancel
                             </Button>
@@ -523,11 +523,11 @@ export function CommentariesManagerClient({
             {/* Commentaries List */}
             <div className="space-y-4">
                 {commentaries.map((commentary) => (
-                    <Card key={commentary.id} className="bg-slate-900 border-slate-700 p-6">
+                    <Card key={commentary.id} className="pb-6">
                         <div className="flex items-start justify-between mb-3">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-lg font-semibold text-white">{commentary.source_work}</h3>
+                                    <h3 className="text-lg font-semibold text-ink">{commentary.source_work}</h3>
                                     {commentary.type && (
                                         <Badge className={getTypeBadgeColor(commentary.type)}>
                                             {commentary.type}
@@ -536,31 +536,31 @@ export function CommentariesManagerClient({
                                     <Badge
                                         className={
                                             commentary.status === 'published'
-                                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                                                : 'bg-slate-800 text-slate-300 border-slate-600'
+                                                ? 'bg-accent-wash text-accent border-accent'
+                                                : 'bg-sunken text-ink border-rule'
                                         }
                                     >
                                         {STATUS_LABELS[commentary.status] ?? commentary.status}
                                     </Badge>
                                 </div>
-                                {commentary.author && <p className="text-sm text-slate-400 mb-3">By {commentary.author}</p>}
-                                <p className="text-sm text-slate-300 mb-3">{commentary.text}</p>
+                                {commentary.author && <p className="text-sm text-ink-muted mb-3">By {commentary.author}</p>}
+                                <p className="text-sm text-ink mb-3">{commentary.text}</p>
                                 {commentary.text_arabic && (
-                                    <p className="text-sm text-slate-400 mb-3 font-arabic" lang="ar" dir="rtl">{commentary.text_arabic}</p>
+                                    <p className="text-sm text-ink-muted mb-3 font-arabic" lang="ar" dir="rtl">{commentary.text_arabic}</p>
                                 )}
-                                <div className="flex flex-wrap gap-3 text-xs text-slate-400">
+                                <div className="flex flex-wrap gap-3 text-xs text-ink-muted">
                                     {commentary.hadith && (
-                                        <span className="bg-blue-500/10 px-2 py-1 rounded">
+                                        <span className="bg-sunken px-2 py-1">
                                             Hadith: {hadithLabel(commentary.hadith)}
                                         </span>
                                     )}
                                     {commentary.narrator && (
-                                        <span className="bg-green-500/10 px-2 py-1 rounded">
+                                        <span className="bg-sunken px-2 py-1">
                                             Narrator: {commentary.narrator.name_english}
                                         </span>
                                     )}
                                     {commentary.reference && (
-                                        <span className="bg-slate-600/15 px-2 py-1 rounded">
+                                        <span className="bg-sunken px-2 py-1">
                                             {commentary.reference}
                                         </span>
                                     )}
@@ -573,7 +573,7 @@ export function CommentariesManagerClient({
                                     variant="outline"
                                     disabled={publishingId === commentary.id}
                                     onClick={() => handleTogglePublished(commentary)}
-                                    className="border-slate-600 text-slate-300"
+                                    className="border-rule text-ink"
                                 >
                                     {publishingId === commentary.id
                                         ? 'Saving...'
@@ -586,7 +586,7 @@ export function CommentariesManagerClient({
                                     variant="outline"
                                     onClick={() => handleStartEdit(commentary)}
                                     aria-label={`Edit commentary: ${commentary.source_work}`}
-                                    className="border-slate-600 text-slate-300"
+                                    className="border-rule text-ink"
                                 >
                                     <Edit2 className="w-4 h-4" aria-hidden="true" />
                                 </Button>
@@ -598,7 +598,7 @@ export function CommentariesManagerClient({
                             </div>
                         </div>
                         {rowErrors[commentary.id] && (
-                            <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                            <p role="alert" className="border border-danger bg-transparent p-3 text-sm text-danger">
                                 {rowErrors[commentary.id]}
                             </p>
                         )}
@@ -606,8 +606,8 @@ export function CommentariesManagerClient({
                 ))}
 
                 {commentaries.length === 0 && (
-                    <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
-                        <p className="text-center text-slate-400">
+                    <Card className="border-rule border-dashed py-8">
+                        <p className="text-center text-ink-muted">
                             No commentaries yet. Click "New Commentary" to create one.
                         </p>
                     </Card>

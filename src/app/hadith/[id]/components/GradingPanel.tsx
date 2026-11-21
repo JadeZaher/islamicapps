@@ -13,12 +13,12 @@ export function GradingPanel({ displayGrade, transmissionType }: GradingPanelPro
         <>
             {displayGrade && (
                 <span className="inline-flex items-center gap-1.5" title="Grade as recorded in the source collection">
-                    <span className="text-xs text-slate-500">Source grade</span>
+                    <span className="type-label">Source grade</span>
                     <GradeBadge grade={displayGrade} />
                 </span>
             )}
             {transmissionType && (
-                <span className="rounded border border-slate-700 px-2 py-0.5 text-xs text-slate-300">
+                <span className="type-label">
                     {transmissionType.toLowerCase()}
                 </span>
             )}

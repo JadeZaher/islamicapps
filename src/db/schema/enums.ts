@@ -17,7 +17,12 @@ export const loadStatusEnum = pgEnum('load_status', ['loading', 'complete', 'fai
 
 export const rightsStatusEnum = pgEnum('rights_status', ['cleared', 'pending', 'restricted']);
 
-export const englishPolicyEnum = pgEnum('english_policy', ['reviewed_only', 'source_provided_allowed']);
+export const englishPolicyEnum = pgEnum('english_policy', [
+  'reviewed_only',
+  'source_provided_allowed',
+  /** Source-provided and machine English, each shown with its label and credit (owner, 2026-11-21; drizzle/core/0009). */
+  'source_provided_and_machine_allowed',
+]);
 
 export const narrationLevelEnum = pgEnum('narration_level', ['marfu', 'imam', 'mawquf', 'maqtu', 'unknown']);
 

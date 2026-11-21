@@ -1,7 +1,11 @@
-/** Runs src/db/ops/indexes-heavy.sql outside any transaction (CREATE INDEX CONCURRENTLY), then prints sizes. */
+/**
+ * Runs src/db/ops/indexes-heavy.sql outside any transaction (CREATE INDEX CONCURRENTLY), then prints sizes.
+ * Development by default; `--database production --confirm-production` for the live database.
+ */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { developmentDatabaseUrl, openLoaderClient } from './connection';
+import { resolveTargetDatabase } from '../target-database';
+import { openLoaderClient } from './connection';
 
 /** Splits the operator file into statements; it holds no functions or quoted semicolons. */
 function statements(source: string): string[] {
@@ -15,7 +19,9 @@ function statements(source: string): string[] {
 }
 
 async function main() {
-  const sql = openLoaderClient(developmentDatabaseUrl());
+  const target = resolveTargetDatabase(process.argv, { required: false });
+  console.log(`[heavy-indexes] target: ${target.name} database`);
+  const sql = openLoaderClient(target.url);
   try {
     await sql.unsafe('set statement_timeout = 0');
     for (const statement of statements(readFileSync(path.resolve('src/db/ops/indexes-heavy.sql'), 'utf8'))) {

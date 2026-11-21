@@ -41,6 +41,11 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
 - **`name_en_folded` is computed in the merge** (`lower(unaccent(name_en))`), never shipped in the CSV.
 - **Staging tables are `create table as select <csv columns> ... with no data`**: live types, no constraints, so the
   server's own type parsing is the first gate and the merge is the second.
+- **ANALYZE inside the load transaction** (added 2026-11-21). After the merge, every changed table is analyzed in the
+  same transaction (ANALYZE counts the transaction's own inserted rows) before facets, the network refresh and the
+  checks. The first load into an empty production database had no statistics and the `narrator_transmissions` refresh
+  ran 12 minutes without finishing (the development database's first load had taken 5.6 minutes in total); it was
+  cancelled, rolled back (version marked `failed`, zero rows, lock released) and rerun with this step.
 - **Disk budget (§2.8)** runs only when `LOAD_VOLUME_BYTES` is set: the volume size is not visible from SQL.
 - **No curation dump before the load (§4.3 step 2).** No `pg_dump` 18 on the operator machine; the development
   database has no curation rows. Required before any load into a database with curation data.
@@ -63,6 +68,14 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
 - **First load with these rules** (`load-6`, version `e2430eae…`): 14,214 hadiths updated (matn cleared), 1,328 mentions
   gained a machine-reviewed identity (kunya-only no longer contests), 1,813 non-ruling assessments retired, 135,825 pairs
   and 54,769 members inserted. Reload (`load-7-reload`) changed 0 rows.
+
+## Production (2026-11-21)
+
+`npm run db:load -- --bundle <projection dir> --database production --confirm-production` (`src/db/target-database.ts`);
+without both flags every CLI here refuses the production database. `--bundle` is the projection directory (the one
+holding `canonical/`), not `canonical/` itself. Production was loaded from the same `projection-v3` the development
+database holds (version `e2430eae…`, `prod-load-2.log` beside the development logs; `prod-load-1.log` is the cancelled
+first attempt), so both databases carry one content hash.
 
 ## Known limits
 

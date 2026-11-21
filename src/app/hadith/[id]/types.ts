@@ -5,7 +5,7 @@
  * getPublicParallelsForHadith. page.tsx adapts the hadith contract to the legacy keys below; the chain is passed
  * through as the section 9.4 `ChainGraph`.
  */
-import type { ChainGraph, ChainNode, HadithAssessmentGroup, ReportFamily } from '@/db/queries/contracts';
+import type { ChainGraph, ChainNode, EnglishAttribution, HadithAssessmentGroup, ReportFamily } from '@/db/queries/contracts';
 
 export type { ChainGraph, ChainNode, HadithAssessmentGroup };
 
@@ -74,6 +74,8 @@ export interface HadithNode {
     sanad_confidence?: string | null;
     /** v2: tradition (Sunni|Imami|Zaydi|Ibadi). */
     tradition?: string | null;
+    /** How the English was obtained, its label and credit; null when no English is shown. */
+    english_attribution?: EnglishAttribution | null;
     /**
      * Section 9.4: grades per tradition, replacing display_grade / auto_calculated_grade / transmission_type
      * (always null now). An empty group means "no assessment recorded" for that tradition.

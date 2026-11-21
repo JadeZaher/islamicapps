@@ -43,7 +43,8 @@ these modules but never `drizzle-orm`, `postgres`, `@/db/client` or `@/db/schema
   Arabic. Trigram branches need 3 characters. Public search reads `public_hadiths` / `public_translations`;
   reviewer search the live base tables, through the same builder (`HadithRelations`).
 - **Verdicts are public** only when `published`, tradition-scoped and citing a live reviewed citation
-  (`REVIEWED_CITATION`). The lexicon (dates, bio) is never returned on public pages (question 4).
+  (`REVIEWED_CITATION`). The lexicon's prose bio is never returned on public pages; its dates and places are (see
+  §Lexicon on public narrator pages).
 - **Writes** run in `curationWrite(actor, ...)`: one transaction, `lock_timeout 3s`, refused while any
   `dataset_versions.load_status = 'loading'`, constraint violations mapped to `CurationError` codes, never retried.
   Every write appends `curation_audit` with before/after images in the same transaction. Updates go through
@@ -103,12 +104,39 @@ on the development database); a loaded `source_order` column with an index on `(
 replace it. The list ordering contract above (`collection_sort_key, hadith_no_int`) is for search results only: it
 interleaves chapters in works whose numbering restarts.
 
+## Lexicon on public narrator pages (owner decision 2026-11-21)
+
+`getNarratorDetail` in public mode returns the lexicon's birth and death years (Hijri, Gregorian), places, region and
+`source_locator`, never `bio` or `lexicon_grade_label`. `LexiconRecord` (`src/app/narrator/[id]/components/`) labels
+them "Narrator lexicon, not yet cited" (linking `/glossary#rijal`) with an `MSD` reference naming the entry. A recorded
+year 0 is dropped (the Hijri count has none).
+
+- **Held back.** `lexicon-held-back.json` (built by `src/scripts/db/build-lexicon-held-back.ts` from
+  `diagnostics/biography-verification/lexicon_source_comparisons.jsonl.gz`, input hash recorded) lists the 61 death years
+  Ibn Hajar's Taqrib contradicts by three years or more (gross conflict 28, exactly a century 13, 3-10 years 20). The
+  mapper removes both death years for those narrators and returns `held_back` with the reason and Taqrib entry; the page
+  says the year is held back until reviewed and credits `RIJ`. Reviewer mode is unchanged (everything, unlabelled).
+- **Not shown, because not loaded.** Generation (tabaqa) markers: `narrator_lexicon_profiles.tabaqah_raw` is null on
+  every row of projection `2026.11.21.3`. Cited (Taqrib, Tahdhib) values: candidates only, not in any table yet. The
+  narrator timeline (`timeline.ts`) still draws only cited public bounds.
+
+## Rights decisions
+
+`recordRightsDecisions(actor, decisions)` (`curation.ts`) writes many works in ONE `curationWrite` transaction: it
+refuses a work that is not loaded and a loaded work without a decision (so no partial record commits), skips a work whose
+live row already says the same (no write, no audit row: a re-run is a no-op), and otherwise upserts and audits
+`set_rights` per work, sharing `upsertRights` with `setCollectionRights`. The operator script is
+`src/scripts/db/record-rights.ts` (`npm run db:record-rights -- --database <development|production> [--confirm-production]`),
+actor `system:owner-decision`; each row's `rights_note` names the owner decision and the rights-register section, and
+`citation` names the source record on `/sources`.
+
 ## Preview approval
 
 A non-release dataset version is public only while `dataset_versions.public_override_*` is set (the gate in
 `public_hadiths`). The operator script `src/scripts/db/approve-preview.ts` (`--by`, `--reason`; `--revoke`) writes the three
 columns and an `approve_preview` / `revoke_preview` row in `curation_audit` (actor `system:owner`) in one transaction; it
-refuses production, a load in progress, a release version, and a second approval. `getPreviewNotice()` reads the same
+refuses a load in progress, a release version, and a second approval, and refuses the production database unless given
+both `--database production` and `--confirm-production` (`src/db/target-database.ts`). `getPreviewNotice()` reads the same
 predicate, so the site-wide notice (`src/components/PreviewNotice.tsx`) turns itself off when a release version becomes
 current or the approval is revoked. Temporary: see `conductor/RUNBOOK.md`, "Remove after the first release".
 

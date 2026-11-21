@@ -23,7 +23,10 @@
     "db:load": "tsx src/db/load/load-bundle.ts",
     "auth:hash": "tsx src/lib/auth/hash-passphrase.ts",
     "db:approve-preview": "tsx src/scripts/db/approve-preview.ts",
-    "db:seed-narrator-bios": "tsx --conditions=react-server src/scripts/db/seed-narrator-bios.ts"
+    "db:seed-narrator-bios": "tsx --conditions=react-server src/scripts/db/seed-narrator-bios.ts",
+    "db:record-rights": "tsx --conditions=react-server src/scripts/db/record-rights.ts",
+    "db:verify-data": "tsx src/db/load/verify-data-cli.ts",
+    "db:heavy-indexes": "tsx src/db/load/run-heavy-indexes.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

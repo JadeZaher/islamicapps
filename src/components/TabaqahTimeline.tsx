@@ -30,8 +30,8 @@ export function TabaqahTimeline({ generation }: { generation: GenerationClaim[] 
       </ul>
       <svg width="192" height="6" viewBox="0 0 192 6" aria-hidden="true" focusable="false" className={styles.root}>
         {SCALE.map((step, index) => (
-          <rect key={step.key} x={index * 32} y={2} width={28} height={2}
-            fill={marked.has(step.key) ? 'var(--timeline-accent)' : 'var(--timeline-rule)'}>
+          <rect key={step.key} x={index * 32} y={marked.has(step.key) ? 0 : 2} width={28} height={marked.has(step.key) ? 6 : 2}
+            fill={marked.has(step.key) ? 'var(--color-ink)' : 'var(--color-rule)'}>
             <title>{step.label}</title>
           </rect>
         ))}

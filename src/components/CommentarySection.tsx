@@ -27,22 +27,22 @@ const COMMENTARY_TYPE_LABELS = {
 
 const COMMENTARY_TYPE_COLORS = {
     HADITH_COMMENTARY: {
-        bg: 'bg-blue-500/20',
-        border: 'border-blue-500/40',
-        text: 'text-blue-300',
+        bg: 'bg-sunken',
+        border: 'border-rule',
+        text: 'text-ink-muted',
     },
     NARRATOR_BIOGRAPHY: {
-        bg: 'bg-teal-500/20',
-        border: 'border-teal-500/40',
-        text: 'text-teal-300',
+        bg: 'bg-accent-wash',
+        border: 'border-accent',
+        text: 'text-accent',
     },
     CHAIN_ANALYSIS: {
-        bg: 'bg-orange-500/20',
-        border: 'border-orange-500/40',
-        text: 'text-orange-300',
+        bg: 'bg-sunken',
+        border: 'border-rule',
+        text: 'text-ink-muted',
     },
     OTHER: {
-        bg: 'bg-gray-500/20',
+        bg: 'bg-sunken',
         border: 'border-gray-500/40',
         text: 'text-gray-300',
     },
@@ -73,23 +73,23 @@ export function CommentarySection({ commentaries }: CommentarySectionProps) {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold text-white">Scholarly Commentaries</h2>
-                <p className="text-white/60 text-sm mt-1" aria-live="polite">
+                <h2 className="text-2xl font-bold text-ink">Scholarly Commentaries</h2>
+                <p className="text-ink-muted text-sm mt-1" aria-live="polite">
                     {filteredCommentaries.length} {filteredCommentaries.length === 1 ? 'commentary' : 'commentaries'}
                 </p>
             </div>
 
             {/* Filter Tabs */}
             {commentaries.length > 0 && (
-                <div className="flex flex-wrap gap-2 pb-4 border-b border-white/10">
+                <div className="flex flex-wrap gap-2 pb-4 border-b border-rule">
                     <button
                         type="button"
                         aria-pressed={filterType === 'ALL'}
                         onClick={() => setFilterType('ALL')}
-                        className={`px-4 py-2 rounded-lg border transition-all ${
+                        className={`px-4 py-2  border transition-all ${
                             filterType === 'ALL'
-                                ? 'bg-cyan-700 border-cyan-600 text-white'
-                                : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
+                                ? 'bg-rule border-accent text-ink'
+                                : 'bg-sunken border-rule text-ink-muted hover:bg-sunken'
                         }`}
                     >
                         All ({commentaries.length})
@@ -102,10 +102,10 @@ export function CommentarySection({ commentaries }: CommentarySectionProps) {
                                 key={type}
                                 aria-pressed={filterType === type}
                                 onClick={() => setFilterType(type)}
-                                className={`px-4 py-2 rounded-lg border transition-all ${
+                                className={`px-4 py-2  border transition-all ${
                                     filterType === type
-                                        ? 'bg-cyan-700 border-cyan-600 text-white'
-                                        : 'bg-white/5 border-white/20 text-white/70 hover:bg-white/10'
+                                        ? 'bg-rule border-accent text-ink'
+                                        : 'bg-sunken border-rule text-ink-muted hover:bg-sunken'
                                 }`}
                             >
                                 {label} ({count})
@@ -127,7 +127,7 @@ export function CommentarySection({ commentaries }: CommentarySectionProps) {
 
                         return (
                             <div key={source} className="space-y-3">
-                                <h3 className="text-lg font-semibold text-cyan-300 px-1">{source}</h3>
+                                <h3 className="text-lg font-semibold text-accent px-1">{source}</h3>
                                 <div className="space-y-3">
                                     {filtered.map((commentary) => {
                                         const typeColors =
@@ -136,24 +136,24 @@ export function CommentarySection({ commentaries }: CommentarySectionProps) {
                                         return (
                                             <Card
                                                 key={commentary.id}
-                                                className="bg-white/5 border-white/10 hover:border-white/20 transition-all"
+                                                className="pb-4"
                                             >
                                                 <CardContent className="pt-6">
                                                     <div className="space-y-3">
                                                         {/* Header */}
                                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                                             <div>
-                                                                <h4 className="font-semibold text-white">
+                                                                <h4 className="font-semibold text-ink">
                                                                     {commentary.author}
                                                                 </h4>
                                                                 {commentary.reference && (
-                                                                    <p className="text-sm text-white/60 mt-1">
+                                                                    <p className="text-sm text-ink-muted mt-1">
                                                                         {commentary.reference}
                                                                     </p>
                                                                 )}
                                                             </div>
                                                             <div
-                                                                className={`inline-flex px-3 py-1 rounded-md border text-xs font-semibold
+                                                                className={`inline-flex px-3 py-1  border text-xs font-semibold
                                                                     ${typeColors.bg} ${typeColors.border} ${typeColors.text}`}
                                                             >
                                                                 {COMMENTARY_TYPE_LABELS[commentary.type]}
@@ -161,7 +161,7 @@ export function CommentarySection({ commentaries }: CommentarySectionProps) {
                                                         </div>
 
                                                         {/* Commentary Text */}
-                                                        <p className="text-white/80 leading-relaxed text-sm">
+                                                        <p className="text-ink-muted leading-relaxed text-sm">
                                                             {commentary.text}
                                                         </p>
                                                     </div>
@@ -175,10 +175,10 @@ export function CommentarySection({ commentaries }: CommentarySectionProps) {
                     })}
                 </div>
             ) : (
-                <Card className="bg-white/5 border-white/10">
+                <Card className="pb-4">
                     <CardContent className="py-12">
                         <div className="text-center">
-                            <p className="text-white/60">
+                            <p className="text-ink-muted">
                                 {filterType === 'ALL'
                                     ? 'No commentaries available yet.'
                                     : `No ${COMMENTARY_TYPE_LABELS[filterType as keyof typeof COMMENTARY_TYPE_LABELS]} commentaries found.`}

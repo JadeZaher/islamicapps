@@ -148,7 +148,7 @@ window.BRIEF_LOG = [
 
   { date: "2026-11-21", kind: "Architecture", status: "built", title: "Preview served only under a recorded owner approval, with a visible notice",
     text: "A non-release dataset may be shown publicly only if the owner's approval (who, why, when) is recorded on that load, every such page carries a notice driven by the database, and the approval and notice are removed after the first release." },
-  { date: "2026-11-21", kind: "Gap found", status: "open", id: "empty-public-site",
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "empty-public-site",
     title: "The approved preview currently shows no reports",
     text: "The approval is tied to the earlier load, so the current load has none, and with no rights decision recorded the public view of reports is empty; every reload needs the approval renewed." },
 
@@ -169,7 +169,24 @@ window.BRIEF_LOG = [
   { date: "2026-11-21", kind: "Gap found", status: "open", id: "backup-partial",
     title: "The backup is partial and has never been restored",
     text: "It leaves out the 9 GB development folder the database was actually loaded from and three access-denied files, sits in the same Railway project as the databases, and no database dump or restore drill exists." },
-  { date: "2026-11-21", kind: "Gap found", status: "open", id: "reload-blocked",
+  { date: "2026-11-21", kind: "Gap found", status: "partly closed", id: "reload-blocked",
     title: "A reload is blocked once a curator records an identity decision",
-    text: "The loader refuses to run while any reviewer decision exists because replaying decisions onto a reload is not built, and production has been migrated but never loaded." }
+    text: "The loader refuses to run while any reviewer decision exists because replaying decisions onto a reload is not built, and production has been migrated but never loaded." },
+
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "empty-public-site",
+    title: "The preview shows every work",
+    text: "All 34 works are recorded as cleared by the owner's decision and the current load carries the owner's preview approval, on both databases: 99,273 reports are public (Sunni 64,348, Imami 33,223, Ibadi 1,004, Zaydi 698)." },
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "English shown with its label and credit",
+    text: "A per-work English policy now lets source-provided and machine English be public, each labelled (\"Source-provided English, not reviewed here\" with its source and translator, or \"Unreviewed machine translation\" with its model). 55,359 English texts are public, all source-provided (Sunni 22,926, Imami 32,433); the 31,652 machine translations are still candidates outside the database, so Ibadi and Zaydi show Arabic only." },
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Lexicon dates and places on narrator pages",
+    text: "Narrator pages show the lexicon's birth and death years and places labelled \"narrator lexicon, not yet cited\" with a source reference; the 61 death years that Ibn Hajar's Taqrib contradicts by three years or more are held back until reviewed. Generation markers are not loaded yet." },
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "host-header",
+    title: "Absolute links trusted the request's host",
+    text: "A security review found canonical links, citations and redirects could carry a host sent by the client when the site address was unset." },
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "host-header",
+    title: "The site address is the only origin in production",
+    text: "Production refuses to start without an https site address, every absolute link and redirect is built from it, and an HTTP test sends a forged host and finds none of it in the page or the redirect." },
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "reload-blocked",
+    title: "Production is migrated and loaded",
+    text: "The production database holds the same load as development (one content hash), its search indexes, the 21 biographies and the seed history; seed events and eras stay unpublished until cited." }
 ];

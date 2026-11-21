@@ -24,24 +24,25 @@ export default async function NarratorIndexPage({ searchParams }: PageProps) {
   const count = `${result.total.toLocaleString()}${result.totalCapped ? '+' : ''}`;
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10 text-slate-100">
-      <h1 className="text-3xl font-semibold">Narrators</h1>
+    <main className="wrap pb-12">
+      <h1 className="page-header type-h1">Narrators</h1>
 
-      <form action="/narrator" role="search" className="mt-6 flex gap-2">
+      <form action="/narrator" role="search" className="mt-8 flex max-w-[var(--measure-reading)] gap-2">
         <input
           type="search"
           name="q"
           defaultValue={q}
           aria-label="Search narrators"
           placeholder="Search by name, English or Arabic"
-          className="h-10 w-full rounded-md border border-slate-700 bg-slate-900 px-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          dir="auto"
+          className="h-10 w-full border border-control bg-surface px-3 text-base text-ink placeholder:text-ink-muted focus-visible:border-focus focus-visible:outline-offset-0"
         />
-        <Button type="submit" className="h-10 bg-emerald-600 text-white hover:bg-emerald-500">
+        <Button type="submit">
           Search
         </Button>
       </form>
 
-      <p className="mt-6 text-sm text-slate-400" aria-live="polite">
+      <p className="mt-6 type-small tabular-nums text-ink-muted" aria-live="polite">
         {q
           ? `${count} ${result.total === 1 && !result.totalCapped ? 'match' : 'matches'}`
           : `${count} narrators`}
@@ -61,20 +62,20 @@ export default async function NarratorIndexPage({ searchParams }: PageProps) {
           }
         />
       ) : (
-        <ul className="-mx-3 mt-3 divide-y divide-slate-800 border-y border-slate-800">
+        <ul className="mt-3 border-t border-rule-strong">
           {result.items.map((narrator) => {
             const id = String(narrator.id);
             return (
               <li key={id}>
                 <Link
                   href={`/narrator/${encodeURIComponent(id)}`}
-                  className="block px-3 py-3 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
+                  className="group block border-b border-rule py-3 no-underline transition-colors duration-[var(--motion-fast)] hover:bg-sunken"
                 >
                   <NarratorName
                     english={narrator.name_english as string | undefined}
                     arabic={narrator.name_arabic as string | undefined}
-                    latinClassName="font-medium text-slate-100"
-                    arabicClassName="text-lg leading-relaxed text-slate-400"
+                    latinClassName="font-semibold text-ink underline decoration-rule decoration-1 underline-offset-[0.2em] group-hover:decoration-accent w-fit"
+                    arabicClassName="text-ink-muted"
                   />
                 </Link>
               </li>

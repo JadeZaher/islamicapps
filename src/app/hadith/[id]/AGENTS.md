@@ -54,11 +54,11 @@ most) and the request visibility. It renders nothing on a failed read.
   (select) or every chain through a clicked node; zoom and Fit buttons sit outside the canvas; the opening view stops
   at a readable zoom (0.55), Fit shows everything; the canvas height follows the number of layers; parallel edges of
   one tradition are drawn once and thicken when shared.
-- Swiss style (owner direction 2026-11-21): ink lines only, tradition told apart by line pattern (Sunni solid, Imami
-  dashed, Ibadi dotted, Zaydi dash-dot), legible in black and white; filled square = identified narrator, accent square
-  = convergence (several chains), hollow circle = name as written, rule = work.
-- Every colour and spacing value is a CSS variable on `.family` in `components/family/family.module.css`, so a later
-  design pass retunes it in one place. Shared components and `globals.css` are not restyled.
+- Design system (DESIGN.md §Transmission graph): faint 1px edges in the tradition's `TRADITION_DASH` pattern (from
+  `src/components/marks/`), legible in black and white; node shapes from `NarratorNodeShape`: filled square =
+  identified narrator, framed square = several chains pass through, outline square = name as written, ink rule =
+  work. A highlight draws the chosen chains in 2px accent and puts nodes on an accent-wash square; nothing fades.
+- Every value on `.family` in `components/family/family.module.css` is a design token.
 
 ### Source credit (owner's top priority)
 

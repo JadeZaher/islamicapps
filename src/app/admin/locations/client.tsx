@@ -114,7 +114,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-white">Locations</h1>
+                <h1 className="text-3xl font-bold text-ink">Locations</h1>
                 <Button
                     onClick={() => {
                         setIsCreating(true);
@@ -128,7 +128,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                             longitude: '',
                         });
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-accent text-on-accent hover:bg-ink hover:text-paper"
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     New Location
@@ -142,18 +142,18 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
 
             {/* Create/Edit Form */}
             {(isCreating || editingId) && (
-                <Card className="bg-slate-900 border-slate-700 p-6 mb-6">
-                    <h2 className="text-xl font-semibold text-white mb-4">
+                <Card className="pb-6 mb-6">
+                    <h2 className="text-xl font-semibold text-ink mb-4">
                         {editingId ? 'Edit Location' : 'Create New Location'}
                     </h2>
                     <form onSubmit={editingId ? handleEdit : handleCreate} className="space-y-4" aria-busy={isSaving}>
                         {formError && (
-                            <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                            <div role="alert" className="border border-danger bg-transparent p-3 text-sm text-danger">
                                 {formError}
                             </div>
                         )}
                         <div>
-                            <Label htmlFor="name" className="text-slate-300">
+                            <Label htmlFor="name" className="text-ink">
                                 Location Name
                             </Label>
                             <Input
@@ -162,13 +162,13 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="e.g., Medina, Damascus, Baghdad"
                                 required
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                className="mt-2 bg-surface border-control text-ink"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="modern_country" className="text-slate-300">
+                                <Label htmlFor="modern_country" className="text-ink">
                                     Modern Country
                                 </Label>
                                 <Input
@@ -176,11 +176,11 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                     value={formData.modern_country}
                                     onChange={(e) => setFormData({ ...formData, modern_country: e.target.value })}
                                     placeholder="e.g., Saudi Arabia"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="region" className="text-slate-300">
+                                <Label htmlFor="region" className="text-ink">
                                     Region
                                 </Label>
                                 <Input
@@ -188,14 +188,14 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                     value={formData.region}
                                     onChange={(e) => setFormData({ ...formData, region: e.target.value })}
                                     placeholder="e.g., Hejaz"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="latitude" className="text-slate-300">
+                                <Label htmlFor="latitude" className="text-ink">
                                     Latitude
                                 </Label>
                                 <Input
@@ -205,11 +205,11 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                     value={formData.latitude}
                                     onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
                                     placeholder="e.g., 24.46"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="longitude" className="text-slate-300">
+                                <Label htmlFor="longitude" className="text-ink">
                                     Longitude
                                 </Label>
                                 <Input
@@ -219,13 +219,13 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                     value={formData.longitude}
                                     onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                                     placeholder="e.g., 39.61"
-                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                    className="mt-2 bg-surface border-control text-ink"
                                 />
                             </div>
                         </div>
 
                         <div className="flex gap-3">
-                            <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                            <Button type="submit" disabled={isSaving} className="bg-accent text-on-accent hover:bg-ink hover:text-paper">
                                 {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                             </Button>
                             <Button
@@ -237,7 +237,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                     setEditingId(null);
                                     setFormError(null);
                                 }}
-                                className="border-slate-600 text-slate-300"
+                                className="border-rule text-ink"
                             >
                                 Cancel
                             </Button>
@@ -249,31 +249,31 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             {/* Locations List */}
             <div className="space-y-3">
                 {filteredLocations.map((location) => (
-                    <Card key={location.id} className="bg-slate-900 border-slate-700 p-6">
+                    <Card key={location.id} className="pb-6">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-white mb-2">{location.name}</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-300">
+                                <h3 className="text-lg font-semibold text-ink mb-2">{location.name}</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-ink">
                                     {location.modern_country && (
                                         <div>
-                                            <span className="text-slate-400">Country: </span>
+                                            <span className="text-ink-muted">Country: </span>
                                             {location.modern_country}
                                         </div>
                                     )}
                                     {location.region && (
                                         <div>
-                                            <span className="text-slate-400">Region: </span>
+                                            <span className="text-ink-muted">Region: </span>
                                             {location.region}
                                         </div>
                                     )}
                                     {location.latitude != null && location.longitude != null && (
                                         <div>
-                                            <span className="text-slate-400">Coordinates: </span>
+                                            <span className="text-ink-muted">Coordinates: </span>
                                             {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
                                         </div>
                                     )}
                                     <div>
-                                        <span className="text-slate-400">Review state: </span>
+                                        <span className="text-ink-muted">Review state: </span>
                                         {location.verification_status === 'unverified_seed' ? 'Seed, unverified' : location.verification_status.replaceAll('_', ' ')}
                                     </div>
                                 </div>
@@ -285,7 +285,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                     variant="outline"
                                     onClick={() => handleStartEdit(location)}
                                     aria-label={`Edit ${location.name}`}
-                                    className="border-slate-600 text-slate-300"
+                                    className="border-rule text-ink"
                                 >
                                     <Edit2 className="w-4 h-4" aria-hidden="true" />
                                 </Button>
@@ -300,8 +300,8 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                 ))}
 
                 {filteredLocations.length === 0 && (
-                    <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
-                        <p className="text-center text-slate-400">
+                    <Card className="border-rule border-dashed py-8">
+                        <p className="text-center text-ink-muted">
                             {locations.length === 0
                                 ? 'No locations yet. Click "New Location" to create one.'
                                 : 'No locations match your search.'}

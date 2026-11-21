@@ -1,56 +1,57 @@
-/* Time-and-place components. Swiss/flat: hairline rules, flat fills, type carries hierarchy, one accent.
-   Every colour and spacing value is a variable on .root so a project-wide design pass can retune it here. */
+/* Time-and-place components (DESIGN.md §Chain timeline). Every value is a design token (src/app/design-tokens.css);
+   faint is for ticks and uncertain spans only, never text. */
 .root {
-  --timeline-ink: #ededeb;
-  --timeline-muted: #a3a39e;
-  --timeline-faint: #6b6b66;
-  --timeline-rule: #3a3a37;
-  --timeline-band: #1b1b1a;
-  --timeline-band-alternate: #252524;
-  --timeline-life: #ededeb;
-  --timeline-uncertain: #77776f;
-  --timeline-accent: #34d399;
-  --timeline-space-1: 0.25rem;
-  --timeline-space-2: 0.5rem;
-  --timeline-space-3: 1rem;
-  --timeline-space-4: 1.5rem;
-  --timeline-space-5: 2.5rem;
+  --timeline-ink: var(--color-ink);
+  --timeline-muted: var(--color-ink-muted);
+  --timeline-faint: var(--color-ink-faint);
+  --timeline-rule: var(--color-rule);
+  --timeline-band: var(--color-sunken);
+  --timeline-band-alternate: var(--color-band-alternate);
+  --timeline-life: var(--color-ink);
+  --timeline-uncertain: var(--color-ink-faint);
+  --timeline-accent: var(--color-accent);
+  --timeline-space-1: var(--space-1);
+  --timeline-space-2: var(--space-2);
+  --timeline-space-3: var(--space-4);
+  --timeline-space-4: var(--space-5);
+  --timeline-space-5: var(--space-7);
   --timeline-label-width: 14rem;
   --timeline-lane-height: 1.5rem;
   --timeline-row-height: 2.75rem;
-  --timeline-hairline: 1px;
+  --timeline-hairline: var(--rule-hairline);
   color: var(--timeline-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .heading {
   margin: 0 0 var(--timeline-space-2);
-  font-size: 0.75rem;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--timeline-muted);
 }
 
 .subheading {
   margin: var(--timeline-space-5) 0 var(--timeline-space-2);
-  font-size: 0.875rem;
+  font-size: var(--text-small);
   font-weight: 600;
   color: var(--timeline-ink);
 }
 
 .note {
   margin: 0 0 var(--timeline-space-3);
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   color: var(--timeline-muted);
 }
 
 /* Basis: small flat text, never a badge. */
 .basis {
-  font-size: 0.6875rem;
-  letter-spacing: 0.02em;
-  color: var(--timeline-faint);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--timeline-muted);
 }
 
 /* Basis text with the shared short source reference beside it, on one wrapping line. */
@@ -64,7 +65,7 @@
 .credit {
   display: inline;
   margin: 0;
-  font-size: 0.6875rem;
+  font-size: var(--text-label);
 }
 
 /* Grid: label column, then the track. One column on narrow screens. */
@@ -88,25 +89,27 @@
 
 .label {
   padding: var(--timeline-space-1) 0;
-  font-size: 0.8125rem;
-  line-height: 1.3;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   overflow-wrap: anywhere;
 }
 
 .laneLabel {
   padding: var(--timeline-space-1) 0;
-  font-size: 0.6875rem;
-  letter-spacing: 0.1em;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--timeline-faint);
+  color: var(--timeline-muted);
 }
 
 .groupLabel {
   grid-column: 1 / -1;
   padding: var(--timeline-space-3) 0 var(--timeline-space-1);
-  font-size: 0.75rem;
+  font-size: var(--text-small);
   font-weight: 600;
-  color: var(--timeline-muted);
+  color: var(--timeline-ink);
 }
 
 .track {
@@ -130,8 +133,8 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  font-size: 0.6875rem;
-  color: var(--timeline-faint);
+  font-size: var(--text-label);
+  color: var(--timeline-muted);
   white-space: nowrap;
 }
 
@@ -143,7 +146,7 @@
   align-items: center;
   padding: 0 var(--timeline-space-1);
   overflow: hidden;
-  font-size: 0.6875rem;
+  font-size: var(--text-label);
   color: var(--timeline-muted);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -154,8 +157,8 @@
   inset: 0;
   display: flex;
   align-items: center;
-  font-size: 0.75rem;
-  color: var(--timeline-faint);
+  font-size: var(--text-small);
+  color: var(--timeline-muted);
 }
 
 .legend {
@@ -165,7 +168,8 @@
   margin: var(--timeline-space-2) 0 0;
   padding: 0;
   list-style: none;
-  font-size: 0.6875rem;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   color: var(--timeline-muted);
 }
 
@@ -191,13 +195,13 @@
   column-gap: var(--timeline-space-3);
   padding: var(--timeline-space-2) 0;
   border-bottom: var(--timeline-hairline) solid var(--timeline-rule);
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 .listYear {
   color: var(--timeline-muted);
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
 }
 
 .facts {
@@ -205,11 +209,12 @@
   grid-template-columns: max-content 1fr;
   gap: var(--timeline-space-1) var(--timeline-space-3);
   margin: var(--timeline-space-1) 0 0;
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 .facts dt {
-  color: var(--timeline-faint);
+  color: var(--timeline-muted);
 }
 
 .facts dd {
@@ -229,7 +234,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.875rem;
+  font-size: var(--text-small);
 }
 
 .trailStep + .trailStep::before {

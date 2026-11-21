@@ -4,7 +4,8 @@ import { sql, type SQL } from 'drizzle-orm';
 import { norm } from '@/lib/attribution/classify-attribution';
 import { getSourceFilterValues } from '@/lib/constants/sources';
 import { hadithAssessmentsJson } from './assessment';
-import type { HadithDetail, HadithListItem, Paginated } from './contracts';
+import { englishLabel, englishReference } from '@/lib/sources/report-credit';
+import type { EnglishAttribution, HadithDetail, HadithListItem, Paginated } from './contracts';
 import { groupAssessments, mapHadithListItem, text } from './mappers';
 import {
   andAll,
@@ -167,19 +168,32 @@ export function hadithDetailStatement(relations: HadithRelations, hadithId: stri
       'sanad', h.sanad, 'sanad_confidence', h.sanad_confidence, 'narration_level', h.narration_level,
       'chain_type', h.chain_type, 'school', h.school, 'attributed_to', h.attributed_to, 'url', h.url,
       'page_ref', h.page_ref, 'arabic_sha256', h.arabic_sha256,
-      'matn_en', tr.matn_text, 'english_source', tr.source, 'translator', tr.translator,
+      'matn_en', tr.matn_text, 'english_source', tr.source, 'translator', tr.translator, 'english_model', tr.model,
+      'source_slug', src.slug, 'source_work_id', col.source_work_id,
       'assessments', ${hadithAssessmentsJson(sql`h.id`)}
     ) as detail
     from ${relations.hadiths} h
     join traditions t on t.id = h.tradition_id
     join collections col on col.id = h.collection_id
+    join sources src on src.id = col.source_id
     left join lateral (
-      select x.text, x.state, x.matn_text, x.source, x.translator from ${relations.translations} x
+      select x.text, x.state, x.matn_text, x.source, x.translator, x.model from ${relations.translations} x
       where x.hadith_id = h.id and x.language = 'en' and ${relations.liveTranslation}
       limit 1
     ) tr on true
     where h.id = ${hadithId} and ${relations.liveHadith}
   `;
+}
+
+/** The English row's label and credit (src/lib/sources/report-credit.ts), so every surface words it the same way. */
+function englishAttribution(state: string, detail: Record<string, unknown>): EnglishAttribution {
+  const english = { state, translator: text(detail.translator), model: text(detail.english_model) };
+  return {
+    ...english,
+    source: text(detail.english_source),
+    label: englishLabel(english),
+    reference: englishReference({ sourceSlug: String(detail.source_slug ?? ''), sourceWorkId: String(detail.source_work_id ?? ''), english }),
+  };
 }
 
 /** Maps a detail row into the HadithDetail contract. */
@@ -201,9 +215,7 @@ export function mapHadithDetail(detail: Record<string, unknown>): HadithDetail {
     url: text(detail.url),
     page_ref: text(detail.page_ref),
     arabic_sha256: String(detail.arabic_sha256),
-    english_attribution: list.english_state
-      ? { state: list.english_state, source: text(detail.english_source), translator: text(detail.translator) }
-      : null,
+    english_attribution: list.english_state ? englishAttribution(list.english_state, detail) : null,
     variations: [
       {
         id: `${list.id}::synthesized`,

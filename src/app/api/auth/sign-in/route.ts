@@ -5,6 +5,7 @@ import { checkCuratorPassphrase } from '@/lib/auth/passphrases';
 import { authEnabled, safeReturnPath } from '@/lib/auth/switches';
 import { createSessionToken, sessionSecret, SESSION_COOKIE_NAME, SESSION_TTL_SECONDS } from '@/lib/auth/session';
 import { throttledSignInResponse } from '@/lib/auth/throttled-response';
+import { siteUrlFor } from '@/lib/site-origin';
 import { clientIp, confirmSignIn, reserveSignInAttempt, reserveSignInName } from '@/lib/auth/throttle';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +17,7 @@ const signInForm = z.object({
 });
 
 function redirectTo(request: NextRequest, path: string): NextResponse {
-  return NextResponse.redirect(new URL(path, request.url), 303);
+  return NextResponse.redirect(siteUrlFor(path, request), 303);
 }
 
 export async function POST(request: NextRequest) {

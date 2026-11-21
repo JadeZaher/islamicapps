@@ -32,8 +32,8 @@ export function PaginationControls({ page, totalPages, total, pageSize, onPageCh
     };
 
     return (
-        <nav aria-label="Pagination" className="flex items-center justify-between mt-6">
-            <p className="text-sm text-slate-400">
+        <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-4 mt-6">
+            <p className="text-sm tabular-nums text-ink-muted">
                 {start}–{end} of {total.toLocaleString()}
             </p>
             <div className="flex items-center gap-2">
@@ -43,11 +43,10 @@ export function PaginationControls({ page, totalPages, total, pageSize, onPageCh
                     disabled={page <= 1}
                     onClick={() => goToPage(page - 1)}
                     aria-label="Previous page"
-                    className="border-slate-600 text-slate-300 hover:bg-white/5 disabled:opacity-30"
                 >
                     Previous
                 </Button>
-                <span className="text-sm text-slate-400 px-2" aria-current="page" aria-label={`Page ${page} of ${totalPages}`}>
+                <span className="text-sm tabular-nums text-ink-muted px-2" aria-current="page" aria-label={`Page ${page} of ${totalPages}`}>
                     {page} / {totalPages}
                 </span>
                 <Button
@@ -56,7 +55,6 @@ export function PaginationControls({ page, totalPages, total, pageSize, onPageCh
                     disabled={page >= totalPages}
                     onClick={() => goToPage(page + 1)}
                     aria-label="Next page"
-                    className="border-slate-600 text-slate-300 hover:bg-white/5 disabled:opacity-30"
                 >
                     Next
                 </Button>

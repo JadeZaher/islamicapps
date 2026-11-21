@@ -69,7 +69,7 @@ export function DecisionForm({ hadithIdA, hadithIdB, shaA, shaB, current }: Deci
         <legend className="sr-only">Decision</legend>
         <div className="flex flex-wrap gap-2">
           {DECISIONS.map((option) => (
-            <label key={option.value} className={`cursor-pointer border px-3 py-2 ${decision === option.value ? 'border-slate-100 bg-slate-100 text-slate-950' : 'border-slate-700'}`}>
+            <label key={option.value} className={`cursor-pointer border px-3 py-2 ${decision === option.value ? 'border-ink bg-ink text-paper' : 'border-rule'}`}>
               <input
                 type="radio"
                 name="decision"
@@ -79,29 +79,29 @@ export function DecisionForm({ hadithIdA, hadithIdB, shaA, shaB, current }: Deci
                 className="sr-only"
               />
               <span className="font-medium">{option.label}</span>
-              <span className={`block text-xs ${decision === option.value ? 'text-slate-700' : 'text-slate-500'}`}>{option.hint}</span>
+              <span className={`block text-xs ${decision === option.value ? 'text-paper' : 'text-ink-muted'}`}>{option.hint}</span>
             </label>
           ))}
         </div>
       </fieldset>
-      <label className="flex flex-col gap-1 text-slate-400">
+      <label className="flex flex-col gap-1 text-ink-muted">
         Reviewer&apos;s reading
-        <select value={relation} onChange={(event) => setRelation(event.target.value)} className="border border-slate-700 bg-slate-950 px-2 py-1 text-slate-100">
+        <select value={relation} onChange={(event) => setRelation(event.target.value)} className="border border-rule bg-paper px-2 py-1 text-ink">
           {RELATIONS.map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-slate-400">
+      <label className="flex flex-col gap-1 text-ink-muted">
         Note
-        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="border border-slate-700 bg-slate-950 px-2 py-1 text-slate-100" />
+        <textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="border border-rule bg-paper px-2 py-1 text-ink" />
       </label>
       <div className="flex items-center gap-4">
-        <button type="submit" disabled={!decision || pending} className="border border-emerald-500 px-4 py-2 text-emerald-300 disabled:opacity-40">
+        <button type="submit" disabled={!decision || pending} className="border border-accent px-4 py-2 text-accent disabled:opacity-40">
           {pending ? 'Recording…' : 'Record decision'}
         </button>
         {message && (
-          <p role={message.kind === 'error' ? 'alert' : 'status'} className={message.kind === 'error' ? 'text-red-300' : 'text-slate-300'}>
+          <p role={message.kind === 'error' ? 'alert' : 'status'} className={message.kind === 'error' ? 'text-danger' : 'text-ink'}>
             {message.text}
           </p>
         )}

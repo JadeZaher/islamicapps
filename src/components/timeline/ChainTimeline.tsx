@@ -8,7 +8,8 @@ import type { ChainFamilyTimeline, ChainTimeline as ChainRows, ChainTransmitter,
 import { formatInterval } from '@/db/queries/timeline-rules';
 import { ArabicText } from '@/components/ArabicText';
 import { GlossaryTerm } from '@/components/GlossaryTerm';
-import { NarratorName } from '@/components/NarratorName';
+import { BilingualTitle, NarratorName } from '@/components/NarratorName';
+import { HADITH_TRADITIONS, TraditionMark, type HadithTradition } from '@/components/marks';
 import { BasisLabel } from './BasisLabel';
 import { buildScale } from './scale';
 import { AxisRow, EpochLane, EventLane, Legend, LifeMarks } from './TimelineGeometry';
@@ -65,12 +66,18 @@ function TransmitterName({ transmitter }: { transmitter: ChainTransmitter }) {
     <ArabicText>{transmitter.surface_ar}</ArabicText>
   );
   return transmitter.narrator_id ? (
-    <Link href={`/narrator/${encodeURIComponent(transmitter.narrator_id)}`} className="underline decoration-[var(--timeline-rule)] underline-offset-4 hover:decoration-[var(--timeline-ink)]">
+    <Link href={`/narrator/${encodeURIComponent(transmitter.narrator_id)}`} className="link-row">
       {name}
     </Link>
   ) : (
     name
   );
+}
+
+/** Tradition mark before a chain's group label; traditions are told apart by mark, never colour (DESIGN.md §Tradition marks). */
+function ChainTraditionMark({ tradition }: { tradition?: string | null }) {
+  const known = HADITH_TRADITIONS.find((name) => name === tradition) as HadithTradition | undefined;
+  return known ? <TraditionMark tradition={known} decorative className="me-2 inline-block align-[-1px]" /> : null;
 }
 
 export function ChainTimeline({ family, headingId = 'chain-timeline-heading' }: { family: ChainFamilyTimeline; headingId?: string }) {
@@ -100,12 +107,19 @@ export function ChainTimeline({ family, headingId = 'chain-timeline-heading' }: 
           {family.chains.map((chain) => (
             <div key={chain.chain_id} role="presentation">
               <div className={styles.row} aria-hidden="true">
-                <span className={styles.groupLabel}>{chainTitle(family, chain, branchCount.get(chain.hadith_id) ?? 1)}</span>
+                <span className={styles.groupLabel}>
+                  <ChainTraditionMark tradition={family.traditions[chain.hadith_id]} />
+                  {chainTitle(family, chain, branchCount.get(chain.hadith_id) ?? 1)}
+                </span>
               </div>
               {chain.transmitters.map((transmitter) => (
                 <div key={transmitter.mention_id} className={`${styles.row} ${styles.rowTall}`} aria-hidden="true">
                   <span className={styles.label}>
-                    {transmitter.name_en || transmitter.name_ar || transmitter.surface_ar}
+                    {transmitter.name_en ? (
+                      <BilingualTitle text={transmitter.name_en} />
+                    ) : (
+                      <ArabicText>{transmitter.name_ar || transmitter.surface_ar}</ArabicText>
+                    )}
                     {shortLife(transmitter.lifespan) && <span className={styles.basis}> · {shortLife(transmitter.lifespan)}</span>}
                   </span>
                   <div className={styles.track}>

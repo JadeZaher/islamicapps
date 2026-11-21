@@ -5,11 +5,12 @@ import Link from 'next/link';
 
 import { ArabicText } from '@/components/ArabicText';
 import { BilingualTitle } from '@/components/NarratorName';
+import { TraditionMark as TraditionModule } from '@/components/marks';
 import type { FamilyTelling, HadithTraditionCode } from '@/db/queries/contracts';
 import { hadithPath } from '@/lib/hadith-address';
 import { ownMatn } from '../../matn';
 import styles from './family.module.css';
-import { correspondenceLabel, groupTellings, tellingReference, TRADITION_DASH, withinWorkReference } from './labels';
+import { correspondenceLabel, groupTellings, tellingReference, withinWorkReference } from './labels';
 import { TextCredit } from './SourceCredits';
 
 /** The text a telling is compared on: its own matn when stored, else the full text as in the source. */
@@ -18,13 +19,9 @@ export function tellingText(telling: FamilyTelling): { text: string | null; isMa
   return matn ? { text: matn, isMatn: true } : { text: telling.text_ar, isMatn: false };
 }
 
-/** A flat line in the tradition's pattern, the same mark the diagram's edges use. */
+/** The tradition's module (DESIGN.md §Tradition marks); decorative, because the name always follows it. */
 export function TraditionMark({ tradition }: { tradition: HadithTraditionCode }) {
-  return (
-    <svg aria-hidden="true" width="28" height="8" viewBox="0 0 28 8" className={styles.mark}>
-      <line x1="0" y1="4" x2="28" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray={TRADITION_DASH[tradition].dash} />
-    </svg>
-  );
+  return <TraditionModule tradition={tradition} decorative className={styles.mark} />;
 }
 
 /** Where a telling links: its public page, or the curator preview of its family. */
@@ -53,7 +50,7 @@ function TellingRow({ telling, mode, reviewHrefBase, focalId, clampLines }: {
           </Link>
         </p>
         {label && (
-          <p className="text-sm">
+          <p className="type-small">
             <span>{label.kind}</span>
             <span className={styles.muted}> · {label.status}</span>
             {label.measure && <span className={styles.muted}> · {label.measure}</span>}
@@ -71,14 +68,14 @@ function TellingRow({ telling, mode, reviewHrefBase, focalId, clampLines }: {
           </p>
         )}
       </div>
-      <TextCredit hadithId={telling.hadith_id} className="mt-1 !text-xs" />
+      <TextCredit hadithId={telling.hadith_id} className="mt-1 !text-xs !leading-4" />
       {telling.chapter && (
-        <p className={`mt-1 text-sm ${styles.muted}`}>
+        <p className={`mt-1 type-small ${styles.muted}`}>
           <BilingualTitle text={telling.chapter} />
         </p>
       )}
       {text && (
-        <div className="mt-3">
+        <div className="mt-2">
           <ArabicText
             as="p"
             id={textId}
@@ -123,7 +120,7 @@ export function TellingsList({ tellings, mode, reviewHrefBase, clampLines = true
     return <p className={styles.secondary}>No other telling of this report has been found in the archive.</p>;
   }
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       {groups.map((group) => {
         const count = group.works.reduce((sum, work) => sum + work.tellings.length, 0);
         return (

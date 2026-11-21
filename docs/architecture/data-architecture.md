@@ -766,7 +766,7 @@ reads over the TCP proxy are billed as egress.
 | `release_class` | `release`, `non_release` |
 | `load_status` | `loading`, `complete`, `failed` |
 | `rights_status` | `cleared`, `pending`, `restricted` |
-| `english_policy` | `reviewed_only`, `source_provided_allowed` |
+| `english_policy` | `reviewed_only`, `source_provided_allowed`, `source_provided_and_machine_allowed` (migration `0009`) |
 | `narration_level` | `marfu`, `imam`, `mawquf`, `maqtu`, `unknown` |
 | `source_text_status` | `present_locator_bound`, `present`, `missing` |
 | `chain_status` | `complete`, `partial`, `unresolved`, `absent_in_source`, `extraction_failed` |
@@ -877,7 +877,7 @@ A reload never touches it.
 | --- | --- | --- | --- |
 | `collection_id` | text | PK | FK `collections` |
 | `rights_status` | rights_status | not null, default `pending` | The per-work gate (section 11). A collection with no row is `pending` |
-| `english_policy` | english_policy | not null, default `reviewed_only` | Whether `source_provided` English may be public for this work (section 14 question 5) |
+| `english_policy` | english_policy | not null, default `reviewed_only` | Which English may be public for this work (section 14 question 5): `source_provided_allowed` adds source-provided English; `source_provided_and_machine_allowed` (owner, 2026-11-21; all 34 works) adds machine English too. Each row is labelled and credited on the page by its state, source, translator and model |
 | `rights_note` | text | null | |
 | `citation` | text | null | Where the permission or licence is recorded |
 | + curation bookkeeping | | | `updated_by` and `updated_at` record who decided and when |
@@ -2129,9 +2129,15 @@ define "verified" are not loosened by this design: English stays limited to
 `human_verified` and `source_verified` with `quality_status = 'complete'`, as
 the data contract says. Two things can widen what is public, and both are
 explicit, recorded owner decisions stored as data, never code defaults: a
-per-work `collection_rights.english_policy = 'source_provided_allowed'`
-(question 5), and `public_override_by` on a non-release dataset version
-(question 13).
+per-work `collection_rights.english_policy` of `source_provided_allowed` or
+`source_provided_and_machine_allowed` (question 5), and `public_override_by` on a
+non-release dataset version (question 13). The owner recorded both on
+2026-11-21: all 34 works cleared with `source_provided_and_machine_allowed`
+(`npm run db:record-rights`), and the development snapshot approved as a preview.
+Widened English is never unlabelled: source-provided English shows "Source-provided
+English, not reviewed here" with its source and translator, machine English shows
+"Unreviewed machine translation (<model>)" or "(model not recorded)".
+`unknown_provenance` is never public: it cannot be credited.
 
 ### 11.1 Facets
 
@@ -2140,7 +2146,7 @@ per-work `collection_rights.english_policy = 'source_provided_allowed'`
 | Dataset version | `dataset_versions` | `release`, or `non_release` with `public_override_by`, then `non_release` | Public views serve rows only while the current version is release-class or carries a recorded owner override. Otherwise only reviewer mode sees data |
 | Source text | `hadiths.source_text_status` | `present_locator_bound`, `present`, `missing` | `missing` rows are not published |
 | Rights | `collection_rights.rights_status` | `cleared`, `pending`, `restricted` (no row means `pending`) | Only `cleared` works publish text or English. This is the one corpus-level gate kept |
-| Translation | `translations.state` and `quality_status` | `human_verified`, `source_verified`, `source_provided`; candidates live in `translation_candidates` | English shown, with attribution, when `quality_status = 'complete'`, `arabic_sha256` matches the hadith, and the state is `human_verified` or `source_verified` (or `source_provided` where the work's `english_policy` allows it). Candidates only in reviewer mode |
+| Translation | `translations.state` and `quality_status` | `human_verified`, `source_verified`, `source_provided`; candidates live in `translation_candidates` | English shown, with its label and credit, when `quality_status = 'complete'`, `arabic_sha256` matches the hadith, and the state is `human_verified` or `source_verified`, or `source_provided` where the work's `english_policy` allows it, or `machine_unreviewed` under `source_provided_and_machine_allowed`. Candidates only in reviewer mode (the `translations` table holds no machine rows today; a load check keeps them out) |
 | Chain | `hadiths.chain_status` | `complete`, `partial`, `unresolved`, `absent_in_source`, `extraction_failed` | The isnad is always shown as written in Arabic; links are overlaid only where verified |
 | Link | `chain_mentions.resolution`, plus `chain_mention_candidates` | Verified: `source_index` (only from an uncontested `source_index_confirmed_by_text` candidate), `human_verified`, `derived_relation_verified`; then `undecidable`, `unresolved`. `exact_registry` is no longer verified (owner decisions 2026-11-21) | Every name shows as written. Every candidate is shown as a link labelled with its basis ("confirmed by source and text", "source index", "matched by name", "matched by kunya only", "confirmed by a reviewer"); candidates that name different people are shown side by side under a neutral note that the sources differ. A name with no candidate is marked not yet identified. Only verified links feed facets and `narrator_transmissions` |
 | Grading | `hadiths.grading_status` | `cited_assessments`, `compiler_criterion`, `none_recorded` | Placeholders do not exist; `collection_label` rows are never shown as grades |
@@ -2170,7 +2176,7 @@ tables and shows each facet as a badge.
 | View | Contents |
 | --- | --- |
 | `public_hadiths` | `hadiths` where `retired_at is null`, not `quality_excluded`, `source_text_status <> 'missing'`, the collection has a `collection_rights` row with `rights_status = 'cleared'`, and the current dataset version is publicly servable (release-class, or a recorded override) |
-| `public_translations` | `translations` on a public hadith, `retired_at is null`, `quality_status = 'complete'`, `arabic_sha256` equal to the hadith's, and `state in ('human_verified','source_verified')`, or `state = 'source_provided'` where the work's `english_policy = 'source_provided_allowed'`. Never `translation_candidates` |
+| `public_translations` | `translations` on a public hadith, `retired_at is null`, `quality_status = 'complete'`, `arabic_sha256` equal to the hadith's, and `state in ('human_verified','source_verified')`, or `state = 'source_provided'` where the work's `english_policy` is `source_provided_allowed` or `source_provided_and_machine_allowed`, or `state = 'machine_unreviewed'` under `source_provided_and_machine_allowed` (redefined in `0009`; the policy is compared as text because a new enum value cannot be used in the transaction that adds it). Never `unknown_provenance`, never `translation_candidates` |
 | `public_chain_links` | `chain_mentions` of public hadiths, with `narrator_id` exposed only when the mention has a standing identity: machine-reviewed (an uncontested `source_index_confirmed_by_text` candidate) or verified by a reviewer. Since 2026-11-21 the automatic tier is called machine-reviewed, never verified, in every reader-facing label |
 | `public_chain_mention_candidates` | Every live candidate of a mention in `public_chain_links` whose narrator is live, with `basis`, `detail` and `verified_basis` (true for `source_index_confirmed_by_text` and `reviewer_decision`); reviewer decisions come from the mention's live decision, never from the pipeline table. Unverified candidates are read only here (migration `0006`) |
 | `public_report_correspondences` | `report_correspondence_display` where both reports are in `public_hadiths`: for a public report, its corresponding public reports, both directions (section 5.5.1) |
@@ -2322,7 +2328,7 @@ schema and COPY load".
 | 2 | Which source works are rights-cleared? | `public_hadiths` shows only works with a `collection_rights` row set to `cleared`. If none is cleared, the public site shows no hadith text | Record each work's real status through `setCollectionRights`; decide explicitly whether to publish any `pending` work in the meantime |
 | 3 | Is machine-unreviewed English ever public? | 31,652 rows, now in `translation_candidates` | No; reviewer mode only |
 | 4 | Are lexicon dates shown with an "unverified" badge or hidden? And may they still drive event overlap and the temporal flag? | 84 percent of narrators have no Hijri date, and the rest are uncited | Hidden on public pages; still used for overlap and the flag, labelled as lexicon-based |
-| 5 | For which cleared works may provider English (Thaqalayn, sunnah.com) be public as `source_provided`, without row-by-row review? | The data contract blocks bare `source_provided` until attribution, rights and content review are complete; it is also the largest single unlock (about 33k Thaqalayn rows) | Decide per work and record it as `collection_rights.english_policy`. Nothing is public under this policy until the owner sets it. Rows still need `quality_status = 'complete'` |
+| 5 | For which cleared works may provider English (Thaqalayn, sunnah.com) be public as `source_provided`, without row-by-row review? | The data contract blocks bare `source_provided` until attribution, rights and content review are complete; it is also the largest single unlock (about 33k Thaqalayn rows) | Decide per work and record it as `collection_rights.english_policy`. Nothing is public under this policy until the owner sets it. Rows still need `quality_status = 'complete'`. **Decided 2026-11-21:** all 34 works, `source_provided_and_machine_allowed`, each row labelled and credited |
 | 6 | Do AI-found parallels need review before they are public? | Today they go live immediately | Yes: `ai_research` rows default to `proposed` and are published with `publishParallel`. Existing rows migrate as `published` so nothing disappears, but still show only on public hadiths |
 | 7 | Does "Delete" in the admin ever hard-delete? | The never-delete rule | No: entities and links are retired, with an audit record |
 | 8 | Which embedding model, and how are free-text queries embedded at request time? | Sets the vector width and whether a model runs anywhere at request time | BGE-M3 at 1,024 dimensions with the bit pre-filter; launch "similar hadiths" first; choose a hosted query embedder or skip free-text semantic search |

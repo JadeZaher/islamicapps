@@ -6,9 +6,9 @@
  * overwritten. The Prophet gets a biography and no verdict, as in the legacy seed.
  *
  *   npx tsx --conditions=react-server src/scripts/db/seed-narrator-bios.ts [--dry-run]
+ *   ... [--database production --confirm-production]   (development by default)
  */
-import path from 'node:path';
-import { config as loadEnvironment } from 'dotenv';
+import { resolveTargetDatabase } from '../../db/target-database';
 import type { SeedBiography, SeedVerdict } from '../../db/queries/biography-seed';
 
 export const SEED_ACTOR = 'system:seed';
@@ -94,12 +94,9 @@ export function verdictSeedRows(): SeedVerdict[] {
 }
 
 async function main() {
-  loadEnvironment({ path: path.resolve(process.cwd(), '.env.local'), quiet: true });
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error('DATABASE_URL is not set.');
-  if ((process.env.DATABASE_URL_PRODUCTION && url === process.env.DATABASE_URL_PRODUCTION) || new URL(url).pathname === '/railway') {
-    throw new Error('DATABASE_URL points at the production database; the seed is not run against production from here.');
-  }
+  // Development by default; production only with --database production --confirm-production (src/db/target-database.ts).
+  const target = resolveTargetDatabase(process.argv, { required: false });
+  console.log(`Target: ${target.name} database.`);
   const bios = biographySeedRows();
   const verdicts = verdictSeedRows();
   console.log(`Plan: ${bios.length} biographies and ${verdicts.length} Sunni verdicts, all proposed (unpublished, no citation).`);
