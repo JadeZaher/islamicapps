@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { authEnabled } from '@/lib/auth/switches';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +24,7 @@ function errorMessage(error: string | undefined): string | null {
 
 /** Named-curator sign-in. A plain form posting to the sign-in route, so it works without JavaScript. */
 export default async function SignInPage({ searchParams }: PageProps) {
+  if (!authEnabled()) notFound();
   const { error, next } = await searchParams;
   const message = errorMessage(error);
   return (

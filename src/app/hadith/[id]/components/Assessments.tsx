@@ -1,6 +1,7 @@
 import { GradeBadge } from '@/components/badges';
 import { TraditionBadge } from '@/components/TraditionBadge';
 import type { HadithAssessmentGroup } from '../types';
+import { GradingCredit } from './family/SourceCredits';
 
 const KIND_LABELS: Record<string, string> = {
     cited_ruling: 'Ruling',
@@ -9,7 +10,7 @@ const KIND_LABELS: Record<string, string> = {
 };
 
 /** Grades per tradition, each attributed to its grader and citation; side by side, none overriding another. */
-export function Assessments({ groups }: { groups: HadithAssessmentGroup[] }) {
+export function Assessments({ groups, hadithId }: { groups: HadithAssessmentGroup[]; hadithId: string }) {
     if (groups.length === 0) return null;
     return (
         <ul className="space-y-5">
@@ -37,6 +38,9 @@ export function Assessments({ groups }: { groups: HadithAssessmentGroup[] }) {
                                     </p>
                                 </li>
                             ))}
+                            <li>
+                                <GradingCredit hadithId={hadithId} className="!text-xs" />
+                            </li>
                         </ul>
                     )}
                 </li>

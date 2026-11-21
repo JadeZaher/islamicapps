@@ -3,7 +3,9 @@ export const dynamic = 'force-dynamic';
 import { getPublishedCommentariesForNarrator } from '@/db/queries/commentary';
 import { getTraditionConnectionsForNarrator } from '@/db/queries/comparative';
 import type { NarratorDetail } from '@/db/queries/contracts';
-import { getHistoricalEventsForNarrator } from '@/db/queries/history';
+import { getNarratorTimeline } from '@/db/queries/timeline';
+import { requestVisibility } from '@/lib/auth/visibility';
+import { NarratorTimeline } from '@/components/timeline/NarratorTimeline';
 import { getNarratorNetwork } from '@/db/queries/narrator';
 import type { Metadata } from 'next';
 import { loadNarrator } from './data';
@@ -62,10 +64,11 @@ export default async function NarratorPage({ params }: PageProps) {
     if (!narrator) notFound();
 
     // Secondary sections degrade independently: one failing query must not blank the page.
-    const [network, commentaryRows, eventRows, connections] = await Promise.allSettled([
+    const [network, commentaryRows, timelineResult, connections] = await Promise.allSettled([
         getNarratorNetwork(id),
         getPublishedCommentariesForNarrator(id),
-        getHistoricalEventsForNarrator(id),
+        // Curator visibility (private preview) shows the labelled lexicon and seed data; public shows only cited data.
+        requestVisibility().then((visibility) => getNarratorTimeline(id, visibility)),
         getTraditionConnectionsForNarrator(id),
     ]);
     const settled = <T,>(result: PromiseSettledResult<T>): T | undefined => {
@@ -90,9 +93,12 @@ export default async function NarratorPage({ params }: PageProps) {
             <NarratorClientPage
                 narratorDetails={toNarratorDetails(narrator)}
                 verdicts={narrator.verdicts}
+                lifeAndTimes={(() => {
+                    const timeline = settled(timelineResult);
+                    return timeline ? <NarratorTimeline timeline={timeline} /> : null;
+                })()}
                 narratorNetwork={settled(network) as NarratorClientPageProps['narratorNetwork']}
                 commentaries={(settled(commentaryRows) ?? []) as unknown as NarratorClientPageProps['commentaries']}
-                historicalEvents={(settled(eventRows) ?? []) as unknown as NarratorClientPageProps['historicalEvents']}
                 traditionConnections={
                     (settled(connections) ?? { traditions: [], hadiths_with_parallels: [] }) as unknown as NarratorClientPageProps['traditionConnections']
                 }

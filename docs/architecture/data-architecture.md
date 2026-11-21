@@ -527,7 +527,7 @@ tables, is named below with its two writers.
 
 | Pipeline | Candidate | Curation | Derived | Operations |
 | --- | --- | --- | --- | --- |
-| `traditions`, `sources`, `collections`, `books`, `chapters`, `hadiths`, `translations`, `narrators`, `narrator_lexicon_profiles`, `narrator_aliases`, `narrator_teachers`, `chains`, `chain_mentions`, `hadith_assessments`, `bibliographic_works`, `editions`, `citations`, `biographical_assertions`, `temporal_assertions` | `translation_candidates`, `resolution_review_units` | `collection_rights`, `narrator_surface_decisions`, `chain_absence_dispositions`, `narrator_bios`, `narrator_same_as`, `narrator_assessments`, `locations`, `historical_events`, `epochs`, `narrator_events`, `narrator_locations`, `commentaries`, `commentary_hadiths`, `commentary_narrators`, `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | `narrator_transmissions` (materialized view), `hadith_embeddings`, and the derived columns listed below | `dataset_versions`, `curation_audit` |
+| `traditions`, `sources`, `collections`, `books`, `chapters`, `hadiths`, `translations`, `narrators`, `narrator_lexicon_profiles`, `narrator_aliases`, `narrator_teachers`, `chains`, `chain_mentions`, `chain_mention_candidates`, `hadith_assessments`, `report_correspondence_candidates`, `report_correspondence_cluster_members`, `bibliographic_works`, `editions`, `citations`, `biographical_assertions`, `temporal_assertions` | `translation_candidates`, `resolution_review_units` | `collection_rights`, `narrator_surface_decisions`, `report_correspondence_decisions`, `chain_absence_dispositions`, `narrator_bios`, `narrator_same_as`, `narrator_assessments`, `locations`, `historical_events`, `epochs`, `narrator_events`, `narrator_locations`, `commentaries`, `commentary_hadiths`, `commentary_narrators`, `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | `narrator_transmissions` (materialized view), `hadith_embeddings`, and the derived columns listed below | `dataset_versions`, `curation_audit` |
 
 **Derived columns on pipeline tables.** These are written by the loader and
 by `apply_decision(unit_id)`, and by nothing else:
@@ -1308,6 +1308,29 @@ redefined in the migration that creates the assertions table. "Impossible"
 is computed only when even the most permissive bounds cannot overlap (student
 `birth_min` after teacher `death_max`).
 
+### 5.5.1 Report correspondences (migration `0007`)
+
+Which reports carry the same matn in more than one work or tradition. Reports are linked, never narrators or
+chains: each telling keeps its own sanad, tradition and source. Producer:
+`datasets/hadith-data/diagnostics/report-correspondence/` (letter-shingle MinHash and LSH over isolated matns, exact
+Jaccard and containment, guarded star clusters). Rationale and code map: `src/db/AGENTS.md` §Report correspondences.
+
+| Table | Owner | Key columns |
+| --- | --- | --- |
+| `report_correspondence_candidates` | Pipeline | `id` (`report-pair:` + 20 hex of SHA-256 over `a 0x1F b`), `hadith_id_a < hadith_id_b` (byte order, `collate "C"`), both Arabic hashes, `relation_class`, `jaccard`, `containment`, `global_containment`, `length_ratio`, shingle and word counts, `score_band`, `scope`, both matn splits, `cluster_id`, `basis` (`textual_overlap`), `method_version`; unique (a, b, method) |
+| `report_correspondence_cluster_members` | Pipeline | PK (`method_version`, `hadith_id`), `cluster_id`, `star_centre_hadith_id`, `is_star_centre` |
+| `report_correspondence_decisions` | Curation | `id`, the ordered pair, `bound_arabic_sha256_a/b` (what the reviewer read), `decision` (`confirmed`, `rejected`, `uncertain`), `reviewed_relation` (the three classes plus `same_ruling_different_attribution`, `shared_formula_only`, `shared_quran_quotation`; a confirmation may carry only the first three), `note`, `citation_id`, `decided_by/at`, `supersedes_decision_id`, curation bookkeeping; one live row per pair; retire and supersede, never delete |
+
+The display rule lives once, in `report_correspondence_shown_pairs`: a pair is shown when a live, hash-bound
+decision confirmed it (whatever the score, even with no candidate), or when a live, hash-bound candidate is
+`same_wording`, variant wording at Jaccard >= 0.4, or partial overlap at containment >= 0.7 (the precision reading's
+threshold) and no reviewer rejected it. `report_correspondence_display` gives both directions;
+`public_report_correspondences` restricts it to public reports. A decision is keyed on the pair, not the candidate,
+so it survives a new method version, and it counts only while both texts are the ones it was bound to.
+
+First load (2026-11-21, projection `2026.11.21.3`): 135,825 pairs (6,750 same wording, 112,864 variant, 16,211
+partial; 8,728 across traditions), 54,769 cluster members in 17,536 clusters, 0 pairs dropped for a changed Arabic hash.
+
 ### 5.6 Assessments
 
 **Resolved question: what do assessments attach to?** The current loader
@@ -1671,14 +1694,15 @@ migrated, mapped and verified before it is needed.
 | Isnad | 5, plus 1 materialized view and 1 view | `chains`, `chain_mentions`, `chain_absence_dispositions`, `narrator_surface_decisions`; `narrator_transmissions`, `narrator_lifespans` | `chain_mention_candidates` (migration `0006`, owner decisions 2026-11-21) |
 | Assessments and biography | 4 | `hadith_assessments`, `narrator_assessments`, `narrator_bios` | `narrator_same_as` (Imami authority) |
 | Evidence | 5 | `bibliographic_works`, `editions`, `citations` | `biographical_assertions`, `temporal_assertions` (first claims in `evidence_curation.json`) |
-| History | 5, plus 1 view | `locations`, `historical_events`, `narrator_events`, `narrator_locations`; `published_historical_events` | `epochs` (first epoch writer) |
+| History | 5, plus 2 views | `locations`, `historical_events`, `narrator_events`, `narrator_locations`; `published_historical_events` | `epochs` and `published_epochs` (migration `0008`, seeded with 38 unverified eras) |
 | Commentary | 3 | `commentaries`, `commentary_hadiths`, `commentary_narrators` | |
 | Comparative | 9 | `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | |
 | Operations | 2 | `dataset_versions`, `curation_audit` | |
+| Report correspondences | 3, plus 3 views | | `report_correspondence_candidates`, `report_correspondence_cluster_members`, `report_correspondence_decisions`; views `report_correspondence_shown_pairs`, `report_correspondence_display`, `public_report_correspondences` (migration `0007`, section 5.5.1) |
 | Vector | 1 | | `hadith_embeddings` (step 11) |
-| **Total** | **48** | **40** | **8** (1 shipped: `chain_mention_candidates`) |
+| **Total** | **51** | **40** | **11** (5 shipped: `chain_mention_candidates`, the three correspondence tables, `epochs`) |
 
-Plus the public views in section 11.3. Live today: 41 tables, 6 views, 1
+Plus the public views in section 11.3. Live today: 45 tables, 10 views, 1
 materialized view (`npm run db:verify`).
 
 ### 5.15 Contribution system (planned, not in the 47)
@@ -2147,8 +2171,9 @@ tables and shows each facet as a badge.
 | --- | --- |
 | `public_hadiths` | `hadiths` where `retired_at is null`, not `quality_excluded`, `source_text_status <> 'missing'`, the collection has a `collection_rights` row with `rights_status = 'cleared'`, and the current dataset version is publicly servable (release-class, or a recorded override) |
 | `public_translations` | `translations` on a public hadith, `retired_at is null`, `quality_status = 'complete'`, `arabic_sha256` equal to the hadith's, and `state in ('human_verified','source_verified')`, or `state = 'source_provided'` where the work's `english_policy = 'source_provided_allowed'`. Never `translation_candidates` |
-| `public_chain_links` | `chain_mentions` of public hadiths, with `narrator_id` exposed only when the mention is a verified link |
+| `public_chain_links` | `chain_mentions` of public hadiths, with `narrator_id` exposed only when the mention has a standing identity: machine-reviewed (an uncontested `source_index_confirmed_by_text` candidate) or verified by a reviewer. Since 2026-11-21 the automatic tier is called machine-reviewed, never verified, in every reader-facing label |
 | `public_chain_mention_candidates` | Every live candidate of a mention in `public_chain_links` whose narrator is live, with `basis`, `detail` and `verified_basis` (true for `source_index_confirmed_by_text` and `reviewer_decision`); reviewer decisions come from the mention's live decision, never from the pipeline table. Unverified candidates are read only here (migration `0006`) |
+| `public_report_correspondences` | `report_correspondence_display` where both reports are in `public_hadiths`: for a public report, its corresponding public reports, both directions (section 5.5.1) |
 | `published_historical_events` | Section 5.9 |
 
 ### 11.4 What a load must still prove (the kept gates)
@@ -2165,7 +2190,9 @@ load if any is false. `npm run db:verify` runs the same checks on demand.
 | Arabic round trip: for every live hadith, `encode(sha256(convert_to(coalesce(text_ar,''),'UTF8')),'hex') = arabic_sha256` | Bundle `arabic_round_trip` gate, recomputed inside Postgres |
 | Retirement is exact: per pipeline table, rows retired by this load equal IDs live before the load minus IDs in staging | Anti-join merge correctness |
 | No `chain_mentions` row has a `narrator_id` with a non-verified resolution; every resolved mention has a non-null `confidence` | G-5, "no unverified link rendered as a link"; G-2 |
-| Every live candidate sits on a live mention of the same hadith and names a live narrator; no candidate targets a placeholder row except `name_kunya_only`, which targets only kunya-only rows; no name candidate on a non-Sunni report; an automatic `narrator_id` has its `source_index_confirmed_by_text` candidate and no live candidate of that mention names someone else | Owner decisions 2026-11-21 (a) to (d) |
+| Every live candidate sits on a live mention of the same hadith and names a live narrator; no candidate targets a placeholder row except `name_kunya_only`, which targets only kunya-only rows; no name candidate on a non-Sunni report; an automatic `narrator_id` has its `source_index_confirmed_by_text` candidate and no live candidate of that mention other than a `name_kunya_only` one names someone else | Owner decisions 2026-11-21 (a) to (d); kunya-only does not contest (second decision of that day) |
+| A stored `matn_ar` is contained in its own report's text (Arabic letters compared); no non-ruling (`لم يخرجه`, `سكت عنه`, back-references) is stored as an assessment | Adversarial review 2026-11-21 |
+| Correspondence candidates: both reports live and distinct, `hadith_id_a < hadith_id_b` in byte order, both Arabic hashes equal the loaded texts; cluster members name live reports and every candidate's two reports are members; at most one live decision per pair | Section 5.5.1 |
 | No live `narrator_surface_decisions` row lacks a reviewer and time; no `derived_relation` decision has the coarse scope | G-5; derived identity depends on the student |
 | Contiguous positions in every chain: positions 0 to `length - 1` | Bundle chain-integrity gate |
 | No row in `public_translations` has `quality_status <> 'complete'`, a hash that differs from its hadith's, or a state outside the policy | Translation release gate |

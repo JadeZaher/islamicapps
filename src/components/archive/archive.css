@@ -1,0 +1,59 @@
+/* Archive surfaces (browse, report context, sources): Swiss tokens, scoped. See src/components/AGENTS.md §Archive surfaces. */
+.archive {
+  --archive-ink: #f2f1ec;
+  --archive-muted: #a3a29b;
+  --archive-faint: #6f6e68;
+  --archive-rule: #3b3a36;
+  --archive-ground: #0b0b0a;
+  --archive-accent: #e0452b;
+  --archive-space-1: 0.25rem;
+  --archive-space-2: 0.5rem;
+  --archive-space-3: 1rem;
+  --archive-space-4: 1.5rem;
+  --archive-space-5: 2.5rem;
+  --archive-space-6: 4rem;
+  --archive-measure: 48rem;
+  color: var(--archive-ink);
+}
+
+.archive-column {
+  margin-inline: auto;
+  max-width: var(--archive-measure);
+  padding-inline: var(--archive-space-4);
+}
+
+.archive-rule {
+  border-top: 1px solid var(--archive-rule);
+}
+
+.archive-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--archive-muted);
+}
+
+.archive-link {
+  color: var(--archive-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--archive-rule);
+  text-underline-offset: 0.2em;
+  outline: none;
+}
+
+.archive-link:hover {
+  text-decoration-color: var(--archive-accent);
+}
+
+.archive-link:focus-visible,
+.archive-focus:focus-visible {
+  outline: 2px solid var(--archive-accent);
+  outline-offset: 2px;
+}
+
+.archive-code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}

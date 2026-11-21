@@ -1,0 +1,175 @@
+/*
+ * The change and findings log for brief-schema.html. Plain data: to record something new, append ONE object to the end of
+ * the array below. The page sorts newest date first (entries with the same date show the later line first) and counts the
+ * gaps for you.
+ *
+ * Fields
+ *   date    "YYYY-MM-DD" (or "YYYY-MM" when the day is unknown)
+ *   kind    "Architecture" | "Gap found" | "Gap closed"
+ *   title   a short noun phrase
+ *   text    one or two plain sentences with the figure and where it came from
+ *   status  Architecture: "built" or "planned".  Gaps: "open", "partly closed" or "closed"
+ *   id      (optional, Gap found only) a short slug so a later entry can close it
+ *   closes  (optional, Gap closed only) the id of the Gap found it closes
+ *
+ * When a gap is closed: append a "Gap closed" entry with `closes`, then change the status of the original "Gap found"
+ * to "closed" (or "partly closed"). Never delete an entry; an open gap stays visible until it is truly closed.
+ */
+window.BRIEF_LOG = [
+  { date: "2026-03", kind: "Architecture", status: "planned", title: "Contribution system designed",
+    text: "The Open Scholarly Contribution System plan describes contributor profiles, five roles, eight contribution types, peer review and endorsements; it was written for Neo4j and is now mapped onto the PostgreSQL design as six planned tables." },
+
+  { date: "2026-07-21", kind: "Gap found", status: "partly closed", id: "audit-identity",
+    title: "Most narrator names unmatched, almost no fully identified chains",
+    text: "The July audit counted 387,359 of 437,476 name occurrences unmatched and 204 reports with a fully identified chain. Those figures came from a name-only match and have been superseded by the verified-links, candidates and unidentified counts below." },
+  { date: "2026-07-21", kind: "Gap found", status: "partly closed", id: "translation-checks",
+    title: "Translations failing quality checks",
+    text: "12,831 English texts were missing, refused by the model or contained Arabic. By November the leakage group (11,953 rows) was found to be 92% a single honorific glyph; fixes exist only as unreviewed candidates, so no text has been changed in the corpus." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Moved from Neo4j to PostgreSQL with Drizzle",
+    text: "The data layer now lives in PostgreSQL 18 on Railway: 41 tables, 6 views and 1 materialized view defined in the Drizzle schema, one migration stream, a loader with data checks and a query layer. Neo4j still serves the live site and is not removed before cutover and the owner's approval." },
+  { date: "2026-11-21", kind: "Gap found", status: "partly closed", id: "neo4j-copy",
+    title: "The old live data misstated identities and grades",
+    text: "The live Neo4j copy has 159,550 name-matched narrator links (13,964 on Imami chains matched against a Sunni lexicon, the most frequent Sunni targets being placeholder rows) and 352,315 placeholder grading records beside 29,915 identical labels presented as Sunni grades. The new data layer carries none of these, but the live site shows them until cutover." },
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "neo4j-copy",
+    title: "Placeholders and labels no longer pass as identities or grades",
+    text: "Placeholder grading rows do not exist in the new schema, and the 29,915 dataset-wide labels are stored as collection labels, never as grades; unverified name matches are candidates, not links." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "empty-tables",
+    title: "Most curation tables are empty",
+    text: "24 of the 41 tables hold no rows, including commentaries, parallels, source texts, events, locations, biographies, citations and rights decisions; the live Neo4j store holds none of these either, apart from the 21 hand-written biographies that are also in the code repository." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "One writer per table",
+    text: "Each table is written either by the data pipeline or by people through the app, never both; a reload updates pipeline rows by permanent identifier and retires rather than deletes. A reload with unchanged input changed zero rows, checked twice on the full 99,283-report corpus." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "superuser",
+    title: "The app connects as the database owner",
+    text: "The one-writer rule is held by the code, not by a restricted database role, because the app still uses the superuser account; the restricted role and its grants are written down but not yet applied." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "no-signin",
+    title: "Admin pages and write actions had no sign-in",
+    text: "Before this work every edit action in the admin area could be called by anyone." },
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Curator access control and audit",
+    text: "Every write needs a signed-in, named curator, runs in one transaction with an append-only audit record of who changed what (before and after), and refusals come back as plain result objects; rows are retired with a timestamp and never deleted." },
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "no-signin",
+    title: "Curator sign-in, per-name throttle and audit in place",
+    text: "Sign-in uses a passphrase per named curator with a per-name attempt limit, and the audit trail is written by the same transaction as the change." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "placeholder-matches",
+    title: "The name matcher matched thousands of names to placeholder lexicon rows",
+    text: "A bare name such as Shu'bah resolved to a lexicon stub marked as an unidentified shaykh 1,236 times, and every bare 'Abd Allah resolved to one man; the matcher disagreed with the source's own index on 8,037 of 15,941 comparable names." },
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "placeholder-matches",
+    title: "Placeholders can no longer be a match target",
+    text: "866 lexicon rows that cannot name one person (unidentified-shaykh markers, bare single names, kunya alone, no Arabic name) are excluded from matching, a nested-parenthesis name bug was fixed, and a load check enforces that only kunya-only rows may be a target, marked as a lower-confidence match." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Every identity claim for a name is kept, with its source",
+    text: "A new table records each candidate narrator for a name with its basis (exact name, spelling fold, kunya only, the source's own index, that index confirmed by the Arabic, or a reviewer's decision), and a public view shows all of them; only a confirmed, uncontested source index or a reviewer decision counts as verified." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "wrong-verified",
+    title: "Some verified links name the wrong person",
+    text: "In a random sample of 40 verified links, 2 named the wrong narrator (for example a Hisham from Ibn Sirin linked to Hisham b. 'Urwa) because a bare first name fits several people and the Arabic text cannot tell them apart; the 95% range for the true error rate is roughly 1% to 17%." },
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "audit-identity",
+    title: "Identity counts re-measured on verified links and candidates",
+    text: "On the full extraction (538,513 names in 114,597 chains) 83,949 names have a verified identity, all Sunni; 212,921 candidate identities exist for other Sunni names; and about 454,564 names (538,513 less 83,949) have no verified identity." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "imami-identities",
+    title: "Imami, Ibadi and Zaydi chains have no identities",
+    text: "There are 83,949 verified links, all in Sunni chains, and no verified link or candidate for any Imami, Ibadi or Zaydi name; the Imami rijal texts and the Riwayat corpus are on disk but not loaded." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "overwritten-index",
+    title: "The source's own narrator index for the six books was overwritten",
+    text: "The original download names a narrator identifier at each position of each chain, but the working copy overwrote it in 16,156 rows." },
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "overwritten-index",
+    title: "Source index kept as a separate, labelled source",
+    text: "The index was recovered into a separate file (175,695 positions) and compared with the Arabic: 15,701 reports have every position confirmed by the text, and all of it is labelled as the source's claim, not as a verified identity." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "partly closed", id: "chainless",
+    title: "14,500 reports had no chain",
+    text: "They fall into nine groups: 11,046 lost the chain in loading, 1,136 come from a source that ships none, 1,060 are Nahj al-Balagha (no chain by design), 541 omit it (al-Faqih), and 717 are other cases." },
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "chainless",
+    title: "11,046 chains restored from the source's chain field",
+    text: "For Musnad Ahmad (9,519), al-Darimi (857) and the Muwatta' (670) the chain sits in a separate source field that loading had dropped, so it was recovered without altering any text; the groups with no chain in the source remain." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "partly closed", id: "empty-chain-artefact",
+    title: "427 of 569 \"fully identified\" chains counted an empty chain",
+    text: "The extractor can return an empty branch, which earlier counts treated as a chain and as vacuously resolved; the real figure under the same name-only rule was 142, not 569." },
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "empty-chain-artefact",
+    title: "Reconciliation jobs drop empty branches",
+    text: "The reconciliation jobs now ignore empty branches, but the older audit and census still count an empty chain as resolved and still show the inflated figure." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "death-before-birth",
+    title: "38 narrators with death before birth",
+    text: "These were before-Hijra years whose sign was lost in an unsigned comparison, not data errors: all 38 inverted pairs, and 48 of 50 birth and 8 of 27 death date disagreements, trace to that." },
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "death-before-birth",
+    title: "Before-Hijra sign restored at load",
+    text: "The loader already restores the sign, so the 94 date flags of this kind were false alarms; the remaining lexicon defects are listed separately." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "lexicon-defaults",
+    title: "Lexicon dates and causes of death look defaulted",
+    text: "121 death years are 0, and a death cause of \"Natural\" appears on 20,325 narrators who have no death date at all; neither is corrected by the loader." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "partly closed", id: "lexicon-unverified",
+    title: "Lexicon biographies carried no source",
+    text: "The lexicon gives dates, places and generation for 24,326 narrators without a book, edition or page." },
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "lexicon-unverified",
+    title: "Lexicon checked against Ibn Hajar and al-Mizzi",
+    text: "Where a narrator could be linked uniquely to Taqrib al-Tahdhib, 1,588 of 1,663 death years (95.5%) and 5,128 of 5,194 generation markers (98.7%) agree, with 17,893 cited candidate claims prepared; but only 5,839 narrators (24%) link uniquely, the agreement mostly shows faithful copying, and nothing is loaded or reviewed yet." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "closed", id: "grade-placeholders",
+    title: "88% of assessment records were \"no evaluation\" placeholders",
+    text: "In the old live data 352,315 of 399,064 assessment records said nothing, and 29,915 identical labels sat in the Sunni scheme as if they were grades." },
+  { date: "2026-11-21", kind: "Gap closed", status: "closed", closes: "grade-placeholders",
+    title: "Only real, attributed grades are stored",
+    text: "The new schema has 46,750 grading rows, of which 16,835 are cited Imami rulings with grader, work, volume and page; the 29,915 labels are stored as labels and hidden. Absence of a row now means no grade." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "no-sunni-grades",
+    title: "No real Sunni gradings are loaded",
+    text: "Tirmidhi's own verdicts (2,707) and Ibn Hajar's verdicts on narrators (5,163) were extracted as candidates but are not loaded; there are also no Ibadi or Zaydi gradings." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "behbudi-exclusions",
+    title: "\"Not included\" entries shown as rulings",
+    text: "1,734 Imami entries recording that Behbudi did not include a report are stored as rulings and are publicly displayable, although that is a judgment about inclusion, not the absence of a grade." },
+
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "matn-neighbour",
+    title: "Some matn values belong to a neighbouring report",
+    text: "1,597 Sunni reports (Muslim 625, Tirmidhi 596, Ibn Majah 245, Nasa'i 80, Bukhari 47, Abu Da'ud 4) carry another report's matn because the source join used a number that repeats, and the hadith page prefers that field over the report's own text; a further 12,617 matn values still contain the chain." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "citation-numbers",
+    title: "Citation numbers are unusable for some works",
+    text: "Al-Kafi has 14,245 reports but 597 distinct numbers, so a heading such as \"Al-Kafi 1\" repeats across 255 reports; Musnad Ahmad and Musnad al-Shafi'i have similar numbering defects." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "quran",
+    title: "Qur'an quotations inside reports are not modelled",
+    text: "At least 2,108 reports carry quotation marks around Qur'anic text, and no table, page or plan links a report to a verse." },
+
+  { date: "2026-11-21", kind: "Gap closed", status: "partly closed", closes: "translation-checks",
+    title: "Candidate fixes prepared, none applied",
+    text: "Of 11,953 English texts that contain Arabic, 92% hold only the honorific glyph; 10,662 mechanical glyph replacements and 2,082 accepted machine translations of missing or untranslated text (about 12 US cents in total) are kept as unreviewed candidates; no corpus text has been changed and none has been reviewed." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "no-public-english",
+    title: "No English is cleared, and Ibadi and Zaydi have none in the new data",
+    text: "The database holds 66,776 provider English texts (Sunni 33,588, Imami 33,188) and none is cleared; the 1,702 Ibadi and Zaydi reports have no English there at all, though the old live site shows unlabelled machine output for them." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Rights are the publication gate, per work",
+    text: "Public pages read views that require a cleared rights decision for the report's work, so a work with no decision is not shown; the rights register records the evidence and a proposal for each of the 34 works for the owner to approve." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "rights",
+    title: "The six books' English and the lexicon come from scraped uploads whose licence does not cover them",
+    text: "The Sunni six-book file is a 2018 upload scraped from a site that republishes sunnah.com, whose English is other translators' copyright, and the narrator lexicon is a copy of muslimscholars.info. No rights decision is recorded; the proposal would clear 23 works (20 Thaqalayn works under CC BY 4.0 for the rights it holds, 3 OpenITI works under CC BY-NC-SA), leave 11 pending, and clear no provider English." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Preview served only under a recorded owner approval, with a visible notice",
+    text: "A non-release dataset may be shown publicly only if the owner's approval (who, why, when) is recorded on that load, every such page carries a notice driven by the database, and the approval and notice are removed after the first release." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "empty-public-site",
+    title: "The approved preview currently shows no reports",
+    text: "The approval is tied to the earlier load, so the current load has none, and with no rights decision recorded the public view of reports is empty; every reload needs the approval renewed." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "planned", title: "Tellings of one report are linked at the level of the report",
+    text: "A study found 135,825 candidate pairs in 17,536 clusters and 7,107 reports with a counterpart in another tradition; each telling keeps its own chain, and narrators are never merged across traditions. The three tables, the loader and the reader's view are designed but not built, and the pairs are one reader's checked sample, not reviewed." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "no-browse",
+    title: "No reading in order",
+    text: "There are no collection, book or chapter pages and no previous or next link on a report; the 8,291 chapters and 371 books exist, but Sunni reports carry no chapter link at all." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "history-thin",
+    title: "Historical context is a small uncited seed",
+    text: "There are 54 events and 32 places, almost all single years, no named eras (the era table is not built), and none of it is in the database yet; the lexicon's generation markers and places have been checked but not loaded." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Glossary as data",
+    text: "Every technical term (traditions, names, transmission, criticism, grading, works) is defined once in code, shown on a glossary page and linked from the labels that use it, with a printable copy in docs/glossary.md." },
+
+  { date: "2026-11-21", kind: "Architecture", status: "built", title: "Private dataset backup",
+    text: "The datasets are copied to a private Railway bucket (482 files, 2,878 MB, each with a recorded hash)." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "backup-partial",
+    title: "The backup is partial and has never been restored",
+    text: "It leaves out the 9 GB development folder the database was actually loaded from and three access-denied files, sits in the same Railway project as the databases, and no database dump or restore drill exists." },
+  { date: "2026-11-21", kind: "Gap found", status: "open", id: "reload-blocked",
+    title: "A reload is blocked once a curator records an identity decision",
+    text: "The loader refuses to run while any reviewer decision exists because replaying decisions onto a reload is not built, and production has been migrated but never loaded." }
+];

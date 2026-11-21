@@ -13,7 +13,7 @@
     "db:audit": "tsx src/scripts/audit-graph.ts",
     "db:remediate-legacy-assessment": "tsx src/scripts/remediate-legacy-scalar-assessment.ts",
     "test:regen": "tsx src/scripts/__tests__/regen-isnad-graph.test.ts",
-    "db:seed-history": "tsx src/scripts/seed-historical-data.ts",
+    "db:seed-history": "tsx --conditions=react-server src/scripts/db/seed-history.ts",
     "db:link-sanads": "tsx src/scripts/link-sanad-chains.ts",
     "db:ingest-er": "tsx src/scripts/ingest-er-approved.ts",
     "build:credits": "tsx src/scripts/build-credits.ts",
@@ -22,7 +22,8 @@
     "db:verify": "tsx src/db/verify.ts",
     "db:load": "tsx src/db/load/load-bundle.ts",
     "auth:hash": "tsx src/lib/auth/hash-passphrase.ts",
-    "db:approve-preview": "tsx src/scripts/db/approve-preview.ts"
+    "db:approve-preview": "tsx src/scripts/db/approve-preview.ts",
+    "db:seed-narrator-bios": "tsx --conditions=react-server src/scripts/db/seed-narrator-bios.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

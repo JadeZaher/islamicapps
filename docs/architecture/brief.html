@@ -79,6 +79,7 @@
 <main>
   <h1>Data architecture brief</h1>
   <p class="lede">Shura wa Istehsan: moving the hadith archive off Neo4j. Written 21 November 2026. The full design, with every column, is in <code>docs/architecture/data-architecture.md</code>.</p>
+  <p><strong>The current brief is <a href="brief-schema.html">brief-schema.html</a></strong> (the app, its schema and its data limits, updated as work proceeds). This page is the earlier decision brief and is kept for the reasoning behind the database choice.</p>
 
   <nav aria-label="Sections">
     <a href="#choice">Database choice</a>
@@ -147,7 +148,7 @@
           <tr><td>Extensions</td><td><span class="done">Enabled.</span> <code>vector</code> 0.8.7 for embeddings, <code>pg_trgm</code> for fuzzy Arabic and name search, <code>unaccent</code>.</td></tr>
           <tr><td>App connection</td><td><span class="done">Set.</span> The app's <code>DATABASE_URL</code> points at the database over the private network. The live site has not been redeployed and still reads Neo4j.</td></tr>
           <tr><td>Local connection</td><td><span class="done">Set.</span> <code>DATABASE_URL</code> in <code>.env.local</code>, over SSL.</td></tr>
-          <tr><td>Tables</td><td>Being created now from the design: 40 at launch, 7 more when their first feature ships.</td></tr>
+          <tr><td>Tables</td><td><span class="done">Created.</span> 41 tables, 6 views and 1 materialized view, migrated; the remaining designed tables are created when their first feature ships.</td></tr>
           <tr><td>Memory tuning</td><td>Not applied yet. The database runs on defaults (128 MB shared buffers, 100 connections).</td></tr>
         </tbody>
       </table>
@@ -172,7 +173,7 @@
 
   <section id="erd">
     <h2>Schema diagrams</h2>
-    <p>47 tables in total. Each diagram shows a group of tables with their keys and most important columns. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets; <span class="tag curation">curation</span> tables are edited in the app.</p>
+    <p>41 tables, 6 views and 1 materialized view are built; 16 further tables are designed and appear only in <a href="brief-schema.html">the current brief</a>. Each diagram shows a group of tables with their keys and most important columns. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets; <span class="tag curation">curation</span> tables are edited in the app.</p>
     <div id="domains"></div>
   </section>
 
@@ -196,23 +197,23 @@
 
   <section id="gaps">
     <h2>Data gaps</h2>
-    <p>From the July audit of the 99,283-record corpus. Diagnostic jobs that rank these and build review queues are running now; they write new files only.</p>
+    <p>From the July audit of the 99,283-record corpus. Diagnostic jobs that rank these and build review queues have run; they write new files only. Figures here were refreshed on 21 November; the current numbers are in <a href="brief-schema.html#limits">brief-schema.html</a>.</p>
     <div class="scroll">
       <table>
         <thead><tr><th>Gap</th><th>Size</th><th>What closes it</th></tr></thead>
         <tbody>
-          <tr><td>Narrator names not matched to an identity</td><td class="num">387,359 of 437,476 name occurrences</td><td>The largest gap. Rank the distinct unmatched names by frequency, propose candidates with evidence, and review the most frequent first.</td></tr>
-          <tr><td>Reports with a fully resolved chain</td><td class="num">204 of 99,283</td><td>Follows from the gap above. Chains are extracted for 84,781 reports; it is the identities that are missing.</td></tr>
-          <tr><td>English translation failing checks</td><td class="num">12,831</td><td>Recover source translations where rights allow; machine drafts stay in a separate candidates table until reviewed.</td></tr>
+          <tr><td>Narrator names without a verified identity</td><td class="num">about 454,564 of 538,513 names (all Imami, Ibadi and Zaydi names)</td><td>The largest gap. Candidates are now kept with their source; only a source index confirmed by the Arabic, or a reviewer, verifies a name (83,949 so far, all Sunni). The July count of 387,359 of 437,476 is superseded.</td></tr>
+          <tr><td>Reports with a fully resolved chain</td><td class="num">142 under the name-only rule (earlier reports said 569 and 204, which counted empty chains)</td><td>Follows from the gap above. 15,701 six-book reports have every source-provided identity confirmed by the Arabic.</td></tr>
+          <tr><td>English translation failing checks</td><td class="num">11,953 contain Arabic (92% only the honorific glyph)</td><td>Candidate fixes are prepared and unreviewed; machine drafts stay in a separate candidates stream until reviewed.</td></tr>
           <tr><td>Translations with a review status</td><td class="num">0</td><td>Decide per collection whether provider English may be shown as "source provided".</td></tr>
-          <tr><td>Narrators with a death year</td><td class="num">15.7%</td><td>Cited claims with ranges, entered through the evidence tables. 38 existing records place death before birth.</td></tr>
+          <tr><td>Narrators with a death year</td><td class="num">83.7% of the lexicon have neither a birth nor a death year</td><td>Cited claims with ranges, entered through the evidence tables. The 38 records that seemed to place death before birth were before-Hijra years read without their sign.</td></tr>
           <tr><td>Grades for Ibadi and Zaydi reports</td><td class="num">none</td><td>Source grading works for those traditions must be acquired.</td></tr>
           <tr><td>Cited scholarly claims</td><td class="num">0</td><td>The citation tables exist so that biography and history can be entered with a source and page.</td></tr>
         </tbody>
       </table>
     </div>
     <div class="note">
-      <p><strong>The release gate is all-or-nothing today.</strong> A load is allowed only when every one of the 99,283 reports has a resolved chain and a human-verified translation, so nothing can be published. The design replaces this with a status on each report, shown honestly to the reader: Arabic present, translation state, chain resolved or shown as written, graded or not.</p>
+      <p><strong>The original release gate was all-or-nothing.</strong> It allowed a load only when every one of the 99,283 reports had a resolved chain and a human-verified translation, so nothing could be published. The design replaces this with a status on each report, shown honestly to the reader (Arabic present, translation state, chain resolved or shown as written, graded or not), and a per-work rights gate; the current load did not pass the old gate and is shown only as a preview under the owner's recorded approval.</p>
     </div>
   </section>
 
@@ -220,21 +221,22 @@
     <h2>Order of work</h2>
     <ol class="steps">
       <li><span class="done">Done.</span> Working tree checkpointed on branch <code>refactor/postgres-drizzle</code>.</li>
-      <li><strong>Access control.</strong> Admin pages and every write action currently have no sign-in. Add a gate and named curators.</li>
-      <li><span class="done">In progress.</span> <strong>Build fix.</strong> The current code does not compile (39 type errors), which is why the August deploy failed.</li>
-      <li><span class="done">In progress.</span> <strong>Database foundation.</strong> Drizzle schema, client, and migrations applied to the Railway database.</li>
-      <li><strong>Loader.</strong> Project the Python bundle to plain CSV and load it with <code>COPY</code>.</li>
-      <li><strong>Query port.</strong> Rewrite the server actions against Drizzle query modules, one area at a time.</li>
+      <li><span class="done">Done.</span> <strong>Access control.</strong> Admin pages and every write action now require a signed-in, named curator, and every write is audited.</li>
+      <li><span class="done">Done.</span> <strong>Build fix.</strong> The code compiles and builds.</li>
+      <li><span class="done">Done.</span> <strong>Database foundation.</strong> Drizzle schema, client, and migrations applied to the Railway database.</li>
+      <li><span class="done">Done.</span> <strong>Loader.</strong> Project the Python bundle to plain CSV and load it with <code>COPY</code>.</li>
+      <li><span class="done">Done.</span> <strong>Query port.</strong> Rewrite the server actions against Drizzle query modules, one area at a time.</li>
       <li><strong>Export curation from Neo4j</strong>, read-only: commentaries, events, parallels, tags, and the hand-written narrator biographies.</li>
       <li><strong>Cut over</strong> on Railway, measure memory, observe for a week.</li>
       <li><strong>Retire Neo4j</strong> and remove its code, after a final dump and your approval.</li>
       <li><strong>Vectors</strong>, once an embedding model is chosen.</li>
     </ol>
-    <p><span class="done">In progress alongside:</span> five interface lanes (shell and error states, hadith page, narrator page, admin lists, comparative), the conductor reset, and the data-gap diagnostics.</p>
+    <p><span class="done">Done alongside:</span> the interface refresh, the glossary, the rights register, and the data-gap diagnostics. Still to do: export of curation from Neo4j, cut-over, retirement of Neo4j, and vectors.</p>
   </section>
 
   <section id="decide">
     <h2>Decisions that need you</h2>
+    <p>Several of these have since been decided (for example, old narrator links are kept only as labelled candidates, parallels start as proposed, and the 21 narrator verdicts are recorded as Sunni). The current open items are in <a href="brief-schema.html#limits">brief-schema.html</a>.</p>
     <div class="scroll">
       <table>
         <thead><tr><th>Question</th><th>Why it matters</th><th>Recommendation</th></tr></thead>
@@ -274,7 +276,7 @@
     const header = document.createElement('header');
     const title = document.createElement('h3'); title.textContent = domain.name;
     const tag = document.createElement('span'); tag.className = 'tag ' + domain.owner; tag.textContent = domain.owner;
-    const count = document.createElement('span'); count.className = 'tag'; count.textContent = domain.tables.length + ' tables';
+    const count = document.createElement('span'); count.className = 'tag'; count.textContent = domain.tables.filter(table => table.kind === 'table').length + ' tables';
     header.append(title, tag, count);
     const blurb = document.createElement('p'); blurb.textContent = domain.blurb;
     const diagram = document.createElement('div'); diagram.className = 'diagram';
@@ -284,7 +286,7 @@
     for (const table of domain.tables) {
       const item = document.createElement('li');
       const name = document.createElement('code'); name.textContent = table.name;
-      item.append(name, ' ' + table.purpose + (table.ships === 'later' ? ' (ships later)' : ''));
+      item.append(name, ' ' + (table.kind && table.kind !== 'table' ? '(' + table.kind + ') ' : '') + table.purpose);
       list.append(item);
     }
     details.append(summary, list);

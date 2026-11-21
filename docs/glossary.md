@@ -14,8 +14,8 @@ Definitions of the terms used in the Shura wa Istehsan app, its documentation an
 - [Narrator criticism](#section-narrator-criticism) (11)
 - [Report grading](#section-report-grading) (16)
 - [Works and genres](#section-works) (10)
-- [Comparative study and history](#section-comparative) (11)
-- [Archive terms](#section-archive) (40)
+- [Comparative study and history](#section-comparative) (13)
+- [Archive terms](#section-archive) (48)
 - [Needs the owner’s review](#owner-review)
 - [Enum values without an entry](#enum-values-without-an-entry)
 
@@ -914,9 +914,46 @@ The Islamic lunar calendar, counted from the Prophet’s emigration to Medina in
 - **Related:** [tabaqa](#tabaqa)
 - **Data values:** `calendar.hijri`
 
+<a id="era"></a>
+
+### Era
+
+A named stretch of years, such as a caliphate or the lifetimes of the Imams, used to place a narrator’s life in its time.
+
+- **In this archive:** Eras have neutral descriptive names; a tradition’s own name for a period is listed beside it with who uses it. A disputed start or end is kept as a range of years. Eras loaded from the seed are unverified until a curator cites them.
+- **Across traditions:** Traditions divide and name the past differently: Sunni writers speak of the rightly guided caliphs, Imami writers of the presence and the occultation of the Imams, Zaydi and Ibadi writers of their own imamates. The archive shows each tradition’s periods in its own reckoning and makes none the default.
+- **Related:** [hijri](#hijri), [ghayba](#ghayba), [Chronological note](#chronological-gap)
+
+<a id="ghayba"></a>
+
+### ghayba (occultation) · غيبة
+
+In Imami belief, the hiddenness of the twelfth Imam, divided into a Lesser Occultation (260–329 AH) with four successive deputies and a Greater Occultation from 329 AH.
+
+- **In this archive:** Shown as eras in Imami reckoning.
+- **Related:** [Era](#era), [Imami](#imami)
+
 <a id="section-archive"></a>
 
 ## Archive terms
+
+<a id="chronological-gap"></a>
+
+### Chronological note
+
+A note that two consecutive narrators in a chain, as their dates or generations are recorded, do not seem to have overlapped.
+
+- **In this archive:** Shown when one narrator’s earliest recorded birth is after the other’s latest recorded death, or when their recorded generations are more than one step apart. Each note names where each date comes from. It is information about the records, which may themselves be wrong or may name the wrong person, and never a ruling on the chain.
+- **Related:** [tabaqa](#tabaqa), [Era](#era), [Basis](#basis), [munqatiʿ](#munqati)
+
+<a id="unverified-seed"></a>
+
+### Seed, unverified
+
+A starting record (an event, place or era) entered before any curator review, with no citation yet.
+
+- **In this archive:** Seed records are labelled “seed, unverified” and are never public. Once a curator edits or reviews one, later reloads of the seed leave it alone.
+- **Related:** [Unreviewed](#unreviewed), [Citation](#citation), [Era](#era)
 
 <a id="source-work"></a>
 
@@ -970,16 +1007,16 @@ One name exactly as written at one position in one chain.
 
 The reason the archive gives for connecting a name in a chain to a particular narrator.
 
-- **In this archive:** The labels are: confirmed by source and text; a curator’s decision; source index; matched by name; matched by kunya only; and not yet identified. When candidates disagree, all of them are kept.
-- **Related:** [Confirmed by source and text](#confirmed-by-source-and-text), [Identity decision](#identity-decision), [Source index](#source-index), [Matched by name](#matched-by-name), [Matched by kunya only](#matched-by-kunya-only), [Not yet identified](#not-yet-identified)
+- **In this archive:** The labels are: verified by a reviewer; machine-reviewed (matches the source’s index and the text); source index; matched by name; matched by kunya only; and not yet identified. When candidates disagree, all of them are kept. A kunya-only match is shown as a note beside other candidates and never counts as a disagreement.
+- **Related:** [Machine-reviewed](#confirmed-by-source-and-text), [Identity decision](#identity-decision), [Source index](#source-index), [Matched by name](#matched-by-name), [Matched by kunya only](#matched-by-kunya-only), [Not yet identified](#not-yet-identified)
 
 <a id="confirmed-by-source-and-text"></a>
 
-### Confirmed by source and text
+### Machine-reviewed (matches the source’s index and the text)
 
-The source’s own narrator index names this person at this position, and the name written in the Arabic agrees with it.
+A machine check found that the source’s own narrator index names this person at this position and that the name written in the Arabic agrees with it.
 
-- **In this archive:** One of the two bases that may set a verified narrator link; the other is a curator’s decision.
+- **In this archive:** The archive’s top automatic tier, shown as “machine-reviewed”, never as verified: a sample found about one in twenty of these wrong where two people share a name. It stands only when no other match names someone else (a kunya-only match does not count against it). Teacher-to-student links built from it are machine-reviewed too. Only a reviewer’s decision is called verified.
 - **Related:** [Basis](#basis), [Source index](#source-index), [Identity decision](#identity-decision)
 - **Data values:** `mention_candidate_basis.source_index_confirmed_by_text`
 
@@ -989,8 +1026,8 @@ The source’s own narrator index names this person at this position, and the na
 
 An identification taken from the source’s own list of narrator IDs for a report, without confirmation from the Arabic text.
 
-- **In this archive:** A source index is the source’s claim, not the archive’s; it is shown as such and not treated as verified.
-- **Related:** [Basis](#basis), [Confirmed by source and text](#confirmed-by-source-and-text), [Candidate](#candidate)
+- **In this archive:** A source index is the source’s claim, not the archive’s; it is shown as such and is neither machine-reviewed nor verified.
+- **Related:** [Basis](#basis), [Machine-reviewed](#confirmed-by-source-and-text), [Candidate](#candidate)
 - **Data values:** `mention_candidate_basis.source_index`, `mention_resolution.source_index`, `resolution_basis.source_index`
 
 <a id="matched-by-name"></a>
@@ -1009,7 +1046,7 @@ The name as written matches exactly one entry in the narrator lexicon, either le
 
 The only match is on a kunya, which many narrators share, so the identification is uncertain.
 
-- **In this archive:** Shown with a marker as a lower-confidence match and excluded from the archive’s list of verified teacher-to-student transmissions.
+- **In this archive:** Shown as a labelled note beside any other match, never as a disagreement, and ignored when deciding which identity stands and in every analysis, including the teacher-to-student network.
 - **Related:** [kunya](#kunya), [Kunya-only and single-name mentions](#single-name-mention), [Basis](#basis)
 - **Data values:** `mention_candidate_basis.name_kunya_only`
 
@@ -1025,7 +1062,7 @@ No identification of this name meets the archive’s rules, so it is shown as wr
 
 <a id="identity-decision"></a>
 
-### Identity decision
+### Identity decision (verified by a reviewer)
 
 A curator’s recorded judgement of who a name in a chain refers to, in a given context, with the reviewer named.
 
@@ -1083,13 +1120,73 @@ A machine-produced suggestion, of an identity, a translation or a grading, kept 
 - **Related:** [Machine-proposed](#machine-proposed), [Unreviewed](#unreviewed), [Review unit](#review-unit)
 - **Data values:** `evidence_review_state.candidate_only`
 
+<a id="report-correspondence"></a>
+
+### Telling (corresponding report)
+
+Another report, in this or another work or tradition, whose wording overlaps this one closely enough that it may be the same report told again.
+
+- **In this archive:** Found by a machine comparison of the report texts with the chains removed (shared five-letter sequences), then shown as machine-found and unreviewed unless a reviewer confirmed it. A reader sees same wording, variant wording at 40 percent shared wording or more, and a shared passage covering 70 percent or more of the shorter text; a reviewer’s confirmation shows a pair at any score and a rejection hides it. It is evidence that two reports correspond, not a ruling that they are one hadith, and it says nothing about which telling is earlier or more authentic. Each telling keeps its own chains, tradition and work.
+- **Related:** [Same wording](#same-wording), [Variant wording](#variant-wording), [Shares a passage](#shared-passage), [Correspondence decision](#correspondence-decision), [matn](#matn), [isnad](#isnad)
+- **Data values:** `report_correspondence_basis.textual_overlap`
+
+<a id="same-wording"></a>
+
+### Same wording
+
+Two report texts that are nearly identical letter for letter, once the chains are set aside.
+
+- **In this archive:** At least 80 percent of their letter sequences are shared.
+- **Related:** [Telling (corresponding report)](#report-correspondence), [Variant wording](#variant-wording)
+- **Data values:** `report_correspondence_class.same_wording`, `report_correspondence_reviewed_relation.same_wording`
+
+<a id="variant-wording"></a>
+
+### Variant wording
+
+Two texts that tell what appears to be the same report with differences of wording, order or length.
+
+- **In this archive:** Shown to readers from 40 percent shared wording; lower scores are kept for reviewers.
+- **Related:** [Telling (corresponding report)](#report-correspondence), [Same wording](#same-wording), [Shares a passage](#shared-passage)
+- **Data values:** `report_correspondence_class.same_report_variant_wording`, `report_correspondence_reviewed_relation.same_report_variant_wording`
+
+<a id="shared-passage"></a>
+
+### Shares a passage
+
+One text contains a passage of the other, for example a saying quoted inside a longer report.
+
+- **In this archive:** Shown to readers when the passage covers 70 percent or more of the shorter text.
+- **Related:** [Telling (corresponding report)](#report-correspondence), [Variant wording](#variant-wording)
+- **Data values:** `report_correspondence_class.partial_overlap`, `report_correspondence_reviewed_relation.partial_overlap`
+
+<a id="correspondence-decision"></a>
+
+### Correspondence decision
+
+A reviewer’s judgement on a machine-found pair of reports: confirmed, rejected, or uncertain.
+
+- **In this archive:** A decision is tied to the exact Arabic the reviewer read; if either text changes, the pair goes back for review. Earlier decisions are kept, never deleted.
+- **Related:** [Telling (corresponding report)](#report-correspondence), [Curator](#curator), [Human verified](#human-verified)
+- **Data values:** `report_correspondence_decision.confirmed`, `report_correspondence_decision.rejected`, `report_correspondence_decision.uncertain`
+
+<a id="shared-formula-only"></a>
+
+### Shared formula, verse or ruling
+
+A reviewer’s reading that two texts overlap only in a common formula (such as the shahada), a Quran verse, or the same ruling attributed to a different speaker, so they are not one report.
+
+- **In this archive:** Recorded with a rejection or an uncertain decision, never with a confirmation.
+- **Related:** [Correspondence decision](#correspondence-decision), [Telling (corresponding report)](#report-correspondence)
+- **Data values:** `report_correspondence_reviewed_relation.shared_formula_only`, `report_correspondence_reviewed_relation.shared_quran_quotation`, `report_correspondence_reviewed_relation.same_ruling_different_attribution`
+
 <a id="chain-status"></a>
 
 ### Chain status
 
 How much of a report’s chain the archive has identified.
 
-- **In this archive:** Complete: every name is a verified link. Partial: some are. Unresolved: none are yet. No chain in source: the work gives none (for example the sermons of Nahj al-Balagha). Not extracted: the chain could not be read from the text. In every case the chain is shown as written.
+- **In this archive:** Complete: every name has an identity (machine-reviewed or verified by a reviewer). Partial: some do. Unresolved: none are yet. No chain in source: the work gives none (for example the sermons of Nahj al-Balagha). Not extracted: the chain could not be read from the text. In every case the chain is shown as written.
 - **Related:** [isnad](#isnad), [Mention](#mention), [Basis](#basis)
 - **Data values:** `chain_status.complete`, `chain_status.partial`, `chain_status.unresolved`, `chain_status.absent_in_source`, `chain_status.extraction_failed`
 
@@ -1330,7 +1427,6 @@ Entries written conservatively where a tradition-specific usage or a data mappin
 - [Parallel](#parallel): The one-line glosses of the six parallel types are inferred from their labels; confirm them.
 - [madhhab](#madhhab): The school categories have no Ibadi legal or separate Zaydi entries, and group Imami and Zaydi together as Shiʿi. Confirm whether that is acceptable.
 - [Rashidun](#rashidun): The period label carries a Sunni name. Confirm the wording, or choose a neutral label such as “early caliphate”.
-- [Confirmed by source and text](#confirmed-by-source-and-text): Written from the schema (the source_index_confirmed_by_text basis and its “verified basis” flag) before the identity screens were finished; confirm it matches the label shown to readers.
 - [Matched by kunya only](#matched-by-kunya-only): The runbook records this treatment of kunya-only matches as a reading of your answer that is still to be confirmed.
 - [Preview](#preview): Confirm that this wording matches the preview notice and your approval.
 - [Endorsement (ijaza)](#endorsement): A classical ijaza licenses transmission; the planned endorsement vouches for expertise. Confirm you want the word ijaza used for it.
@@ -1371,3 +1467,6 @@ Every other value in `src/db/schema/enums.ts` is explained by an entry above (se
 | `motif_category.WISDOM` | plain language | Plain topic label (wisdom literature). |
 | `motif_category.PERSIAN_INFLUENCE` | plain language | Plain topic label. |
 | `motif_category.COSMOLOGY` | plain language | Plain topic label. |
+| `report_correspondence_scope.same_work` | plain language | Shown as “within one work”. |
+| `report_correspondence_scope.cross_work_same_tradition` | plain language | Shown as “across works of one tradition”. |
+| `report_correspondence_scope.cross_tradition` | plain language | Shown as “across traditions”. |

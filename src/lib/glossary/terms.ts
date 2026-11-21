@@ -1206,7 +1206,51 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     enumValues: ['calendar.hijri'],
   },
 
+  {
+    slug: 'era',
+    section: 'comparative',
+    term: 'Era',
+    definition: 'A named stretch of years, such as a caliphate or the lifetimes of the Imams, used to place a narrator’s life in its time.',
+    inArchive:
+      'Eras have neutral descriptive names; a tradition’s own name for a period is listed beside it with who uses it. A disputed start or end is kept as a range of years. Eras loaded from the seed are unverified until a curator cites them.',
+    acrossTraditions:
+      'Traditions divide and name the past differently: Sunni writers speak of the rightly guided caliphs, Imami writers of the presence and the occultation of the Imams, Zaydi and Ibadi writers of their own imamates. The archive shows each tradition’s periods in its own reckoning and makes none the default.',
+    related: ['hijri', 'ghayba', 'chronological-gap'],
+    aliases: ['epoch', 'period', 'ʿasr'],
+  },
+  {
+    slug: 'ghayba',
+    section: 'comparative',
+    term: 'ghayba',
+    english: 'occultation',
+    arabic: 'غيبة',
+    definition: 'In Imami belief, the hiddenness of the twelfth Imam, divided into a Lesser Occultation (260–329 AH) with four successive deputies and a Greater Occultation from 329 AH.',
+    inArchive: 'Shown as eras in Imami reckoning.',
+    related: ['era', 'imami'],
+    aliases: ['occultation', 'ghaybah', 'lesser occultation', 'greater occultation'],
+  },
+
   // ── Archive terms ───────────────────────────────────────────────────────────────────────────────
+  {
+    slug: 'chronological-gap',
+    section: 'archive',
+    term: 'Chronological note',
+    definition: 'A note that two consecutive narrators in a chain, as their dates or generations are recorded, do not seem to have overlapped.',
+    inArchive:
+      'Shown when one narrator’s earliest recorded birth is after the other’s latest recorded death, or when their recorded generations are more than one step apart. Each note names where each date comes from. It is information about the records, which may themselves be wrong or may name the wrong person, and never a ruling on the chain.',
+    related: ['tabaqa', 'era', 'basis', 'munqati'],
+    aliases: ['gap', 'chronological gap', 'lifespans do not overlap'],
+  },
+  {
+    slug: 'unverified-seed',
+    section: 'archive',
+    term: 'Seed, unverified',
+    definition: 'A starting record (an event, place or era) entered before any curator review, with no citation yet.',
+    inArchive:
+      'Seed records are labelled “seed, unverified” and are never public. Once a curator edits or reviews one, later reloads of the seed leave it alone.',
+    related: ['unreviewed', 'citation', 'era'],
+    aliases: ['seed', 'seed data'],
+  },
   {
     slug: 'source-work',
     section: 'archive',
@@ -1264,7 +1308,7 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     term: 'Basis',
     definition: 'The reason the archive gives for connecting a name in a chain to a particular narrator.',
     inArchive:
-      'The labels are: confirmed by source and text; a curator’s decision; source index; matched by name; matched by kunya only; and not yet identified. When candidates disagree, all of them are kept.',
+      'The labels are: verified by a reviewer; machine-reviewed (matches the source’s index and the text); source index; matched by name; matched by kunya only; and not yet identified. When candidates disagree, all of them are kept. A kunya-only match is shown as a note beside other candidates and never counts as a disagreement.',
     related: [
       'confirmed-by-source-and-text',
       'identity-decision',
@@ -1277,21 +1321,22 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
   {
     slug: 'confirmed-by-source-and-text',
     section: 'archive',
-    term: 'Confirmed by source and text',
+    term: 'Machine-reviewed',
+    english: 'matches the source’s index and the text',
     definition:
-      'The source’s own narrator index names this person at this position, and the name written in the Arabic agrees with it.',
-    inArchive: 'One of the two bases that may set a verified narrator link; the other is a curator’s decision.',
+      'A machine check found that the source’s own narrator index names this person at this position and that the name written in the Arabic agrees with it.',
+    inArchive:
+      'The archive’s top automatic tier, shown as “machine-reviewed”, never as verified: a sample found about one in twenty of these wrong where two people share a name. It stands only when no other match names someone else (a kunya-only match does not count against it). Teacher-to-student links built from it are machine-reviewed too. Only a reviewer’s decision is called verified.',
     related: ['basis', 'source-index', 'identity-decision'],
+    aliases: ['confirmed by source and text', 'machine review', 'AI review'],
     enumValues: ['mention_candidate_basis.source_index_confirmed_by_text'],
-    ownerReview:
-      'Written from the schema (the source_index_confirmed_by_text basis and its “verified basis” flag) before the identity screens were finished; confirm it matches the label shown to readers.',
   },
   {
     slug: 'source-index',
     section: 'archive',
     term: 'Source index',
     definition: 'An identification taken from the source’s own list of narrator IDs for a report, without confirmation from the Arabic text.',
-    inArchive: 'A source index is the source’s claim, not the archive’s; it is shown as such and not treated as verified.',
+    inArchive: 'A source index is the source’s claim, not the archive’s; it is shown as such and is neither machine-reviewed nor verified.',
     related: ['basis', 'confirmed-by-source-and-text', 'candidate'],
     enumValues: ['mention_candidate_basis.source_index', 'mention_resolution.source_index', 'resolution_basis.source_index'],
   },
@@ -1317,7 +1362,7 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     term: 'Matched by kunya only',
     definition: 'The only match is on a kunya, which many narrators share, so the identification is uncertain.',
     inArchive:
-      'Shown with a marker as a lower-confidence match and excluded from the archive’s list of verified teacher-to-student transmissions.',
+      'Shown as a labelled note beside any other match, never as a disagreement, and ignored when deciding which identity stands and in every analysis, including the teacher-to-student network.',
     related: ['kunya', 'single-name-mention', 'basis'],
     enumValues: ['mention_candidate_basis.name_kunya_only'],
     ownerReview:
@@ -1342,11 +1387,12 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     slug: 'identity-decision',
     section: 'archive',
     term: 'Identity decision',
+    english: 'verified by a reviewer',
     definition: 'A curator’s recorded judgement of who a name in a chain refers to, in a given context, with the reviewer named.',
     inArchive:
       'A decision applies to every mention of the same name with the same teacher (and, where needed, the same student) in the same work. Decisions about kunya-only, epithet-only or cross-tradition names need a citation.',
     related: ['review-unit', 'basis', 'curator', 'mushtarak'],
-    aliases: ['curator decision', 'reviewer decision'],
+    aliases: ['curator decision', 'reviewer decision', 'verified by a reviewer'],
     enumValues: [
       'mention_candidate_basis.reviewer_decision',
       'mention_resolution.human_verified',
@@ -1413,12 +1459,85 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     enumValues: ['evidence_review_state.candidate_only'],
   },
   {
+    slug: 'report-correspondence',
+    section: 'archive',
+    term: 'Telling (corresponding report)',
+    definition:
+      'Another report, in this or another work or tradition, whose wording overlaps this one closely enough that it may be the same report told again.',
+    inArchive:
+      'Found by a machine comparison of the report texts with the chains removed (shared five-letter sequences), then shown as machine-found and unreviewed unless a reviewer confirmed it. A reader sees same wording, variant wording at 40 percent shared wording or more, and a shared passage covering 70 percent or more of the shorter text; a reviewer’s confirmation shows a pair at any score and a rejection hides it. It is evidence that two reports correspond, not a ruling that they are one hadith, and it says nothing about which telling is earlier or more authentic. Each telling keeps its own chains, tradition and work.',
+    related: ['same-wording', 'variant-wording', 'shared-passage', 'correspondence-decision', 'matn', 'isnad'],
+    aliases: ['telling', 'tellings', 'variant', 'parallel report', 'textual overlap', 'shawahid'],
+    enumValues: [
+      'report_correspondence_basis.textual_overlap',
+    ],
+  },
+  {
+    slug: 'same-wording',
+    section: 'archive',
+    term: 'Same wording',
+    definition: 'Two report texts that are nearly identical letter for letter, once the chains are set aside.',
+    inArchive: 'At least 80 percent of their letter sequences are shared.',
+    related: ['report-correspondence', 'variant-wording'],
+    enumValues: ['report_correspondence_class.same_wording', 'report_correspondence_reviewed_relation.same_wording'],
+  },
+  {
+    slug: 'variant-wording',
+    section: 'archive',
+    term: 'Variant wording',
+    definition: 'Two texts that tell what appears to be the same report with differences of wording, order or length.',
+    inArchive: 'Shown to readers from 40 percent shared wording; lower scores are kept for reviewers.',
+    related: ['report-correspondence', 'same-wording', 'shared-passage'],
+    enumValues: [
+      'report_correspondence_class.same_report_variant_wording',
+      'report_correspondence_reviewed_relation.same_report_variant_wording',
+    ],
+  },
+  {
+    slug: 'shared-passage',
+    section: 'archive',
+    term: 'Shares a passage',
+    definition: 'One text contains a passage of the other, for example a saying quoted inside a longer report.',
+    inArchive: 'Shown to readers when the passage covers 70 percent or more of the shorter text.',
+    related: ['report-correspondence', 'variant-wording'],
+    aliases: ['partial overlap'],
+    enumValues: ['report_correspondence_class.partial_overlap', 'report_correspondence_reviewed_relation.partial_overlap'],
+  },
+  {
+    slug: 'correspondence-decision',
+    section: 'archive',
+    term: 'Correspondence decision',
+    definition: 'A reviewer’s judgement on a machine-found pair of reports: confirmed, rejected, or uncertain.',
+    inArchive:
+      'A decision is tied to the exact Arabic the reviewer read; if either text changes, the pair goes back for review. Earlier decisions are kept, never deleted.',
+    related: ['report-correspondence', 'curator', 'human-verified'],
+    enumValues: [
+      'report_correspondence_decision.confirmed',
+      'report_correspondence_decision.rejected',
+      'report_correspondence_decision.uncertain',
+    ],
+  },
+  {
+    slug: 'shared-formula-only',
+    section: 'archive',
+    term: 'Shared formula, verse or ruling',
+    definition:
+      'A reviewer’s reading that two texts overlap only in a common formula (such as the shahada), a Quran verse, or the same ruling attributed to a different speaker, so they are not one report.',
+    inArchive: 'Recorded with a rejection or an uncertain decision, never with a confirmation.',
+    related: ['correspondence-decision', 'report-correspondence'],
+    enumValues: [
+      'report_correspondence_reviewed_relation.shared_formula_only',
+      'report_correspondence_reviewed_relation.shared_quran_quotation',
+      'report_correspondence_reviewed_relation.same_ruling_different_attribution',
+    ],
+  },
+  {
     slug: 'chain-status',
     section: 'archive',
     term: 'Chain status',
     definition: 'How much of a report’s chain the archive has identified.',
     inArchive:
-      'Complete: every name is a verified link. Partial: some are. Unresolved: none are yet. No chain in source: the work gives none (for example the sermons of Nahj al-Balagha). Not extracted: the chain could not be read from the text. In every case the chain is shown as written.',
+      'Complete: every name has an identity (machine-reviewed or verified by a reviewer). Partial: some do. Unresolved: none are yet. No chain in source: the work gives none (for example the sermons of Nahj al-Balagha). Not extracted: the chain could not be read from the text. In every case the chain is shown as written.',
     related: ['isnad', 'mention', 'basis'],
     enumValues: [
       'chain_status.complete',

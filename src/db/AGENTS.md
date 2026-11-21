@@ -8,7 +8,7 @@ the rationale that code comments point to, plus every decision taken while imple
 
 | Path | What |
 | --- | --- |
-| `schema/enums.ts` | All 35 enums of section 5.2 |
+| `schema/enums.ts` | The 35 enums of section 5.2, the two identity-candidate enums (0006) and the five correspondence enums (0007) |
 | `schema/columns.ts` | Pipeline, curation and link bookkeeping column groups; `restrictForeignKey`; `isLive` |
 | `schema/operations.ts` | `dataset_versions`, `curation_audit` |
 | `schema/corpus.ts` | traditions, sources, collections, collection_rights, books, chapters, hadiths, translations; `public_hadiths`, `public_translations` view declarations |
@@ -19,6 +19,7 @@ the rationale that code comments point to, plus every decision taken while imple
 | `schema/history.ts` | locations, historical_events, narrator_events, narrator_locations; `published_historical_events` declaration |
 | `schema/commentary.ts` | commentaries, commentary_hadiths, commentary_narrators |
 | `schema/comparative.ts` | religious_traditions, schools_of_thought, source_texts, cross_parallels, motif_tags, four link tables |
+| `schema/correspondence.ts` | report_correspondence_candidates, report_correspondence_cluster_members, report_correspondence_decisions; `report_correspondence_shown_pairs`, `report_correspondence_display`, `public_report_correspondences` declarations |
 | `client.ts` | The app's only client (server-only, lazy, globalThis-cached, max 5) |
 | `connection-options.ts` | `DATABASE_URL` check and TLS rule, shared by client, migrator and verify |
 | `migrate.ts` | Programmatic migrator (`npm run db:migrate`); the pre-deploy command bundles it to `migrate.mjs` |
@@ -41,9 +42,14 @@ Derived columns on pipeline tables (`chain_mentions.narrator_id/resolution/link_
 the loader and by the SQL functions. Facet defaults are the worst state, so a freshly inserted row is never
 shown as better than it is.
 
-## Verified link (one predicate, three places)
+## Standing identity (one predicate, three places)
 
-Since `0006`: a mention is a verified link when `resolution in ('source_index','human_verified','derived_relation_verified')`
+Naming (owner, 2026-11-21): the automatic top tier is **machine-reviewed**, never "verified"; a sample found about 5%
+of it wrong where two people share a name. "Verified" is reserved for a reviewer's decision. Enum values and column
+names (`verified_link_count`, `verified_basis`, `human_verified`) are unchanged; every reader-facing label and doc uses the
+new words, and the teacher-student network built from this tier is machine-reviewed.
+
+Since `0006`: a mention has a standing identity (what the code calls a verified link) when `resolution in ('source_index','human_verified','derived_relation_verified')`
 and `narrator_id` points at a live narrator. `exact_registry` is no longer in the list: a name match is a candidate,
 never a link. The predicate is written in `public_chain_links` and twice in `refresh_publication_facets` (all three
 redefined in `0006_mention_identity_candidates.sql`); `db:verify` fails if the view still names `exact_registry`.
@@ -71,7 +77,9 @@ rows through (b).
   (`resolution = 'source_index'`, `resolution_basis = 'source_index'`, `extraction_method =
   'source_index_confirmed_by_text'`, confidence 1.0); a reviewer decision writes the rest. A name match, a kunya-only
   match and an unconfirmed source index never do. A confirmed but contested mention stays `unresolved` with both
-  candidates shown (`verified_narrator` in `export_postgres.py`).
+  candidates shown (`verified_narrator` in `export_postgres.py`). **A kunya-only candidate never contests** (owner,
+  2026-11-21): it is a label shown beside the other candidates and ignored when deciding whether the identity stands
+  and in every analysis; 1,328 mentions gained their machine-reviewed identity with this rule.
 - **`narrators.placeholder_reason`** (pipeline): `registry_placeholder_reason` of the lexicon row, so the
   "never a placeholder target" rule is checkable in SQL.
 - **`public_chain_mention_candidates`**: every candidate of a public mention with `basis`, `detail` and
@@ -79,7 +87,29 @@ rows through (b).
   `public_chain_links.narrator_id` or `narrator_transmissions`.
 - **Load invariants** (`load/verify-data.ts`): candidate on a live mention of the same hadith naming a live narrator;
   no placeholder target except `name_kunya_only`, which targets only `kunya_only_name` rows; no name basis on a
-  non-Sunni report; an automatic `narrator_id` has its confirming candidate and is uncontested.
+  non-Sunni report; an automatic `narrator_id` has its confirming candidate and no non-kunya candidate contests it.
+
+## Report correspondences (0007; design §5.5.1)
+
+Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
+linked, never narrators or chains. One writer per table: the loader writes candidates and cluster members; curators
+write decisions.
+
+- **Pair order is byte order.** `hadith_id_a < hadith_id_b` is checked `collate "C"`: the database collation
+  (`en_US.utf8`) ignores punctuation at the first level, so it can order `hadith:k6:…` ids differently from the Python
+  job. `orderPair` in `queries/correspondence-decisions.ts` orders by bytes too.
+- **Hash binding, twice.** The projection drops (and counts) a pair whose Arabic hash differs from the loaded text; the
+  display rule also joins both hashes, so a text changed by a later load hides the pair until it is rebuilt. A decision
+  binds to the hashes the reviewer read and applies only while both still match: re-queued, never silently reapplied.
+- **One display rule.** `report_correspondence_shown_pairs` (confirmed at any score; else same wording, variant at
+  Jaccard >= 0.4, partial at containment >= 0.7, unless rejected). `report_correspondence_display` is both directions;
+  `public_report_correspondences` adds the public gate. All three are written without CTEs: a CTE referenced twice is
+  materialized whole, which would scan every pair for one report's family.
+- **Decision semantics.** `confirmed` means one report or passage; a confirmation may carry only a machine class as its
+  reading (check). `same_ruling_different_attribution`, `shared_formula_only`, `shared_quran_quotation` go with a
+  rejection or uncertain. Revising retires the live row and points the new one at it (`supersedes_decision_id`).
+- **FK names.** The two pipeline tables pass a short prefix (`report_corr_*`) to `pipelineBookkeepingForeignKeys`: the
+  full table names push the generated names past Postgres's 63 bytes (decision 4 below), which `db:verify` caught.
 
 ## Migrations
 
@@ -91,7 +121,10 @@ rows through (b).
   `0002_table_storage` (fillfactor 90) -> `0003_views` -> `0004_functions` -> `0005` (research feature removed) ->
   `0006_mention_identity_candidates` (generated table, enums and column, then hand-written: `public_chain_links`
   and `refresh_publication_facets` redefined, `public_chain_mention_candidates` created, `narrator_transmissions`
-  dropped and recreated with its two indexes).
+  dropped and recreated with its two indexes) -> `0007_report_correspondences` (generated tables and enums, then the
+  three hand-written views) -> `0008_epochs` (the history lane's pending `epochs` table and `published_epochs` view,
+  promoted from `ops/pending/`; idempotent). A `--custom` generate snapshots the previous schema: after promoting a
+  table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.
 - Expand only (section 2.6). Views written as `select h.*` freeze their column list at creation: adding a

@@ -27,6 +27,8 @@ export interface DataCheckReport {
 /** Verified-link resolutions since 0006 (src/db/AGENTS.md §Verified link). A name match is never one. */
 const RENDERING_RESOLUTIONS = `('source_index', 'human_verified', 'derived_relation_verified')`;
 const NAME_BASES = `('name_exact', 'name_spelling_fold', 'name_kunya_only')`;
+/** grading-recovery's NON_RULING_CLASSES keys (whitespace removed, Persian ya and kaf folded); the projection excludes them. */
+const NON_RULING_TERMS = `('لميخرجه', 'لميذكره', 'لميذكرعندهشيء', 'لميذكرالطريق', 'لميحقق', 'لاواسطة', 'سكتعنه', 'كالسابق', 'كالسابقأيضا', 'مثلالسندالسابق', 'بالسندالسابق')`;
 
 async function scalar(sql: LoaderSql, query: string): Promise<number> {
   const [row] = await sql.unsafe<{ value: number }[]>(query);
@@ -161,11 +163,11 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
            and c.narrator_id = m.narrator_id and c.basis = 'source_index_confirmed_by_text'))`,
   );
   await check(
-    'an automatic verified link is uncontested: no live candidate of that mention names someone else',
+    'an automatic (machine-reviewed) link is uncontested: no live non-kunya candidate of that mention names someone else',
     `select count(*)::int as value from chain_mentions m
      where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
        and exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
-                     and c.narrator_id <> m.narrator_id)`,
+                     and c.narrator_id <> m.narrator_id and c.basis <> 'name_kunya_only')`,
   );
   await check(
     'live decisions have a reviewer and time; no derived_relation decision has the coarse scope',
@@ -229,6 +231,47 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     `select count(*)::int as value from narrator_transmissions
      where temporal_plausibility is null or confidence is null or cardinality(extraction_methods) = 0`,
   );
+  // Matn (review 2026-11-21): a stored matn is the report's own, its Arabic letters inside the report's own text.
+  await check(
+    'a stored matn is contained in its own report text (Arabic letters compared)',
+    `select count(*)::int as value from hadiths
+     where retired_at is null and matn_ar is not null
+       and strpos(regexp_replace(coalesce(text_ar, ''), '[^ء-ي]', '', 'g'), regexp_replace(matn_ar, '[^ء-ي]', '', 'g')) = 0`,
+  );
+  await check(
+    'no non-ruling (not included, silent, back-reference) stored as an assessment',
+    `select count(*)::int as value from hadith_assessments where retired_at is null
+       and regexp_replace(translate(grade_raw, 'یک', 'يك'), '[^ء-ي]', '', 'g') in ${NON_RULING_TERMS}`,
+  );
+  // Report correspondences (src/db/AGENTS.md §Report correspondences).
+  await check(
+    'correspondence candidates: both reports live and distinct, ordered a < b, bound to the loaded Arabic',
+    `select count(*)::int as value from report_correspondence_candidates c
+     left join hadiths a on a.id = c.hadith_id_a and a.retired_at is null
+     left join hadiths b on b.id = c.hadith_id_b and b.retired_at is null
+     where c.retired_at is null
+       and (a.id is null or b.id is null or not (c.hadith_id_a collate "C" < c.hadith_id_b collate "C")
+            or c.arabic_sha256_a <> a.arabic_sha256 or c.arabic_sha256_b <> b.arabic_sha256)`,
+  );
+  await check(
+    'correspondence cluster members name live reports, and every live candidate pair has both reports as members',
+    `select (select count(*) from report_correspondence_cluster_members m
+             left join hadiths h on h.id = m.hadith_id and h.retired_at is null
+             left join hadiths s on s.id = m.star_centre_hadith_id and s.retired_at is null
+             where m.retired_at is null and (h.id is null or s.id is null))
+          + (select count(*) from report_correspondence_candidates c
+             where c.retired_at is null and exists (
+               select 1 from (values (c.hadith_id_a), (c.hadith_id_b)) side(id)
+               where not exists (select 1 from report_correspondence_cluster_members m
+                                 where m.retired_at is null and m.method_version = c.method_version and m.hadith_id = side.id)))
+          as value`,
+  );
+  await check(
+    'correspondence decisions: at most one live per pair, ordered a < b, both reports exist',
+    `select count(*)::int as value from report_correspondence_decisions d
+     left join hadiths a on a.id = d.hadith_id_a left join hadiths b on b.id = d.hadith_id_b
+     where d.retired_at is null and (a.id is null or b.id is null or not (d.hadith_id_a collate "C" < d.hadith_id_b collate "C"))`,
+  );
   checks.push(...(await orphanForeignKeyChecks(sql)));
 
   if (options.expectedLiveRows) {
@@ -276,6 +319,13 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        where c.retired_at is null group by 1, 2 order by 1, 2`,
     ),
     transmissions: await scalar(sql, 'select count(*)::int as value from narrator_transmissions'),
+    report_correspondences: await sql.unsafe(
+      `select c.scope, c.relation_class, count(*)::int as pairs,
+              count(*) filter (where s.candidate_id is not null)::int as shown
+       from report_correspondence_candidates c
+       left join report_correspondence_shown_pairs s on s.candidate_id = c.id
+       where c.retired_at is null group by 1, 2 order by 1, 2`,
+    ),
     server_settings: await sql.unsafe(
       `select name, setting, unit from pg_settings where name in ('max_connections', 'shared_buffers') order by name`,
     ),

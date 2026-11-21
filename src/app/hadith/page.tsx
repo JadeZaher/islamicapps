@@ -2,7 +2,9 @@ export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { searchPublicHadiths } from '@/db/queries/hadith';
+import { searchVisibleHadiths } from '@/db/queries/hadith';
+import { requestVisibility } from '@/lib/auth/visibility';
+import { hadithPath } from '@/lib/hadith-address';
 import { ArabicText } from '@/components/ArabicText';
 import { EmptyState } from '@/components/EmptyState';
 import { BilingualTitle } from '@/components/NarratorName';
@@ -30,8 +32,8 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
   const q = params.q?.trim() ?? '';
   const tradition = params.tradition ?? '';
 
-  // Public views only; an unknown tradition value gives an empty page, never an error.
-  const result = await searchPublicHadiths(q, { tradition: tradition || undefined }, { page });
+  // Public views (or curator preview); an unknown tradition value gives an empty page, never an error.
+  const result = await searchVisibleHadiths(q, { tradition: tradition || undefined }, { page }, await requestVisibility());
   const hadiths = result.items;
 
   const traditionHref = (value: string) => {
@@ -110,7 +112,7 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
             return (
               <li key={hadith.id}>
                 <Link
-                  href={`/hadith/${encodeURIComponent(hadith.id)}`}
+                  href={hadithPath(hadith.id)}
                   className="block px-3 py-4 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">

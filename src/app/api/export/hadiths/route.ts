@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { EXPORT_EDGE_KEYS, EXPORT_FIELD_KEYS, exportColumns, exportHadithBatches } from '@/db/queries/hadith-export-review';
 import { requireCurator, UnauthorizedError } from '@/lib/auth/require-curator';
+import { authEnabled } from '@/lib/auth/switches';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,7 @@ const csvLines = (rows: Record<string, string>[], columns: string[]) =>
   rows.map((row) => columns.map((column) => csvCell(row[column] ?? '')).join(',') + '\r\n').join('');
 
 export async function GET(request: NextRequest) {
+  if (!authEnabled()) return new NextResponse('Not found', { status: 404 });
   try {
     await requireCurator();
   } catch (error) {

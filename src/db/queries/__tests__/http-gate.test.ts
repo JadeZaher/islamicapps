@@ -299,6 +299,8 @@ async function main() {
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     DATABASE_URL: fixture.url,
+    // Today's curator behaviour runs only with the switch on (src/lib/auth/AGENTS.md §Switches).
+    AUTH_ENABLED: '1',
     ADMIN_SESSION_SECRET: 'http-gate-session-secret-'.padEnd(48, 'y'),
     CURATOR_PASSPHRASES: JSON.stringify({ [CURATOR]: await hashPassphrase(PASSPHRASE) }),
     NEO4J_URL: 'bolt://127.0.0.1:1',

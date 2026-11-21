@@ -229,3 +229,37 @@ export const schoolCategoryEnum = pgEnum('school_category', [
 ]);
 
 export const recordOriginEnum = pgEnum('record_origin', ['manual', 'seed', 'ai_research', 'neo4j_migration']);
+
+/** How two reports' matns overlap (report-correspondence job; see src/db/AGENTS.md §Report correspondences). */
+export const reportCorrespondenceClassEnum = pgEnum('report_correspondence_class', [
+  'same_wording',
+  'same_report_variant_wording',
+  'partial_overlap',
+]);
+
+/** Where a correspondence candidate comes from. Only letter-shingle overlap exists today. */
+export const reportCorrespondenceBasisEnum = pgEnum('report_correspondence_basis', ['textual_overlap']);
+
+/** Whether the two reports sit in one work, two works of one tradition, or two traditions. */
+export const reportCorrespondenceScopeEnum = pgEnum('report_correspondence_scope', [
+  'same_work',
+  'cross_work_same_tradition',
+  'cross_tradition',
+]);
+
+/** A reviewer's decision on one report pair. */
+export const reportCorrespondenceDecisionEnum = pgEnum('report_correspondence_decision', [
+  'confirmed',
+  'rejected',
+  'uncertain',
+]);
+
+/** The reviewer's reading of the pair: the three machine classes plus three readings that are not one report. */
+export const reportCorrespondenceReviewedRelationEnum = pgEnum('report_correspondence_reviewed_relation', [
+  'same_wording',
+  'same_report_variant_wording',
+  'partial_overlap',
+  'same_ruling_different_attribution',
+  'shared_formula_only',
+  'shared_quran_quotation',
+]);

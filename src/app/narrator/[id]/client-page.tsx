@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { hadithPath } from '@/lib/hadith-address';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { TabaqahTimeline } from '@/components/TabaqahTimeline';
-import { HistoricalTimeline, type HistoricalTimelineEvent } from '@/components/HistoricalTimeline';
 import { CommentarySection } from '@/components/CommentarySection';
 import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/components/TraditionBadge';
 import { ConsensusBadge } from '@/components/ConsensusBadge';
@@ -14,36 +13,13 @@ import type { NarratorVerdict } from '@/db/queries/contracts';
 import { VerdictsByTradition } from './components/VerdictsByTradition';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
-/** Says whether a life date is backed by a reviewed citation; unreviewed dates stay visible but labelled. */
-function DateEvidence({
-    sourceText,
-    provenance,
-    reviewStatus,
-}: {
-    sourceText?: string;
-    provenance?: string;
-    reviewStatus?: string;
-}) {
-    const reviewed = (reviewStatus === 'human_verified' || reviewStatus === 'source_verified') && Boolean(provenance);
-    return (
-        <p className="text-xs text-slate-500">
-            {reviewed ? `Source: ${provenance}` : 'Unverified: no reviewed citation'}
-            {sourceText && <> · as written: <span dir="auto">{sourceText}</span></>}
-        </p>
-    );
-}
-
 function SectionHeading({ children }: { children: React.ReactNode }) {
     return <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{children}</h2>;
 }
 
-function formatYear(hijri?: number, gregorian?: number): string | null {
-    if (hijri === undefined && gregorian === undefined) return null;
-    if (hijri === undefined) return `${gregorian} CE`;
-    return gregorian === undefined ? `${hijri} AH` : `${hijri} AH (${gregorian} CE)`;
-}
-
 export interface NarratorClientPageProps {
+    /** Server-rendered life-and-times section (dates, generation, places, eras, events); replaces the old Life block. */
+    lifeAndTimes?: ReactNode;
     /** Published verdicts; shown grouped by tradition above the tabs. */
     verdicts?: NarratorVerdict[];
     narratorDetails: {
@@ -124,7 +100,6 @@ export interface NarratorClientPageProps {
         reference?: string;
         type: 'HADITH_COMMENTARY' | 'NARRATOR_BIOGRAPHY' | 'CHAIN_ANALYSIS' | 'OTHER';
     }>;
-    historicalEvents?: HistoricalTimelineEvent[];
     traditionConnections?: {
         traditions: Array<{ id: string; name: string; name_arabic?: string; description?: string }>;
         hadiths_with_parallels: Array<{
@@ -149,32 +124,23 @@ const LINK_ROW_CLASS =
 export default function NarratorClientPage({
     narratorDetails,
     verdicts = [],
+    lifeAndTimes,
     narratorNetwork,
     commentaries = [],
-    historicalEvents = [],
     traditionConnections,
 }: NarratorClientPageProps) {
-    const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
-
     const teachers = narratorNetwork?.teachers ?? [];
     const students = narratorNetwork?.students ?? [];
     const hasNetwork = teachers.length > 0 || students.length > 0;
-    const hasTimeline = historicalEvents.length > 0;
     const otherHadiths = narratorDetails.other_hadiths ?? [];
     // The upstream query is LIMIT 100: a full page means "at least 100", not exactly 100.
     const hadithCountLabel = otherHadiths.length >= HADITH_QUERY_LIMIT ? `${HADITH_QUERY_LIMIT}+` : String(otherHadiths.length);
     const hasTraditions = Boolean(traditionConnections && traditionConnections.traditions.length > 0);
 
-    // v2 rows carry death_date_*; v1 rows carry death_year_*. Unknown stays undefined.
-    const deathYearHijri = narratorDetails.death_year_hijri ?? narratorDetails.death_date_hijri;
-    const deathYearGregorian = narratorDetails.death_year_gregorian ?? narratorDetails.death_date_gregorian;
-    const born = formatYear(narratorDetails.birth_year_hijri, narratorDetails.birth_year_gregorian);
-    const died = formatYear(deathYearHijri, deathYearGregorian);
-
     const summary = narratorDetails.bio_summary || narratorDetails.biographical_narrative || narratorDetails.bio;
     const hasAssessment = !narratorDetails.is_prophet &&
         Boolean(narratorDetails.reliability_consensus || narratorDetails.bio_tadil || narratorDetails.bio_jarh);
-    const hasOtherTabs = hasNetwork || otherHadiths.length > 0 || hasTimeline || commentaries.length > 0 || hasTraditions;
+    const hasOtherTabs = hasNetwork || otherHadiths.length > 0 || commentaries.length > 0 || hasTraditions;
     const isSparse = !summary && !hasAssessment && !hasNetwork && otherHadiths.length === 0;
 
     return (
@@ -187,7 +153,6 @@ export default function NarratorClientPage({
                     <TabsTrigger value="biography" className={TAB_TRIGGER_CLASS}>Biography</TabsTrigger>
                     {hasNetwork && <TabsTrigger value="network" className={TAB_TRIGGER_CLASS}>Teachers and students</TabsTrigger>}
                     {otherHadiths.length > 0 && <TabsTrigger value="hadiths" className={TAB_TRIGGER_CLASS}>Hadith ({hadithCountLabel})</TabsTrigger>}
-                    {hasTimeline && <TabsTrigger value="timeline" className={TAB_TRIGGER_CLASS}>Historical events</TabsTrigger>}
                     {commentaries.length > 0 && <TabsTrigger value="commentaries" className={TAB_TRIGGER_CLASS}>Commentary</TabsTrigger>}
                     {hasTraditions && <TabsTrigger value="traditions" className={TAB_TRIGGER_CLASS}>Other traditions</TabsTrigger>}
                 </TabsList>
@@ -260,43 +225,7 @@ export default function NarratorClientPage({
                     </section>
                 )}
 
-                <section>
-                    <SectionHeading>Life</SectionHeading>
-                    <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-sm">
-                        <dt className="text-slate-500">Born</dt>
-                        <dd className="text-slate-200">
-                            {born ?? <span className="text-slate-500">Unknown</span>}
-                            {born && (
-                                <DateEvidence
-                                    sourceText={narratorDetails.birth_date_source_text}
-                                    provenance={narratorDetails.birth_date_provenance}
-                                    reviewStatus={narratorDetails.birth_date_review_status}
-                                />
-                            )}
-                        </dd>
-                        <dt className="text-slate-500">Died</dt>
-                        <dd className="text-slate-200">
-                            {died ?? <span className="text-slate-500">Unknown</span>}
-                            {died && (
-                                <DateEvidence
-                                    sourceText={narratorDetails.death_date_source_text}
-                                    provenance={narratorDetails.death_date_provenance}
-                                    reviewStatus={narratorDetails.death_date_review_status}
-                                />
-                            )}
-                        </dd>
-                        <dt className="text-slate-500">Generation</dt>
-                        <dd className="text-slate-200">
-                            <TabaqahTimeline currentTabaqah={narratorDetails.tabaqah} />
-                        </dd>
-                        {narratorDetails.geographic_region && (
-                            <>
-                                <dt className="text-slate-500">Region</dt>
-                                <dd className="text-slate-200">{narratorDetails.geographic_region}</dd>
-                            </>
-                        )}
-                    </dl>
-                </section>
+                {lifeAndTimes}
 
                 {isSparse && (
                     <EmptyState
@@ -305,18 +234,6 @@ export default function NarratorClientPage({
                     />
                 )}
             </TabsContent>
-
-            {hasTimeline && (
-                <TabsContent value="timeline">
-                    <HistoricalTimeline
-                        events={historicalEvents}
-                        narratorBirthYear={narratorDetails.birth_year_hijri}
-                        narratorDeathYear={deathYearHijri}
-                        onEventSelect={setSelectedEvent}
-                        selectedEventId={selectedEvent}
-                    />
-                </TabsContent>
-            )}
 
             {hasNetwork && (
                 <TabsContent value="network" className="grid grid-cols-1 gap-10 md:grid-cols-2">
@@ -354,7 +271,7 @@ export default function NarratorClientPage({
                     <ul className="divide-y divide-slate-800/70">
                         {otherHadiths.map((hadith) => (
                             <li key={hadith.id}>
-                                <Link href={`/hadith/${encodeURIComponent(hadith.id)}`} className={LINK_ROW_CLASS}>
+                                <Link href={hadithPath(hadith.id)} className={LINK_ROW_CLASS}>
                                     <span className="block font-medium text-slate-100">
                                         {hadith.title ? <BilingualTitle text={hadith.title} /> : 'Untitled hadith'}
                                     </span>
@@ -396,7 +313,7 @@ export default function NarratorClientPage({
                             <ul className="divide-y divide-slate-800/70">
                                 {traditionConnections.hadiths_with_parallels.map((item) => (
                                     <li key={`${item.hadith.id}:${item.parallel.id}`}>
-                                        <Link href={`/hadith/${encodeURIComponent(item.hadith.id)}`} className={LINK_ROW_CLASS}>
+                                        <Link href={hadithPath(item.hadith.id)} className={LINK_ROW_CLASS}>
                                             <span className="block font-medium text-slate-100">{item.hadith.title}</span>
                                             <span className="mt-2 flex flex-wrap gap-2">
                                                 <TraditionBadge tradition={item.tradition.name} />

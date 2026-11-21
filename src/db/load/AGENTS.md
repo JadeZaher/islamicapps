@@ -7,7 +7,7 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
 
 | File | What |
 | --- | --- |
-| `tables.ts` | The load contract: 18 pipeline tables in merge (FK) order, key columns, loader-derived columns |
+| `tables.ts` | The load contract: 20 pipeline tables in merge (FK) order, key columns, loader-derived columns |
 | `catalog.ts` | Reads `information_schema` and classifies each column (`csv`, `bookkeeping`, `generated`, `loader_derived`) |
 | `dump-catalog.ts` | Writes that classification as JSON for `export_postgres.py --catalog` |
 | `manifest.ts` | Re-checks the projection manifest (file hashes, headers, content hash, source bundle `import_ready`, input hash) |
@@ -16,7 +16,7 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
 | `verify-data.ts` | Section 11.4 data invariants; `verify-data-cli.ts` runs them on demand and exits 1 on failure |
 | `load.ts` | The orchestrator; `load-bundle.ts` is the `npm run db:load` CLI |
 | `run-heavy-indexes.ts` | Executes `src/db/ops/indexes-heavy.sql` outside a transaction and prints the index size |
-| `__tests__/load-flow.test.ts` | Flow test: a real four-tradition slice into a throwaway schema (`load_test_<hex>`) |
+| `__tests__/load-flow.test.ts` | Flow test: a real four-tradition slice into a throwaway schema (`load_test_<hex>`): load, zero-row reload, a cross-tradition correspondence pair bound to both hashes, then a second slice that retires one report and changes another (one updated row). A missing projection fails the test; it never skips |
 
 ## Order of a load (load.ts)
 
@@ -52,3 +52,19 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
   mention or narrator leaves the projection retires with it. Four checks guard the owner decisions of 2026-11-21
   (`verify-data.ts`, `src/db/AGENTS.md` §Identity candidates); `reported.identity_candidates` counts candidates per
   tradition and basis.
+- **Report correspondences** (`report_correspondence_candidates` by `id`, `report_correspondence_cluster_members` by
+  (`method_version`, `hadith_id`)) merge after `hadith_assessments`. A new method version retires the old pairs by
+  anti-join; reviewer decisions live in a curation table and are untouched. Three checks: both reports live and
+  distinct, ordered in byte order, bound to the loaded Arabic; members name live reports and cover every pair; one live
+  decision per pair. `reported.report_correspondences` counts pairs and shown pairs per scope and class.
+- **Matn and non-rulings** (review 2026-11-21): a stored `matn_ar` must sit inside its own text (Arabic letters
+  compared), and no non-ruling term is an assessment. The SQL list of non-ruling terms mirrors
+  `diagnostics/grading-recovery/build_hadith_assessment_rows.py` `NON_RULING_CLASSES` (folded keys); change both together.
+- **First load with these rules** (`load-6`, version `e2430eae…`): 14,214 hadiths updated (matn cleared), 1,328 mentions
+  gained a machine-reviewed identity (kunya-only no longer contests), 1,813 non-ruling assessments retired, 135,825 pairs
+  and 54,769 members inserted. Reload (`load-7-reload`) changed 0 rows.
+
+## Known limits
+
+- The loader refuses to run while any live `narrator_surface_decisions` row exists: decision replay
+  (`apply_decision(unit_id)`) is not written yet. Correspondence decisions do not block a load.

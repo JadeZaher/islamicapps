@@ -185,3 +185,81 @@ Known defects to fix in the ETL: 1,597 Sunni rows carry another report's matn
 (non-unique join on source and hadith number); 12,617 matn values still
 contain the chain; the census and audit count an empty chain as resolved;
 Riwayat labels Musnad Zayd and Musnad al-Rabi' as Sunni.
+
+## Owner decisions, second round (2026-11-21)
+
+- The repository stays public: the project is built in the open.
+- Main may deploy to the live site. Cutover happens at the next green join:
+  migrate and load the production database, record rights, then merge to
+  main and push. The live site then shows only rights-cleared works.
+- Rights cleared at cutover: the 23 works the register finds clear (20
+  classical Imami works from Thaqalayn, CC BY 4.0; Jami' al-Sahih, Musnad
+  Zayd and Sahifat al-Rida from OpenITI, CC BY-NC-SA), Arabic with the
+  required attribution, plus the project's own machine translations for
+  those works, labelled as unreviewed machine translation.
+- The archive is non-commercial; material derived from OpenITI texts is
+  published share-alike under the same licence.
+- Sunni Arabic: re-source from openly licensed copies (hadith-kg, OpenITI)
+  and send the permission requests in parallel. The owner sends the
+  requests; drafts are in docs/rights/rights-register.md.
+- Identity tiers: the automatic top tier is "machine-reviewed" (AI review),
+  never "verified". "Verified" is reserved for a decision by a permitted
+  human reviewer. The project is open source so that review can be open.
+- Kunya-only matches are a label only. They do not contest another identity
+  and are ignored for grading and analysis.
+- No human curators for now. The pipeline is the only writer on the
+  deployment and review is machine-only until a base is in place. The admin
+  stays locked (no curator configured).
+- The three access-denied curation files were not locked on purpose. The
+  owner unlocks them from an elevated shell; then they are backed up.
+
+## Owner decisions, third round (2026-11-21)
+
+- Rights: SETTLED. The owner holds permission with full scope. All 34 works
+  are cleared for publication, Arabic and English, with the attribution lines
+  the rights register words. Record every work as cleared at cutover. Do not
+  reopen or re-raise this.
+- Translation model pinned: `tencent/hy-mt2-30b-a3b` (OpenRouter) for
+  Arabic to English. A registry records which model did which work
+  (`datasets/hadith-data/model_registry.json`, `docs/models.md`).
+- Auth primitives stay in the code but off the front end, behind an enable
+  gate that defaults to off. No sign-in or admin surface is exposed while it
+  is off.
+- Rijal: a narrator may have many rijal entries. Each entry is kept under the
+  author and work it comes from (a "rijal author" root: Ibn Hajar, al-Mizzi,
+  al-Najashi, al-Tusi, and so on) and labelled by that author. Entries are
+  not collapsed to one per narrator, and an ambiguous link is kept as several
+  candidate entries rather than dropped.
+- Crediting every source is the most important requirement. Every kind of
+  borrowed material shows its credit where it appears: text source and work,
+  translator or translation model, grader, rijal author and book, the dataset
+  behind an identity claim. A missing credit is a defect.
+- Source credit is kept simple: one source-record reference page with a
+  source summary, and short link references (a source code and name)
+  wherever material appears.
+- Design direction: minimalist Swiss (International Typographic) style with
+  simple, ultra-flat geometric SVG. Strict grid, typography-led hierarchy,
+  near-black and off-white with one accent, flat fills, hairline rules, no
+  gradients, shadows or decorative cards. A project-wide design-system pass
+  applies it after the current wave lands.
+
+## Owner decisions, fourth round (2026-11-21)
+
+- The Imams' conventional kunyas in Imami chains (with the honorific marker)
+  identify that Imam and count toward the machine-reviewed tier. Ordinary
+  kunya-only names stay labels.
+- Two independent sources naming the same person (the six-books source index
+  and hadith-kg) count toward the machine-reviewed tier under their own
+  label, "two sources agree".
+- Lexicon dates, places and generations are shown on public narrator pages
+  with a "narrator lexicon, not yet cited" label and source reference. The 61
+  values that conflict with Taqrib are held back. Cited values are shown
+  alongside where they exist.
+- Deploy to the live site now and iterate. Later waves deploy as they land.
+- DESIGN.md at the repository root is the maintained design reference. It
+  builds on the owner's shared UI/UX guidance.
+
+State after this join: 45 tables and 10 views; migrations 0000 to 0008;
+the all-chains view, report correspondences, eras, source registry and
+credits, browse pages, stable report addresses, the auth switch (off by
+default) and the model registry are in.

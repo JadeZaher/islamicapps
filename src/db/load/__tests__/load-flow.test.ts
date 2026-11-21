@@ -12,7 +12,7 @@ import { developmentDatabaseUrl, openLoaderClient, type LoaderSql } from '../con
 import { loadProjection } from '../load';
 import { createThrowawaySchema, dropThrowawaySchema, throwawaySchemaName } from './throwaway-schema';
 
-const PROJECTION = process.env.LOAD_TEST_PROJECTION ?? 'datasets/hadith-data/development/pg-load-2026-11-21/projection-candidates';
+const PROJECTION = process.env.LOAD_TEST_PROJECTION ?? 'datasets/hadith-data/development/pg-load-2026-11-21/projection-v3';
 const SLICER = 'datasets/hadith-data/pg_export/slice_projection.py';
 
 interface Expectations {
@@ -21,17 +21,21 @@ interface Expectations {
   hadiths_by_tradition: Record<string, number>;
   chain: { id: string; surfaces: string[] };
   omitted_hadith: string | null;
+  changed_hadith: string | null;
+  correspondence_pair: string | null;
   hadith_ids: string[];
   hadiths_with_chains: string[];
 }
 
-function slice(output: string, omitHadith?: string): Expectations {
+function slice(output: string, omitHadith?: string, changeHadith?: string): Expectations {
   const args = [SLICER, '--projection', PROJECTION, '--output', output, '--per-tradition', '3'];
   if (omitHadith) args.push('--omit-hadith', omitHadith);
+  if (changeHadith) args.push('--change-hadith', changeHadith);
   execFileSync('python', args, { stdio: ['ignore', 'ignore', 'inherit'] });
   return JSON.parse(readFileSync(path.join(output, 'expectations.json'), 'utf8')) as Expectations;
 }
 
+// A missing projection fails the test: a skipped flow test reads as a pass and hides a broken loader.
 const projectionExists = existsSync(path.join(PROJECTION, 'canonical', 'manifest.json'));
 const schema = throwawaySchemaName();
 let admin: LoaderSql;
@@ -42,14 +46,16 @@ let firstDirectory: string;
 let secondDirectory: string;
 
 before(async () => {
-  if (!projectionExists) return;
+  assert.ok(projectionExists, `no projection at ${PROJECTION}: build it (pg_export/AGENTS.md) or set LOAD_TEST_PROJECTION`);
   const workspace = mkdtempSync(path.join(tmpdir(), 'load-flow-'));
   firstDirectory = path.join(workspace, 'slice-a');
   first = slice(firstDirectory);
-  // The second bundle omits one Sunni hadith that has a chain, so its chain, mentions and English must retire.
+  // The second bundle omits one Sunni hadith that has a chain (its chain, mentions and English must retire) and
+  // changes one other hadith's category (one updated row, everything else untouched).
   const omitted = first.hadiths_with_chains.find((id) => id.startsWith('hadith:k6:'))!;
+  const changed = first.hadith_ids.find((id) => id !== omitted && id.startsWith('hadith:thaqalayn:'))!;
   secondDirectory = path.join(workspace, 'slice-b');
-  second = slice(secondDirectory, omitted);
+  second = slice(secondDirectory, omitted, changed);
   const databaseUrl = developmentDatabaseUrl();
   admin = openLoaderClient(databaseUrl);
   await createThrowawaySchema(admin, schema);
@@ -57,7 +63,6 @@ before(async () => {
 });
 
 after(async () => {
-  if (!projectionExists) return;
   await loader?.end({ timeout: 5 });
   await dropThrowawaySchema(admin, schema);
   await admin?.end({ timeout: 5 });
@@ -70,7 +75,7 @@ const options = (projectionDirectory: string) => ({
   minimumLiveHadiths: 1,
 });
 
-test('a real four-tradition slice loads, reloads unchanged, and retires what a later bundle omits', { skip: !projectionExists }, async () => {
+test('a real four-tradition slice loads, reloads unchanged, and retires what a later bundle omits', async () => {
   // First load: every table gets exactly the slice's rows; the version becomes current and complete.
   const loaded = await loadProjection(loader, options(firstDirectory));
   assert.equal(loaded.mode, 'new');
@@ -101,9 +106,10 @@ test('a real four-tradition slice loads, reloads unchanged, and retires what a l
   const [{ visible }] = await loader.unsafe<{ visible: number }[]>('select count(*)::int as visible from public_hadiths');
   assert.equal(visible, 0);
 
-  // Identity candidates loaded with the slice; a disagreement keeps both identities and verifies neither.
+  // Identity candidates loaded with the slice; a disagreement keeps both identities and settles neither. A kunya-only
+  // candidate is a label, never a disagreement (owner decision 2026-11-21), so it is left out of the count.
   const [{ differing, differing_verified }] = await loader.unsafe<{ differing: number; differing_verified: number }[]>(
-    `with differing as (select mention_id from chain_mention_candidates where retired_at is null
+    `with differing as (select mention_id from chain_mention_candidates where retired_at is null and basis <> 'name_kunya_only'
                         group by mention_id having count(distinct narrator_id) > 1)
      select count(*)::int as differing,
             count(m.narrator_id)::int as differing_verified
@@ -111,6 +117,16 @@ test('a real four-tradition slice loads, reloads unchanged, and retires what a l
   );
   assert.ok(differing > 0, 'the slice includes a mention whose candidates disagree');
   assert.equal(differing_verified, 0);
+
+  // The cross-tradition correspondence pair loaded with both Arabic hashes bound to the loaded texts.
+  assert.ok(first.correspondence_pair, 'the slice includes a cross-tradition correspondence pair');
+  const [pair] = await loader.unsafe<{ bound: boolean; scope: string }[]>(
+    `select (c.arabic_sha256_a = a.arabic_sha256 and c.arabic_sha256_b = b.arabic_sha256) as bound, c.scope::text
+     from report_correspondence_candidates c join hadiths a on a.id = c.hadith_id_a join hadiths b on b.id = c.hadith_id_b
+     where c.id = $1`,
+    [first.correspondence_pair],
+  );
+  assert.deepEqual(pair, { bound: true, scope: 'cross_tradition' });
 
   // Reloading the same bundle changes zero rows.
   const reloaded = await loadProjection(loader, options(firstDirectory));
@@ -138,7 +154,17 @@ test('a real four-tradition slice loads, reloads unchanged, and retires what a l
   assert.equal(Number(live_dependents), 0);
   assert.ok(Number(retired_dependents) > 0, 'the omitted hadith had a chain that is now retired');
   const hadithMerge = third.merge.find((entry) => entry.table === 'hadiths')!;
-  assert.deepEqual([hadithMerge.inserted, hadithMerge.updated, hadithMerge.retired], [0, 0, 1]);
+  assert.deepEqual([hadithMerge.inserted, hadithMerge.updated, hadithMerge.retired], [0, 1, 1]);
+  const [{ category, changed_in }] = await loader.unsafe<{ category: string; changed_in: string }[]>(
+    'select category, changed_in_dataset_version_id as changed_in from hadiths where id = $1',
+    [second.changed_hadith],
+  );
+  assert.match(category, /\[changed by slice\]$/);
+  assert.equal(changed_in, second.content_sha256);
+  // Only the changed row and the omitted report's dependents moved; unrelated tables are untouched.
+  for (const entry of third.merge.filter((merge) => ['narrators', 'collections', 'traditions'].includes(merge.table))) {
+    assert.equal(entry.inserted + entry.updated + entry.retired, 0, `${entry.table} untouched`);
+  }
   const [{ current }] = await loader.unsafe<{ current: string }[]>('select id as current from dataset_versions where is_current');
   assert.equal(current, second.content_sha256);
 });

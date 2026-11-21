@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type { HistoricalEventRecord } from '@/db/queries/contracts';
 import { createHistoricalEvent, deleteHistoricalEvent, updateHistoricalEvent } from '@/app/actions/curation/history';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,14 +24,14 @@ interface PaginationInfo {
 }
 
 interface EventsManagerClientProps {
-    events: any[];
+    events: HistoricalEventRecord[];
     pagination: PaginationInfo;
 }
 
 /** Canonical `event_category` codes; the action accepts these (and legacy title case). */
 const EVENT_CATEGORIES = [
     { value: 'PROPHETIC_ERA', label: 'Prophetic era' },
-    { value: 'RASHIDUN', label: 'Rashidun' },
+    { value: 'RASHIDUN', label: 'First four caliphs (11–40 AH)' },
     { value: 'UMAYYAD', label: 'Umayyad' },
     { value: 'ABBASID', label: 'Abbasid' },
     { value: 'SCHOLARLY', label: 'Scholarly' },
@@ -45,29 +46,47 @@ const EVENT_CATEGORIES = [
 
 const categoryLabel = (code: string): string => EVENT_CATEGORIES.find((c) => c.value === code)?.label ?? code;
 
+/** Review states a curator can set; publishing also needs a citation source and a locator or URL (check constraint). */
+const VERIFICATION_STATES = [
+    { value: 'unverified_seed', label: 'Seed, unverified' },
+    { value: 'unverified', label: 'Curator entry, not yet reviewed' },
+    { value: 'human_verified', label: 'Reviewed by a curator' },
+    { value: 'source_verified', label: 'Checked against the source' },
+];
+
+const verificationLabel = (value: string): string => VERIFICATION_STATES.find((state) => state.value === value)?.label ?? value;
+
+const EMPTY_FORM = {
+    title: '',
+    title_arabic: '',
+    description: '',
+    year_hijri: '',
+    end_year_hijri: '',
+    year_gregorian: '',
+    category: '',
+    significance: '',
+    location_name: '',
+    verification_status: 'unverified',
+    publication_ready: false,
+    citation_source: '',
+    citation_locator: '',
+    citation_url: '',
+};
+
 export function EventsManagerClient({ events, pagination }: EventsManagerClientProps) {
     const router = useRouter();
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-        title: '',
-        title_arabic: '',
-        description: '',
-        year_hijri: '',
-        year_gregorian: '',
-        category: '',
-        significance: '',
-        location_name: '',
-    });
+    const [formData, setFormData] = useState(EMPTY_FORM);
 
     const groupedEvents = events.reduce((acc, event) => {
         const category = event.category || 'Uncategorized';
         if (!acc[category]) acc[category] = [];
         acc[category].push(event);
         return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, HistoricalEventRecord[]>);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,16 +94,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         setFormError(null);
         try {
             await unwrapAction(createHistoricalEvent(formData));
-            setFormData({
-                title: '',
-                title_arabic: '',
-                description: '',
-                year_hijri: '',
-                year_gregorian: '',
-                category: '',
-                significance: '',
-                location_name: '',
-            });
+            setFormData(EMPTY_FORM);
             setIsCreating(false);
             router.refresh();
         } catch (error) {
@@ -101,16 +111,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         setFormError(null);
         try {
             await unwrapAction(updateHistoricalEvent(editingId, formData));
-            setFormData({
-                title: '',
-                title_arabic: '',
-                description: '',
-                year_hijri: '',
-                year_gregorian: '',
-                category: '',
-                significance: '',
-                location_name: '',
-            });
+            setFormData(EMPTY_FORM);
             setEditingId(null);
             router.refresh();
         } catch (error) {
@@ -125,7 +126,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         router.refresh();
     };
 
-    const handleStartEdit = (event: any) => {
+    const handleStartEdit = (event: HistoricalEventRecord) => {
         setEditingId(event.id);
         setFormData({
             title: event.title || '',
@@ -136,6 +137,13 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             category: event.category || '',
             significance: event.significance || '',
             location_name: event.location_name || '',
+            end_year_hijri: event.end_year_hijri == null ? '' : String(event.end_year_hijri),
+            // Editing a seed row takes it out of the seed, so a later seed run never overwrites the curator's change.
+            verification_status: event.verification_status === 'unverified_seed' ? 'unverified' : event.verification_status,
+            publication_ready: Boolean(event.publication_ready),
+            citation_source: event.citation_source || '',
+            citation_locator: event.citation_locator || '',
+            citation_url: event.citation_url || '',
         });
         setIsCreating(false);
         setFormError(null);
@@ -157,22 +165,16 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
     return (
         <div>
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-white">Events</h1>
+                <div>
+                    <h1 className="text-3xl font-bold text-white">Events</h1>
+                    <a href="/admin/epochs" className="text-sm text-slate-400 underline underline-offset-4 hover:text-slate-200">Eras</a>
+                </div>
                 <Button
                     onClick={() => {
                         setIsCreating(true);
                         setEditingId(null);
                         setFormError(null);
-                        setFormData({
-                            title: '',
-                            title_arabic: '',
-                            description: '',
-                            year_hijri: '',
-                            year_gregorian: '',
-                            category: '',
-                            significance: '',
-                            location_name: '',
-                        });
+                        setFormData(EMPTY_FORM);
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700"
                 >
@@ -327,6 +329,74 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                             </div>
                         </div>
 
+                        <fieldset className="grid grid-cols-1 gap-4 border-t border-slate-800 pt-4 md:grid-cols-2">
+                            <legend className="text-sm font-medium text-slate-300">Review and citation</legend>
+                            {editingId && events.find((event) => event.id === editingId)?.verification_status === 'unverified_seed' && (
+                                <p className="text-xs text-slate-400 md:col-span-2">
+                                    This is seed data. Saving an edit takes it out of the seed, so later seed runs leave it alone.
+                                </p>
+                            )}
+                            <div>
+                                <Label htmlFor="verification_status" className="text-slate-300">Review state</Label>
+                                <select
+                                    id="verification_status"
+                                    value={formData.verification_status}
+                                    onChange={(e) => setFormData({ ...formData, verification_status: e.target.value })}
+                                    className="w-full mt-2 bg-slate-800 border border-slate-700 text-white rounded px-3 py-2"
+                                >
+                                    {VERIFICATION_STATES.map((state) => (
+                                        <option key={state.value} value={state.value}>{state.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <Label htmlFor="end_year_hijri" className="text-slate-300">End year (Hijri)</Label>
+                                <Input
+                                    id="end_year_hijri"
+                                    type="number"
+                                    value={formData.end_year_hijri}
+                                    onChange={(e) => setFormData({ ...formData, end_year_hijri: e.target.value })}
+                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="citation_source" className="text-slate-300">Citation: work</Label>
+                                <Input
+                                    id="citation_source"
+                                    value={formData.citation_source}
+                                    onChange={(e) => setFormData({ ...formData, citation_source: e.target.value })}
+                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="citation_locator" className="text-slate-300">Citation: volume and page</Label>
+                                <Input
+                                    id="citation_locator"
+                                    value={formData.citation_locator}
+                                    onChange={(e) => setFormData({ ...formData, citation_locator: e.target.value })}
+                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="citation_url" className="text-slate-300">Citation: URL</Label>
+                                <Input
+                                    id="citation_url"
+                                    type="url"
+                                    value={formData.citation_url}
+                                    onChange={(e) => setFormData({ ...formData, citation_url: e.target.value })}
+                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2 self-end text-sm text-slate-300">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.publication_ready}
+                                    onChange={(e) => setFormData({ ...formData, publication_ready: e.target.checked })}
+                                />
+                                Ready to publish (needs a reviewed state and a citation)
+                            </label>
+                        </fieldset>
+
                         <div className="flex gap-3">
                             <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
                                 {isSaving ? 'Saving...' : editingId ? 'Update' : 'Create'}
@@ -351,7 +421,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
 
             {/* Events List Grouped by Category */}
             <div className="space-y-6">
-                {(Object.entries(groupedEvents) as [string, any[]][]).map(([category, categoryEvents]) => (
+                {(Object.entries(groupedEvents) as [string, HistoricalEventRecord[]][]).map(([category, categoryEvents]) => (
                     <div key={category}>
                         <h2 className="text-xl font-semibold text-white mb-3">{categoryLabel(category)}</h2>
                         <div className="space-y-3">
@@ -381,6 +451,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                                 {event.location_name && (
                                                     <span>{event.location_name}</span>
                                                 )}
+                                                <span>{verificationLabel(event.verification_status)}{event.publication_ready ? ', published' : ''}</span>
                                                 {event.significance && (
                                                     <span>Significance: {event.significance}</span>
                                                 )}
@@ -413,7 +484,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                 {events.length === 0 && (
                     <Card className="bg-slate-900/30 border-slate-800 border-dashed p-12">
                         <p className="text-center text-slate-400">
-                            No events found. Click "New Event" to create one.
+                            No events found. Choose New Event to create one.
                         </p>
                     </Card>
                 )}

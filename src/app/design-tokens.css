@@ -1,0 +1,155 @@
+/*
+ * Shura wa Istehsan design tokens. Authoritative spec: DESIGN.md (repository root).
+ * Not imported anywhere yet; DESIGN.md "Applying the system: first pass" step 1 wires it in.
+ *
+ * Colour tokens use light-dark(): one declaration holds both themes. The page follows the
+ * operating system by default (color-scheme: light dark); `.light` / `.dark` on <html> force one.
+ *
+ * Replaces (mapping for the application pass)
+ * ------------------------------------------------------------------------------------------
+ * globals.css (shadcn)         -> this file
+ *   --background               -> --color-paper
+ *   --foreground               -> --color-ink
+ *   --card, --popover          -> --color-surface          (cards are not used; popovers only)
+ *   --card/popover-foreground  -> --color-ink
+ *   --primary                  -> --color-accent           (one accent: primary action, links, focus)
+ *   --primary-foreground       -> --color-on-accent
+ *   --secondary, --muted       -> --color-sunken
+ *   --secondary-foreground     -> --color-ink
+ *   --muted-foreground         -> --color-ink-muted
+ *   --accent (shadcn hover bg) -> --color-sunken
+ *   --accent-foreground        -> --color-ink
+ *   --destructive              -> --color-danger
+ *   --border                   -> --color-rule
+ *   --input                    -> --color-control
+ *   --ring                     -> --color-focus
+ *   --chart-1..5               -> removed (diagrams use ink weights and line styles, not hues)
+ *   --sidebar-*                -> removed (no sidebar in the public app; admin uses the same roles)
+ *   --radius (0.5rem)          -> --radius-none (0); --radius-control (0) for inputs and buttons
+ *   --transition-fast/base/slow -> --motion-fast / --motion-base (slow is dropped)
+ *   --font-geist-sans          -> --font-latin (Inter)
+ *   --font-geist-mono          -> --font-mono (JetBrains Mono)
+ *   --font-amiri / --font-arabic -> --font-arabic (Amiri, unchanged face)
+ * components/archive/archive.css
+ *   --archive-ink / -muted / -faint / -rule / -ground -> --color-ink / -ink-muted / -ink-faint / -rule / -paper
+ *   --archive-accent (#e0452b red) -> --color-accent (emerald; red is reserved for errors)
+ *   --archive-space-1..6 (4, 8, 16, 24, 40, 64px) -> --space-1, -2, -4, -5, -7 (40 -> 48px), -8
+ *   --archive-measure (48rem)  -> --measure-reading (42rem) / --measure-wide (60rem)
+ * components/timeline/timeline.module.css
+ *   --timeline-ink / -life     -> --color-ink
+ *   --timeline-muted           -> --color-ink-muted
+ *   --timeline-faint / -uncertain -> --color-ink-faint
+ *   --timeline-rule            -> --color-rule
+ *   --timeline-band / -band-alternate -> --color-sunken / --color-band-alternate
+ *   --timeline-accent (#34d399) -> --color-accent
+ *   --timeline-hairline        -> --rule-hairline
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Colour: ground */
+  --color-paper: light-dark(#f4f1ea, #0f0f0d);        /* page background */
+  --color-surface: light-dark(#fbfaf7, #171714);      /* popovers, inputs, the selected tab only */
+  --color-sunken: light-dark(#eae6dc, #1e1e1a);       /* hover rows, code wells, timeline bands */
+  --color-band-alternate: light-dark(#e1dccf, #262622); /* second era band */
+
+  /* Colour: text */
+  --color-ink: light-dark(#17150f, #f1eee6);          /* body, headings, strong rules, diagram ink */
+  --color-ink-muted: light-dark(#57524a, #aca79c);    /* secondary text, labels, metadata */
+  --color-ink-faint: light-dark(#76716a, #8c877e);    /* NON-TEXT only: ticks, inactive marks, uncertain spans */
+
+  /* Colour: lines */
+  --color-rule: light-dark(#d3cdc1, #36342f);         /* hairlines between rows (decorative) */
+  --color-rule-strong: var(--color-ink);              /* section-opening rules, table head rule */
+  --color-control: light-dark(#77716a, #8c877e);      /* input and checkbox borders (3:1 minimum) */
+
+  /* Colour: the one accent and its uses */
+  --color-accent: light-dark(#0b6a4e, #5dc09a);       /* links, primary action, focus, selection in diagrams */
+  --color-accent-wash: light-dark(#ddebe3, #16302a);  /* selected row / selected node ground */
+  --color-on-accent: light-dark(#fbfaf7, #0f0f0d);    /* label on a filled accent button */
+  --color-focus: var(--color-accent);
+
+  /* Colour: states */
+  --color-danger: light-dark(#a32a1d, #ff8b7b);       /* error text and error rule only */
+  --color-notice: var(--color-ink);                   /* preview notice band (inverted) */
+  --color-on-notice: var(--color-paper);
+
+  /* Typography: families */
+  --font-latin: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --font-arabic: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif;
+
+  /* Typography: Latin scale (size / line height on a 4px baseline) */
+  --text-label: 0.75rem;     --leading-label: 1rem;      /* 12/16 uppercase, 600, +0.08em */
+  --text-small: 0.875rem;    --leading-small: 1.25rem;   /* 14/20 metadata, source refs, table cells */
+  --text-body: 1rem;         --leading-body: 1.5rem;     /* 16/24 interface body */
+  --text-reading: 1.125rem;  --leading-reading: 1.75rem; /* 18/28 English translation, prose */
+  --text-heading-3: 1.25rem; --leading-heading-3: 1.75rem; /* 20/28 subsection */
+  --text-heading-2: 1.5rem;  --leading-heading-2: 2rem;  /* 24/32 section titles where a label is not enough */
+  --text-heading-1: 2rem;    --leading-heading-1: 2.5rem; /* 32/40 page title */
+  --text-display: 3rem;      --leading-display: 3.25rem; /* 48/52 home page only */
+
+  /* Typography: Arabic scale (about 1.25x the Latin it sits beside; line height 2 for harakat) */
+  --text-arabic-inline: 1.125rem;  --leading-arabic-inline: 2rem;    /* 18/32 names in lists, beside 14-16 Latin */
+  --text-arabic-reading: 1.375rem; --leading-arabic-reading: 2.75rem; /* 22/44 matn and written isnad */
+  --text-arabic-display: 1.75rem;  --leading-arabic-display: 3.5rem;  /* 28/56 a report quoted as a page subject */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-strong: 600;
+  --weight-heavy: 800;
+  --tracking-label: 0.08em;
+  --tracking-heading: -0.02em;
+  --tracking-display: -0.035em;
+
+  /* Spacing: 4px base */
+  --space-1: 0.25rem;  /* 4 */
+  --space-2: 0.5rem;   /* 8 */
+  --space-3: 0.75rem;  /* 12 */
+  --space-4: 1rem;     /* 16 */
+  --space-5: 1.5rem;   /* 24 */
+  --space-6: 2rem;     /* 32 */
+  --space-7: 3rem;     /* 48 */
+  --space-8: 4rem;     /* 64 */
+  --space-9: 6rem;     /* 96 */
+
+  /* Grid */
+  --grid-max: 72rem;                            /* 1152px content width */
+  --grid-columns: 12;
+  --grid-gutter: 1.5rem;                        /* 24px */
+  --page-margin: clamp(1rem, 4vw, 2rem);        /* 16px at 390, 32px from 800 up */
+  --measure-reading: 42rem;                     /* report column: ~70 Arabic characters at 22px */
+  --measure-wide: 60rem;                        /* reading column + margin notes, diagrams */
+
+  /* Rules and radii */
+  --rule-hairline: 1px;
+  --rule-strong: 2px;
+  --radius-none: 0;
+  --radius-control: 0;
+
+  /* Focus */
+  --focus-width: 2px;
+  --focus-offset: 2px;
+
+  /* Diagram strokes (in CSS px; use vector-effect: non-scaling-stroke) */
+  --diagram-edge: 1px;
+  --diagram-edge-emphasis: 2px;
+  --diagram-node: 8px;
+  --diagram-node-shared: 12px;
+
+  /* Motion: state changes only, no entrances */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.light { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
+}

@@ -19,6 +19,7 @@ import {
   type PageRequest,
   type PageWindow,
 } from './sql-helpers';
+import { hadithRelationsFor, PUBLIC_VISIBILITY, type ReadVisibility } from './visibility';
 
 export interface HadithFilters {
   tradition?: string;
@@ -38,12 +39,7 @@ export interface HadithRelations {
   liveTranslation: SQL;
 }
 
-export const PUBLIC_RELATIONS: HadithRelations = {
-  hadiths: sql`public_hadiths`,
-  translations: sql`public_translations`,
-  liveHadith: sql`true`,
-  liveTranslation: sql`true`,
-};
+export const PUBLIC_RELATIONS: HadithRelations = hadithRelationsFor(PUBLIC_VISIBILITY);
 
 /** Minimum normalized length for a trigram search (section 7.2). */
 const MIN_TRIGRAM_TERM = 3;
@@ -150,7 +146,17 @@ export async function searchPublicHadiths(
   filters: HadithFilters = {},
   request?: PageRequest,
 ): Promise<Paginated<HadithListItem>> {
-  return listHadithPage(PUBLIC_RELATIONS, filters, term, clampPage(request));
+  return searchVisibleHadiths(term, filters, request, PUBLIC_VISIBILITY);
+}
+
+/** Browse and search under a resolved visibility (public views, or every live row in curator preview). */
+export async function searchVisibleHadiths(
+  term: string | undefined,
+  filters: HadithFilters,
+  request: PageRequest | undefined,
+  visibility: ReadVisibility,
+): Promise<Paginated<HadithListItem>> {
+  return listHadithPage(hadithRelationsFor(visibility), filters, term, clampPage(request));
 }
 
 /** SQL for one hadith's detail object under the given relations, or no row when unknown. */
@@ -212,6 +218,11 @@ export function mapHadithDetail(detail: Record<string, unknown>): HadithDetail {
 
 /** Public hadith detail; null for an unknown or unpublished ID so the page can call notFound(). */
 export async function getPublicHadith(hadithId: string): Promise<HadithDetail | null> {
-  const row = await oneRow<{ detail: Record<string, unknown> }>(hadithDetailStatement(PUBLIC_RELATIONS, hadithId));
+  return getVisibleHadith(hadithId, PUBLIC_VISIBILITY);
+}
+
+/** Hadith detail under a resolved visibility; null when unknown or not visible to it. */
+export async function getVisibleHadith(hadithId: string, visibility: ReadVisibility): Promise<HadithDetail | null> {
+  const row = await oneRow<{ detail: Record<string, unknown> }>(hadithDetailStatement(hadithRelationsFor(visibility), hadithId));
   return row ? mapHadithDetail(row.detail) : null;
 }

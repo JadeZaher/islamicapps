@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type { LocationRecord } from '@/db/queries/contracts';
 import { createLocation, deleteLocation, updateLocation } from '@/app/actions/curation/location';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ interface PaginationInfo {
 }
 
 interface LocationsManagerClientProps {
-    locations: any[];
+    locations: LocationRecord[];
     pagination: PaginationInfo;
     searchQuery?: string;
 }
@@ -97,7 +98,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
         router.refresh();
     };
 
-    const handleStartEdit = (location: any) => {
+    const handleStartEdit = (location: LocationRecord) => {
         setEditingId(location.id);
         setFormData({
             name: location.name || '',
@@ -271,6 +272,10 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                             {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
                                         </div>
                                     )}
+                                    <div>
+                                        <span className="text-slate-400">Review state: </span>
+                                        {location.verification_status === 'unverified_seed' ? 'Seed, unverified' : location.verification_status.replaceAll('_', ' ')}
+                                    </div>
                                 </div>
                             </div>
 

@@ -301,3 +301,8 @@ assertions for each surface and must
 retain ranges, uncertainty, and competing claims rather than invent exact
 birth/death years or silently choosing a disputed date. Historical seed nodes
 are not evidence and cannot be promoted through a manifest flip.
+
+## Models
+
+`translation_model.json` pins the Arabic-to-English translator (`tencent/hy-mt2-30b-a3b`, candidates only); `generate_machine_translation_candidates.py` refuses any other model without `--allow-unpinned-model`.
+`model_registry.json` records which model did which work and its output status; `docs/models.md` is generated from it by `render_model_docs.py`.

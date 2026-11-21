@@ -1,6 +1,7 @@
 """Cut a small, referentially closed slice of real rows out of a canonical projection (loader flow test input).
 
 Usage: python slice_projection.py --projection <dir> --output <new dir> [--per-tradition 6] [--omit-hadith <id>]
+       [--change-hadith <id>]   (appends a marker to that hadith's category, so the loader sees one changed row)
 The slice keeps the source projection's bundle binding, so the loader's manifest checks run unchanged.
 """
 
@@ -33,7 +34,8 @@ def read_table(directory: Path, table: str) -> tuple[list[str], list[dict[str, s
         return header, rows
 
 
-def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith: str | None) -> dict:
+def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith: str | None,
+                change_hadith: str | None = None) -> dict:
     source_manifest = json.loads((projection / "canonical" / "manifest.json").read_text(encoding="utf-8"))
     tables = {item["table"]: read_table(projection, item["table"]) for item in source_manifest["files"]}
 
@@ -54,6 +56,10 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
                          if len({row["narrator_id"] for row in rows}) > 1}
     with_kunya_only = {row["hadith_id"] for row in tables["chain_mention_candidates"][1]
                        if row["basis"] == "name_kunya_only"}
+    # One cross-tradition correspondence pair, both reports with chains, so the slice exercises the pair tables.
+    cross_pair = next((row for row in sorted(tables["report_correspondence_candidates"][1], key=lambda r: r["id"])
+                       if row["scope"] == "cross_tradition" and row["hadith_id_a"] in chains_by_hadith
+                       and row["hadith_id_b"] in chains_by_hadith), None)
 
     chosen: set[str] = set()
     for tradition in ("tradition:sunni", "tradition:imami", "tradition:zaydi", "tradition:ibadi"):
@@ -62,6 +68,11 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
                           with_verified_link.__contains__, with_disagreement.__contains__,
                           with_kunya_only.__contains__):
             chosen.update([hadith_id for hadith_id in pool if predicate(hadith_id)][:per_tradition])
+    if cross_pair is not None:
+        centre = {row["hadith_id"]: row["star_centre_hadith_id"]
+                  for row in tables["report_correspondence_cluster_members"][1]}
+        for hadith_id in (cross_pair["hadith_id_a"], cross_pair["hadith_id_b"]):
+            chosen.update((hadith_id, centre[hadith_id]))
     if omit_hadith is not None:
         if omit_hadith not in chosen:
             raise SystemExit(f"--omit-hadith {omit_hadith} is not in the slice")
@@ -81,6 +92,17 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
                                         if row["hadith_id"] in chosen]
     keep["translations"] = [row for row in tables["translations"][1] if row["hadith_id"] in chosen]
     keep["hadith_assessments"] = [row for row in tables["hadith_assessments"][1] if row["hadith_id"] in chosen]
+    keep["report_correspondence_cluster_members"] = [
+        row for row in tables["report_correspondence_cluster_members"][1]
+        if row["hadith_id"] in chosen and row["star_centre_hadith_id"] in chosen]
+    members = {row["hadith_id"] for row in keep["report_correspondence_cluster_members"]}
+    keep["report_correspondence_candidates"] = [
+        row for row in tables["report_correspondence_candidates"][1]
+        if row["hadith_id_a"] in members and row["hadith_id_b"] in members]
+    if change_hadith is not None:
+        [changed] = [row for row in keep["hadiths"] if row["id"] == change_hadith]
+        changed["category"] = f"{changed['category'] or ''} [changed by slice]".strip()
+        changed["category_folded"] = changed["category"].lower()
     # Narrators, collections and structure are closed over the FULL slice (including any omitted hadith), so
     # omitting one hadith retires only that hadith and its dependents.
     full_chosen = chosen | ({omit_hadith} if omit_hadith else set())
@@ -112,10 +134,11 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
     writer = ep.TableWriter(output, "canonical", None)
     for table in sorted(tables):
         header = tables[table][0]
-        key_width = 2 if table == "narrator_teachers" else 1
+        key_width = 2 if table in ("narrator_teachers", "report_correspondence_cluster_members") else 1
         writer.write(table, header, [[row[name] for name in header] for row in keep[table]], key_width=key_width)
     manifest = {**source_manifest, "files": writer.files,
-                "counts": {"slice_of": source_manifest["content_sha256"], "omitted_hadith": omit_hadith},
+                "counts": {"slice_of": source_manifest["content_sha256"], "omitted_hadith": omit_hadith,
+                           "changed_hadith": change_hadith},
                 "content_sha256": ep.graph_content_hash(writer.files, [])}
     (output / "canonical" / "manifest.json").write_bytes(ep.deterministic_json_bytes(manifest))
 
@@ -128,6 +151,8 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
                                  for t in sorted({row["tradition_id"] for row in keep["hadiths"]})},
         "chain": {"id": longest["id"], "surfaces": [row["surface_ar"] for row in ordered]},
         "omitted_hadith": omit_hadith,
+        "changed_hadith": change_hadith,
+        "correspondence_pair": cross_pair["id"] if cross_pair else None,
         "hadith_ids": sorted(chosen),
         "hadiths_with_chains": sorted(hadith_id for hadith_id in chosen if hadith_id in chains_by_hadith),
     }
@@ -141,8 +166,9 @@ def main() -> int:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--per-tradition", type=int, default=6)
     parser.add_argument("--omit-hadith")
+    parser.add_argument("--change-hadith")
     args = parser.parse_args()
-    expectations = build_slice(args.projection, args.output, args.per_tradition, args.omit_hadith)
+    expectations = build_slice(args.projection, args.output, args.per_tradition, args.omit_hadith, args.change_hadith)
     print(json.dumps({"content_sha256": expectations["content_sha256"], "rows": expectations["rows"]}, sort_keys=True))
     return 0
 

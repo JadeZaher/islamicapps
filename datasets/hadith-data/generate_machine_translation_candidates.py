@@ -32,8 +32,9 @@ PROMPT_VERSION = "hadith-machine-translation-v4-segmented-r8"
 ARTIFACT_VERSION = 10
 MASTER_INDEX_SCHEMA_VERSION = 4
 DEFAULT_BACKEND = "local"
-DEFAULT_LOCAL_MODEL = "google/gemma-4-e4b"
-DEFAULT_OPENROUTER_MODEL = "google/gemini-2.5-flash"
+TRANSLATION_PIN_PATH = Path(__file__).resolve().parent / "translation_model.json"
+PREVIOUS_LOCAL_MODEL = "google/gemma-4-e4b"  # historical default, reproducible only with --allow-unpinned-model
+PREVIOUS_OPENROUTER_MODEL = "google/gemini-2.5-flash"  # historical default, same rule
 DEFAULT_LOCAL_API_BASE = "http://127.0.0.1:1234/v1"
 OPENROUTER_API_BASE = "https://openrouter.ai/api/v1"
 DEFAULT_MAX_INPUT_CHARS = 65_536
@@ -832,22 +833,53 @@ def validate_model_version(model_version: str, *, dry_run: bool) -> str:
     return normalized
 
 
+PIN_REQUIRED_KEYS = ("provider", "model_id", "prompt", "generation", "pricing_usd_per_million_tokens", "qa_screen", "decision")
+
+
+def load_translation_pin(path: Path = TRANSLATION_PIN_PATH) -> dict:
+    """Read the pinned translator config (translation_model.json) and check its required shape."""
+    pin = json.loads(Path(path).read_text(encoding="utf-8"))
+    missing = [key for key in PIN_REQUIRED_KEYS if key not in pin]
+    if missing or "/" not in str(pin.get("model_id", "")):
+        raise ValueError(f"{path} must carry {PIN_REQUIRED_KEYS} and a namespaced model_id; missing {missing}")
+    return pin
+
+
+def enforce_model_pin(model: str, allow_unpinned_model: bool, pin: dict | None = None) -> str:
+    """Return the model unless it differs from the pin and --allow-unpinned-model was not given."""
+    pinned = (pin or load_translation_pin())["model_id"]
+    if model != pinned and not allow_unpinned_model:
+        raise ValueError(
+            f"model {model!r} is not the pinned translator {pinned!r} (translation_model.json); "
+            "pass --allow-unpinned-model to reproduce a past run"
+        )
+    return model
+
+
+def model_file_slug(model: str) -> str:
+    """Vendor-less lowercase slug used in default artifact names, e.g. gemini_2_5_flash."""
+    return re.sub(r"[^a-z0-9]+", "_", model.rsplit("/", 1)[-1].lower()).strip("_")
+
+
 def apply_backend_defaults(args: argparse.Namespace) -> None:
-    """Resolve backend-specific defaults before validating paths or credentials."""
+    """Resolve backend-specific defaults (the model defaults to the pin) before validating paths or credentials."""
+    args.model = enforce_model_pin(
+        args.model or load_translation_pin()["model_id"],
+        getattr(args, "allow_unpinned_model", False),
+    )
+    slug = model_file_slug(args.model)
     if args.backend == "openrouter":
         args.api_base = args.api_base or OPENROUTER_API_BASE
-        args.model = args.model or DEFAULT_OPENROUTER_MODEL
         args.output = args.output or Path(
-            "machine_translation_candidates/openrouter_gemini_2_5_flash_candidates.jsonl"
+            f"machine_translation_candidates/openrouter_{slug}_candidates.jsonl"
         )
         args.checkpoint = args.checkpoint or Path(
-            "machine_translation_candidates/openrouter_gemini_2_5_flash_checkpoint.sqlite3"
+            f"machine_translation_candidates/openrouter_{slug}_checkpoint.sqlite3"
         )
         if args.max_cost_usd is None:
             args.max_cost_usd = DEFAULT_OPENROUTER_MAX_COST_USD
         return
     args.api_base = args.api_base or DEFAULT_LOCAL_API_BASE
-    args.model = args.model or DEFAULT_LOCAL_MODEL
     args.output = args.output or Path(
         "machine_translation_candidates/local_lmstudio_v2_candidates.jsonl"
     )
@@ -893,7 +925,12 @@ def parse_args() -> argparse.Namespace:
         help="Resumability, spend, and collision database (backend-specific by default).",
     )
     parser.add_argument("--api-base", default=None)
-    parser.add_argument("--model", default=None)
+    parser.add_argument("--model", default=None, help="Defaults to the model pinned in translation_model.json.")
+    parser.add_argument(
+        "--allow-unpinned-model",
+        action="store_true",
+        help="Permit a model other than the pin, to reproduce a past run; never for new translation work.",
+    )
     parser.add_argument("--model-version", default="")
     parser.add_argument("--limit", type=int, default=0, help="Maximum eligible rows this invocation (0 means all).")
     parser.add_argument(

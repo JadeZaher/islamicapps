@@ -38,8 +38,42 @@ Same rhythm as the hadith page: uppercase section labels, no nested cards, one e
 hidden (kept for screen readers) when Biography is the only tab. `TabaqahTimeline` is an inline five-step scale
 that highlights only a recorded generation.
 
+## Time and place (`timeline/`, `TabaqahTimeline.tsx`)
+
+Server components, no client JavaScript. Swiss style (owner direction 2026-11-21): flat SVG geometry, hairline rules,
+type carries hierarchy, one accent; every colour and spacing value is a variable on `.root` in
+`timeline/timeline.module.css`, so a design pass retunes it there. The SVG is `aria-hidden`; every datum is repeated in
+the lists below it (the accessible equivalent). Geometry is stretched (`preserveAspectRatio="none"`) with
+`non-scaling-stroke` hairlines; all text is HTML.
+
+- Drawn only what the data carries: a bar when both bounds are known (ranges and competing dates lighter), a filled
+  square for a death year alone, an outlined square for a birth year alone, text otherwise ("generation only", "Not
+  recorded", "Sources name different people"). A generation is never placed on the axis.
+- `BasisLabel` prints the basis and leaves an empty `data-source-credit-slot` (registry code `MSD` for lexicon data,
+  `SWI` for this archive's rows) as the mount point for `SourceCredit`.
+- `ChainFamilyTimelineSection` is the report-page mount (props contract in the file header); `NarratorTimeline` is
+  the narrator page's "Life and times". `HistoricalTimeline.tsx` is no longer imported anywhere (kept, never-delete rule).
+
 ## Route states
 
 Every `error.tsx` renders `RouteError` and every `not-found.tsx` renders `RouteMessage` (`RouteState.tsx`). One
 layout, one emerald primary action, one secondary link. `RouteError` logs only the digest (an error message can
 carry query text) and retries once after two seconds, which covers a database waking from idle.
+
+Design system (tokens, typography, marks, diagrams): read and keep current `DESIGN.md` at the repository root before any UI change.
+
+## Archive surfaces (`archive/`)
+
+New surfaces (browse, report context, sources, banner, footer) follow the Swiss direction (owner, 2026-11-21): strict
+column, hairline rules instead of cards, flat fills, typography for hierarchy, one accent, flat geometric SVG marks
+(`Marks.tsx`). Colours and spacing are CSS variables scoped to `.archive` in `archive.css`, so the design-system pass
+can retune them in one place; `globals.css` and older components are untouched.
+
+- `ReportTrail` / `ReportFooter` are mounted by `src/app/hadith/[id]/layout.tsx` (the page is another lane's): trail
+  and canonical link above; previous/next in source order, source references, "Cite this report" and the dataset
+  version below. A Thaqalayn URL is linked as "View at source" only when no other report of the work records the same
+  URL: multi-volume works record URLs without the volume (al-Kafi: 14,245 rows, 9,278 distinct URLs).
+- `SourceCredit` is the one short source reference (code and name linking to `/sources#<anchor>`, licence, detail).
+  Mount it wherever borrowed material appears; `data-source-ref` marks it for tests.
+- `SiteChrome.tsx`: `PrivatePreviewBanner` (only under `PRIVATE_PREVIEW=1`), `CrawlPolicy` (robots meta, from
+  `dataset_versions`), `SiteFooter` (links `/sources` on every page). All resolve at request time.

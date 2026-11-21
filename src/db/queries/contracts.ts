@@ -347,3 +347,59 @@ export interface TraditionConnections {
     source_text: { title: string; canonical_reference: string | null };
   }>;
 }
+
+/** How a telling corresponds to the report it was found from (report-correspondence job). */
+export type CorrespondenceClass = 'same_wording' | 'same_report_variant_wording' | 'partial_overlap';
+export type CorrespondenceDecision = 'confirmed' | 'rejected' | 'uncertain';
+export type CorrespondenceReviewedRelation =
+  | CorrespondenceClass
+  | 'same_ruling_different_attribution'
+  | 'shared_formula_only'
+  | 'shared_quran_quotation';
+
+/** The evidence linking a telling to the report: machine scores, and a reviewer decision when there is one. */
+export interface TellingCorrespondence {
+  /** Null only for a pair a reviewer confirmed with no machine candidate. */
+  relation_class: CorrespondenceClass | null;
+  jaccard: number | null;
+  containment: number | null;
+  scope: 'same_work' | 'cross_work_same_tradition' | 'cross_tradition' | null;
+  decision: CorrespondenceDecision | null;
+  reviewed_relation: CorrespondenceReviewedRelation | null;
+  /** A reviewer confirmed the pair (hash-bound, live decision). Otherwise the pair is machine-found and unreviewed. */
+  confirmed: boolean;
+}
+
+/** One telling of a report in the family: its text, reference and every chain it carries. */
+export interface FamilyTelling {
+  hadith_id: string;
+  record_id: string;
+  is_focal: boolean;
+  tradition: HadithTraditionCode;
+  collection_id: string;
+  source_work: string;
+  source_work_id: string;
+  /** The stored number as loaded; display goes through `reportNumber` (Thaqalayn's stored number is the chapter). */
+  hadith_no: string | null;
+  /** False where the work's numbering is not citable (UNCITABLE_NUMBERING_WORKS): show the stable id instead. */
+  numbering_citable: boolean;
+  volume: string | null;
+  url: string | null;
+  page_ref: string | null;
+  chapter: string | null;
+  text_ar: string | null;
+  matn_ar: string | null;
+  sanad: string | null;
+  correspondence: TellingCorrespondence | null;
+  chain: ChainGraph;
+}
+
+/** A report and every telling the archive links to it, capped; `capped` says some were left out. */
+export interface ReportFamily {
+  hadith_id: string;
+  tellings: FamilyTelling[];
+  /** Corresponding reports shown by the display rule, before the cap. */
+  correspondences_total: number;
+  capped: boolean;
+  cap: number;
+}

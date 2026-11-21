@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model_registry.schema.json",
+  "title": "Model registry: which model did which work",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "as_of", "purpose", "pinned_translator", "master_note", "coverage_notes", "entries"],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [1] },
+    "as_of": { "type": "string" },
+    "purpose": { "type": "string" },
+    "master_note": { "type": "string" },
+    "coverage_notes": { "type": "array", "items": { "type": "string" } },
+    "pinned_translator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_id", "config"],
+      "properties": {
+        "model_id": { "type": "string" },
+        "config": { "type": "string" }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "model_id", "model_id_status", "model_id_note", "runtime", "kind", "work", "date_range",
+        "inputs", "outputs", "output_status", "review_state", "pinned", "allowed_uses", "prohibited_uses",
+        "quality_findings", "evidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "model_id": { "type": ["string", "null"], "description": "Exactly as recorded in the evidence; null when no model was recorded." },
+        "model_id_status": { "type": "string", "enum": ["namespaced_specific", "insufficiently_specific", "not_recorded"] },
+        "model_id_note": { "type": "string" },
+        "identity_flags": { "type": "array", "items": { "type": "string" } },
+        "runtime": { "type": "string" },
+        "kind": { "type": "string", "enum": ["translation", "arabic_text_cleanup", "ocr_parsing", "coding_assistance"] },
+        "work": { "type": "string" },
+        "date_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end", "basis"],
+          "properties": {
+            "start": { "type": "string" },
+            "end": { "type": "string" },
+            "basis": { "type": "string" }
+          }
+        },
+        "inputs": { "type": "array", "items": { "type": "string" } },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "rows", "unit", "note"],
+            "properties": {
+              "path": { "type": "string" },
+              "rows": { "type": ["integer", "null"] },
+              "unit": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "output_status": { "type": "string", "enum": ["canonical", "candidate_only", "rejected", "superseded", "undetermined", "not_applicable"] },
+        "review_state": { "type": "string" },
+        "pinned": { "type": "boolean" },
+        "allowed_uses": { "type": "array", "items": { "type": "string" } },
+        "prohibited_uses": { "type": "array", "items": { "type": "string" } },
+        "quality_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["finding", "source"],
+            "properties": {
+              "finding": { "type": "string" },
+              "source": { "type": "string" }
+            }
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "locator"],
+            "properties": {
+              "path": { "type": "string" },
+              "locator": { "type": "string" }
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

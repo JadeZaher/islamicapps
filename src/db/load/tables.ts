@@ -52,6 +52,9 @@ export const PIPELINE_TABLES: PipelineTableSpec[] = [
   // After chain_mentions and narrators: every candidate references both (src/db/AGENTS.md §Identity candidates).
   { name: 'chain_mention_candidates', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'hadith_assessments', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
+  // Report correspondences (src/db/AGENTS.md §Report correspondences): pipeline candidates bound to both Arabic hashes.
+  { name: 'report_correspondence_candidates', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
+  { name: 'report_correspondence_cluster_members', key: ['method_version', 'hadith_id'], loaderDerived: [], derivedFromStaging: [] },
 ];
 
 /** Bare SQL identifier check: every name interpolated into SQL comes from this file or the catalog. */

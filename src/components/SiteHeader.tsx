@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Search } from 'lucide-react';
 
 const NAV_LINKS = [
+  { href: '/collections', label: 'Collections' },
   { href: '/hadith', label: 'Hadith' },
   { href: '/narrator', label: 'Narrators' },
   { href: '/comparative', label: 'Comparative' },
@@ -26,7 +27,7 @@ export function SiteHeader() {
           Shura wa Istehsan
         </Link>
 
-        <nav aria-label="Main" className="flex items-center gap-1">
+        <nav aria-label="Main" className="flex flex-wrap items-center gap-1">
           {NAV_LINKS.map(({ href, label }) => {
             const isActive = pathname === href || pathname.startsWith(`${href}/`);
             return (

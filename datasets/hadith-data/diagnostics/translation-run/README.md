@@ -35,3 +35,22 @@ The pilot's 36 + 24 rows that fall in the two batch phases were not repeated; th
 Pilot $0.0089 + batch 1 $0.0568 + batch 2 $0.0528 = $0.1184 total, 729,147 tokens (provider-reported `usage.cost`). Budget cap was $15; never approached.
 
 See `summary.json` for per-file counts, latency, and coverage of every flagged master row.
+
+## Quality reading recorded after the run (2026-11-21)
+
+The agent that ran the pilot and batch read about 35 outputs against their
+Arabic and reported this to the session lead; it was not written down at the
+time. It is one reader's reading, not a reviewed measurement.
+
+- Fluent English; isnad formulas rendered consistently (haddathana "narrated
+  to us", akhbarana "informed us", 'an "from"); names transliterated.
+- About 5 of the ~35 had a meaning-level error. Examples:
+  `pure-canon:pc_71450` (accepting a gift rendered as taking an oath);
+  `k6:10535` (tawaf al-ifada rendered as the farewell tawaf);
+  `pure-canon:pc_63407` (an imperative turned into first person, a speaker
+  dropped, the Messenger added).
+- Errors clustered in short texts without a chain and in chapter headings.
+- Name spellings and honorific wording drift between rows.
+
+Use: candidates only, shown labelled as unreviewed machine translation with
+the model id. A proper reviewed sample is still needed.

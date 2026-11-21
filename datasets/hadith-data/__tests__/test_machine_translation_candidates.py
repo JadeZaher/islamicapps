@@ -203,7 +203,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
                 translation.openrouter_chat_completion(
                     translation.OPENROUTER_API_BASE,
                     "test-key",
-                    translation.DEFAULT_OPENROUTER_MODEL,
+                    translation.PREVIOUS_OPENROUTER_MODEL,
                     translation.translation_prompt("source"),
                     512,
                     1,
@@ -235,7 +235,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
                     translation.openrouter_chat_completion(
                         translation.OPENROUTER_API_BASE,
                         "test-key",
-                        translation.DEFAULT_OPENROUTER_MODEL,
+                        translation.PREVIOUS_OPENROUTER_MODEL,
                         translation.translation_prompt("source"),
                         512,
                         1,
@@ -269,7 +269,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
                     translation.openrouter_chat_completion(
                         translation.OPENROUTER_API_BASE,
                         "test-key",
-                        translation.DEFAULT_OPENROUTER_MODEL,
+                        translation.PREVIOUS_OPENROUTER_MODEL,
                         translation.translation_prompt("source"),
                         512,
                         1,
@@ -303,7 +303,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
                 returned, _ = translation.openrouter_chat_completion(
                     translation.OPENROUTER_API_BASE,
                     "test-key",
-                    translation.DEFAULT_OPENROUTER_MODEL,
+                    translation.PREVIOUS_OPENROUTER_MODEL,
                     translation.translation_prompt("source"),
                     512,
                     1,
@@ -328,7 +328,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
             args = translation.argparse.Namespace(
                 backend="openrouter",
                 api_base=translation.OPENROUTER_API_BASE,
-                model=translation.DEFAULT_OPENROUTER_MODEL,
+                model=translation.PREVIOUS_OPENROUTER_MODEL,
                 model_version="",
                 output=root / "events.jsonl",
                 exclude_record_id=[],
@@ -556,7 +556,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
         def response(segment_ids):
             return {
                 "id": "gen-segments",
-                "model": translation.DEFAULT_OPENROUTER_MODEL,
+                "model": translation.PREVIOUS_OPENROUTER_MODEL,
                 "provider": "Google",
                 "choices": [
                     {
@@ -663,7 +663,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
         }
         response = {
             "id": "gen-structural-diagnostics",
-            "model": translation.DEFAULT_OPENROUTER_MODEL,
+            "model": translation.PREVIOUS_OPENROUTER_MODEL,
             "provider": "Google",
             "choices": [
                 {
@@ -697,7 +697,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
             args = translation.argparse.Namespace(
                 backend="openrouter",
                 api_base=translation.OPENROUTER_API_BASE,
-                model=translation.DEFAULT_OPENROUTER_MODEL,
+                model=translation.PREVIOUS_OPENROUTER_MODEL,
                 model_version="",
                 output=root / "events.jsonl",
                 exclude_record_id=[],
@@ -1277,7 +1277,7 @@ class OpenRouterBoundaryTests(unittest.TestCase):
             base = {
                 "backend": "openrouter",
                 "api_base": translation.OPENROUTER_API_BASE,
-                "model": translation.DEFAULT_OPENROUTER_MODEL,
+                "model": translation.PREVIOUS_OPENROUTER_MODEL,
                 "model_version": "",
                 "exclude_record_id": ["thaqalayn:quarantined"],
             }

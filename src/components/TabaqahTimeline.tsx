@@ -1,37 +1,41 @@
-interface TabaqahTimelineProps {
-    /** Tabaqah key; anything outside TABAQAH_LEVELS (or empty) is shown as recorded, or "Unknown". */
-    currentTabaqah?: string | null;
-}
+import type { GenerationClaim, GenerationClass } from '@/db/queries/timeline-contracts';
+import { generationLabel } from '@/db/queries/timeline-rules';
+import { BasisLabel } from '@/components/timeline/BasisLabel';
+import styles from '@/components/timeline/timeline.module.css';
 
-const TABAQAH_LEVELS = [
-    { key: 'PROPHET', label: 'The Prophet' },
-    { key: 'SAHABA', label: 'Companions (ṣaḥāba)' },
-    { key: 'TABIUN', label: 'Successors (tābiʿūn)' },
-    { key: 'ATBA_TABIUN', label: 'Successors of the Successors' },
-    { key: 'ATBA_ATBA', label: 'Their successors' },
-    { key: 'LATER_SCHOLAR', label: 'Later scholars' },
-] as const;
+const SCALE: Array<{ key: GenerationClass; label: string }> = [
+  { key: 'prophet', label: 'The Prophet' },
+  { key: 'companion', label: 'Companions' },
+  { key: 'follower', label: 'Followers' },
+  { key: 'follower_of_followers', label: 'Followers of the Followers' },
+  { key: 'third_century', label: 'Third century' },
+  { key: 'fourth_century_or_later', label: 'Fourth century and later' },
+];
 
-/** Generation (ṭabaqa) as a six-step scale; only a recorded level is highlighted, unknown is said plainly. */
-export function TabaqahTimeline({ currentTabaqah }: TabaqahTimelineProps) {
-    const currentIndex = TABAQAH_LEVELS.findIndex((level) => level.key === currentTabaqah);
-    if (currentIndex === -1) {
-        return currentTabaqah?.trim()
-            ? <span>{currentTabaqah.replaceAll('_', ' ').toLowerCase()}</span>
-            : <span className="text-slate-500">Unknown</span>;
-    }
-    return (
-        <span className="flex flex-col gap-2">
-            <span>{TABAQAH_LEVELS[currentIndex].label}</span>
-            <span className="flex gap-1" aria-hidden="true">
-                {TABAQAH_LEVELS.map((level, index) => (
-                    <span
-                        key={level.key}
-                        title={level.label}
-                        className={`h-1 w-8 rounded-full ${index === currentIndex ? 'bg-emerald-400' : 'bg-slate-700'}`}
-                    />
-                ))}
-            </span>
-        </span>
-    );
+/**
+ * Generation (tabaqa) as a six-step flat scale. Every recorded claim is listed with its basis; each class a claim
+ * names is marked, so two sources that disagree mark two steps. Nothing is marked when nothing is recorded.
+ */
+export function TabaqahTimeline({ generation }: { generation: GenerationClaim[] }) {
+  if (generation.length === 0) return <span>Not recorded</span>;
+  const marked = new Set(generation.map((claim) => claim.class));
+  return (
+    <div className="flex flex-col gap-2">
+      <ul>
+        {generation.map((claim, index) => (
+          <li key={index}>
+            {generationLabel(claim)} <BasisLabel basis={claim.basis} />
+          </li>
+        ))}
+      </ul>
+      <svg width="192" height="6" viewBox="0 0 192 6" aria-hidden="true" focusable="false" className={styles.root}>
+        {SCALE.map((step, index) => (
+          <rect key={step.key} x={index * 32} y={2} width={28} height={2}
+            fill={marked.has(step.key) ? 'var(--timeline-accent)' : 'var(--timeline-rule)'}>
+            <title>{step.label}</title>
+          </rect>
+        ))}
+      </svg>
+    </div>
+  );
 }

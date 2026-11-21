@@ -7,11 +7,15 @@ import { ArabicText } from '@/components/ArabicText';
 import { narratorNameParts } from '@/components/NarratorName';
 import { TraditionBadge } from '@/components/TraditionBadge';
 import type { ChainGraph, ChainMentionCandidate, ChainNode, IdentityBasis } from '@/db/queries/contracts';
+import { IdentityCredit } from './family/SourceCredits';
 
-/** Plain labels for where an identity comes from (owner decisions 2026-11-21; see src/db/AGENTS.md §Identity candidates). */
+/**
+ * Plain labels for where an identity comes from (owner decisions 2026-11-21; see src/db/AGENTS.md §Identity candidates).
+ * "Verified" is reserved for a reviewer's decision; the automatic top tier is machine review.
+ */
 const BASIS_LABEL: Record<IdentityBasis, string> = {
-    reviewer_decision: 'confirmed by a reviewer',
-    source_index_confirmed_by_text: 'confirmed by source and text',
+    reviewer_decision: 'verified by a reviewer',
+    source_index_confirmed_by_text: "machine-reviewed: matches the source's index and the text",
     source_index: 'source index',
     name_exact: 'matched by name',
     name_spelling_fold: 'matched by name',
@@ -23,6 +27,10 @@ interface IdentityGroup {
     latin: string;
     arabic: string;
     labels: string[];
+    /** Every basis that names this narrator, strongest first: each is credited to its source. */
+    bases: IdentityBasis[];
+    /** Every candidate for this narrator is a kunya-only match: a label, never a contest. */
+    kunyaOnly: boolean;
 }
 
 /** One group per narrator, in the order the query ranked the candidates (strongest basis first). */
@@ -33,9 +41,13 @@ function groupByNarrator(candidates: ChainMentionCandidate[]): IdentityGroup[] {
             narratorId: candidate.narrator_id,
             ...narratorNameParts(candidate.name_en, candidate.name_ar),
             labels: [],
+            bases: [],
+            kunyaOnly: true,
         };
         const label = BASIS_LABEL[candidate.basis];
         if (label && !group.labels.includes(label)) group.labels.push(label);
+        if (!group.bases.includes(candidate.basis)) group.bases.push(candidate.basis);
+        if (candidate.basis !== 'name_kunya_only') group.kunyaOnly = false;
         groups.set(candidate.narrator_id, group);
     }
     return [...groups.values()];
@@ -43,6 +55,7 @@ function groupByNarrator(candidates: ChainMentionCandidate[]): IdentityGroup[] {
 
 function IdentityLink({ group }: { group: IdentityGroup }) {
     return (
+        <div>
         <span className="inline-flex flex-wrap items-baseline gap-x-2">
             <Link
                 href={`/narrator/${encodeURIComponent(group.narratorId)}`}
@@ -52,22 +65,52 @@ function IdentityLink({ group }: { group: IdentityGroup }) {
             </Link>
             <span className="text-xs text-slate-500">{group.labels.join(' · ')}</span>
         </span>
+        <IdentityCredit bases={group.bases} className="!text-xs" />
+        </div>
     );
 }
 
-/** Who a written name is: nothing, one identity (however many sources agree), or every identity when they differ. */
+/**
+ * Who a written name is: nothing, one identity (however many sources agree), or every identity when they differ.
+ * A kunya-only match beside another identity is a secondary note, never "sources differ" (owner decision 2026-11-21).
+ */
 function MentionIdentityCell({ node }: { node: ChainNode }) {
     const groups = groupByNarrator(node.candidates);
-    if (groups.length === 0) return <span className="text-sm text-slate-500">Not yet identified</span>;
-    if (groups.length === 1) return <IdentityLink group={groups[0]} />;
+    const contesting = groups.filter((group) => !group.kunyaOnly);
+    const notes = contesting.length > 0 ? groups.filter((group) => group.kunyaOnly) : [];
+    const primary = contesting.length > 0 ? contesting : groups;
+    if (primary.length === 0) return <span className="text-sm text-slate-500">Not yet identified</span>;
     return (
         <div className="space-y-1">
-            <p className="text-xs text-slate-500">Sources differ on who this is</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1">
-                {groups.map((group) => (
-                    <IdentityLink key={group.narratorId} group={group} />
-                ))}
-            </div>
+            {primary.length === 1 ? (
+                <IdentityLink group={primary[0]} />
+            ) : (
+                <>
+                    <p className="text-xs text-slate-500">Sources differ on who this is</p>
+                    <div className="flex flex-wrap gap-x-5 gap-y-1">
+                        {primary.map((group) => (
+                            <IdentityLink key={group.narratorId} group={group} />
+                        ))}
+                    </div>
+                </>
+            )}
+            {notes.length > 0 && (
+                <p className="text-xs text-slate-500">
+                    Also{' '}
+                    {notes.map((group, index) => (
+                        <span key={group.narratorId}>
+                            {index > 0 && ', '}
+                            <Link href={`/narrator/${encodeURIComponent(group.narratorId)}`} className="underline-offset-4 hover:underline">
+                                {group.latin || (group.arabic ? <ArabicText>{group.arabic}</ArabicText> : group.narratorId)}
+                            </Link>
+                        </span>
+                    ))}{' '}
+                    · matched by kunya only
+                </p>
+            )}
+            {notes.length > 0 && (
+                <IdentityCredit bases={['name_kunya_only']} className="!text-xs" />
+            )}
         </div>
     );
 }
@@ -75,13 +118,15 @@ function MentionIdentityCell({ node }: { node: ChainNode }) {
 interface IsnadChainProps {
     chain: ChainGraph | null;
     sourceSanadText?: string | null;
+    /** Names the chain for assistive technology when several reports' chains share a page ("Sahih Muslim 5036"). */
+    chainLabel?: string;
 }
 
 /**
  * The written sanad, then each branch name by name as written, with every identity proposed for it and where
  * each comes from. No verdicts here: those live, attributed, on narrator pages.
  */
-export function IsnadChain({ chain, sourceSanadText }: IsnadChainProps) {
+export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainProps) {
     const branches = useMemo(() => {
         const grouped = new Map<string, ChainNode[]>();
         for (const node of chain?.nodes ?? []) grouped.set(node.chain_id, [...(grouped.get(node.chain_id) ?? []), node]);
@@ -114,7 +159,10 @@ export function IsnadChain({ chain, sourceSanadText }: IsnadChainProps) {
                         <p className="mb-3 text-sm text-slate-400">{branches.length > 1 ? `Branch ${branchIndex + 1}` : 'Narrators'}</p>
                     )}
                     <ol
-                        aria-label={branches.length > 1 ? `Chain branch ${branchIndex + 1}` : 'Narrators in this chain'}
+                        aria-label={[
+                            chainLabel,
+                            branches.length > 1 ? `chain branch ${branchIndex + 1}` : 'narrators in this chain',
+                        ].filter(Boolean).join(', ').replace(/^./, (first) => first.toUpperCase())}
                         className="relative ms-1.5 border-s border-slate-700"
                     >
                         {branch.nodes.map((node) => (

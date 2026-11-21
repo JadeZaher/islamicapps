@@ -34,8 +34,8 @@ function fromBase64Url(value: string): Uint8Array<ArrayBuffer> | null {
 }
 
 /** The configured signing secret, or null when missing or too short (sessions then fail closed). */
-export function sessionSecret(): string | null {
-  const secret = process.env.ADMIN_SESSION_SECRET;
+export function sessionSecret(environment: Readonly<Record<string, string | undefined>> = process.env): string | null {
+  const secret = environment.ADMIN_SESSION_SECRET;
   return secret && secret.length >= MIN_SECRET_LENGTH ? secret : null;
 }
 
@@ -75,9 +75,9 @@ export async function verifySessionToken(
 }
 
 /** Curator names currently allowed (keys of CURATOR_PASSPHRASES). Removing a name revokes that curator at once. */
-export function configuredCuratorNames(): Set<string> {
+export function configuredCuratorNames(environment: Readonly<Record<string, string | undefined>> = process.env): Set<string> {
   try {
-    const parsed = JSON.parse(process.env.CURATOR_PASSPHRASES ?? '{}') as unknown;
+    const parsed = JSON.parse(environment.CURATOR_PASSPHRASES ?? '{}') as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return new Set();
     return new Set(Object.keys(parsed));
   } catch {

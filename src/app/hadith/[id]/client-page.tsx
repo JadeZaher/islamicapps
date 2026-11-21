@@ -10,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IsnadChain } from './components/IsnadChain';
 import { GradingPanel } from './components/GradingPanel';
 import { Assessments } from './components/Assessments';
+import { ReportFamilySection } from './components/family/ReportFamilySection';
+import { ownMatn } from './matn';
+import { reportNumber, reportReference } from '@/lib/citation/reference';
 import type { HadithClientPageProps } from './types';
 
 /** Section heading used for every block on the page: one size, one weight. */
@@ -25,21 +28,37 @@ function SectionHeading({ id, children }: { id: string; children: React.ReactNod
  * Hadith reading page: one column, isnad before matn as in the sources, English secondary.
  * Computed signals (chain score, inferred marfūʿ) are deliberately not rendered; see src/components/AGENTS.md §Hadith detail.
  */
-export function HadithClientPage({ hadith, chain, parallels = [] }: HadithClientPageProps) {
+export function HadithClientPage({ hadith, chain, parallels = [], family = null, timeline = null }: HadithClientPageProps) {
     // Prefer the v2 fields; legacy aliases remain a fallback for the live graph.
-    const hasArabicMatn = Boolean(hadith.matn_ar?.trim());
+    const fullArabic = hadith.text_ar ?? hadith.text_arabic ?? hadith.variations?.[0]?.text_arabic ?? null;
+    // A stored matn is shown only when it is this report's own (another report's matn was once attached upstream).
+    const arabicMatn = ownMatn(hadith.matn_ar, fullArabic);
+    const hasArabicMatn = Boolean(arabicMatn);
     const hasEnglishMatn = Boolean(hadith.matn_en?.trim());
-    const arabicText = hasArabicMatn ? hadith.matn_ar : hadith.text_ar ?? hadith.text_arabic ?? hadith.variations?.[0]?.text_arabic ?? null;
+    const arabicText = arabicMatn ?? fullArabic;
     const englishText = hasEnglishMatn ? hadith.matn_en : hadith.text_en ?? hadith.text_english ?? hadith.variations?.[0]?.text_english ?? null;
     // When only one side is segmented, say so: the English may carry the chain the Arabic omits.
     const segmentationDiffers = Boolean(arabicText && englishText) && hasArabicMatn !== hasEnglishMatn;
     const isSegmented = hasArabicMatn || hasEnglishMatn;
 
-    const sourceSanadText = hadith.sanad ?? hadith.isnad_arabic ?? hadith.chain_text_arabic ?? null;
+    // The written sanad is shown above the matn only when the Arabic below is the matn alone; otherwise the full text
+    // below already carries the chain, and it is shown once.
+    const writtenSanad = hadith.sanad ?? hadith.isnad_arabic ?? hadith.chain_text_arabic ?? null;
+    const sourceSanadText = hasArabicMatn ? writtenSanad : null;
     const hasChain = (chain?.nodes.length ?? 0) > 0;
     const showChain = Boolean(sourceSanadText?.trim()) || hasChain;
 
-    const reference = [hadith.source, hadith.hadith_no].filter(Boolean).join(' ');
+    // Thaqalayn's stored hadith_no is the chapter number: the report's own number comes from the provider URL.
+    const referenceFields = {
+        id: hadith.id,
+        hadithNo: hadith.hadith_no,
+        url: hadith.url ?? null,
+        volume: hadith.volume ?? null,
+        pageRef: hadith.page_ref ?? null,
+        bookNumber: null,
+    };
+    const number = reportNumber(referenceFields);
+    const reference = [hadith.source, number].filter(Boolean).join(' ');
     const heading = reference || hadith.title?.trim() || 'Hadith';
     const chapter = hadith.chapter?.trim() || hadith.title?.trim() || '';
     const topic = hadith.primary_topic?.trim();
@@ -49,7 +68,7 @@ export function HadithClientPage({ hadith, chain, parallels = [] }: HadithClient
 
     const referenceRows: Array<[string, React.ReactNode]> = [
         ['Source', hadith.source],
-        ['Number', hadith.hadith_no],
+        ['Reference', reportReference(referenceFields)],
         ['Volume', hadith.volume],
         ['Chain type', hadith.chain_type],
         ['Attributed to', hadith.attributed_to],
@@ -80,6 +99,9 @@ export function HadithClientPage({ hadith, chain, parallels = [] }: HadithClient
                 </section>
             )}
 
+            {/* The chain on a time axis: recorded lifespans or generations, eras, and gaps between consecutive narrators. */}
+            {timeline}
+
             {(arabicText || englishText) && (
                 <section aria-labelledby="matn-heading" className="py-8">
                     <SectionHeading id="matn-heading">{isSegmented ? 'Matn · report text' : 'Text as in the source'}</SectionHeading>
@@ -100,10 +122,17 @@ export function HadithClientPage({ hadith, chain, parallels = [] }: HadithClient
                 </section>
             )}
 
+            {family && (
+                <section aria-labelledby="family-heading" className="border-t border-slate-800 py-8">
+                    <SectionHeading id="family-heading">Tellings of this report</SectionHeading>
+                    <ReportFamilySection family={family} hadithId={hadith.id} />
+                </section>
+            )}
+
             {hadith.assessments && hadith.assessments.length > 0 && (
                 <section aria-labelledby="assessments-heading" className="border-t border-slate-800 py-8">
                     <SectionHeading id="assessments-heading">Assessments by tradition</SectionHeading>
-                    <Assessments groups={hadith.assessments} />
+                    <Assessments groups={hadith.assessments} hadithId={hadith.id} />
                 </section>
             )}
 

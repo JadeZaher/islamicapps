@@ -1,0 +1,689 @@
+{
+  "ambiguity_reasons": {
+    "hadith_kg": {
+      "external_report_claimed_by_several_of_ours": 2626,
+      "several_external_reports_in_the_same_work": 652
+    },
+    "riwayat": {
+      "external_report_claimed_by_several_of_ours": 2494,
+      "several_external_reports_in_the_same_work": 1748
+    }
+  },
+  "artifact": "external_report_crosswalk",
+  "code_sha256": {
+    "datasets/hadith-data/diagnostics/report-correspondence/matn_isolation.py": "c76ec0f474c07e1f71a7d0f87488076fbaed616e392abbb3948a3922cc088380",
+    "datasets/hadith-data/extract_isnad_unified.py": "56ea1ae0968d1cddfa4d0dcdd630e8145e897a1b82413cb3c271cf8023708212",
+    "datasets/hadith-data/reconciled/build_external_report_crosswalk.py": "82472c1e92ee5412eab7c3631a62185fe4396855c8cd3b780669a4893289dee1",
+    "datasets/hadith-data/reconciled/external_source_io.py": "277dfae8dc1b702c53ec26db76f0bcc6fd27619b4c4e6d5ed633b45baeb7aa46",
+    "datasets/hadith-data/reconciled/external_source_logic.py": "5fbab5c6d36b442a0cb9b03ddd42d14513c8ae918998f0e926ccbdbd9796506e",
+    "datasets/hadith-data/reconciled/sidecar_io.py": "e4564e31cc2e6f16d8e1640b179c1cfc5b771d71a3e424646a03df8dde9e9eb2",
+    "datasets/hadith-data/regen_unified_csvs.py": "310fbf58885b53700a17698c1ffcd3231f24a55ba7ea8e8c1c08b64864e78147"
+  },
+  "command": "python -B datasets/hadith-data/reconciled/build_external_report_crosswalk.py",
+  "cross_checks_not_used_for_matching": {
+    "imami_thaqalayn_locator_tail_agrees": 14579,
+    "imami_thaqalayn_locator_tail_differs": 4005,
+    "riwayat_kg_id_equals_our_kg_match": 32430
+  },
+  "external_rows_scanned": {
+    "hadith_kg": 66402,
+    "riwayat": 95086
+  },
+  "inputs_sha256": {
+    "datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz": "feeeb38dae008bed993fab7ccdf6fc7399e985296d5a0c36b59534327e003a17",
+    "datasets/hadith-data/neo4j_export/source_work_registry.json": "8dfda404ca64d217cad7d366a1941d59009220a47705eb4ccca08d4bc2cbe2ba",
+    "datasets/hadith-data/reconciled/no_chain_in_source.jsonl.gz": "59b98699b696002998df43bcd5d0626d69a4aa46caf443d12ce8400f384c15c5",
+    "datasets/hadith-data/reconciled/pure_canon_chain.jsonl.gz": "5b335f0e81853c65ca05761ea188abf3772256a86897afbc8a3c43396371bb19",
+    "datasets/sources/external/hadith-kg/hadith-kg.db": "d528084321e715006712e0e2461809a3afc9408065a1d1af90238c8b723815a6",
+    "datasets/sources/external/riwayat-corpus/hadith_master.db": "278e674ee72ac04886059b14fe6f8e52e70797ac6c65cba08409bafc2d61133b"
+  },
+  "licence": {
+    "hadith_kg": "CC BY 4.0. hadith-kg, \"الجامع — Hadith Knowledge Graph\" by emadjumaah, https://huggingface.co/datasets/emadjumaah/hadith-kg (revision 8ae7e3d5), https://creativecommons.org/licenses/by/4.0/. Changed: rows re-keyed to this project's reports and mentions, names compared with this project's normalization; unreviewed.",
+    "riwayat": "CC0 1.0 for the authors' layer (identifications, parses, labels): Abdullah Ansar, \"Riwāyāt: A Corpus of Sunni and Shīʿī Hadith Transmission\", v1, Zenodo 2026, https://doi.org/10.5281/zenodo.23630501. Embedded texts and inherited annotations keep their sources' licences (hadith-kg CC BY 4.0; ThaqalaynData for the Shi'i texts and Thaqalayn narrator annotations)."
+  },
+  "meaning": "Our report -> the same report in hadith-kg and in Riwayat by normalized Arabic; a candidate correspondence, not an identity. `ambiguous` rows are recorded and never used.",
+  "method": {
+    "classes": {
+      "ambiguous": "several same-work candidates, or the external report is the pick of several of our reports; recorded, not used",
+      "our_matn_contained": "our isolated matn (>= 40 letters) is a substring of their letters-only text starting and ending at word boundaries",
+      "whole_text_equal": "letters-only whole text equal"
+    },
+    "normalization": "regen_unified_csvs.narrator_normalize (NFKC, format controls, vocalization, tatweel, alef and ya folds), then Arabic base letters only; on the external side hadith-kg's inline verse labels (`سورة <name> آية <n>`) are removed first (they are editorial insertions; Riwayat's Sunni texts inherit them)",
+    "same_work": "only external books mapped to our source_work_id in external_source_logic.WORK_MAP are read",
+    "tradition": "our tradition is carried; Riwayat's label is kept as external_tradition_label (it labels Musnad Zayd and Musnad al-Rabi' as sunni)"
+  },
+  "our_matn_methods": {
+    "Ibadi:matn_column": 909,
+    "Ibadi:matn_under_40_letters": 95,
+    "Imami:extractor_boundary": 23122,
+    "Imami:matn_under_40_letters": 3409,
+    "Imami:no_chain_in_source": 1997,
+    "Imami:whole_text_no_reliable_boundary": 3954,
+    "Sunni:extractor_boundary": 11304,
+    "Sunni:matn_column": 19467,
+    "Sunni:matn_under_40_letters": 9558,
+    "Sunni:no_chain_in_source": 1557,
+    "Sunni:source_text_is_matn_only": 22459,
+    "Sunni:whole_text_no_reliable_boundary": 11,
+    "Zaydi:matn_column": 672,
+    "Zaydi:matn_under_40_letters": 26
+  },
+  "output": {
+    "file": "external_report_crosswalk.jsonl.gz",
+    "rows": 91791,
+    "sha256": "9b63c459d93dff65874790421de9526b29566fa78322b0ba0f36fb2ee15ffc76"
+  },
+  "rates_by_tradition": {
+    "hadith_kg": {
+      "Ibadi": {
+        "ambiguous": 21,
+        "our_matn_contained": 153,
+        "reports": 1004,
+        "used_percent": 40.5,
+        "whole_text_equal": 254
+      },
+      "Imami": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 33225,
+        "used_percent": 0.0,
+        "whole_text_equal": 0
+      },
+      "Sunni": {
+        "ambiguous": 3257,
+        "our_matn_contained": 11125,
+        "reports": 64356,
+        "used_percent": 50.9,
+        "whole_text_equal": 21662
+      },
+      "Zaydi": {
+        "ambiguous": 0,
+        "our_matn_contained": 62,
+        "reports": 698,
+        "used_percent": 8.9,
+        "whole_text_equal": 0
+      }
+    },
+    "riwayat": {
+      "Ibadi": {
+        "ambiguous": 26,
+        "our_matn_contained": 148,
+        "reports": 1004,
+        "used_percent": 40.0,
+        "whole_text_equal": 254
+      },
+      "Imami": {
+        "ambiguous": 139,
+        "our_matn_contained": 1157,
+        "reports": 33225,
+        "used_percent": 55.9,
+        "whole_text_equal": 17427
+      },
+      "Sunni": {
+        "ambiguous": 4028,
+        "our_matn_contained": 10529,
+        "reports": 64356,
+        "used_percent": 49.7,
+        "whole_text_equal": 21487
+      },
+      "Zaydi": {
+        "ambiguous": 49,
+        "our_matn_contained": 13,
+        "reports": 698,
+        "used_percent": 1.9,
+        "whole_text_equal": 0
+      }
+    }
+  },
+  "rates_by_work": {
+    "hadith_kg": {
+      "Ibadi|ibadi:musnad-rabi": {
+        "ambiguous": 21,
+        "our_matn_contained": 153,
+        "reports": 1004,
+        "used_percent": 40.5,
+        "whole_text_equal": 254,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:al-amali-mufid": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 387,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:al-amali-saduq": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 1082,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:al-kafi": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 14245,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:al-khisal": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 1282,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:al-tawhid-saduq": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 575,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:fadail-al-shia": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 45,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kamal-al-din": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 659,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kamil-al-ziyarat": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 750,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kitab-al-duafa": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 226,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kitab-al-ghayba-numani": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 468,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kitab-al-ghayba-tusi": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 774,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kitab-al-mumin": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 201,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kitab-al-zuhd": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 290,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:maani-al-akhbar": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 829,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:man-la-yahduruhu-al-faqih": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 6382,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:mujam-al-ahadith-al-mutabara": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 555,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:nahj-al-balagha": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 2260,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:risalat-al-huquq": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 49,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:sahifat-al-imam-ali-al-rida": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 35,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:sifat-al-shia": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 71,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:thawab-al-amal": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 1106,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:uyun-akhbar-al-rida": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 954,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Sunni|sunni:abudawud": {
+        "ambiguous": 547,
+        "our_matn_contained": 467,
+        "reports": 5260,
+        "used_percent": 70.6,
+        "whole_text_equal": 3247,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:ahmad": {
+        "ambiguous": 524,
+        "our_matn_contained": 6673,
+        "reports": 23529,
+        "used_percent": 28.4,
+        "whole_text_equal": 2,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:bukhari": {
+        "ambiguous": 238,
+        "our_matn_contained": 780,
+        "reports": 7370,
+        "used_percent": 74.0,
+        "whole_text_equal": 4671,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:darimi": {
+        "ambiguous": 8,
+        "our_matn_contained": 633,
+        "reports": 2477,
+        "used_percent": 25.6,
+        "whole_text_equal": 0,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:ibnmajah": {
+        "ambiguous": 86,
+        "our_matn_contained": 273,
+        "reports": 4227,
+        "used_percent": 84.6,
+        "whole_text_equal": 3302,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:muslim": {
+        "ambiguous": 1395,
+        "our_matn_contained": 1079,
+        "reports": 7596,
+        "used_percent": 56.7,
+        "whole_text_equal": 3226,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:muwatta": {
+        "ambiguous": 29,
+        "our_matn_contained": 405,
+        "reports": 1855,
+        "used_percent": 21.8,
+        "whole_text_equal": 0,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:nasai": {
+        "ambiguous": 109,
+        "our_matn_contained": 236,
+        "reports": 5774,
+        "used_percent": 91.8,
+        "whole_text_equal": 5065,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:shafii": {
+        "ambiguous": 44,
+        "our_matn_contained": 227,
+        "reports": 2054,
+        "used_percent": 11.1,
+        "whole_text_equal": 1,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:tirmidhi": {
+        "ambiguous": 277,
+        "our_matn_contained": 352,
+        "reports": 4214,
+        "used_percent": 59.3,
+        "whole_text_equal": 2148,
+        "work_has_counterpart": true
+      },
+      "Zaydi|zaydi:musnad-zayd": {
+        "ambiguous": 0,
+        "our_matn_contained": 62,
+        "reports": 698,
+        "used_percent": 8.9,
+        "whole_text_equal": 0,
+        "work_has_counterpart": true
+      }
+    },
+    "riwayat": {
+      "Ibadi|ibadi:musnad-rabi": {
+        "ambiguous": 26,
+        "our_matn_contained": 148,
+        "reports": 1004,
+        "used_percent": 40.0,
+        "whole_text_equal": 254,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:al-amali-mufid": {
+        "ambiguous": 0,
+        "our_matn_contained": 90,
+        "reports": 387,
+        "used_percent": 93.8,
+        "whole_text_equal": 273,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:al-amali-saduq": {
+        "ambiguous": 4,
+        "our_matn_contained": 236,
+        "reports": 1082,
+        "used_percent": 38.4,
+        "whole_text_equal": 179,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:al-kafi": {
+        "ambiguous": 50,
+        "our_matn_contained": 117,
+        "reports": 14245,
+        "used_percent": 74.6,
+        "whole_text_equal": 10513,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:al-khisal": {
+        "ambiguous": 2,
+        "our_matn_contained": 0,
+        "reports": 1282,
+        "used_percent": 41.6,
+        "whole_text_equal": 533,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:al-tawhid-saduq": {
+        "ambiguous": 2,
+        "our_matn_contained": 0,
+        "reports": 575,
+        "used_percent": 32.9,
+        "whole_text_equal": 189,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:fadail-al-shia": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 45,
+        "used_percent": 64.4,
+        "whole_text_equal": 29,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:kamal-al-din": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 659,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:kamil-al-ziyarat": {
+        "ambiguous": 2,
+        "our_matn_contained": 3,
+        "reports": 750,
+        "used_percent": 90.4,
+        "whole_text_equal": 675,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:kitab-al-duafa": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 226,
+        "used_percent": 1.3,
+        "whole_text_equal": 3,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:kitab-al-ghayba-numani": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 468,
+        "used_percent": 56.4,
+        "whole_text_equal": 264,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:kitab-al-ghayba-tusi": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 774,
+        "used_percent": 50.3,
+        "whole_text_equal": 389,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:kitab-al-mumin": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 201,
+        "used_percent": 8.0,
+        "whole_text_equal": 16,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:kitab-al-zuhd": {
+        "ambiguous": 2,
+        "our_matn_contained": 0,
+        "reports": 290,
+        "used_percent": 96.2,
+        "whole_text_equal": 279,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:maani-al-akhbar": {
+        "ambiguous": 2,
+        "our_matn_contained": 0,
+        "reports": 829,
+        "used_percent": 43.5,
+        "whole_text_equal": 361,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:man-la-yahduruhu-al-faqih": {
+        "ambiguous": 12,
+        "our_matn_contained": 709,
+        "reports": 6382,
+        "used_percent": 53.5,
+        "whole_text_equal": 2705,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:mujam-al-ahadith-al-mutabara": {
+        "ambiguous": 61,
+        "our_matn_contained": 0,
+        "reports": 555,
+        "used_percent": 78.9,
+        "whole_text_equal": 438,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:nahj-al-balagha": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 2260,
+        "used_percent": 0.1,
+        "whole_text_equal": 2,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:risalat-al-huquq": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 49,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:sahifat-al-imam-ali-al-rida": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 35,
+        "used_percent": 0.0,
+        "whole_text_equal": 0,
+        "work_has_counterpart": false
+      },
+      "Imami|imami:sifat-al-shia": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 71,
+        "used_percent": 33.8,
+        "whole_text_equal": 24,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:thawab-al-amal": {
+        "ambiguous": 2,
+        "our_matn_contained": 2,
+        "reports": 1106,
+        "used_percent": 30.9,
+        "whole_text_equal": 340,
+        "work_has_counterpart": true
+      },
+      "Imami|imami:uyun-akhbar-al-rida": {
+        "ambiguous": 0,
+        "our_matn_contained": 0,
+        "reports": 954,
+        "used_percent": 22.5,
+        "whole_text_equal": 215,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:abudawud": {
+        "ambiguous": 598,
+        "our_matn_contained": 433,
+        "reports": 5260,
+        "used_percent": 69.6,
+        "whole_text_equal": 3230,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:ahmad": {
+        "ambiguous": 717,
+        "our_matn_contained": 6480,
+        "reports": 23529,
+        "used_percent": 27.5,
+        "whole_text_equal": 2,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:bukhari": {
+        "ambiguous": 334,
+        "our_matn_contained": 714,
+        "reports": 7370,
+        "used_percent": 72.7,
+        "whole_text_equal": 4641,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:darimi": {
+        "ambiguous": 93,
+        "our_matn_contained": 548,
+        "reports": 2477,
+        "used_percent": 22.1,
+        "whole_text_equal": 0,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:ibnmajah": {
+        "ambiguous": 116,
+        "our_matn_contained": 266,
+        "reports": 4227,
+        "used_percent": 83.9,
+        "whole_text_equal": 3279,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:muslim": {
+        "ambiguous": 1576,
+        "our_matn_contained": 982,
+        "reports": 7596,
+        "used_percent": 54.3,
+        "whole_text_equal": 3142,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:muwatta": {
+        "ambiguous": 110,
+        "our_matn_contained": 324,
+        "reports": 1855,
+        "used_percent": 17.5,
+        "whole_text_equal": 0,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:nasai": {
+        "ambiguous": 129,
+        "our_matn_contained": 226,
+        "reports": 5774,
+        "used_percent": 91.5,
+        "whole_text_equal": 5055,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:shafii": {
+        "ambiguous": 54,
+        "our_matn_contained": 217,
+        "reports": 2054,
+        "used_percent": 10.6,
+        "whole_text_equal": 1,
+        "work_has_counterpart": true
+      },
+      "Sunni|sunni:tirmidhi": {
+        "ambiguous": 301,
+        "our_matn_contained": 339,
+        "reports": 4214,
+        "used_percent": 58.8,
+        "whole_text_equal": 2137,
+        "work_has_counterpart": true
+      },
+      "Zaydi|zaydi:musnad-zayd": {
+        "ambiguous": 49,
+        "our_matn_contained": 13,
+        "reports": 698,
+        "used_percent": 1.9,
+        "whole_text_equal": 0,
+        "work_has_counterpart": true
+      }
+    }
+  },
+  "status": "sidecar_unreviewed_not_a_release_input"
+}

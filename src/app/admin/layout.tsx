@@ -1,9 +1,15 @@
 import { ReactNode } from 'react';
+import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
+import { authEnabled } from '@/lib/auth/switches';
 import Link from 'next/link';
 import { Home } from 'lucide-react';
 import { AdminNav } from './_components/AdminNav';
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+    // Resolved at request time (not build time): the admin area does not exist while AUTH_ENABLED is off.
+    await connection();
+    if (!authEnabled()) notFound();
     return (
         <div className="min-h-screen bg-slate-950 md:flex">
             <aside className="border-b border-slate-800/50 bg-slate-900/80 p-4 md:min-h-screen md:w-64 md:shrink-0 md:border-b-0 md:border-r md:p-6">

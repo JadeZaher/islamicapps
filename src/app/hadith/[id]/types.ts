@@ -5,7 +5,7 @@
  * getPublicParallelsForHadith. page.tsx adapts the hadith contract to the legacy keys below; the chain is passed
  * through as the section 9.4 `ChainGraph`.
  */
-import type { ChainGraph, ChainNode, HadithAssessmentGroup } from '@/db/queries/contracts';
+import type { ChainGraph, ChainNode, HadithAssessmentGroup, ReportFamily } from '@/db/queries/contracts';
 
 export type { ChainGraph, ChainNode, HadithAssessmentGroup };
 
@@ -53,6 +53,10 @@ export interface HadithNode {
     sanad?: string | null;
     /** v2: collection category (replaces v1 primary_topic). */
     category?: string | null;
+    /** v2: provider URL; Thaqalayn's carries the report's own number (src/lib/citation/reference.ts). */
+    url?: string | null;
+    /** v2: page locator (OpenITI V01P059). */
+    page_ref?: string | null;
     /** v2: volume number/label within the source. */
     volume?: string | null;
     /** v2: chapter number/label. */
@@ -126,4 +130,8 @@ export interface HadithClientPageProps {
     /** Mention-keyed chain with every identity candidate and its basis; null when it could not be read. */
     chain: ChainGraph | null;
     parallels: ParallelRecord[];
+    /** The report and every telling linked to it, with their chains; null when it could not be read. */
+    family?: ReportFamily | null;
+    /** Server-rendered chain timeline (history lane's ChainFamilyTimelineSection), mounted after the isnad. */
+    timeline?: React.ReactNode;
 }

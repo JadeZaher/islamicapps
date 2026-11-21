@@ -131,7 +131,10 @@ flow('isnad: every name in order as written, every identity candidate with its b
   const muslim = await getChainGraph(MUSLIM_RESOLVED);
   assert.deepEqual(muslim.nodes.map((node) => node.position), [0, 1, 2, 3, 4]);
   assert.ok(muslim.nodes.every((node) => !node.is_link));
-  assert.deepEqual(muslim.nodes.map((node) => node.identity), ['agreed', 'differ', 'agreed', 'agreed', 'differ']);
+  // Position 4: a source index and a kunya-only match name different people; a kunya-only match is a label, never a
+  // contest (owner decision 2026-11-21), so the mention reads as agreed and the kunya match is shown as a note.
+  assert.deepEqual(muslim.nodes.map((node) => node.identity), ['agreed', 'differ', 'agreed', 'agreed', 'agreed']);
+  assert.ok(muslim.nodes[4].candidates.some((candidate) => candidate.basis === 'name_kunya_only'));
 
   const branches = await getChainGraph(MUSLIM_TWO_BRANCHES);
   assert.deepEqual(branches.nodes.map((node) => [node.branch, node.position]), [[0, 0], [1, 0]]);

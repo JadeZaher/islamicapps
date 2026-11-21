@@ -26,6 +26,7 @@ import {
   toIso,
   type PageRequest,
 } from './sql-helpers';
+import { verdictModeFor, type ReadVisibility } from './visibility';
 
 export interface NarratorFilters {
   /** Canonical verdict enum value (the action maps legacy THIQA-style codes). */
@@ -219,6 +220,11 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
       relation: location.relation as 'born' | 'died' | 'resided',
     })),
   };
+}
+
+/** Narrator detail under a resolved visibility (curator preview reads unpublished verdicts, bios and every report). */
+export async function getVisibleNarrator(narratorId: string, visibility: ReadVisibility): Promise<NarratorDetail | null> {
+  return getNarratorDetail(narratorId, verdictModeFor(visibility));
 }
 
 /** Teachers and students from `narrator_transmissions`, strongest first, limited and counted (section 8). */

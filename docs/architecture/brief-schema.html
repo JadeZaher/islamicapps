@@ -43,14 +43,16 @@
   th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
   tr:last-child td { border-bottom: 0; }
-  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; }
+  table.limits td:nth-child(2) { min-width: 200px; }
+  table.limits td:nth-child(4) { min-width: 220px; }
   code { font-family: var(--mono); font-size: .9em; background: color-mix(in srgb, var(--line) 55%, transparent);
     padding: 1px 5px; border-radius: 4px; }
   .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
     border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-  .tag.pipeline { color: var(--accent); border-color: var(--accent); }
-  .tag.curation { color: var(--warn); border-color: var(--warn); }
-  .tag.planned { color: var(--plan); border-color: var(--plan); }
+  .tag.pipeline, .tag.closed, .tag.built { color: var(--accent); border-color: var(--accent); }
+  .tag.curation, .tag.open { color: var(--warn); border-color: var(--warn); }
+  .tag.planned, .tag.partial, .tag.designed { color: var(--plan); border-color: var(--plan); }
   .note { border-left: 3px solid var(--plan); background: var(--plan-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
   .note p:last-child { margin: 0; }
   .domain { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; }
@@ -64,13 +66,22 @@
   summary { cursor: pointer; color: var(--muted); }
   details ul { margin: 8px 0 4px; padding-left: 18px; columns: 2 320px; max-width: none; }
   details li { break-inside: avoid; margin-bottom: 4px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 12px 0; font-size: 14.5px; }
+  .log { list-style: none; padding: 0; margin: 0; max-width: none; display: grid; gap: 10px; }
+  .log li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 0;
+    overflow-wrap: anywhere; }
+  .log .meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; font-size: 13px; color: var(--muted); }
+  .log .title { font-weight: 600; margin: 4px 0 2px; }
+  .log p { margin: 0; max-width: 80ch; }
+  .log .link { font-size: 13px; color: var(--muted); margin-top: 4px; }
   footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+  footer p { max-width: 80ch; }
 </style>
 </head>
 <body>
 <main>
   <h1>Shura wa Istehsan: the app, its schema, and its data limits</h1>
-  <p class="lede">Written 21 November 2026. Column-level detail is in <code>docs/architecture/data-architecture.md</code>.</p>
+  <p class="lede">Updated <span id="updated">21 November 2026</span>. This page describes the app as built and what is known to be missing. Column-level detail is in <a href="data-architecture.md"><code>data-architecture.md</code></a>; terms are defined in the <a href="../glossary.md">glossary</a>.</p>
 
   <nav aria-label="Sections">
     <a href="#app">The app and its goals</a>
@@ -78,28 +89,39 @@
     <a href="#schema">Schema</a>
     <a href="#contribution">Contribution system</a>
     <a href="#limits">Dataset limitations</a>
+    <a href="#log">What changed and what was found</a>
   </nav>
 
   <section id="app">
     <h2>The app and its goals</h2>
-    <p>Shura wa Istehsan is an open archive of hadith across four traditions: Sunni, Imami, Ibadi and Zaydi. Most hadith sites show the text and a grade. This one shows how a report reached us: who narrated it from whom, what is known about each narrator, when and where they lived, and what scholars have said about the report.</p>
+    <p>Shura wa Istehsan is an open archive of hadith across four traditions: Ibadi, Imami, Sunni and Zaydi. The goal is a complete view of every chain of transmission behind a report, and of all of that report's tellings, across works and across the four traditions. Most hadith sites show a text and a grade. This one is meant to show how a report reached us: who narrated it from whom, in which work and tradition each telling appears, what is known about each transmitter, and what scholars have said.</p>
+    <p>The historical context is part of that view. For each transmitter the archive is meant to show when and where they lived and which eras and events they lived through, so that a chain can be read against its time. That context is the least developed part of the data today (see the limitations below).</p>
     <p>It is built for serious readers who do not have a seminary library: practising Muslims who want to understand why a report is graded as it is, self-taught students, teachers who need sourced material, and researchers.</p>
 
     <div class="stats">
       <div class="stat"><div class="n">99,283</div><div class="k">Reports in the corpus</div></div>
       <div class="stat"><div class="n">4</div><div class="k">Traditions, side by side</div></div>
       <div class="stat"><div class="n">34</div><div class="k">Source works</div></div>
-      <div class="stat"><div class="n">24,326</div><div class="k">Narrator identities</div></div>
+      <div class="stat"><div class="n">24,326</div><div class="k">Narrators in the lexicon</div></div>
+      <div class="stat"><div class="n">83,949</div><div class="k">Verified chain links, all in Sunni chains</div></div>
+      <div class="stat"><div class="n">0</div><div class="k">Reports shown publicly today, until rights are recorded</div></div>
     </div>
 
-    <h4>What a reader can do</h4>
+    <h4>What a reader can do today</h4>
     <ul>
-      <li><strong>Read a report</strong> in Arabic with a translation, its source work and its place in that work.</li>
-      <li><strong>Follow its chain of transmission</strong>, narrator by narrator, including reports that reach us through several branches.</li>
-      <li><strong>Open a narrator</strong> to see teachers and students, assessments by critics, life dates, and events during their lifetime.</li>
+      <li><strong>Read a report</strong> in Arabic with its source work, and with English where a provider supplied it and it is cleared for display.</li>
+      <li><strong>See the chains behind it</strong>, branch by branch, with each name as written. For a name, every narrator the archive considers a possible match is shown with where that match comes from; only a match confirmed by the Arabic text, or decided by a reviewer, is marked verified.</li>
+      <li><strong>Open a narrator</strong> to see what the lexicon claims about them (labelled as unverified), the teachers and students seen in verified links, assessments by named critics, and, once entered, events during their lifetime.</li>
       <li><strong>See gradings as each tradition gives them.</strong> A Sunni verdict and a Zaydi verdict on the same narrator sit side by side; neither overrides the other.</li>
-      <li><strong>Read commentary and historical context</strong> linked to a report or a narrator.</li>
-      <li><strong>Compare with other scriptures.</strong> Parallels in Jewish, Christian and other sources are catalogued with the classical Isra'iliyyat classification.</li>
+      <li><strong>Read commentary and compare with other scriptures.</strong> Commentary and parallels in Jewish, Christian and other sources are catalogued with the classical Isra'iliyyat classification; both start as proposed and are shown only once published by a named curator.</li>
+    </ul>
+
+    <h4>What the goal needs that is not yet built</h4>
+    <ul>
+      <li><strong>All tellings of one report, across works and traditions.</strong> A study has found candidate links between reports; the tables, the loader and the reader's view are designed but not built.</li>
+      <li><strong>Identities for Imami, Ibadi and Zaydi chains.</strong> Verified identities exist only for Sunni chains today.</li>
+      <li><strong>Reading a work in order,</strong> with previous and next, and links from a report to the Qur'anic verses it quotes.</li>
+      <li><strong>Historical context in depth:</strong> named eras, dated and cited events, and the places where narrators lived.</li>
     </ul>
 
     <h4>Goals</h4>
@@ -107,25 +129,31 @@
       <li><strong>Curation, not broadcast.</strong> The archive presents evidence and attributed scholarship. It does not issue rulings, and no computed score is presented as a verdict.</li>
       <li><strong>Anti-sectarian.</strong> Every tradition's sources and grading schemes are first-class. Nothing defaults to one tradition.</li>
       <li><strong>Cumulative scholarship.</strong> In the classical manner of commentary upon commentary, contemporary scholars add attributed, reviewed work that stays linked to what it builds on.</li>
-      <li><strong>Open.</strong> The code is open source and the published data is meant to be exportable with attribution.</li>
-      <li><strong>Honest about gaps.</strong> What is unknown is shown as unknown.</li>
+      <li><strong>Open.</strong> The code is open source and the published data is meant to be exportable with attribution, within the licences of the sources.</li>
+      <li><strong>Honest about gaps.</strong> What is unknown is shown as unknown, and this page lists its own gaps and how each was found or closed.</li>
     </ul>
   </section>
 
   <section id="rules">
     <h2>Rules the schema enforces</h2>
+    <p>The state column says whether the rule is held by the schema and loader today or is designed but not yet built.</p>
     <div class="scroll">
       <table>
-        <thead><tr><th>Rule</th><th>How the schema holds it</th></tr></thead>
+        <thead><tr><th>Rule</th><th>How it is held</th><th>State</th></tr></thead>
         <tbody>
-          <tr><td>The Arabic source is never altered</td><td>Stored byte for byte with a hash. Translations record the hash of the Arabic they rendered, so a translation cannot silently drift from its source.</td></tr>
-          <tr><td>A name is not a person</td><td>Each name in a chain is stored as written. It links to a narrator identity only when that identity is established; otherwise it is displayed as text.</td></tr>
-          <tr><td>Grades belong to a tradition</td><td>Every assessment carries its tradition and grading scheme. No narrator has a single reliability value. "No evaluation exists" is the absence of a row.</td></tr>
-          <tr><td>Disagreement is kept</td><td>Competing claims about a date or a biography are separate rows, each with its citation. None is collapsed into one answer.</td></tr>
-          <tr><td>Reloading data never erases scholarship</td><td>Tables are written either by the data pipeline or by people through the app, never both. A reload updates pipeline rows by permanent ID and leaves human work alone.</td></tr>
-          <tr><td>Nothing is deleted</td><td>Rows are retired with a timestamp and an audit record.</td></tr>
-          <tr><td>Unreviewed machine output stays separate</td><td>Machine translations and proposed name matches live in candidate tables until a person reviews them.</td></tr>
-          <tr><td>Every change has an author</td><td>An audit table records who changed what, with before and after.</td></tr>
+          <tr><td>The Arabic source is never altered</td><td>Stored byte for byte with a hash. Translations and commentary record the hash of the Arabic they were written against, so they cannot silently drift from it.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Every identity claim for a name is kept, with its source, and shown</td><td>A name in a chain is stored as written. Each narrator a name might be is stored as a separate candidate with its basis (exact name, spelling variant, kunya only, the source's own index, that index confirmed by the Arabic). Disagreeing candidates are all shown.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Only two things count as verified</td><td>A source index confirmed by the Arabic text and uncontested by any other candidate, or a reviewer's decision. A name match, a kunya-only match or an unconfirmed index entry never sets a verified identity or a transmission link. A name that matches only a placeholder lexicon row cannot match at all.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Identities are not merged across traditions automatically</td><td>Chains stay per tradition, and automatic name matching is applied to Sunni reports only. Linking a narrator in one tradition to a narrator in another needs a human-confirmed record, which is designed but not built.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Tellings of the same report are linked at the level of the report; each sanad stays separate</td><td>The design links reports, never narrators or chains, with machine-found pairs kept apart from human decisions. A reader would see that a report is carried by more than one tradition while every chain keeps its own tradition and source.</td><td><span class="tag designed">designed, tables not built</span></td></tr>
+          <tr><td>Grades belong to a tradition and a grader</td><td>Every assessment carries its tradition, grading scheme and grader. No narrator has a single reliability value and no grade is computed. "No evaluation exists" is the absence of a row.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Disagreement is kept</td><td>Competing life dates appear as ranges that are never collapsed. Separate cited claims for competing dates are designed but not built.</td><td><span class="tag partial">partly built</span></td></tr>
+          <tr><td>Rights are the publication gate, per work</td><td>Public pages read views that show a report only when its work has a recorded, cleared rights decision. Each work also records whether provider English may be shown without review. Nothing is cleared by default.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Preview data is served only under a recorded owner approval, with a visible notice</td><td>A development snapshot can be shown publicly only if the owner's approval (who, why, when) is recorded on that data load, in all three fields or none. The notice on every page is driven by the database, and the approval is tied to one load, so a new load must be approved again.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Every write needs a named curator and leaves an audit record</td><td>Writes require a signed-in curator and run in one transaction with an append-only audit row holding who, what, and the before and after. Curation rows record who created, changed and retired them.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Nothing is deleted</td><td>Rows are retired with a timestamp and a name. Every foreign key refuses deletion, so an accidental delete fails instead of cascading.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Reloading data never erases scholarship</td><td>Tables are written either by the data pipeline or by people through the app, never both. A reload updates pipeline rows by permanent identifier and leaves human work alone.</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Unreviewed machine output stays separate</td><td>Machine translations and proposed matches are labelled candidates and never appear in public views. Candidate tables for translations are designed but not yet built.</td><td><span class="tag partial">partly built</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -133,213 +161,273 @@
 
   <section id="schema">
     <h2>Schema</h2>
-    <p>47 tables in PostgreSQL, grouped below. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets. <span class="tag curation">curation</span> tables are edited by people in the app. Each diagram shows keys and the most important columns.</p>
+    <p>As built in PostgreSQL, counted from the Drizzle schema files: <strong><span data-count="tables">41</span> tables</strong>, <strong><span data-count="views">6</span> views</strong> and <strong><span data-count="materialized">1</span> materialized view</strong>, in <span data-count="domains">10</span> groups. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets. <span class="tag curation">curation</span> tables are edited by people in the app. <span class="tag">operations</span> tables record loads and audit. <span class="tag">derived</span> views are computed from the others. Each diagram shows keys and the most important columns.</p>
     <div id="domains"></div>
+
+    <h3 style="margin-top:40px">Designed, not yet built</h3>
+    <p><span data-count="planned">16</span> more tables are designed but do not exist in the database. They are drawn separately and are not part of the count above. The six contribution tables are shown under <a href="#contribution">Contribution system</a>.</p>
+    <div id="planned-domains"></div>
   </section>
 
   <section id="contribution">
     <h2>Contribution system</h2>
-    <p>The Open Scholarly Contribution System plan (March 2026) describes contributor profiles, five roles, eight contribution types, a review lifecycle, endorsements modelled on the ijazah, and bulk collection submissions. It was written for Neo4j. This is how it maps onto the Postgres schema.</p>
+    <p>The Open Scholarly Contribution System plan (March 2026) describes contributor profiles, five roles, eight contribution types, a review lifecycle, endorsements, and bulk collection submissions. It was written for Neo4j. Today only named curators can write: they sign in by name, every write is audited, and content moves through the states proposed, verified and published, with refused actions returned as plain results. Contributor accounts, submissions, peer review and endorsements are planned.</p>
 
     <div class="scroll">
       <table>
         <thead><tr><th>In the plan</th><th>In the schema</th><th>State</th></tr></thead>
         <tbody>
-          <tr><td>Attribution and timestamps on every contribution</td><td><code>curation_audit</code> records actor, action, before and after</td><td>In the launch schema</td></tr>
-          <tr><td>Review before publication</td><td>Commentaries and parallels start as <code>proposed</code> and are published by a named curator; translations and identity matches carry a review state</td><td>In the launch schema</td></tr>
-          <tr><td>Source verification</td><td><code>citations</code>, <code>editions</code>, <code>bibliographic_works</code>; biographical and date claims must cite one</td><td>In the launch schema</td></tr>
-          <tr><td>Multiple assessments per narrator, not one grade</td><td><code>narrator_assessments</code>, scoped by tradition and critic</td><td>In the launch schema</td></tr>
-          <tr><td>Provenance on imported collections</td><td><code>dataset_versions</code>, <code>sources</code>, <code>collections</code>, <code>collection_rights</code></td><td>In the launch schema</td></tr>
-          <tr><td>Version history, superseding earlier work</td><td>Retire-not-delete on every curation table, plus the audit trail</td><td>In the launch schema</td></tr>
-          <tr><td>Contributor profiles and the five roles</td><td><code>contributors</code></td><td>Planned, below</td></tr>
-          <tr><td>Digital ijazah</td><td><code>contributor_endorsements</code></td><td>Planned, below</td></tr>
-          <tr><td>Submission lifecycle (draft to published)</td><td><code>submissions</code></td><td>Planned, below</td></tr>
-          <tr><td>Peer review votes and discussion</td><td><code>submission_reviews</code>, <code>submission_comments</code></td><td>Planned, below</td></tr>
-          <tr><td>Bulk collection upload with validation and preview</td><td><code>collection_imports</code></td><td>Planned, below</td></tr>
+          <tr><td>Attribution and timestamps on every contribution</td><td><code>curation_audit</code> records actor, action, before and after; every curation row records who created, changed and retired it</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Review before publication</td><td>Commentaries, parallels, narrator assessments and biographies start as <code>proposed</code> and are published by a named curator; translations and identity matches carry a review state</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Source verification</td><td><code>citations</code>, <code>editions</code>, <code>bibliographic_works</code>; a published assessment or biography must cite one. The tables are built but hold no rows yet</td><td><span class="tag built">built, empty</span></td></tr>
+          <tr><td>Multiple assessments per narrator, not one grade</td><td><code>narrator_assessments</code>, scoped by tradition and critic</td><td><span class="tag built">built, empty</span></td></tr>
+          <tr><td>Provenance on imported collections</td><td><code>dataset_versions</code>, <code>sources</code>, <code>collections</code>, <code>collection_rights</code></td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Version history, superseding earlier work</td><td>Retire-not-delete on every curation table, plus the audit trail</td><td><span class="tag built">built</span></td></tr>
+          <tr><td>Contributor profiles and the five roles</td><td><code>contributors</code>; today a fixed list of named curators stands in</td><td><span class="tag planned">planned</span></td></tr>
+          <tr><td>Digital ijaza</td><td><code>contributor_endorsements</code></td><td><span class="tag planned">planned</span></td></tr>
+          <tr><td>Submission lifecycle (draft to published)</td><td><code>submissions</code></td><td><span class="tag planned">planned</span></td></tr>
+          <tr><td>Peer review votes and discussion</td><td><code>submission_reviews</code>, <code>submission_comments</code>. The plan's votes, notifications and reputation have no table</td><td><span class="tag planned">planned</span></td></tr>
+          <tr><td>Bulk collection upload with validation and preview</td><td><code>collection_imports</code></td><td><span class="tag planned">planned</span></td></tr>
         </tbody>
       </table>
     </div>
 
-    <article class="domain planned">
-      <header><h3>Contribution</h3><span class="tag planned">planned</span><span class="tag">6 tables</span></header>
-      <p>Not part of the 47. These ship with the contribution features, and replace the small fixed list of named curators that access control starts with.</p>
-      <div class="diagram" id="contribution-diagram"></div>
-      <details>
-        <summary>What each table holds</summary>
-        <ul>
-          <li><code>contributors</code> A person's scholarly profile: name, institution, areas of expertise, and role (reader, contributor, reviewer, editor, admin).</li>
-          <li><code>contributor_endorsements</code> One scholar vouching for another in a named field. The chain of endorsements is public, like a chain of scholarly authority.</li>
-          <li><code>submissions</code> One proposed contribution: its type, what it is about, its content, and its status from draft to published or rejected.</li>
-          <li><code>submission_reviews</code> A reviewer's verdict and notes on a submission.</li>
-          <li><code>submission_comments</code> The discussion between reviewer and contributor.</li>
-          <li><code>collection_imports</code> A bulk upload: file hash, validation report, preview counts, and the dataset version it became.</li>
-        </ul>
-      </details>
-    </article>
+    <div id="contribution-card"></div>
 
-    <p><strong>How publishing works.</strong> A submission holds proposed content. When an editor publishes it, the content is written into the table where that kind of scholarship already lives (a commentary into <code>commentaries</code>, a narrator evaluation into <code>narrator_assessments</code>, a correction as a cited claim), and the audit record names the contributor and the submission. Readers query the same tables either way.</p>
+    <p><strong>How publishing would work.</strong> A submission holds proposed content. When an editor publishes it, the content is written into the table where that kind of scholarship already lives (a commentary into <code>commentaries</code>, a narrator evaluation into <code>narrator_assessments</code>, a correction as a cited claim), and the audit record names the contributor and the submission. Readers query the same tables either way.</p>
 
     <div class="note">
-      <p><strong>Where the plan and the current design differ.</strong> The plan's "graph-native" principle is kept in substance: every relationship is its own table with its own attributes. Its data exports as a Neo4j dump become a Postgres dump plus CSV. Its figures (about 34,500 hadiths from six collections) predate the four-tradition corpus. And where older product notes describe an automatically calculated grade, the design shows chain facts and attributed verdicts only.</p>
+      <p><strong>An open naming question.</strong> The glossary notes that the classical <em>ijaza</em> licenses a student to transmit, whereas the planned endorsement vouches for a contributor's expertise in a field. Whether the word ijaza should be used for it is undecided.</p>
+      <p><strong>Not yet specified.</strong> Email registration and verification, account recovery, spam and abuse controls, personal-data handling, and a contributor licence compatible with the share-alike terms on data derived from OpenITI. Contributions cannot be published until the last of these is settled.</p>
+    </div>
+
+    <div class="note">
+      <p><strong>Where the plan and the current design differ.</strong> The plan's "graph-native" principle is kept in substance: every relationship is its own table with its own attributes. Its data exports as a Neo4j dump become a database dump plus CSV. Its figures (about 34,500 hadiths from six collections) predate the four-tradition corpus. And where older product notes describe an automatically calculated grade, the design shows chain facts and attributed verdicts only.</p>
     </div>
   </section>
 
   <section id="limits">
     <h2>Dataset limitations</h2>
-    <p>Figures are from the audit of 21 July 2026 unless stated. They describe the data as it stands, before any gap-closing work.</p>
+    <p>Figures are the most recent recorded: the load reports and diagnostic reports of 21 November 2026, the rights register, and an independent two-sided review of the same date. The earlier audit of 21 July 2026 is superseded where the two differ. A figure that appears in two documents with different values is given once, with the newer value: for example, the count of reports with a fully resolved chain is 142 after the empty-chain correction, where earlier reports gave 569 and the July audit gave 204. A figure that no document records is marked "not recorded". Each row says whether the limitation is <span class="tag open">open</span>, <span class="tag partial">partly closed</span> or <span class="tag closed">closed</span>, and what closed it or what remains.</p>
 
     <h4>Coverage</h4>
     <div class="scroll">
-      <table>
-        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
         <tbody>
-          <tr><td>The corpus is uneven across traditions</td><td class="num">Sunni 64,356 · Imami 33,225 · Ibadi 1,004 · Zaydi 698</td></tr>
-          <tr><td>Major works are absent</td><td>Imami: Tahdhib al-Ahkam, al-Istibsar, Bihar al-Anwar, Wasa'il al-Shi'a. Sunni: the works after the six books (al-Bayhaqi, Ibn Hibban, Ibn Khuzayma, al-Tabarani, al-Hakim, the two Musannafs). Zaydi and Ibadi: most works beyond one or two each.</td></tr>
-          <tr><td>No commentaries</td><td>The commentary tables are empty. None of the classical commentaries is ingested.</td></tr>
-          <tr><td>Historical context is a starter set</td><td>54 events and 32 locations, almost all single-year points, with no dynasties or eras.</td></tr>
+          <tr><td>The corpus is uneven across traditions</td><td class="num">Ibadi 1,004 · Imami 33,225 · Sunni 64,356 · Zaydi 698</td><td><span class="tag open">open</span></td><td>Imami, Ibadi and Zaydi hold a third of the reports but are thinnest in identities, gradings and English.</td></tr>
+          <tr><td>Major works are absent</td><td>Imami: Tahdhib al-Ahkam, al-Istibsar, Bihar al-Anwar, Wasa'il al-Shi'a. Sunni: the works after the six books (al-Bayhaqi, Ibn Hibban, Ibn Khuzayma, al-Tabarani, al-Hakim, the two Musannafs). Zaydi and Ibadi: most works beyond one or two each.</td><td><span class="tag open">open</span></td><td>None added.</td></tr>
+          <tr><td>Most scholarship tables are empty</td><td class="num">24 of 41 tables hold no rows: no commentaries, parallels, source texts, events, locations, biographies, citations or rights decisions</td><td><span class="tag open">open</span></td><td>The old Neo4j store holds none of these either, apart from 21 hand-written biographies that are kept in the code repository, so there was nothing to migrate.</td></tr>
+          <tr><td>Nothing is shown publicly today</td><td class="num">0 reports and 0 translations in the public views</td><td><span class="tag open">open</span></td><td>No rights decision is recorded, and the owner's preview approval is tied to an earlier load, so the current load has none.</td></tr>
+          <tr><td>Tellings of one report are not linked</td><td class="num">Study: 135,825 candidate pairs in 17,536 clusters; 7,107 reports have a counterpart in another tradition</td><td><span class="tag open">open</span></td><td>The method is deterministic and its recall measured (77% overall, 100% for same wording). Precision rests on one reader's check of 150 pairs. The tables, loader and display are not built.</td></tr>
+          <tr><td>No linking to the Qur'an</td><td class="num">At least 2,108 reports carry Qur'anic quotation marks</td><td><span class="tag open">open</span></td><td>No table, page or plan links reports to verses. Quotations are also the commonest source of false matches between reports.</td></tr>
+          <tr><td>No reading in order until the browse pages land</td><td class="num">371 books and 8,291 chapters stored; no collection, book or chapter page; no previous or next</td><td><span class="tag open">open</span></td><td>Sunni reports carry no chapter link at all; Imami, Ibadi and Zaydi reports all do.</td></tr>
+          <tr><td>Historical context is a starter set</td><td class="num">54 events and 32 places, almost all single years, none cited, none yet in the database; no named eras</td><td><span class="tag open">open</span></td><td>The era table is not built. The lexicon's generation markers (8,312 with a number) and places were checked against Ibn Hajar but are not loaded.</td></tr>
+          <tr><td>The interface and search are English only</td><td>No Arabic interface and no transliteration search; English search covers only public translations, which are empty</td><td><span class="tag open">open</span></td><td>Arabic search works on normalised text and is fast.</td></tr>
         </tbody>
       </table>
     </div>
 
     <h4>Chains and narrator identity</h4>
+    <p>Identity by tradition, on the 538,513 names in 114,597 chains in the current load. The "no verified identity" total is 538,513 less 83,949, derived here.</p>
     <div class="scroll">
       <table>
-        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <thead><tr><th>Tradition</th><th>Verified links</th><th>Candidate identities (rows)</th><th>Names without a verified identity</th></tr></thead>
         <tbody>
-          <tr><td>Most narrator names are not matched to a person</td><td class="num">387,359 of 437,476 name occurrences unmatched</td></tr>
-          <tr><td>Very few reports have a fully identified chain</td><td class="num">204 of 99,283 under strict matching</td></tr>
-          <tr><td>Some reports yield no chain at all</td><td class="num">14,500 reports; at least one collection has no chains in its source</td></tr>
-          <tr><td>The narrator lexicon is Sunni-centred</td><td>24,326 identities from one dataset. Imami narrators are largely absent, so Imami chains cannot be matched to identities.</td></tr>
-          <tr><td>Chain extraction is validated on a small sample</td><td>32 hand-annotated reports. It scores perfectly on them, which shows the method works, not how it behaves on every edge case.</td></tr>
-          <tr><td>The live site's narrator links come from an older index</td><td>About 159,550 links whose identities were never verified; 37,242 chains have no narrator.</td></tr>
+          <tr><td>Ibadi</td><td class="num">0</td><td class="num">0</td><td>All of its names (count not recorded separately)</td></tr>
+          <tr><td>Imami</td><td class="num">0</td><td class="num">0</td><td class="num">169,536, all of its names</td></tr>
+          <tr><td>Sunni</td><td class="num">83,949</td><td class="num">212,921: exact name 25,414; spelling variant 18,542; kunya only 5,559; source index 75,216; source index confirmed by the Arabic 88,190</td><td>Not recorded separately</td></tr>
+          <tr><td>Zaydi</td><td class="num">0</td><td class="num">0</td><td>All of its names (count not recorded separately)</td></tr>
+          <tr><td><strong>All four</strong></td><td class="num">83,949</td><td class="num">212,921</td><td class="num">about 454,564</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px">A further 4,241 Sunni names have a source-index identity confirmed by the Arabic that another candidate contradicts; they stay unverified and both candidates are shown.</p>
+
+    <div class="scroll" style="margin-top:12px">
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
+        <tbody>
+          <tr><td>Imami, Ibadi and Zaydi chains have no identities yet</td><td class="num">0 verified links and 0 candidates outside Sunni chains</td><td><span class="tag open">open</span></td><td>Names in Imami chains used to be matched against a Sunni-based lexicon and were largely wrong; that matching was withdrawn for non-Sunni reports. The Imami rijal texts (al-Najashi, al-Tusi) and the Riwayat corpus, which carries Thaqalayn's own narrator annotation for many Imami names, are on disk but not loaded.</td></tr>
+          <tr><td>Very few reports have a fully identified chain</td><td class="num">15,701 six-book reports have every source-provided identity confirmed by the Arabic. Under the earlier name-only rule: 142</td><td><span class="tag partial">partly closed</span></td><td>The number of reports whose chain is complete under the verified rule in the database is not recorded. 427 of the earlier 569 counted an empty chain as resolved; this is corrected in the reconciliation jobs but not in the older audit and census.</td></tr>
+          <tr><td>Some verified links name the wrong person</td><td class="num">2 of 40 sampled verified links (roughly 1% to 17%)</td><td><span class="tag open">open</span></td><td>A bare name such as Hisham or Sa'id fits several narrators, and the Arabic cannot decide which; the source's own index is sometimes wrong.</td></tr>
+          <tr><td>Name matching disagreed with the source's index</td><td class="num">8,037 of 15,941 comparable names; 24% to 49% of names where both identified a narrator</td><td><span class="tag closed">closed</span></td><td>Placeholder lexicon rows (866) are no longer match targets, and where the two methods disagree both candidates are kept and shown.</td></tr>
+          <tr><td>Some reports yield no chain</td><td class="num">14,500 reports. Remaining after recovery: no chain in the source 1,136 · Nahj al-Balagha, by design 1,060 · omitted by al-Saduq in al-Faqih 541 · no transmission wording 395 · opens with an attribution 206 · extractor misses 87 · by reference to a previous report 14 · text missing or cut 15</td><td><span class="tag partial">partly closed</span></td><td>11,046 chains were restored from the source's own chain field (Musnad Ahmad 9,519; al-Darimi 857; the Muwatta' 670). Nahj al-Balagha and al-Shafi'i (4,314 reports) are still marked as extraction failures although the source has no chain.</td></tr>
+          <tr><td>Extraction artefacts remain in the names</td><td class="num">About 2,800 formulas such as "by his chain" taken as names; 766 bare "and"; some mis-flattened branches</td><td><span class="tag open">open</span></td><td>In a check of 20 reports, every chain was attached to the right report and in the right order.</td></tr>
+          <tr><td>Some matn values are another report's, or still hold the chain</td><td class="num">1,597 Sunni reports carry a neighbouring report's matn; 12,617 matn values still contain the chain (13,502 on a looser measure)</td><td><span class="tag open">open</span></td><td>The hadith page prefers this field to the report's own text. The report-correspondence study routes around both defects.</td></tr>
+          <tr><td>Citation numbers are unusable for some works</td><td class="num">Al-Kafi: 14,245 reports, 597 distinct numbers; Musnad Ahmad: 3,616 distinct numbers over 23,529 reports; Musnad al-Shafi'i: none</td><td><span class="tag open">open</span></td><td>A heading such as "Al-Kafi 1" repeats across 255 reports.</td></tr>
+          <tr><td>The narrator lexicon is Sunni-centred</td><td>24,326 lexicon rows from one dataset; 455 Arabic names are shared by two or more rows</td><td><span class="tag open">open</span></td><td>Imami narrators are largely absent, so Imami names cannot be identified from it.</td></tr>
+          <tr><td>Chain extraction is validated on a small sample</td><td>32 hand-annotated reports (12 Sunni, 9 Imami, 6 Ibadi, 5 Zaydi)</td><td><span class="tag open">open</span></td><td>It scores perfectly on them, which shows the method works, not how it behaves on every edge case. A 200-report validation sample is drawn but not yet annotated.</td></tr>
+          <tr><td>The live site's narrator links come from an older matching</td><td class="num">159,550 name-matched links, 13,964 of them on Imami chains</td><td><span class="tag partial">partly closed</span></td><td>The new data layer carries none of them. The live site, still on the July build, shows them until the switch-over.</td></tr>
         </tbody>
       </table>
     </div>
 
     <h4>Narrator biographies</h4>
     <div class="scroll">
-      <table>
-        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
         <tbody>
-          <tr><td>Life dates are sparse</td><td class="num">death year 15.7% · birth year 1.6% · neither 84.2%</td></tr>
-          <tr><td>Some dates are impossible</td><td class="num">38 narrators with death before birth</td></tr>
-          <tr><td>Some fields look filled by default</td><td>For example, cause of death is "Natural" far too uniformly to be sourced.</td></tr>
-          <tr><td>Nothing is cited</td><td>The lexicon gives no book, edition or page for any claim.</td></tr>
-          <tr><td>Written biographies exist for 21 narrators</td><td>Hand-written, naming general reference works without page citations.</td></tr>
+          <tr><td>Life dates are sparse</td><td class="num">83.7% of lexicon narrators (20,363 of 24,326) have neither a Hijri birth nor death year</td><td><span class="tag open">open</span></td><td>The earlier audit gave death year 15.7%, birth year 1.6%. Checked against Ibn Hajar and al-Mizzi, 500 narrators could gain a death year and 185 a birth year; these are not loaded.</td></tr>
+          <tr><td>Some dates looked impossible</td><td class="num">38 narrators with death before birth</td><td><span class="tag closed">closed</span></td><td>They were before-Hijra years read without their sign; the loader restores the sign.</td></tr>
+          <tr><td>Some fields look filled by default</td><td class="num">121 death years of 0; cause of death "Natural" on 20,325 narrators with no death date</td><td><span class="tag open">open</span></td><td>Not corrected by the loader.</td></tr>
+          <tr><td>Nothing is cited</td><td>The lexicon gives no book, edition or page for any claim</td><td><span class="tag partial">partly closed</span></td><td>Against Ibn Hajar's Taqrib, 1,588 of 1,663 death years (95.5%) and 5,128 of 5,194 generation markers (98.7%) agree, so the lexicon follows him closely, though that mostly shows faithful copying. Only 5,839 narrators (24%) link uniquely to an entry. 17,893 cited date and place claims are prepared, not loaded; 61 death-year conflicts should be shown with both values.</td></tr>
+          <tr><td>Written biographies exist for 21 narrators</td><td>Hand-written, recorded by the owner as Sunni, naming general reference works without page citations</td><td><span class="tag open">open</span></td><td>They are in the code repository but not yet in the biography table.</td></tr>
         </tbody>
       </table>
     </div>
 
     <h4>Gradings</h4>
     <div class="scroll">
-      <table>
-        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
         <tbody>
-          <tr><td>Most reports have no grading</td><td class="num">88% of assessment records are "no evaluation" placeholders</td></tr>
-          <tr><td>Two traditions have none</td><td>No Ibadi or Zaydi gradings. Substantive gradings exist for 29,915 Sunni records and 16,834 Imami assessments.</td></tr>
-          <tr><td>Gradings are mostly one scholar's</td><td>Where a grade exists it is usually a single verdict, not the range of classical opinion.</td></tr>
+          <tr><td>Most reports had a placeholder, not a grading</td><td class="num">Earlier: 88% of 399,064 assessment records (352,315) were "no evaluation"</td><td><span class="tag closed">closed</span></td><td>The new schema stores only real, attributed grades; 29,915 identical labels that were presented as Sunni grades are stored as labels and hidden.</td></tr>
+          <tr><td>No Sunni gradings are loaded</td><td class="num">0 Sunni grades; 29,915 hidden labels</td><td><span class="tag open">open</span></td><td>Tirmidhi's own statements (2,707) and Ibn Hajar's verdicts on narrators (5,163) are extracted as candidates, not loaded.</td></tr>
+          <tr><td>Ibadi and Zaydi have no gradings</td><td class="num">0</td><td><span class="tag open">open</span></td><td>Grading works for these traditions have not been acquired.</td></tr>
+          <tr><td>Gradings are mostly one scholar's</td><td class="num">16,835 cited Imami rulings, mostly al-Majlisi (13,866 of 15,022 in the candidate file)</td><td><span class="tag open">open</span></td><td>Where a grade exists it is usually one verdict, not the range of classical opinion.</td></tr>
+          <tr><td>"Not included" is stored as a ruling</td><td class="num">1,734 Imami entries recording that Behbudi did not include a report</td><td><span class="tag open">open</span></td><td>They are publicly displayable although they record inclusion, not a grade.</td></tr>
         </tbody>
       </table>
     </div>
 
     <h4>Translation</h4>
     <div class="scroll">
-      <table>
-        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
         <tbody>
-          <tr><td>No translation has been reviewed</td><td class="num">0 of 99,283 carry a review status</td></tr>
-          <tr><td>Many translations fail quality checks</td><td class="num">12,831 missing, refused by the model, or containing Arabic</td></tr>
-          <tr><td>A third are unreviewed machine output</td><td class="num">31,652</td></tr>
-          <tr><td>English only</td><td>No other target language.</td></tr>
+          <tr><td>No translation has been reviewed</td><td class="num">0 of 66,776 canonical English texts carry a reviewed state; all are source-provided</td><td><span class="tag open">open</span></td><td>Sunni 33,588 · Imami 33,188 · Ibadi 0 · Zaydi 0.</td></tr>
+          <tr><td>Many translations fail quality checks</td><td class="num">12,831 in July; 11,953 contain Arabic, 92% only the honorific glyph; 10,650 Sunni texts flagged</td><td><span class="tag partial">partly closed</span></td><td>10,662 glyph replacements and 2,082 machine translations of missing or untranslated text are prepared as unreviewed candidates. None has been applied or reviewed.</td></tr>
+          <tr><td>Machine and unknown-origin English is unreviewed</td><td class="num">31,652 candidate rows: 29,915 classical Sunni with no recorded model, 1,733 by one model, 4 by hand</td><td><span class="tag open">open</span></td><td>They are never in public views. A July pilot of a machine translator found fidelity errors.</td></tr>
+          <tr><td>Ibadi and Zaydi have no English in the new data</td><td class="num">0 of 1,702</td><td><span class="tag open">open</span></td><td>The live site shows unlabelled machine output for them, at least 100 of which contain Arabic or model commentary.</td></tr>
+          <tr><td>English only</td><td>No other target language</td><td><span class="tag open">open</span></td><td></td></tr>
         </tbody>
       </table>
     </div>
 
     <h4>Provenance and rights</h4>
     <div class="scroll">
-      <table>
-        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
         <tbody>
-          <tr><td>Publication rights are not cleared</td><td>No source work has a recorded rights decision. Provider translations in particular cannot be assumed publishable.</td></tr>
-          <tr><td>Sources are digital copies, not editions</td><td>Texts come from aggregated datasets, a provider API and a text repository. Most rows have no printed edition, volume or page.</td></tr>
-          <tr><td>No cited scholarly claims yet</td><td>The citation tables are empty.</td></tr>
-          <tr><td>One upstream source is unstable</td><td>A provider endpoint returned empty for a 659-report book in July; the local copy was kept.</td></tr>
-          <tr><td>Eight reports have no Arabic text</td><td class="num">8</td></tr>
-          <tr><td>The current data bundle is a development snapshot</td><td>It is explicitly marked as not a release.</td></tr>
-          <tr><td>Comparative parallels are machine-found</td><td>Proposed by an AI research step and not yet reviewed by a person.</td></tr>
-          <tr><td>The datasets exist in one place</td><td>A single machine, with no off-site copy.</td></tr>
+          <tr><td>Publication rights are not cleared</td><td class="num">0 rights decisions recorded for 34 works. Proposal: 23 clearable (20 Imami works from Thaqalayn, 3 from OpenITI), 11 pending, no provider English</td><td><span class="tag open">open</span></td><td>The <a href="../rights/rights-register.md">rights register</a> holds the evidence per work. The owner approves each; nothing is cleared until recorded.</td></tr>
+          <tr><td>The six books' English and the lexicon come from scraped uploads whose licence does not cover them</td><td>The six-book file is a 2018 upload scraped from a site that republishes sunnah.com; its English belongs to other translators. The lexicon is a scrape of muslimscholars.info</td><td><span class="tag open">open</span></td><td>Plan on record: rebuild the Sunni Arabic from OpenITI (CC BY-NC-SA) or wait for permissions; ask Thaqalayn about each translation; ask for permission to show the lexicon's fields.</td></tr>
+          <tr><td>Sources are digital copies, not editions</td><td>34,441 six-book reports have no volume, page or link; Imami reports carry a volume and a Thaqalayn link, no printed page</td><td><span class="tag partial">partly closed</span></td><td>Edition and page candidates are recovered for 1,737 Ibadi, Zaydi and Rida reports, and edition text for al-Darimi and the Muwatta'; not loaded.</td></tr>
+          <tr><td>No cited scholarly claims yet</td><td class="num">The citation tables hold 0 rows</td><td><span class="tag open">open</span></td><td>13,909 citations are prepared from the rijal works, not loaded.</td></tr>
+          <tr><td>Comparative parallels</td><td class="num">0 parallels exist</td><td><span class="tag partial">partly closed</span></td><td>The earlier machine-found parallels are gone; new ones start as proposed and need a curator to publish.</td></tr>
+          <tr><td>Eight reports have no Arabic text</td><td class="num">8</td><td><span class="tag partial">partly closed</span></td><td>Two are not reports, four have a candidate text to verify, two have no local Arabic.</td></tr>
+          <tr><td>The loaded data is a development snapshot, not a release</td><td>Every load is marked an unreviewed local snapshot; the release gate was not consulted</td><td><span class="tag open">open</span></td><td>A preview can be shown under the owner's recorded approval with a notice. Three gate files cannot be read at the operating-system level.</td></tr>
+          <tr><td>One upstream source is unstable</td><td>A provider endpoint returned empty for a 659-report book in July</td><td><span class="tag open">open</span></td><td>The local copy was kept.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Operations and safety</h4>
+    <div class="scroll">
+      <table class="limits">
+        <thead><tr><th>Limitation</th><th>Extent</th><th>Status</th><th>What closed it, or what remains</th></tr></thead>
+        <tbody>
+          <tr><td>The app connects as the database owner</td><td>No restricted database role is applied</td><td><span class="tag open">open</span></td><td>The one-writer rule is held by the code, not by database permissions.</td></tr>
+          <tr><td>A reload is blocked after the first identity decision</td><td>The loader refuses to run while any reviewer decision exists; production is migrated but never loaded</td><td><span class="tag open">open</span></td><td>Replaying decisions onto a reload is not built.</td></tr>
+          <tr><td>The datasets exist in one place</td><td>A private off-machine copy: 482 files, 2,878 MB, each hashed</td><td><span class="tag partial">partly closed</span></td><td>It omits the 9 GB development folder the database was loaded from and three unreadable files, sits in the same hosting project as the databases, and has never been restored. No database dump exists.</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <footer>Sources: the product guide, the Open Scholarly Contribution System plan, <code>datasets/hadith-data/DATA_QUALITY_REPORT.md</code>, and <code>docs/architecture/data-architecture.md</code>.</footer>
+  <section id="log">
+    <h2>What changed and what was found</h2>
+    <p id="log-summary">Dated, newest first. <strong>Architecture</strong> entries record what was built or designed. <strong>Gap found</strong> entries record a weakness in the data or the app, and a <strong>Gap closed</strong> entry follows it where one was closed. Gaps that are still open stay listed as open.</p>
+    <div class="controls">
+      <label><input type="checkbox" id="only-open"> Show only gaps that are not fully closed</label>
+    </div>
+    <ol class="log" id="log-list"></ol>
+  </section>
+
+  <footer>
+    <p>Sources: the Drizzle schema in <code>src/db/schema/</code> (built objects); <a href="data-architecture.md"><code>data-architecture.md</code></a> (designed objects); the <a href="../rights/rights-register.md">rights register</a>; the <a href="../glossary.md">glossary</a>; the load, diagnostic and reconciliation reports under <code>datasets/hadith-data/</code>; the Open Scholarly Contribution System plan; and an independent two-sided review of 21 November 2026.</p>
+    <p>To update this page: append a line to <code>brief-log.js</code> for each change or finding; edit an entity or its description in <code>brief-erd.js</code> for a schema change (the counts above follow it); edit a row in the limitation tables here when a figure changes. Instructions are at the top of each data file.</p>
+  </footer>
 </main>
 
 <script src="brief-erd.js"></script>
+<script src="brief-log.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
 <script>
-const CONTRIBUTION_ERD = `erDiagram
-  contributors {
-    uuid id PK
-    text display_name
-    text email UK
-    text role
-    text institution
-    timestamptz retired_at
-  }
-  contributor_endorsements {
-    uuid id PK
-    uuid endorser_id FK
-    uuid contributor_id FK
-    text field
-    timestamptz endorsed_at
-  }
-  submissions {
-    uuid id PK
-    uuid contributor_id FK
-    text kind
-    text status
-    text target_type
-    text target_id
-    jsonb content
-    uuid supersedes_id FK
-  }
-  submission_reviews {
-    uuid id PK
-    uuid submission_id FK
-    uuid reviewer_id FK
-    text verdict
-    timestamptz reviewed_at
-  }
-  submission_comments {
-    uuid id PK
-    uuid submission_id FK
-    uuid author_id FK
-    uuid parent_id FK
-    text body
-  }
-  collection_imports {
-    uuid id PK
-    uuid submission_id FK
-    text file_sha256
-    jsonb validation_report
-    text dataset_version_id FK
-  }
-  contributors ||--o{ contributor_endorsements : endorses
-  contributors ||--o{ submissions : submits
-  submissions ||--o{ submission_reviews : receives
-  contributors ||--o{ submission_reviews : writes
-  submissions ||--o{ submission_comments : discussed
-  submissions ||--o| collection_imports : uploads
-  submissions ||--o{ submissions : supersedes
-  collection_imports }o--|| dataset_versions : becomes
-  submissions }o--o{ citations : cites
-  contributors ||--o{ curation_audit : acts`;
-
 (async function () {
-  const host = document.getElementById('domains');
-  const domains = window.ERD || [];
+  const builtDomains = window.ERD || [];
+  const plannedDomains = window.ERD_PLANNED || [];
+  const log = window.BRIEF_LOG || [];
+
+  // Counts that follow the data files.
+  const countOf = (domains, kind) => domains.reduce((sum, domain) => sum + domain.tables.filter(table => table.kind === kind).length, 0);
+  const counts = {
+    tables: countOf(builtDomains, 'table'),
+    views: countOf(builtDomains, 'view'),
+    materialized: countOf(builtDomains, 'materialized view'),
+    domains: builtDomains.length,
+    planned: countOf(plannedDomains, 'table')
+  };
+  if (builtDomains.length) {
+    document.querySelectorAll('[data-count]').forEach(node => { if (node.dataset.count in counts) node.textContent = counts[node.dataset.count]; });
+  }
+
+  // Change and findings log.
+  const logList = document.getElementById('log-list');
+  const onlyOpen = document.getElementById('only-open');
+  const dateLabel = date => {
+    const [year, month, day] = date.split('-');
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return (day ? Number(day) + ' ' : '') + (month ? months[Number(month) - 1] + ' ' : '') + year;
+  };
+  const indexed = log.map((entry, index) => ({ entry, index }))
+    .sort((a, b) => (a.entry.date < b.entry.date ? 1 : a.entry.date > b.entry.date ? -1 : b.index - a.index))
+    .map(item => item.entry);
+  const byId = new Map(log.filter(entry => entry.id).map(entry => [entry.id, entry]));
+  const closers = new Map();
+  log.filter(entry => entry.closes).forEach(entry => { if (!closers.has(entry.closes)) closers.set(entry.closes, []); closers.get(entry.closes).push(entry); });
+  function statusClass(status) { return status === 'partly closed' ? 'partial' : status; }
+  function renderLog() {
+    logList.replaceChildren();
+    for (const entry of indexed) {
+      const stillOpen = entry.kind === 'Gap found' && entry.status !== 'closed';
+      const closing = entry.kind === 'Gap closed' && entry.status !== 'closed';
+      if (onlyOpen.checked && !stillOpen && !closing) continue;
+      const item = document.createElement('li');
+      const meta = document.createElement('div'); meta.className = 'meta';
+      const when = document.createElement('span'); when.textContent = dateLabel(entry.date);
+      const kind = document.createElement('span'); kind.className = 'tag'; kind.textContent = entry.kind;
+      const status = document.createElement('span'); status.className = 'tag ' + statusClass(entry.status); status.textContent = entry.status;
+      meta.append(when, kind, status);
+      const title = document.createElement('div'); title.className = 'title'; title.textContent = entry.title;
+      const text = document.createElement('p'); text.textContent = entry.text;
+      item.append(meta, title, text);
+      if (entry.closes && byId.has(entry.closes)) {
+        const link = document.createElement('div'); link.className = 'link'; link.textContent = 'Answers the gap found: ' + byId.get(entry.closes).title;
+        item.append(link);
+      } else if (entry.id && closers.has(entry.id)) {
+        const link = document.createElement('div'); link.className = 'link'; link.textContent = 'Followed by: ' + closers.get(entry.id).map(closer => closer.title).join('; ');
+        item.append(link);
+      }
+      logList.append(item);
+    }
+  }
+  if (!log.length) {
+    logList.textContent = 'The log data file brief-log.js was not found next to this page.';
+  } else {
+    const kinds = kind => log.filter(entry => entry.kind === kind).length;
+    const found = log.filter(entry => entry.kind === 'Gap found');
+    const tally = status => found.filter(entry => entry.status === status).length;
+    const latest = indexed[0].date;
+    document.getElementById('updated').textContent = dateLabel(latest);
+    const summary = document.createElement('p');
+    summary.textContent = log.length + ' entries: ' + kinds('Architecture') + ' architecture, ' + found.length + ' gaps found, ' + kinds('Gap closed') + ' closing entries. Of the gaps found, ' + tally('open') + ' are open, ' + tally('partly closed') + ' are partly closed and ' + tally('closed') + ' are closed.';
+    document.getElementById('log-summary').after(summary);
+    onlyOpen.addEventListener('change', renderLog);
+    renderLog();
+  }
+
+  // Diagrams.
   const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const canRender = typeof mermaid !== 'undefined';
   if (canRender) mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', securityLevel: 'strict', er: { useMaxWidth: false } });
@@ -357,16 +445,21 @@ const CONTRIBUTION_ERD = `erDiagram
       showSource();
     }
   }
-  if (!domains.length) host.textContent = 'Schema data file brief-erd.js was not found next to this page.';
-  for (const domain of domains) {
+  async function renderDomain(domain, host, planned) {
     const card = document.createElement('article');
-    card.className = 'domain';
+    card.className = 'domain' + (planned ? ' planned' : '');
+    card.id = 'domain-' + domain.id;
     const header = document.createElement('header');
     const title = document.createElement('h3'); title.textContent = domain.name;
-    const tag = document.createElement('span'); tag.className = 'tag ' + domain.owner; tag.textContent = domain.owner;
-    const count = document.createElement('span'); count.className = 'tag'; count.textContent = domain.tables.length + ' tables';
+    const tag = document.createElement('span'); tag.className = 'tag ' + domain.owner; tag.textContent = planned ? 'planned' : domain.owner;
+    const tableCount = domain.tables.filter(table => table.kind === 'table').length;
+    const viewCount = domain.tables.length - tableCount;
+    const count = document.createElement('span'); count.className = 'tag';
+    count.textContent = tableCount + (tableCount === 1 ? ' table' : ' tables') + (viewCount ? ', ' + viewCount + (viewCount === 1 ? ' view' : ' views') : '');
     header.append(title, tag, count);
     const blurb = document.createElement('p'); blurb.textContent = domain.blurb;
+    card.append(header, blurb);
+    if (domain.basis) { const basis = document.createElement('p'); basis.textContent = 'Where it is designed: ' + domain.basis; card.append(basis); }
     const diagram = document.createElement('div'); diagram.className = 'diagram';
     const details = document.createElement('details');
     const summary = document.createElement('summary'); summary.textContent = 'What each table holds';
@@ -374,15 +467,21 @@ const CONTRIBUTION_ERD = `erDiagram
     for (const table of domain.tables) {
       const item = document.createElement('li');
       const name = document.createElement('code'); name.textContent = table.name;
-      item.append(name, ' ' + table.purpose + (table.ships === 'later' ? ' (ships later)' : ''));
+      item.append(name, ' ' + (table.kind === 'table' ? '' : '(' + table.kind + ') ') + table.purpose);
       list.append(item);
     }
     details.append(summary, list);
-    card.append(header, blurb, diagram, details);
+    card.append(diagram, details);
     host.append(card);
     await draw(diagram, domain.mermaid, domain.name);
   }
-  await draw(document.getElementById('contribution-diagram'), CONTRIBUTION_ERD, 'Contribution');
+  const domainsHost = document.getElementById('domains');
+  if (!builtDomains.length) domainsHost.textContent = 'Schema data file brief-erd.js was not found next to this page.';
+  for (const domain of builtDomains) await renderDomain(domain, domainsHost, false);
+  for (const domain of plannedDomains) {
+    if (domain.id === 'contribution') await renderDomain(domain, document.getElementById('contribution-card'), true);
+    else await renderDomain(domain, document.getElementById('planned-domains'), true);
+  }
 })();
 </script>
 </body>

@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design preview | Shura wa Istehsan</title>
+<!-- Static specimen of DESIGN.md. Sample text, chains and identity bases are copied from
+     src/db/queries/__tests__/fixtures/correspondence.json and corpus.json (nothing invented). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:opsz,wght@14..32,400..800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* ---- Tokens: same values as src/app/design-tokens.css ---- */
+:root {
+  color-scheme: light dark;
+  --color-paper: light-dark(#f4f1ea, #0f0f0d);
+  --color-surface: light-dark(#fbfaf7, #171714);
+  --color-sunken: light-dark(#eae6dc, #1e1e1a);
+  --color-band-alternate: light-dark(#e1dccf, #262622);
+  --color-ink: light-dark(#17150f, #f1eee6);
+  --color-ink-muted: light-dark(#57524a, #aca79c);
+  --color-ink-faint: light-dark(#76716a, #8c877e);
+  --color-rule: light-dark(#d3cdc1, #36342f);
+  --color-rule-strong: var(--color-ink);
+  --color-control: light-dark(#77716a, #8c877e);
+  --color-accent: light-dark(#0b6a4e, #5dc09a);
+  --color-accent-wash: light-dark(#ddebe3, #16302a);
+  --color-on-accent: light-dark(#fbfaf7, #0f0f0d);
+  --color-focus: var(--color-accent);
+  --color-danger: light-dark(#a32a1d, #ff8b7b);
+  --color-notice: var(--color-ink);
+  --color-on-notice: var(--color-paper);
+  --font-latin: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --font-arabic: "Amiri", "Noto Naskh Arabic", "Times New Roman", serif;
+  --text-label: 0.75rem; --leading-label: 1rem;
+  --text-small: 0.875rem; --leading-small: 1.25rem;
+  --text-body: 1rem; --leading-body: 1.5rem;
+  --text-reading: 1.125rem; --leading-reading: 1.75rem;
+  --text-heading-3: 1.25rem; --leading-heading-3: 1.75rem;
+  --text-heading-2: 1.5rem; --leading-heading-2: 2rem;
+  --text-heading-1: 2rem; --leading-heading-1: 2.5rem;
+  --text-display: 3rem; --leading-display: 3.25rem;
+  --text-arabic-inline: 1.125rem; --leading-arabic-inline: 2rem;
+  --text-arabic-reading: 1.375rem; --leading-arabic-reading: 2.75rem;
+  --text-arabic-display: 1.75rem; --leading-arabic-display: 3.5rem;
+  --tracking-label: 0.08em; --tracking-heading: -0.02em; --tracking-display: -0.035em;
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.5rem;
+  --space-6: 2rem; --space-7: 3rem; --space-8: 4rem; --space-9: 6rem;
+  --grid-max: 72rem; --grid-gutter: 1.5rem; --page-margin: clamp(1rem, 4vw, 2rem);
+  --measure-reading: 42rem; --measure-wide: 60rem;
+  --rule-hairline: 1px; --rule-strong: 2px;
+  --focus-width: 2px; --focus-offset: 2px;
+  --motion-fast: 120ms; --motion-base: 180ms; --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+html.light { color-scheme: light; }
+html.dark { color-scheme: dark; }
+@media (prefers-reduced-motion: reduce) { :root { --motion-fast: 0ms; --motion-base: 0ms; } }
+
+/* ---- Base ---- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--color-paper); color: var(--color-ink);
+  font: 400 var(--text-body)/var(--leading-body) var(--font-latin);
+  font-optical-sizing: auto; -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p, ol, ul, dl, dd, figure { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
+:lang(ar), [dir="rtl"] {
+  font-family: var(--font-arabic); letter-spacing: 0; word-spacing: normal; text-align: start; text-transform: none;
+}
+a { color: inherit; }
+:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+::selection { background: var(--color-accent-wash); color: var(--color-ink); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.num { font-variant-numeric: tabular-nums; }
+.code { font: 500 var(--text-label)/var(--leading-label) var(--font-mono); letter-spacing: 0.02em; }
+.muted { color: var(--color-ink-muted); }
+svg { display: block; flex: none; }
+
+/* ---- Grid ---- */
+.wrap { max-width: calc(var(--grid-max) + 2 * var(--page-margin)); margin-inline: auto; padding-inline: var(--page-margin); }
+.columns { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--grid-gutter); }
+@media (min-width: 64rem) {
+  .columns { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .span-main { grid-column: 1 / span 8; }
+  .span-aside { grid-column: 9 / -1; }
+  .span-wide { grid-column: 1 / -1; }
+}
+.reading { max-width: var(--measure-reading); }
+
+/* ---- Type roles ---- */
+.label {
+  font-size: var(--text-label); line-height: var(--leading-label); font-weight: 600;
+  letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-muted);
+}
+.small { font-size: var(--text-small); line-height: var(--leading-small); }
+.h1 { font-size: var(--text-heading-1); line-height: var(--leading-heading-1); font-weight: 800; letter-spacing: var(--tracking-heading); }
+.h2 { font-size: var(--text-heading-2); line-height: var(--leading-heading-2); font-weight: 700; letter-spacing: var(--tracking-heading); }
+.h3 { font-size: var(--text-heading-3); line-height: var(--leading-heading-3); font-weight: 600; letter-spacing: -0.01em; }
+.display { font-size: var(--text-display); line-height: var(--leading-display); font-weight: 800; letter-spacing: var(--tracking-display); }
+.arabic-reading { font-size: var(--text-arabic-reading); line-height: var(--leading-arabic-reading); }
+.arabic-inline { font-size: var(--text-arabic-inline); line-height: var(--leading-arabic-inline); }
+.arabic-display { font-size: var(--text-arabic-display); line-height: var(--leading-arabic-display); }
+
+/* ---- Links ---- */
+.link-prose { color: var(--color-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.link-row { text-decoration: underline; text-decoration-color: var(--color-rule); text-decoration-thickness: 1px; text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--motion-fast) var(--motion-ease); }
+.link-row:hover { text-decoration-color: var(--color-accent); }
+.term { text-decoration: underline dotted; text-decoration-color: var(--color-ink-muted); text-decoration-thickness: 1px; text-underline-offset: 0.25em; }
+.term:hover { text-decoration-color: var(--color-accent); }
+
+/* ---- Site header ---- */
+.site-header { border-bottom: var(--rule-hairline) solid var(--color-rule-strong); }
+.header-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-6); row-gap: var(--space-2); padding-block: var(--space-4); }
+.wordmark { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 800; font-size: 0.9375rem; letter-spacing: -0.01em; text-decoration: none; }
+.nav ul { display: flex; flex-wrap: wrap; column-gap: var(--space-5); row-gap: var(--space-1); }
+.nav a { display: inline-block; padding-block: var(--space-2); font-size: var(--text-small); font-weight: 500; text-decoration: none; color: var(--color-ink-muted);
+  border-bottom: var(--rule-strong) solid transparent; transition: color var(--motion-fast) var(--motion-ease); }
+.nav a:hover { color: var(--color-ink); }
+.nav a[aria-current="page"] { color: var(--color-ink); border-bottom-color: var(--color-ink); }
+.theme-switch { margin-inline-start: auto; display: inline-flex; border: var(--rule-hairline) solid var(--color-control); }
+.theme-switch button { font: 500 var(--text-label)/1 var(--font-latin); letter-spacing: 0.02em; padding: var(--space-2) var(--space-3); min-height: 2rem;
+  background: none; color: var(--color-ink-muted); border: 0; cursor: pointer; }
+.theme-switch button + button { border-inline-start: var(--rule-hairline) solid var(--color-control); }
+.theme-switch button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); }
+
+/* ---- Preview notice ---- */
+.notice { background: var(--color-notice); color: var(--color-on-notice); }
+.notice p { padding-block: var(--space-2); font-size: var(--text-small); line-height: var(--leading-small); }
+.notice strong { font-size: var(--text-label); font-weight: 700; letter-spacing: var(--tracking-label); text-transform: uppercase; margin-inline-end: var(--space-2); }
+.notice a { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; }
+
+/* ---- Page header ---- */
+.page-header { padding-block: var(--space-6) var(--space-5); border-bottom: var(--rule-strong) solid var(--color-rule-strong); }
+.crumbs ol { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-small); color: var(--color-ink-muted); }
+.crumbs li + li::before { content: "/"; margin-inline-end: var(--space-2); color: var(--color-ink-faint); }
+.page-header .h1 { margin-top: var(--space-3); }
+.tradition-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); font-size: var(--text-small); color: var(--color-ink-muted); }
+.tradition-line .ink { color: var(--color-ink); font-weight: 600; }
+
+/* ---- Sections ---- */
+.section { padding-top: var(--space-3); margin-top: var(--space-7); border-top: var(--rule-hairline) solid var(--color-rule-strong); }
+.section > .label:first-child, .section-head { margin-bottom: var(--space-4); }
+.span-main > .section:first-child { border-top: 0; margin-top: var(--space-6); padding-top: 0; }
+.section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.band { margin-top: var(--space-9); padding-block: var(--space-6) var(--space-8); border-top: var(--rule-strong) solid var(--color-rule-strong); }
+
+/* ---- Report text ---- */
+.report-text { margin-top: var(--space-1); }
+.translation-state { margin-top: var(--space-4); font-size: var(--text-small); color: var(--color-ink-muted); }
+.source-ref { font-size: var(--text-small); line-height: var(--leading-small); color: var(--color-ink-muted); margin-top: var(--space-3); }
+.source-ref .role { color: var(--color-ink); }
+.source-ref a { color: var(--color-ink-muted); }
+
+/* ---- Facts (aside) ---- */
+.facts { padding-top: var(--space-6); }
+.facts dl { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: var(--space-2) var(--space-4); font-size: var(--text-small); line-height: var(--leading-small); }
+.facts dt { color: var(--color-ink-muted); }
+.facts dd { min-width: 0; overflow-wrap: anywhere; }
+.facts .actions { margin-top: var(--space-5); display: flex; gap: var(--space-2); flex-wrap: wrap; }
+@media (max-width: 63.99rem) { .facts { padding-top: var(--space-5); } }
+
+/* ---- Buttons ---- */
+.button { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.5rem; padding: 0 var(--space-4);
+  font: 600 var(--text-small)/1 var(--font-latin); border-radius: 0; cursor: pointer; text-decoration: none;
+  transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease); }
+.button-primary { background: var(--color-accent); color: var(--color-on-accent); border: var(--rule-hairline) solid var(--color-accent); }
+.button-primary:hover { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.button-secondary { background: transparent; color: var(--color-ink); border: var(--rule-hairline) solid var(--color-ink); }
+.button-secondary:hover { background: var(--color-ink); color: var(--color-paper); }
+.button-quiet { background: transparent; border: 0; padding-inline: 0; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-rule); text-underline-offset: 0.2em; }
+.button[disabled] { color: var(--color-ink-faint); border-color: var(--color-rule); background: transparent; cursor: not-allowed; }
+@media (pointer: coarse) { .button { min-height: 2.75rem; } }
+
+/* ---- Isnad list ---- */
+.chain + .chain { margin-top: var(--space-6); }
+.chain-head { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); align-items: baseline; margin-bottom: var(--space-2); }
+.chain ol { position: relative; }
+.position { display: grid; grid-template-columns: 1.5rem 0.75rem minmax(0, 1fr); column-gap: var(--space-3); align-items: start; }
+.position .n { font-size: var(--text-label); line-height: var(--leading-arabic-inline); color: var(--color-ink-muted); text-align: end; }
+.rail { position: relative; align-self: stretch; }
+.rail::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: calc(50% - 0.5px); width: 1px; background: var(--color-ink-faint); }
+.position:first-child .rail::before { top: 1rem; }
+.position:last-child .rail::before { bottom: auto; height: 1rem; }
+.rail svg { position: relative; margin: calc(1rem - 4px) auto 0; }
+.position .body { display: grid; grid-template-columns: minmax(0, 1fr); padding-block: 0 var(--space-3); border-bottom: var(--rule-hairline) solid var(--color-rule); }
+.position:last-child .body { border-bottom: 0; }
+@media (min-width: 40rem) { .position .body { grid-template-columns: minmax(9rem, 2fr) minmax(0, 3fr); column-gap: var(--space-5); } }
+.identity { padding-top: 0.375rem; font-size: var(--text-small); line-height: var(--leading-small); }
+.identity .who { font-weight: 600; }
+.basis { position: relative; padding-inline-start: 1.125rem; margin-top: var(--space-1); color: var(--color-ink-muted); }
+.basis > svg { position: absolute; inset-inline-start: 0; top: 0.3125rem; }
+.basis .code { color: var(--color-ink-muted); }
+.unidentified { color: var(--color-ink-muted); }
+
+/* ---- Table ---- */
+.table-caption { font-size: var(--text-small); color: var(--color-ink-muted); margin-bottom: var(--space-3); text-align: start; caption-side: top; }
+table.data { width: 100%; border-collapse: collapse; font-size: var(--text-small); line-height: var(--leading-small); }
+table.data th { text-align: start; font-size: var(--text-label); line-height: var(--leading-label); font-weight: 600; letter-spacing: var(--tracking-label); text-transform: uppercase;
+  color: var(--color-ink-muted); padding: 0 var(--space-3) var(--space-2) 0; border-bottom: var(--rule-hairline) solid var(--color-rule-strong); }
+table.data td { padding: var(--space-2) var(--space-3) var(--space-2) 0; border-bottom: var(--rule-hairline) solid var(--color-rule); vertical-align: baseline; }
+table.data tr.current td { background: var(--color-accent-wash); }
+table.data tr.current td:first-child { box-shadow: inset 2px 0 0 var(--color-accent); padding-inline-start: var(--space-2); }
+table.data td.num-cell, table.data th.num-cell { text-align: end; font-variant-numeric: tabular-nums; }
+.trad { display: inline-flex; align-items: center; gap: var(--space-2); }
+@media (max-width: 39.99rem) {
+  table.data thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  table.data, table.data tbody, table.data tr, table.data td { display: block; width: 100%; }
+  table.data tr { padding-block: var(--space-2); border-bottom: var(--rule-hairline) solid var(--color-rule); }
+  table.data td { border: 0; padding: 0 0 0 7.75rem; position: relative; }
+  table.data td::before { content: attr(data-label); color: var(--color-ink-muted); position: absolute; inset-inline-start: 0; width: 7rem; }
+  table.data td.num-cell { text-align: start; }
+  table.data tr.current { background: var(--color-accent-wash); box-shadow: inset 2px 0 0 var(--color-accent); padding-inline-start: var(--space-3); }
+  table.data tr.current td, table.data tr.current td:first-child { background: none; box-shadow: none; padding-inline-start: 7.75rem; }
+}
+
+/* ---- Diagrams ---- */
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: var(--text-small); line-height: var(--leading-small); color: var(--color-ink-muted); margin-bottom: var(--space-4); }
+.legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.legend svg { color: var(--color-ink); }
+.graph-frame { overflow-x: auto; overscroll-behavior-x: contain; border-block: var(--rule-hairline) solid var(--color-rule); }
+.graph-frame svg { width: 100%; min-width: 46rem; height: auto; color: var(--color-ink); }
+.graph-frame:focus-visible { outline-offset: -2px; }
+.graph-hint { font-size: var(--text-small); color: var(--color-ink-muted); margin-top: var(--space-2); }
+@media (min-width: 46rem) { .graph-hint { display: none; } }
+.selection { margin-top: var(--space-5); padding-inline-start: var(--space-4); border-inline-start: var(--rule-strong) solid var(--color-accent); }
+.selection ul { margin-top: var(--space-2); }
+.selection li { padding-block: var(--space-2); border-bottom: var(--rule-hairline) solid var(--color-rule); font-size: var(--text-small); line-height: var(--leading-small); }
+.selection li:last-child { border-bottom: 0; }
+
+.timeline { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--space-2); }
+.lane { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1) var(--space-4); align-items: center; }
+@media (min-width: 40rem) { .lane { grid-template-columns: 12rem minmax(0, 1fr); } }
+.lane-label { font-size: var(--text-small); line-height: var(--leading-small); }
+.lane-track { position: relative; min-height: 1.5rem; }
+.lane-track svg { width: 100%; height: 1.5rem; }
+.tick-labels { position: relative; height: 1rem; font-size: var(--text-label); color: var(--color-ink-muted); }
+.tick-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.tick-labels span:first-child { transform: none; }
+.tick-labels span:last-child { transform: translateX(-100%); }
+.track-text { font-size: var(--text-small); color: var(--color-ink-muted); }
+
+/* ---- Forms ---- */
+.form { display: grid; gap: var(--space-5); max-width: var(--measure-wide); }
+.field { display: grid; gap: var(--space-2); }
+.field > label, .field > legend, fieldset legend { font-size: var(--text-small); font-weight: 600; padding: 0; }
+.input, .select { font: 400 var(--text-body)/var(--leading-body) var(--font-latin); color: var(--color-ink); background: var(--color-surface);
+  border: var(--rule-hairline) solid var(--color-control); border-radius: 0; min-height: 2.5rem; padding: var(--space-2) var(--space-3); width: 100%; }
+.input:focus-visible, .select:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: 0; border-color: var(--color-focus); }
+.input-row { display: flex; gap: var(--space-2); }
+.input-icon { position: relative; flex: 1; }
+.input-icon svg { position: absolute; inset-inline-start: var(--space-3); top: 50%; transform: translateY(-50%); color: var(--color-ink-muted); pointer-events: none; }
+.input-icon .input { padding-inline-start: 2.25rem; }
+fieldset { border: 0; margin: 0; padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.chip { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.5rem; padding: 0 var(--space-3); border: var(--rule-hairline) solid var(--color-control);
+  font-size: var(--text-small); cursor: pointer; }
+.chip input { accent-color: var(--color-accent); margin: 0; width: 1rem; height: 1rem; }
+.chip:has(input:checked) { border-color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-ink); }
+.chip:has(input:focus-visible) { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+.form-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; }
+.field-error { color: var(--color-danger); font-size: var(--text-small); }
+.input[aria-invalid="true"] { border-color: var(--color-danger); box-shadow: inset 0 -2px 0 var(--color-danger); }
+
+/* ---- States ---- */
+.states { display: grid; gap: var(--space-6); }
+@media (min-width: 64rem) { .states { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.state { border-top: var(--rule-hairline) solid var(--color-rule); padding-top: var(--space-3); }
+.state .h3 { margin-top: var(--space-3); }
+.state p { margin-top: var(--space-2); font-size: var(--text-small); line-height: var(--leading-small); color: var(--color-ink-muted); }
+.state .form-actions { margin-top: var(--space-4); }
+.state-error { border-top: var(--rule-strong) solid var(--color-danger); }
+.placeholder { background: var(--color-sunken); height: 0.75rem; margin-top: var(--space-3); }
+.placeholder.ar { height: 1.25rem; }
+
+/* ---- Glossary ---- */
+.gloss { max-width: var(--measure-reading); }
+.gloss dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.gloss dd { margin-top: var(--space-2); }
+.gloss .in-archive { margin-top: var(--space-3); font-size: var(--text-small); line-height: var(--leading-small); color: var(--color-ink-muted); }
+
+/* ---- Sources ---- */
+.sources li { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: var(--space-3); padding-block: var(--space-2); border-bottom: var(--rule-hairline) solid var(--color-rule); font-size: var(--text-small); line-height: var(--leading-small); }
+.sources .lic { color: var(--color-ink-muted); }
+
+/* ---- Foundations ---- */
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: var(--space-4); }
+.swatch .chip-color { height: 3rem; border: var(--rule-hairline) solid var(--color-rule); }
+.swatch p { font-size: var(--text-small); line-height: var(--leading-small); margin-top: var(--space-2); }
+.swatch .code { color: var(--color-ink-muted); display: block; }
+.scale li { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1) var(--space-4); padding-block: var(--space-3); border-bottom: var(--rule-hairline) solid var(--color-rule); align-items: baseline; }
+@media (min-width: 40rem) { .scale li { grid-template-columns: 11rem minmax(0, 1fr); } }
+.scale .spec { font-size: var(--text-small); color: var(--color-ink-muted); }
+.scale .sample { min-width: 0; overflow-wrap: anywhere; }
+.marks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: var(--space-2) var(--space-5); }
+.marks-grid li { display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-2); border-bottom: var(--rule-hairline) solid var(--color-rule); font-size: var(--text-small); }
+.marks-grid svg { color: var(--color-ink); }
+.mono-proof { display: flex; gap: var(--space-4); padding: var(--space-3); background: #fff; color: #000; width: max-content; max-width: 100%; flex-wrap: wrap; }
+.mono-proof span { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-small); }
+.foundation-grid { display: grid; gap: var(--space-7); }
+footer.site { margin-top: var(--space-9); border-top: var(--rule-hairline) solid var(--color-rule-strong); padding-block: var(--space-5) var(--space-7); font-size: var(--text-small); color: var(--color-ink-muted); }
+</style>
+</head>
+<body>
+<a class="visually-hidden" href="#main">Skip to content</a>
+
+<!-- Site header -->
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="wordmark" href="#main" aria-label="Shura wa Istehsan, home">
+      <!-- Proposed product mark: the four tradition modules in one 2x2 square (owner to approve). -->
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges">
+        <g fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="6" height="6"/><rect x="9.5" y="0.5" width="6" height="6"/><rect x="0.5" y="9.5" width="6" height="6"/><rect x="9.5" y="9.5" width="6" height="6"/></g>
+        <g fill="currentColor"><rect x="0" y="3.5" width="7" height="3.5"/><rect x="9" y="0" width="3.5" height="7"/><path d="M0 9V16H7Z" shape-rendering="geometricPrecision"/><rect x="11" y="11" width="3" height="3"/></g>
+      </svg>
+      <span>Shura wa Istehsan</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <ul>
+        <li><a href="#tellings">Collections</a></li>
+        <li><a href="#main" aria-current="page">Hadith</a></li>
+        <li><a href="#isnad">Narrators</a></li>
+        <li><a href="#transmission">Comparative</a></li>
+        <li><a href="#glossary">Glossary</a></li>
+      </ul>
+    </nav>
+    <div class="theme-switch" role="group" aria-label="Colour scheme for this preview">
+      <button type="button" data-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- Preview notice -->
+<div class="notice" role="note">
+  <div class="wrap"><p><strong>Preview</strong>This archive's data is under active review. Identities, gradings and translations may be incomplete or unverified. <a href="#glossary">What is a preview?</a></p></div>
+</div>
+
+<main id="main" class="wrap">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol><li><a class="link-row" href="#tellings">Collections</a></li><li><a class="link-row" href="#tellings">Sunan Abi Daʾud</a></li><li>Combing the Hair</li></ol>
+    </nav>
+    <h1 class="h1">Sunan Abi Daʾud <span class="num">4168</span></h1>
+    <p class="tradition-line">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor" shape-rendering="geometricPrecision"/></svg>
+      <span class="ink">Sunni</span><span aria-hidden="true">·</span><span>Combing the Hair (Kitab al-Tarajjul)</span><span aria-hidden="true">·</span><span lang="ar" dir="rtl" class="arabic-inline">كتاب الترجل</span>
+    </p>
+  </header>
+
+  <div class="columns">
+    <div class="span-main">
+      <!-- Report text -->
+      <section class="section reading" aria-labelledby="text-heading">
+        <h2 id="text-heading" class="label">Text</h2>
+        <p class="report-text arabic-reading" lang="ar" dir="rtl">حدثنا أحمد بن حنبل، ومسدد، قالا حدثنا يحيى، عن عبيد الله، قال حدثني نافع، عن عبد الله، قال لعن رسول الله صلى الله عليه وسلم الواصلة والمستوصلة والواشمة والمستوشمة ‏.‏</p>
+        <p class="translation-state">No English translation recorded for this report.</p>
+        <p class="source-ref"><span class="role">Text:</span> <a class="link-row" href="#sources"><span class="code">SUN</span> sunnah.com (via Kaggle “fahd09/hadith-dataset”)</a> · Permission (owner, 2026-11-21)</p>
+      </section>
+
+      <!-- Isnad list -->
+      <section id="isnad" class="section reading" aria-labelledby="isnad-heading">
+        <div class="section-head">
+          <h2 id="isnad-heading" class="label"><a class="term" href="#glossary">Isnad</a></h2>
+          <p class="small muted">As written, nearest the compiler first</p>
+        </div>
+
+        <div class="chain">
+          <p class="chain-head"><span class="h3">Chain 1 of 2</span><span class="small muted">5 names, 1 identified</span></p>
+          <ol>
+            <li class="position"><span class="n num">1</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><rect width="8" height="8" fill="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">أحمد بن حنبل</p>
+                <div class="identity"><a class="who link-row" href="#isnad">Ahmad bin Hanbal</a>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" role="img" aria-label="machine-reviewed"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg><span>machine-reviewed: matches the source's index and the text</span> <a class="code link-row" href="#sources">K6I</a></p>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" role="img" aria-label="matched by name"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-dasharray="1.8 1.35"/></svg><span>matched by name</span> <a class="code link-row" href="#sources">MSD</a></p>
+                </div></div></li>
+            <li class="position"><span class="n num">2</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="7" height="7" fill="var(--color-paper)" stroke="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">يحيى</p><p class="identity unidentified">Not identified</p></div></li>
+            <li class="position"><span class="n num">3</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="7" height="7" fill="var(--color-paper)" stroke="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">عبيد الله</p><p class="identity unidentified">Not identified</p></div></li>
+            <li class="position"><span class="n num">4</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="7" height="7" fill="var(--color-paper)" stroke="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">نافع</p><p class="identity unidentified">Not identified</p></div></li>
+            <li class="position"><span class="n num">5</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="7" height="7" fill="var(--color-paper)" stroke="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">عبد الله</p><p class="identity unidentified">Not identified</p></div></li>
+          </ol>
+        </div>
+
+        <div class="chain">
+          <p class="chain-head"><span class="h3">Chain 2 of 2</span><span class="small muted">5 names, 5 identified</span></p>
+          <ol>
+            <li class="position"><span class="n num">1</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><rect width="8" height="8" fill="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">مسدد</p>
+                <div class="identity"><a class="who link-row" href="#isnad">Masdad bin Masrhad</a> <bdi lang="ar" dir="rtl" class="muted">مسدد بن مسرهد بن مسربل</bdi>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg><span>machine-reviewed: matches the source's index and the text</span> <a class="code link-row" href="#sources">K6I</a></p></div></div></li>
+            <li class="position"><span class="n num">2</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><rect width="8" height="8" fill="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">يحيى</p>
+                <div class="identity"><a class="who link-row" href="#isnad">Yahya bin Sa'id bin Farroukh al-Qatan</a>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg><span>machine-reviewed: matches the source's index and the text</span> <a class="code link-row" href="#sources">K6I</a></p></div></div></li>
+            <li class="position"><span class="n num">3</span><span class="rail"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="margin-top:calc(1rem - 6px)"><rect x="0.5" y="0.5" width="11" height="11" fill="var(--color-paper)" stroke="currentColor"/><rect x="2" y="2" width="8" height="8" fill="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">عبيد الله</p>
+                <div class="identity"><a class="who link-row" href="#isnad">'Ubaidullah bin 'Umar bin Hafs</a> <span class="muted">· in 4 chains of this report</span>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg><span>machine-reviewed: matches the source's index and the text</span> <a class="code link-row" href="#sources">K6I</a></p></div></div></li>
+            <li class="position"><span class="n num">4</span><span class="rail"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="margin-top:calc(1rem - 6px)"><rect x="0.5" y="0.5" width="11" height="11" fill="var(--color-paper)" stroke="currentColor"/><rect x="2" y="2" width="8" height="8" fill="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">نافع</p>
+                <div class="identity"><a class="who link-row" href="#isnad">Nafie'</a> <bdi lang="ar" dir="rtl" class="muted">نافع مولى ابن عمر</bdi> <span class="muted">· in 5 chains of this report</span>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg><span>machine-reviewed: matches the source's index and the text</span> <a class="code link-row" href="#sources">K6I</a></p></div></div></li>
+            <li class="position"><span class="n num">5</span><span class="rail"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><rect width="8" height="8" fill="currentColor"/></svg></span>
+              <div class="body"><p class="arabic-inline" lang="ar" dir="rtl">عبد الله</p>
+                <div class="identity"><a class="who link-row" href="#isnad">ibn Umar</a>
+                  <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg><span>machine-reviewed: matches the source's index and the text</span> <a class="code link-row" href="#sources">K6I</a></p></div></div></li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <!-- Facts margin -->
+    <aside class="span-aside facts" aria-label="About this report">
+      <dl>
+        <dt>Tradition</dt><dd class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor" shape-rendering="geometricPrecision"/></svg>Sunni</dd>
+        <dt>Work</dt><dd>Sunan Abi Daʾud</dd>
+        <dt>Number</dt><dd class="num">4168</dd>
+        <dt>Book</dt><dd>Combing the Hair</dd>
+        <dt>Attributed to</dt><dd>the Prophet (<a class="term" href="#glossary">marfuʿ</a>)</dd>
+        <dt>Tellings</dt><dd><a class="link-row" href="#tellings">9 in 3 traditions</a></dd>
+        <dt>Address</dt><dd class="code">/hadith/k6/19122</dd>
+      </dl>
+      <div class="actions">
+        <button class="button button-secondary" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Copy citation</button>
+      </div>
+    </aside>
+
+    <!-- Tellings table -->
+    <section id="tellings" class="section span-wide" aria-labelledby="tellings-heading">
+      <div class="section-head">
+        <h2 id="tellings-heading" class="label">Tellings of this report</h2>
+        <p class="small muted">Linked by wording · machine candidates, not reviewed</p>
+      </div>
+      <table class="data">
+        <caption class="visually-hidden">Nine tellings of this report in the Sunni, Ibadi and Imami traditions</caption>
+        <thead><tr><th scope="col">Tradition</th><th scope="col">Work</th><th scope="col" class="num-cell">No.</th><th scope="col">Earliest named</th><th scope="col">Source</th></tr></thead>
+        <tbody>
+          <tr class="current"><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</span></td><td data-label="Work">Sunan Abi Daʾud <span class="muted">· this report</span></td><td data-label="No." class="num-cell">4168</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">عبد الله</bdi> · ibn Umar</td><td data-label="Source"><span class="code">SUN</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</span></td><td data-label="Work"><a class="link-row" href="#tellings">Sahih al-Bukhari</a></td><td data-label="No." class="num-cell">5996</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">أبي هريرة</bdi> · Abu Hurairah</td><td data-label="Source"><span class="code">SUN</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</span></td><td data-label="Work"><a class="link-row" href="#tellings">Sahih al-Bukhari</a></td><td data-label="No." class="num-cell">6000</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">ابن عمر</bdi> · ibn Umar</td><td data-label="Source"><span class="code">SUN</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</span></td><td data-label="Work"><a class="link-row" href="#tellings">Sunan al-Nasaʾi</a></td><td data-label="No." class="num-cell">5095</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">ابن عمر</bdi> · ibn Umar</td><td data-label="Source"><span class="code">SUN</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</span></td><td data-label="Work"><a class="link-row" href="#tellings">Sunan al-Nasaʾi</a></td><td data-label="No." class="num-cell">5096</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">نافع</bdi> · Nafie' <span class="muted">(chain ends here)</span></td><td data-label="Source"><span class="code">SUN</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</span></td><td data-label="Work"><a class="link-row" href="#tellings">Sunan al-Nasaʾi</a></td><td data-label="No." class="num-cell">5251</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">ابن عمر</bdi> · ibn Umar</td><td data-label="Source"><span class="code">SUN</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect x="0" y="6" width="12" height="6" fill="currentColor"/></svg>Ibadi</span></td><td data-label="Work"><a class="link-row" href="#tellings">al-Jamiʿ al-Sahih (Musnad al-Rabiʿ)</a></td><td data-label="No." class="num-cell">975</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">جابر بن زيد</bdi> <span class="muted">· not identified</span></td><td data-label="Source"><span class="code">OITI</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect x="0" y="0" width="6" height="12" fill="currentColor"/></svg>Imami</span></td><td data-label="Work"><a class="link-row" href="#tellings">Maʿani al-Akhbar</a></td><td data-label="No." class="num-cell">274</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">أبيه علي بن أبي طالب</bdi> <span class="muted">· not identified</span></td><td data-label="Source"><span class="code">THQ</span></td></tr>
+          <tr><td data-label="Tradition"><span class="trad"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect x="0" y="0" width="6" height="12" fill="currentColor"/></svg>Imami</span></td><td data-label="Work"><a class="link-row" href="#tellings">Maʿani al-Akhbar</a></td><td data-label="No." class="num-cell">275</td><td data-label="Earliest named"><bdi lang="ar" dir="rtl">أبا عبد الله</bdi> <span class="muted">· not identified</span></td><td data-label="Source"><span class="code">THQ</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Transmission graph -->
+    <section id="transmission" class="section span-wide" aria-labelledby="graph-heading">
+      <div class="section-head">
+        <h2 id="graph-heading" class="label">Transmission</h2>
+        <p class="small muted">From the attribution down to the works · traditions are never merged</p>
+      </div>
+      <ul class="legend" aria-label="Legend">
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="3" width="8" height="8" fill="currentColor"/></svg>Identified</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" fill="none" stroke="currentColor"/></svg>Not identified</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="0.5" y="0.5" width="13" height="13" fill="none" stroke="currentColor"/><rect x="3" y="3" width="8" height="8" fill="currentColor"/></svg>Shared by several chains</li>
+        <li><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="3" width="3" height="8" fill="currentColor"/><rect x="8" y="3" width="3" height="8" fill="currentColor"/></svg>Sources differ</li>
+        <li><svg width="24" height="8" viewBox="0 0 24 8" aria-hidden="true"><line x1="0" y1="4" x2="24" y2="4" stroke="currentColor" stroke-dasharray="2 3"/></svg>No named link</li>
+        <li><svg width="24" height="8" viewBox="0 0 24 8" aria-hidden="true"><line x1="0" y1="4" x2="24" y2="4" stroke="var(--color-accent)" stroke-width="2"/></svg>Selected chain</li>
+      </ul>
+      <div class="graph-frame" tabindex="0" role="region" aria-labelledby="graph-heading graph-desc">
+        <p id="graph-desc" class="visually-hidden">Diagram of eight chains of this report. The same chains are listed in the table above.</p>
+        <svg viewBox="0 0 1000 490" role="img" aria-labelledby="graph-title">
+          <title id="graph-title">Transmission graph: five Sunni chains meet at Nafiʿ and ʿUbayd Allah; the Ibadi and Imami chains stand apart. Selected: Muhammad b. Muqatil, sources differ.</title>
+          <style>
+            .g-label { font: 15px var(--font-arabic); fill: var(--color-ink); }
+            .g-work { font: 600 11px var(--font-latin); fill: var(--color-ink-muted); letter-spacing: 0.02em; }
+            .g-work.this { fill: var(--color-ink); }
+            .g-meta { font: 600 11px var(--font-latin); fill: var(--color-ink-muted); letter-spacing: 0.08em; }
+            .g-edge { stroke: var(--color-ink-faint); stroke-width: 1; fill: none; }
+            .g-gap { stroke: var(--color-ink-faint); stroke-width: 1; stroke-dasharray: 2 3; fill: none; }
+            .g-sel { stroke: var(--color-accent); stroke-width: 2; fill: none; }
+            .g-rule { stroke: var(--color-ink); stroke-width: 1; }
+            .g-sep { stroke: var(--color-rule); stroke-width: 1; }
+          </style>
+          <!-- attribution rule (top) and works rule (bottom) -->
+          <text class="g-meta" x="20" y="22">ATTRIBUTED TO THE PROPHET · MARFUʿ</text>
+          <line class="g-rule" x1="20" y1="36.5" x2="985" y2="36.5"/>
+          <line class="g-rule" x1="20" y1="392.5" x2="985" y2="392.5"/>
+          <line class="g-sep" x1="712.5" y1="48" x2="712.5" y2="380"/>
+          <line class="g-sep" x1="840.5" y1="48" x2="840.5" y2="380"/>
+
+          <!-- edges: Sunni A (Abu Hurayra) -->
+          <path class="g-edge" d="M100 36V392"/>
+          <!-- Sunni trunk via Ibn Umar, Nafi', Ubayd Allah, and branches -->
+          <path class="g-edge" d="M380 36V184M380 184L250 232V392M380 184V392M380 184L510 232"/>
+          <!-- Sunni C via al-Walid (Nafi' with no named link above) -->
+          <path class="g-edge" d="M380 136L680 184V392"/>
+          <path class="g-gap" d="M380 136L440 36"/>
+          <!-- Ibadi, Imami -->
+          <path class="g-edge" d="M800 36V392"/>
+          <path class="g-edge" d="M975 36V392"/>
+          <!-- selected chain: Bukhari 6000 -->
+          <path class="g-sel" d="M380 36V184L510 232V392"/>
+
+          <!-- nodes (identified = filled 8; unidentified = outline; shared = framed; contested = two bars) -->
+          <g shape-rendering="crispEdges" fill="currentColor">
+            <rect x="96" y="84" width="8" height="8"/><rect x="96" y="132" width="8" height="8"/><rect x="96" y="180" width="8" height="8"/><rect x="96" y="228" width="8" height="8"/>
+            <rect x="96" y="276" width="3" height="8"/><rect x="101" y="276" width="3" height="8"/>
+            <rect x="96" y="324" width="8" height="8"/>
+            <rect x="376" y="84" width="8" height="8"/>
+            <rect x="373.5" y="129.5" width="13" height="13" fill="var(--color-paper)" stroke="currentColor"/><rect x="376" y="132" width="8" height="8"/>
+            <rect x="373.5" y="177.5" width="13" height="13" fill="var(--color-paper)" stroke="currentColor"/><rect x="376" y="180" width="8" height="8"/>
+            <rect x="246" y="228" width="8" height="8"/><rect x="246" y="276" width="8" height="8"/>
+            <rect x="376" y="228" width="8" height="8"/><rect x="376" y="276" width="8" height="8"/>
+            <rect x="506" y="228" width="8" height="8"/>
+            <rect x="501" y="271" width="18" height="18" fill="var(--color-accent-wash)" stroke="var(--color-accent)" stroke-width="2"/>
+            <rect x="506" y="276" width="3" height="8"/><rect x="511" y="276" width="3" height="8"/>
+            <rect x="676" y="180" width="8" height="8"/><rect x="676" y="228" width="8" height="8"/><rect x="676" y="276" width="8" height="8"/><rect x="676" y="324" width="8" height="8"/>
+            <rect x="796.5" y="84.5" width="7" height="7" fill="var(--color-paper)" stroke="currentColor"/>
+            <g fill="var(--color-paper)" stroke="currentColor">
+              <rect x="971.5" y="84.5" width="7" height="7"/><rect x="971.5" y="132.5" width="7" height="7"/><rect x="971.5" y="180.5" width="7" height="7"/>
+              <rect x="971.5" y="228.5" width="7" height="7"/><rect x="971.5" y="276.5" width="7" height="7"/><rect x="971.5" y="324.5" width="7" height="7"/>
+            </g>
+          </g>
+
+          <!-- labels: most frequent written surface, Arabic ending at the node -->
+          <g class="g-label" text-anchor="end">
+            <text x="88" y="93">أبي هريرة</text><text x="88" y="141">عطاء بن يسار</text><text x="88" y="189">زيد بن أسلم</text>
+            <text x="88" y="237">فليح</text><text x="88" y="285">يونس بن محمد</text><text x="88" y="333">ابن أبي شيبة</text>
+            <text x="368" y="93">ابن عمر</text><text x="366" y="141">نافع</text><text x="366" y="189">عبيد الله</text>
+            <text x="238" y="237">يحيى</text><text x="238" y="285">مسدد</text>
+            <text x="368" y="237">محمد بن بشر</text><text x="368" y="285">إسحاق بن إبراهيم</text>
+            <text x="498" y="237">عبد الله</text><text x="494" y="285">محمد بن مقاتل</text>
+            <text x="668" y="189">الوليد بن أبي هشام</text><text x="668" y="237">جويرية بن أسماء</text>
+            <text x="668" y="285">عبد الله بن محمد…<title>عبد الله بن محمد بن أسماء</title></text><text x="668" y="333">العباس بن عبد العظيم</text>
+            <text x="788" y="93">جابر بن زيد</text>
+            <text x="963" y="93">أبا عبد الله</text><text x="963" y="141">إبراهيم بن زياد…<title>إبراهيم بن زياد الكرخي</title></text>
+            <text x="963" y="189">محمد بن أبي عمير</text><text x="963" y="237">أبيه</text><text x="963" y="285">علي بن إبراهيم</text>
+            <text x="963" y="333">الحسين بن إبراهيم…<title>الحسين بن إبراهيم بن أحمد بن هشام المكتب</title></text>
+          </g>
+
+          <!-- works (bottom) -->
+          <g class="g-work" text-anchor="middle">
+            <text x="100" y="412">Bukhari 5996</text>
+            <text class="g-work this" x="250" y="412">Abu Daʾud 4168</text>
+            <text x="380" y="412">Nasaʾi 5095</text><text x="380" y="426">Nasaʾi 5251</text>
+            <text x="510" y="412">Bukhari 6000</text>
+            <text x="680" y="412">Nasaʾi 5096</text>
+            <text x="800" y="412">Rabiʿ 975</text>
+            <text x="975" y="412" text-anchor="end">Maʿani 275</text>
+          </g>
+          <!-- tradition groups -->
+          <g class="g-meta">
+            <g transform="translate(20 458)" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></g>
+            <text x="40" y="468">SUNNI</text>
+            <g transform="translate(724 458)" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect y="6" width="12" height="6" fill="currentColor"/></g>
+            <text x="744" y="468">IBADI</text>
+            <g transform="translate(852 458)" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect width="6" height="12" fill="currentColor"/></g>
+            <text x="872" y="468">IMAMI</text>
+          </g>
+        </svg>
+      </div>
+      <p class="graph-hint">Scroll the diagram sideways. Every chain is also in the table above.</p>
+      <p class="small muted" style="margin-top:var(--space-2)">Not drawn here: Abu Daʾud's first chain (later names not identified) and Maʿani al-Akhbar 274 (eleven names, none identified).</p>
+
+      <div class="selection reading" aria-live="polite">
+        <p class="label">Selected · Bukhari 6000, position 1</p>
+        <p class="arabic-inline" lang="ar" dir="rtl" style="margin-top:var(--space-1)">محمد بن مقاتل</p>
+        <p class="small"><strong>Sources differ.</strong> Both identities are shown; neither is preferred.</p>
+        <ul>
+          <li><a class="link-row" href="#isnad">Muhammad bin Maqatil al-Kisa'i</a> <bdi lang="ar" dir="rtl" class="muted">محمد بن مقاتل الكسائي رخ</bdi>
+            <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg>machine-reviewed: matches the source's index and the text <span class="code">K6I</span></p></li>
+          <li><a class="link-row" href="#isnad">Muhammad bin Mqatl</a> <bdi lang="ar" dir="rtl" class="muted">محمد بن مقاتل</bdi>
+            <p class="basis"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-dasharray="1.8 1.35"/></svg>matched by name <span class="code">MSD</span></p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Chain timeline strip -->
+    <section class="section span-wide" aria-labelledby="time-heading">
+      <div class="section-head">
+        <h2 id="time-heading" class="label">Time</h2>
+        <p class="small muted">Hijri years · specimen rows from the fixtures</p>
+      </div>
+      <div class="timeline">
+        <div class="lane" aria-hidden="true">
+          <span></span>
+          <div class="tick-labels"><span style="left:0%">0</span><span style="left:20%">50</span><span style="left:40%">100</span><span style="left:60%">150</span><span style="left:80%">200</span><span style="left:100%">250 AH</span></div>
+        </div>
+        <div class="lane" aria-hidden="true">
+          <span></span>
+          <div class="lane-track"><svg viewBox="0 0 100 10" preserveAspectRatio="none">
+            <line x1="0" x2="100" y1="9.5" y2="9.5" stroke="var(--color-rule)" vector-effect="non-scaling-stroke"/>
+            <g stroke="var(--color-ink-faint)" vector-effect="non-scaling-stroke"><line x1="0" x2="0" y1="6" y2="10" vector-effect="non-scaling-stroke"/><line x1="20" x2="20" y1="6" y2="10" vector-effect="non-scaling-stroke"/><line x1="40" x2="40" y1="6" y2="10" vector-effect="non-scaling-stroke"/><line x1="60" x2="60" y1="6" y2="10" vector-effect="non-scaling-stroke"/><line x1="80" x2="80" y1="6" y2="10" vector-effect="non-scaling-stroke"/><line x1="100" x2="100" y1="6" y2="10" vector-effect="non-scaling-stroke"/></g>
+          </svg></div>
+        </div>
+        <div class="lane">
+          <p class="lane-label">Imam Maalik <bdi lang="ar" dir="rtl" class="muted">مالك بن أنس</bdi><br><span class="muted">93–179 · narrator lexicon, not yet cited <span class="code">MSD</span></span></p>
+          <div class="lane-track" aria-hidden="true"><svg viewBox="0 0 100 10" preserveAspectRatio="none"><rect x="37.2" width="34.4" y="3.5" height="3" fill="var(--color-ink)"/></svg></div>
+        </div>
+        <div class="lane">
+          <p class="lane-label">Nafie' <bdi lang="ar" dir="rtl" class="muted">نافع</bdi></p>
+          <div class="lane-track"><p class="track-text">No dates recorded</p></div>
+        </div>
+      </div>
+      <ul class="legend" aria-label="Timeline legend" style="margin-top:var(--space-4)">
+        <li><svg width="18" height="8" viewBox="0 0 18 8" aria-hidden="true"><rect y="2.5" width="18" height="3" fill="var(--color-ink)"/></svg>Both dates recorded</li>
+        <li><svg width="18" height="8" viewBox="0 0 18 8" aria-hidden="true"><rect y="2.5" width="18" height="3" fill="var(--color-ink-faint)"/></svg>Range or competing dates</li>
+        <li><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><rect x="1" y="1" width="6" height="6" fill="var(--color-ink)"/></svg>Death year only</li>
+        <li><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><rect x="1.5" y="1.5" width="5" height="5" fill="none" stroke="var(--color-ink)"/></svg>Birth year only</li>
+        <li><svg width="2" height="12" viewBox="0 0 2 12" aria-hidden="true"><rect width="1" height="12" fill="var(--color-ink)"/></svg>Event</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- ============ Components ============ -->
+  <div class="band" aria-labelledby="components-heading">
+    <h2 id="components-heading" class="h2">Components</h2>
+
+    <section class="section" aria-labelledby="filters-heading">
+      <h3 id="filters-heading" class="label">Filters and forms</h3>
+      <form class="form" onsubmit="return false">
+        <div class="field">
+          <label for="q">Search reports</label>
+          <div class="input-row">
+            <div class="input-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 2.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM10.5 10.5L14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+              <input id="q" class="input" type="search" value="الواصلة" lang="ar" dir="auto">
+            </div>
+            <button class="button button-primary" type="submit">Search</button>
+          </div>
+        </div>
+        <fieldset>
+          <legend>Traditions</legend>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" checked><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect y="6" width="12" height="6" fill="currentColor"/></svg>Ibadi</label>
+            <label class="chip"><input type="checkbox" checked><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect width="6" height="12" fill="currentColor"/></svg>Imami</label>
+            <label class="chip"><input type="checkbox" checked><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni</label>
+            <label class="chip"><input type="checkbox"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect x="3" y="3" width="6" height="6" fill="currentColor"/></svg>Zaydi</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="work">Work</label>
+          <select id="work" class="select"><option>All works</option><option>Sahih al-Bukhari</option><option>Sunan Abi Daʾud</option><option>Sunan al-Nasaʾi</option><option>Maʿani al-Akhbar</option><option>al-Jamiʿ al-Sahih (Musnad al-Rabiʿ)</option></select>
+        </div>
+        <div class="field">
+          <label for="num">Number</label>
+          <input id="num" class="input" inputmode="numeric" value="41a" aria-invalid="true" aria-describedby="num-error" style="max-width:12rem">
+          <p id="num-error" class="field-error">Enter digits only, for example 4168.</p>
+        </div>
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">Apply filters</button>
+          <button class="button button-quiet" type="reset">Clear</button>
+          <button class="button button-secondary" type="button" disabled>Export</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="section" aria-labelledby="states-heading">
+      <h3 id="states-heading" class="label">Empty, loading and error</h3>
+      <div class="states">
+        <div class="state">
+          <p class="label">Empty</p>
+          <p class="h3">No reports match</p>
+          <p>Only Zaydi is selected, and no Zaydi telling of this wording is loaded.</p>
+          <div class="form-actions"><button class="button button-secondary" type="button">Show all traditions</button></div>
+        </div>
+        <div class="state" aria-busy="true">
+          <p class="label">Loading</p>
+          <p class="visually-hidden">Loading report</p>
+          <div class="placeholder" style="width:60%"></div>
+          <div class="placeholder ar" style="width:100%"></div>
+          <div class="placeholder ar" style="width:92%"></div>
+          <div class="placeholder ar" style="width:40%"></div>
+        </div>
+        <div class="state state-error" role="alert">
+          <p class="label" style="color:var(--color-danger)">Error</p>
+          <p class="h3">This report could not load</p>
+          <p>The database may be waking up. Reference <span class="code">digest 3f9a1c</span>.</p>
+          <div class="form-actions"><button class="button button-primary" type="button">Try again</button><a class="button button-quiet" href="#main">Back to Hadith</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="glossary" class="section" aria-labelledby="glossary-heading">
+      <h3 id="glossary-heading" class="label">Glossary entry</h3>
+      <dl class="gloss">
+        <dt><span class="h3">isnad</span><span lang="ar" dir="rtl" class="arabic-inline">إسناد</span><span class="small muted">chain of transmission · also sanad, chain</span></dt>
+        <dd>The list of narrators through whom a report reached the compiler, each said to have received it from the next; sanad is usually used as a synonym.</dd>
+        <dd class="in-archive">In this archive: the isnad is always shown as written in the Arabic source. Narrators are linked to their profiles only where the identification meets the archive’s rules; every other name stays plain text.</dd>
+      </dl>
+    </section>
+
+    <section id="sources" class="section" aria-labelledby="sources-heading">
+      <h3 id="sources-heading" class="label">Source short references</h3>
+      <ul class="sources reading">
+        <li><span class="code">SUN</span><span><a class="link-row" href="#sources">sunnah.com (via Kaggle “fahd09/hadith-dataset”)</a> <span class="lic">· Permission (owner, 2026-11-21)</span></span></li>
+        <li><span class="code">OITI</span><span><a class="link-row" href="#sources">OpenITI: a Machine-Readable Corpus of Islamicate Texts</a> <span class="lic">· CC BY-NC-SA 4.0</span></span></li>
+        <li><span class="code">THQ</span><span><a class="link-row" href="#sources">Thaqalayn (Stichting Thaqalayn)</a> <span class="lic">· CC BY 4.0</span></span></li>
+        <li><span class="code">K6I</span><span><a class="link-row" href="#sources">K6 source narrator index (Kaggle “fahd09/hadith-dataset”, chain_indx)</a> <span class="lic">· Permission (owner, 2026-11-21)</span></span></li>
+        <li><span class="code">MSD</span><span><a class="link-row" href="#sources">Muslim Scholars Database, Arees Institute (via Kaggle “fahd09/hadith-narrators”)</a> <span class="lic">· Permission (owner, 2026-11-21)</span></span></li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- ============ Foundations ============ -->
+  <div class="band" aria-labelledby="foundations-heading">
+    <h2 id="foundations-heading" class="h2">Foundations</h2>
+    <div class="foundation-grid">
+
+      <section class="section" aria-labelledby="type-heading">
+        <h3 id="type-heading" class="label">Type scale</h3>
+        <ul class="scale">
+          <li><span class="spec">Display · 48/52 · 800</span><span class="sample display">Shura wa Istehsan</span></li>
+          <li><span class="spec">Heading 1 · 32/40 · 800</span><span class="sample h1">Sunan Abi Daʾud 4168</span></li>
+          <li><span class="spec">Heading 2 · 24/32 · 700</span><span class="sample h2">Tellings of this report</span></li>
+          <li><span class="spec">Heading 3 · 20/28 · 600</span><span class="sample h3">Chain 2 of 2</span></li>
+          <li><span class="spec">Reading · 18/28 · 400</span><span class="sample" style="font-size:var(--text-reading);line-height:var(--leading-reading)">The English, when one exists, is labelled as an unreviewed translation.</span></li>
+          <li><span class="spec">Body · 16/24 · 400</span><span class="sample">Interface text, form values and list rows.</span></li>
+          <li><span class="spec">Small · 14/20 · 400</span><span class="sample small">Metadata, table cells, source references.</span></li>
+          <li><span class="spec">Label · 12/16 · 600 · +0.08em</span><span class="sample label">Isnad</span></li>
+          <li><span class="spec">Mono · 12/16 · 500</span><span class="sample code">SUN · K6I · /hadith/k6/19122</span></li>
+          <li><span class="spec">Arabic display · 28/56</span><span class="sample arabic-display" lang="ar" dir="rtl">لعن رسول الله صلى الله عليه وسلم الواصلة والمستوصلة</span></li>
+          <li><span class="spec">Arabic reading · 22/44</span><span class="sample arabic-reading" lang="ar" dir="rtl">حدثنا الحسين بن إبراهيم بن أحمد بن هشام المكتب، قال حدثنا علي بن إبراهيم، عن أبيه، عن محمد بن أبي عمير</span></li>
+          <li><span class="spec">Arabic inline · 18/32</span><span class="sample">Position 4: <bdi lang="ar" dir="rtl" class="arabic-inline">نافع مولى ابن عمر</bdi> (Nafie'), in 5 chains.</span></li>
+        </ul>
+      </section>
+
+      <section class="section" aria-labelledby="palette-heading">
+        <h3 id="palette-heading" class="label">Palette and contrast (this theme)</h3>
+        <div class="swatches">
+          <div class="swatch"><div class="chip-color" style="background:var(--color-paper)"></div><p>Paper <span class="code">--color-paper</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-surface)"></div><p>Surface <span class="code">--color-surface</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-sunken)"></div><p>Sunken <span class="code">--color-sunken</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-ink)"></div><p>Ink · 16.2 / 16.6:1 <span class="code">--color-ink</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-ink-muted)"></div><p>Muted · 6.9 / 8.0:1 <span class="code">--color-ink-muted</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-ink-faint)"></div><p>Faint · 4.3 / 5.4:1, non-text <span class="code">--color-ink-faint</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-rule)"></div><p>Rule <span class="code">--color-rule</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-control)"></div><p>Control · 4.3 / 5.4:1 <span class="code">--color-control</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-accent)"></div><p>Accent · 5.8 / 8.7:1 <span class="code">--color-accent</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-accent-wash)"></div><p>Accent wash <span class="code">--color-accent-wash</span></p></div>
+          <div class="swatch"><div class="chip-color" style="background:var(--color-danger)"></div><p>Danger · 6.4 / 8.4:1 <span class="code">--color-danger</span></p></div>
+        </div>
+        <p class="small muted" style="margin-top:var(--space-3)">Ratios against paper, light / dark.</p>
+      </section>
+
+      <section class="section" aria-labelledby="marks-heading">
+        <h3 id="marks-heading" class="label">Marks</h3>
+        <ul class="marks-grid">
+          <li><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect y="6" width="12" height="6" fill="currentColor"/></svg>Ibadi · lower half</li>
+          <li><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect width="6" height="12" fill="currentColor"/></svg>Imami · left half</li>
+          <li><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor" shape-rendering="crispEdges"/><path d="M0 0V12H12Z" fill="currentColor"/></svg>Sunni · diagonal half</li>
+          <li><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="currentColor"/><rect x="3" y="3" width="6" height="6" fill="currentColor"/></svg>Zaydi · centre square</li>
+          <li><svg width="24" height="4" viewBox="0 0 24 4" aria-hidden="true"><line x1="0" y1="2" x2="24" y2="2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 2"/></svg>Ibadi line</li>
+          <li><svg width="24" height="4" viewBox="0 0 24 4" aria-hidden="true"><line x1="0" y1="2" x2="24" y2="2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="1.5 2"/></svg>Imami line</li>
+          <li><svg width="24" height="4" viewBox="0 0 24 4" aria-hidden="true"><line x1="0" y1="2" x2="24" y2="2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 2 1.5 2"/></svg>Sunni line</li>
+          <li><svg width="24" height="4" viewBox="0 0 24 4" aria-hidden="true"><line x1="0" y1="2" x2="24" y2="2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3"/></svg>Zaydi line</li>
+          <li><svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg>verified by a reviewer</li>
+          <li><svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/><circle cx="5" cy="5" r="2" fill="currentColor"/></svg>machine-reviewed</li>
+          <li><svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor"/></svg>source index</li>
+          <li><svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-dasharray="1.8 1.35"/></svg>matched by name</li>
+          <li><svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="4.25" width="8" height="1.5" fill="currentColor"/></svg>matched by kunya only</li>
+        </ul>
+        <p class="label" style="margin-top:var(--space-5)">Black-and-white proof</p>
+        <div class="mono-proof" style="margin-top:var(--space-2)">
+          <span><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="#000"/><rect y="6" width="12" height="6" fill="#000"/></svg>Ibadi</span>
+          <span><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="#000"/><rect width="6" height="12" fill="#000"/></svg>Imami</span>
+          <span><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="#000"/><path d="M0 0V12H12Z" fill="#000"/></svg>Sunni</span>
+          <span><svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><rect x="0.5" y="0.5" width="11" height="11" fill="none" stroke="#000"/><rect x="3" y="3" width="6" height="6" fill="#000"/></svg>Zaydi</span>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="icons-heading">
+        <h3 id="icons-heading" class="label">Icons · 16 grid, 1.5 stroke, square caps</h3>
+        <ul class="marks-grid">
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 2.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM10.5 10.5L14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Search</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8H13M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Arrow</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2.5h4.5V7M13.5 2.5L7.5 8.5M11 9.5v4H2.5V5h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>External</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Copy</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Check</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Close</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6l4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Chevron</li>
+          <li><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>Menu</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">Design preview of DESIGN.md · static specimen, not the application · sample data from the repository's test fixtures.</div>
+</footer>
+
+<script>
+  // Preview-only theme switch: sets html.light / html.dark, or neither to follow the system.
+  document.querySelectorAll('.theme-switch button').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var theme = button.getAttribute('data-theme');
+      document.documentElement.classList.remove('light', 'dark');
+      if (theme) document.documentElement.classList.add(theme);
+      document.querySelectorAll('.theme-switch button').forEach(function (other) {
+        other.setAttribute('aria-pressed', String(other === button));
+      });
+    });
+  });
+</script>
+</body>
+</html>

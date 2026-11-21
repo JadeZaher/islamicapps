@@ -21,7 +21,11 @@ HERE = Path(__file__).resolve().parent
 HADITH_DATA_DIR = HERE.parent
 DATASETS_DIR = HADITH_DATA_DIR.parent
 PROJECT_ROOT = DATASETS_DIR.parent
-for _path in (HADITH_DATA_DIR, DATASETS_DIR):
+DIAGNOSTICS_DIR = HADITH_DATA_DIR / "diagnostics"
+CORRESPONDENCE_JOB_DIR = DIAGNOSTICS_DIR / "report-correspondence"
+GRADING_RECOVERY_DIR = DIAGNOSTICS_DIR / "grading-recovery"
+# Reused, never copied: matn_isolation (the matn-column rule) and grading-recovery's non-ruling classification.
+for _path in (HADITH_DATA_DIR, DATASETS_DIR, CORRESPONDENCE_JOB_DIR, GRADING_RECOVERY_DIR, DIAGNOSTICS_DIR):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
@@ -32,7 +36,9 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.21.2"
+PROJECTION_VERSION = "2026.11.21.3"
+CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
+CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
     "kathrat al-riwaya describes transmission volume only; it is not a judgment "
     "of narrator reliability or hadith authenticity."
@@ -60,9 +66,12 @@ BEFORE_HIJRA = re.compile(r"(?<![A-Za-z0-9_])BH(?![A-Za-z0-9_])", re.IGNORECASE)
 CITATION_VOLUME_PAGE = re.compile(r"^(.*\S)\s*\(\s*([^()/]+?)\s*/\s*([^()/]+?)\s*\)$")
 ARRAY_ELEMENT = re.compile(r"^[a-z_]+$")
 UNRESOLVED = (None, "unresolved", None, None, None)
-# The only automatic identity that is verified: an uncontested source_index_confirmed_by_text candidate (AGENTS.md).
+# The only automatic identity that stands (machine-reviewed, never "verified"): an uncontested
+# source_index_confirmed_by_text candidate (AGENTS.md).
 VERIFIED_RESOLUTION = ("source_index", "source_index", 1.0, "source_index_confirmed_by_text")
 VERIFIED_BASES = frozenset({"source_index_confirmed_by_text"})
+# A kunya-only match is shown as a label beside other candidates and never contests a standing identity (owner 2026-11-21).
+NON_CONTESTING_BASES = frozenset({"name_kunya_only"})
 SOURCE_BASES = frozenset({"source_index", "source_index_confirmed_by_text"})
 NAME_BASIS_BY_TIER = {"tier0": "name_exact", "tier1": "name_spelling_fold", "tier2": "name_spelling_fold"}
 # Owner decision (c): automatic name matches against the (Sunni-centred) lexicon only on Sunni reports.
@@ -267,15 +276,17 @@ def align_source_index(row: dict, branches: Sequence[Sequence[str]]) -> dict[tup
 
 
 def verified_narrator(candidates: Sequence[tuple[str, str]]) -> str | None:
-    """The narrator a mention's (narrator_id, basis) candidates verify, or None.
+    """The machine-reviewed identity a mention's (narrator_id, basis) candidates give it (`narrator_id`), or None.
 
-    Verified only when a source_index_confirmed_by_text candidate exists and no other candidate names a different
-    narrator: a contested identity is shown with both candidates and is never presented as settled.
+    Stands only when a source_index_confirmed_by_text candidate exists and no other candidate names a different
+    narrator: a contested identity is shown with both candidates and is never presented as settled. A kunya-only
+    candidate is a label, never a contest (owner decision 2026-11-21).
     """
     confirmed = {narrator for narrator, basis in candidates if basis in VERIFIED_BASES}
     if len(confirmed) != 1:
         return None
-    return next(iter(confirmed)) if {narrator for narrator, _ in candidates} == confirmed else None
+    contesting = {narrator for narrator, basis in candidates if basis not in NON_CONTESTING_BASES}
+    return next(iter(confirmed)) if contesting == confirmed else None
 
 
 def candidate_agreement(narrator_ids: Iterable[str]) -> str:
@@ -552,6 +563,97 @@ def apply_chain_sidecars(branches_by_hadith: dict[str, list[dict]], no_chain: di
     return counts
 
 
+def matn_isolator():
+    """report-correspondence's MatnIsolator with no sidecars, so `isolate` applies only its matn-column rule."""
+    import extract_isnad_unified
+    import matn_isolation
+    return matn_isolation.MatnIsolator(extract_isnad_unified, {}, {})
+
+
+def accepted_matn(isolator, record_id: str, text_ar: str, matn_ar: str | None) -> tuple[str | None, str | None]:
+    """(matn to store, rejection reason). The column is stored only when matn_isolation accepts it as this report's
+    own matn: its letters occur inside the report's own text and it does not start where the text starts with a chain."""
+    if matn_ar is None or not matn_ar.strip():
+        return None, None
+    import matn_isolation
+    _, method, _, note = isolator.isolate({"record_id": record_id, "text_ar": text_ar, "matn_ar": matn_ar})
+    if method == matn_isolation.METHOD_MATN_COLUMN:
+        return matn_ar, None
+    return None, note or "matn_column_rejected"
+
+
+def non_ruling_reason(grade: str) -> str | None:
+    """grading-recovery's classification of a gradings_full term that is not a ruling (`لم يخرجه`, `سكت عنه`, ...)."""
+    from build_hadith_assessment_rows import NON_RULING_CLASSES, fold
+    return NON_RULING_CLASSES.get(fold(grade))
+
+
+def correspondence_pair_id(hadith_id_a: str, hadith_id_b: str) -> str:
+    return "report-pair:" + hashlib.sha256(f"{hadith_id_a}\x1f{hadith_id_b}".encode("utf-8")).hexdigest()[:20]
+
+
+def project_correspondences(directory: Path, hadith_info: dict[str, dict], input_sha: str
+                            ) -> tuple[list[list[object]], list[list[object]], dict, dict]:
+    """Candidate pairs and cluster members from the report-correspondence output, bound to each side's Arabic.
+
+    A pair whose report is gone or whose Arabic hash differs from the loaded text is dropped and counted, never loaded.
+    Returns (candidate rows, member rows, counts, input hashes)."""
+    pairs_path = directory / "report_correspondence_pairs.csv"
+    members_path = directory / "report_correspondence_cluster_members.csv"
+    summary_path = directory / "summary.json"
+    for path in (pairs_path, members_path, summary_path):
+        if not path.is_file():
+            raise ProjectionError(f"{display_path(path)} is missing; rebuild it with "
+                                  "diagnostics/report-correspondence/build_report_correspondence.py")
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    built_on = [digest for name, digest in summary["inputs_sha256"].items() if name.endswith(".incomplete.csv.gz")]
+    if built_on != [input_sha]:
+        raise ProjectionError("report-correspondence output was built from another unified CSV than --input")
+    method = summary["parameters"]["method_version"]
+    counts: Counter = Counter()
+    candidates: list[list[object]] = []
+    with pairs_path.open("rt", encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            a, b = row["hadith_id_a"], row["hadith_id_b"]
+            if not a < b or row["pair_id"] != correspondence_pair_id(a, b) or row["method_version"] != method:
+                raise ProjectionError(f"{row['pair_id']}: pair id, order or method version is inconsistent")
+            if (row["class"] not in CORRESPONDENCE_CLASSES or row["scope"] not in CORRESPONDENCE_SCOPES
+                    or row["basis"] != "textual_overlap"):
+                raise ProjectionError(f"{row['pair_id']}: class, scope or basis outside the enums")
+            if a not in hadith_info or b not in hadith_info:
+                counts["pairs_dropped:report_not_loaded"] += 1
+                continue
+            if (row["arabic_sha256_a"] != hadith_info[a]["arabic_sha256"]
+                    or row["arabic_sha256_b"] != hadith_info[b]["arabic_sha256"]):
+                counts["pairs_dropped:arabic_hash_changed"] += 1
+                continue
+            counts[f"pairs:{row['class']}"] += 1
+            counts[f"scope:{row['scope']}"] += 1
+            candidates.append([
+                row["pair_id"], a, b, row["arabic_sha256_a"], row["arabic_sha256_b"], row["class"],
+                float(row["jaccard"]), float(row["containment"]), float(row["global_containment"]),
+                float(row["length_ratio"]), int(row["shared_shingles"]), int(row["shingles_a"]),
+                int(row["shingles_b"]), int(row["words_a"]), int(row["words_b"]), row["score_band"], row["scope"],
+                row["matn_split_a"], row["matn_split_b"], row["cluster_id"], row["basis"], method,
+            ])
+    members: list[list[object]] = []
+    with members_path.open("rt", encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            if row["method_version"] != method:
+                raise ProjectionError(f"{row['hadith_id']}: cluster member of another method version")
+            if row["hadith_id"] not in hadith_info or row["star_centre"] not in hadith_info:
+                counts["members_dropped:report_not_loaded"] += 1
+                continue
+            members.append([method, row["hadith_id"], row["cluster_id"], row["star_centre"],
+                            row["is_star_centre"] == "True"])
+    counts["pairs_loaded"] = len(candidates)
+    counts["cluster_members_loaded"] = len(members)
+    counts["clusters"] = len({row[2] for row in members})
+    hashes = {"pairs_sha256": sha256_file(pairs_path), "cluster_members_sha256": sha256_file(members_path),
+              "summary_sha256": sha256_file(summary_path), "method_version": method}
+    return candidates, members, dict(sorted(counts.items())), hashes
+
+
 def project(args: argparse.Namespace) -> dict:
     import regen_unified_csvs as resolver_module  # the canonical exact resolver (name invariant, tiers 0-2)
     from classify_attribution import _norm as arabic_norm
@@ -649,6 +751,8 @@ def project(args: argparse.Namespace) -> dict:
     hadith_info: dict[str, dict] = {}
     arabic_mismatches = 0
     provenance_mismatches = 0
+    isolator = matn_isolator()
+    matn_counts: Counter = Counter()
     for row in bundle.rows("nodes/hadiths.csv"):
         hadith_id = row["id"]
         source_row = unified.get(row["record_id"])
@@ -671,6 +775,13 @@ def project(args: argparse.Namespace) -> dict:
         category = blank_to_none(source_row["category"])
         hadith_no = blank_to_none(row["hadith_no"].strip())
         attributed = attribution_target.get(hadith_id)
+        # A matn is stored only when it is this report's own (1,597 K6 rows carry a neighbour's; ~13k carry the chain).
+        matn_ar, matn_rejection = accepted_matn(isolator, row["record_id"], text_ar, blank_to_none(row["matn_ar"]))
+        if matn_rejection:
+            matn_counts[f"rejected:{matn_rejection}"] += 1
+            matn_counts[f"rejected_by_work:{collection['source_work_id']}"] += 1
+        elif matn_ar is not None:
+            matn_counts["stored"] += 1
         hadith_info[hadith_id] = {
             "record_id": row["record_id"], "tradition_id": tradition_id, "source": row["source"],
             "source_work_id": collection["source_work_id"], "arabic_sha256": row["arabic_sha256"],
@@ -684,7 +795,7 @@ def project(args: argparse.Namespace) -> dict:
             chapter_title, chapter_title.lower() if chapter_title else None, category,
             category.lower() if category else None, hadith_no, text_ar if text_ar != "" else None,
             arabic_norm(text_ar) if text_ar.strip() else None, row["arabic_sha256"], blank_to_none(row["sanad"]),
-            blank_to_none(source_row["sanad_confidence"]), blank_to_none(row["matn_ar"]),
+            blank_to_none(source_row["sanad_confidence"]), matn_ar,
             alias_surface[attributed] if attributed else None, narration_level,
             blank_to_none(source_row["chain_type"]), blank_to_none(source_row["school"]), blank_to_none(row["url"]),
             blank_to_none(row["page_ref"]), blank_to_none(row["provenance"]),
@@ -703,6 +814,7 @@ def project(args: argparse.Namespace) -> dict:
     ], hadiths)
     counts["arabic_sha256_binding_errors"] = arabic_mismatches
     counts["hadith_provenance_differs_from_unified"] = provenance_mismatches
+    counts["matn_ar"] = dict(sorted(matn_counts.items()))
     record_to_hadith = {info["record_id"]: hadith_id for hadith_id, info in hadith_info.items()}
 
     # translations (canonical) and translation_candidates (candidate stream)
@@ -979,6 +1091,10 @@ def project(args: argparse.Namespace) -> dict:
         for ordinal, entry in enumerate(entries):
             if entry["grade"].strip() in PLACEHOLDER_GRADES:
                 continue
+            reason = non_ruling_reason(entry["grade"])
+            if reason:   # "he did not include it", "silent on it", a back-reference: not a ruling, never a grade
+                assessment_counts[f"gradings_full:non_ruling_excluded:{reason}"] += 1
+                continue
             assessments.append(assessment_row(info, code, tradition, "gradings_full", ordinal, "cited_ruling",
                                               entry["scholar"], entry["grade"], entry["citation"]))
             assessment_counts["gradings_full:cited_ruling"] += 1
@@ -988,6 +1104,19 @@ def project(args: argparse.Namespace) -> dict:
         "review_state",
     ], assessments)
     counts["hadith_assessments"] = dict(sorted(assessment_counts.items()))
+
+    # report correspondences (pipeline candidates; reviewer decisions live in the curation table)
+    correspondence_rows, member_rows, correspondence_counts, correspondence_inputs = project_correspondences(
+        args.correspondence, hadith_info, input_sha)
+    canonical.write("report_correspondence_candidates", [
+        "id", "hadith_id_a", "hadith_id_b", "arabic_sha256_a", "arabic_sha256_b", "relation_class", "jaccard",
+        "containment", "global_containment", "length_ratio", "shared_shingles", "shingles_a", "shingles_b", "words_a",
+        "words_b", "score_band", "scope", "matn_split_a", "matn_split_b", "cluster_id", "basis", "method_version",
+    ], correspondence_rows)
+    canonical.write("report_correspondence_cluster_members", [
+        "method_version", "hadith_id", "cluster_id", "star_centre_hadith_id", "is_star_centre",
+    ], member_rows, key_width=2)
+    counts["report_correspondences"] = correspondence_counts
 
     # evidence tables: created empty at launch (section 5.8); the bundle's Citation surface is header-only
     if bundle.files["nodes/citations.csv"]["row_count"] != 0:
@@ -1027,6 +1156,10 @@ def project(args: argparse.Namespace) -> dict:
             "projection_sha256": sha256_file(Path(__file__)),
             "reconciled_sidecars": {f"reconciled/{name}": digest for name, digest in sorted(sidecar_hashes.items())},
             "k6_sidecar_resolver_sha256": k6_resolver_sha,
+            "matn_isolation_sha256": sha256_file(CORRESPONDENCE_JOB_DIR / "matn_isolation.py"),
+            "extractor_sha256": sha256_file(HADITH_DATA_DIR / "extract_isnad_unified.py"),
+            "non_ruling_rule_sha256": sha256_file(GRADING_RECOVERY_DIR / "build_hadith_assessment_rows.py"),
+            "report_correspondence": {"path": display_path(args.correspondence), **correspondence_inputs},
         },
         "release": {
             "release_class": "release" if source_release_state == "release" else "non_release",
@@ -1072,6 +1205,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", required=True, type=Path, help="new, empty output directory")
     parser.add_argument("--reconciled", type=Path, default=HADITH_DATA_DIR / "reconciled",
                         help="reconciled sidecar directory (K6 source index, Pure Canon chains, no-chain flags)")
+    parser.add_argument("--correspondence", type=Path, default=CORRESPONDENCE_JOB_DIR / "output",
+                        help="report-correspondence output (pairs, cluster members, summary.json)")
     return parser
 
 

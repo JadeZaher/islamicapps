@@ -104,7 +104,7 @@ class IsnadRules(unittest.TestCase):
 RECONCILED = Path(__file__).resolve().parent.parent / "reconciled"
 PROJECTION = Path(os.environ.get(
     "PG_PROJECTION",
-    Path(__file__).resolve().parent.parent / "development" / "pg-load-2026-11-21" / "projection-candidates"))
+    Path(__file__).resolve().parent.parent / "development" / "pg-load-2026-11-21" / "projection-v3"))
 
 
 def sidecar_rows(name: str, record_ids: set[str]) -> dict[str, dict]:
@@ -118,7 +118,7 @@ def sidecar_rows(name: str, record_ids: set[str]) -> dict[str, dict]:
 
 
 class IdentityRules(unittest.TestCase):
-    """Owner decisions 2026-11-21: every candidate kept with its basis; verified only when confirmed and uncontested."""
+    """Owner decisions 2026-11-21: every candidate kept with its basis; the machine-reviewed identity stands only when confirmed and uncontested."""
 
     def test_verified_narrator(self):
         confirmed = "source_index_confirmed_by_text"
@@ -126,7 +126,8 @@ class IdentityRules(unittest.TestCase):
             ([("n:1", "name_exact"), ("n:1", confirmed)], "n:1"),               # name and source agree
             ([("n:1", confirmed)], "n:1"),
             ([("n:2", "name_exact"), ("n:1", confirmed)], None),               # contested: shown, never settled
-            ([("n:3", "name_kunya_only"), ("n:1", confirmed)], None),          # a kunya-only match contests too
+            ([("n:3", "name_kunya_only"), ("n:1", confirmed)], "n:1"),         # a kunya-only match is a label, never a contest
+            ([("n:3", "name_kunya_only"), ("n:2", "name_exact"), ("n:1", confirmed)], None),  # a name match still contests
             ([("n:1", "name_exact"), ("n:1", "source_index")], None),          # agreement without confirmation
             ([("n:1", "name_spelling_fold")], None),
             ([], None),
@@ -140,6 +141,119 @@ class IdentityRules(unittest.TestCase):
         for narrators, expected in cases:
             with self.subTest(narrators=narrators):
                 self.assertEqual(ep.candidate_agreement(narrators), expected)
+
+
+BUNDLE_HADITHS = Path(__file__).resolve().parent.parent / "development" / "pg-load-2026-11-21" / "bundle" / "nodes" / "hadiths.csv"
+
+
+def bundle_hadiths(record_ids: set[str]) -> dict[str, dict[str, str]]:
+    """Real hadith rows from the bundle the development database was loaded from, keyed by record_id."""
+    found: dict[str, dict[str, str]] = {}
+    with BUNDLE_HADITHS.open("rt", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        names = [ep.typed_column_name(column) if not column.startswith(":") else None for column in next(reader)]
+        for values in reader:
+            row = {name: value for name, value in zip(names, values) if name}
+            if row["record_id"] in record_ids:
+                found[row["record_id"]] = row
+                if len(found) == len(record_ids):
+                    break
+    return found
+
+
+class NonRulingRule(unittest.TestCase):
+    """grading-recovery's classification, reused: a non-ruling never becomes an assessment."""
+
+    def test_non_ruling_reason(self):
+        cases = [
+            ("لم يخرجه", "not_included_by_grader"),       # al-Bihbudi's Sahih al-Kafi: "he did not include it"
+            ("لم يخرجه ", "not_included_by_grader"),
+            ("سكت عنه", "grader_silent"),
+            ("كالسابق", "back_reference_only"),
+            ("صحيح", None),
+            ("ضعيف على المشهور", None),
+        ]
+        for grade, expected in cases:
+            with self.subTest(grade=grade):
+                self.assertEqual(ep.non_ruling_reason(grade), expected)
+
+
+@unittest.skipUnless(BUNDLE_HADITHS.is_file(), "development bundle not present")
+class MatnRuleOnRealRows(unittest.TestCase):
+    """A matn is stored only when it is the report's own (review 2026-11-21)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rows = bundle_hadiths({"k6:23658", "k6:1"})
+        cls.isolator = ep.matn_isolator()
+
+    def matn(self, record_id: str):
+        row = self.rows[record_id]
+        return ep.accepted_matn(self.isolator, record_id, row["text_ar"], ep.blank_to_none(row["matn_ar"]))
+
+    def test_another_reports_matn_is_not_stored(self):
+        # Tirmidhi k6:23658: the upstream fill joined on (source, hadith number) and attached a neighbour's matn.
+        stored, reason = self.matn("k6:23658")
+        self.assertIsNone(stored)
+        self.assertIn(reason, {"matn_column_not_in_text", "matn_column_includes_chain"})
+
+    def test_the_reports_own_matn_is_stored(self):
+        stored, reason = self.matn("k6:1")       # Bukhari 1: the matn column sits inside its own text
+        self.assertIsNone(reason)
+        self.assertEqual(stored, self.rows["k6:1"]["matn_ar"])
+
+    def test_blank_matn_is_no_matn(self):
+        self.assertEqual(ep.accepted_matn(self.isolator, "k6:1", "نص", None), (None, None))
+
+
+class CorrespondenceProjection(unittest.TestCase):
+    """Pairs bind to each side's loaded Arabic; a changed text drops the pair and counts it."""
+
+    # A real pair from report-correspondence-v1 (Bukhari 1 / Muslim 5036).
+    PAIR = {
+        "pair_id": "report-pair:e385045b60639fa39743", "hadith_id_a": "hadith:k6:1", "hadith_id_b": "hadith:k6:12318",
+        "arabic_sha256_a": "6636241d13338ee3a62c1cbe0f7b254ae2ea9bd537e0cf84d88c77d0b6c595ab",
+        "arabic_sha256_b": "9086b1c82fe75611fb30b21d8bde69ed851b38b751b57e332d33348cb0b1bf57",
+        "scope": "cross_work_same_tradition", "class": "same_report_variant_wording", "jaccard": "0.3818",
+        "containment": "0.5575", "global_containment": "0.5575", "length_ratio": "0.9826", "shared_shingles": "63",
+        "shingles_a": "115", "shingles_b": "113", "words_a": "30", "words_b": "33", "score_band": "jaccard_0.3-0.4",
+        "matn_split_a": "reliable", "matn_split_b": "reliable", "cluster_id": "report-cluster:a01d6f733a6ab9952cce",
+        "basis": "textual_overlap", "method_version": "report-correspondence-v1",
+    }
+
+    def write_output(self, directory: Path, input_sha: str) -> None:
+        with (directory / "report_correspondence_pairs.csv").open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(self.PAIR))
+            writer.writeheader()
+            writer.writerow(self.PAIR)
+        with (directory / "report_correspondence_cluster_members.csv").open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(["cluster_id", "hadith_id", "star_centre", "is_star_centre", "method_version"])
+            for hadith_id in ("hadith:k6:1", "hadith:k6:12318"):
+                writer.writerow([self.PAIR["cluster_id"], hadith_id, "hadith:k6:1", str(hadith_id == "hadith:k6:1"),
+                                 "report-correspondence-v1"])
+        (directory / "summary.json").write_text(json.dumps({
+            "inputs_sha256": {"x/all_hadiths_unified.incomplete.csv.gz": input_sha},
+            "parameters": {"method_version": "report-correspondence-v1"}}), encoding="utf-8")
+
+    def test_pair_binds_to_loaded_arabic(self):
+        self.assertEqual(ep.correspondence_pair_id("hadith:k6:1", "hadith:k6:12318"), self.PAIR["pair_id"])
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            self.write_output(directory, "in")
+            loaded = {"hadith:k6:1": {"arabic_sha256": self.PAIR["arabic_sha256_a"]},
+                      "hadith:k6:12318": {"arabic_sha256": self.PAIR["arabic_sha256_b"]}}
+            pairs, members, counts, _ = ep.project_correspondences(directory, loaded, "in")
+            self.assertEqual([row[0] for row in pairs], [self.PAIR["pair_id"]])
+            self.assertEqual(len(members), 2)
+            # The same pair against a changed Muslim text: dropped and counted, never loaded.
+            loaded["hadith:k6:12318"] = {"arabic_sha256": "0" * 64}
+            pairs, _, counts, _ = ep.project_correspondences(directory, loaded, "in")
+            self.assertEqual(pairs, [])
+            self.assertEqual(counts["pairs_dropped:arabic_hash_changed"], 1)
+            # Output built from another corpus is refused outright.
+            with self.assertRaisesRegex(ep.ProjectionError, "another unified CSV"):
+                ep.project_correspondences(directory, loaded, "other")
 
 
 @unittest.skipUnless((RECONCILED / "k6_source_index.jsonl.gz").is_file(), "reconciled sidecars not built")
@@ -219,12 +333,12 @@ class ProjectionOutputOnRealRows(unittest.TestCase):
         self.assertEqual(self.mentions[mention]["narrator_id"], "")
         self.assertEqual(self.mentions[mention]["resolution"], "unresolved")
 
-    def test_kunya_only_match_is_labelled_and_contests_a_confirmed_source_id(self):
+    def test_kunya_only_match_is_labelled_and_does_not_contest_a_confirmed_source_id(self):
         mention = "mention:k6:10000:0000:0001"            # أبو معاوية
         self.assertEqual(sorted(self.candidates[mention]), [
             ("narrator:rawi:19383", "name_kunya_only"), ("narrator:rawi:20354", "source_index_confirmed_by_text")])
         self.assertEqual(self.placeholders["narrator:rawi:19383"], "kunya_only_name")
-        self.assertEqual(self.mentions[mention]["narrator_id"], "")
+        self.assertEqual(self.mentions[mention]["narrator_id"], "narrator:rawi:20354")  # owner decision 2026-11-21
 
     def test_an_imami_mention_has_no_automatic_candidate(self):
         imami = [mention for mention, row in self.mentions.items() if row["hadith_id"].startswith("hadith:thaqalayn:")]

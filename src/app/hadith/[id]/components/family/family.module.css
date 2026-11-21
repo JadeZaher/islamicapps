@@ -1,0 +1,224 @@
+/*
+ * Report family view: Swiss (International Typographic) style. Every colour and spacing value is a variable on
+ * .family so a later project-wide design pass can retune it here. Flat fills, hairline rules, no shadows or gradients.
+ * Rationale: src/app/hadith/[id]/AGENTS.md §Report family.
+ */
+.family {
+  --family-ink: #f4f4f2;
+  --family-ink-secondary: #a3a3a0;
+  --family-ink-tertiary: #737370;
+  --family-paper: #0b0b0c;
+  --family-rule: #2a2a2b;
+  --family-accent: #34d399;
+  --family-dim: 0.14;
+  --family-space-1: 0.25rem;
+  --family-space-2: 0.5rem;
+  --family-space-3: 1rem;
+  --family-space-4: 1.5rem;
+  --family-space-5: 2.5rem;
+  --family-space-6: 4rem;
+  --family-hairline: 1px;
+  color: var(--family-ink);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, 'Helvetica Neue', Arial, sans-serif);
+}
+
+.section {
+  border-top: var(--family-hairline) solid var(--family-rule);
+  padding-block: var(--family-space-5);
+}
+
+.label {
+  margin-bottom: var(--family-space-4);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--family-ink-tertiary);
+}
+
+.summary {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--family-ink-secondary);
+}
+
+.summary strong {
+  font-weight: 600;
+  color: var(--family-ink);
+}
+
+.muted {
+  color: var(--family-ink-tertiary);
+}
+
+.secondary {
+  color: var(--family-ink-secondary);
+}
+
+.link {
+  color: var(--family-ink);
+  text-decoration: underline;
+  text-decoration-thickness: var(--family-hairline);
+  text-underline-offset: 0.25em;
+  outline: none;
+}
+
+.link:hover {
+  color: var(--family-accent);
+}
+
+.link:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--family-accent);
+  outline-offset: 2px;
+}
+
+.button {
+  border: var(--family-hairline) solid var(--family-rule);
+  background: transparent;
+  color: var(--family-ink-secondary);
+  padding: var(--family-space-1) var(--family-space-2);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.button:hover {
+  color: var(--family-ink);
+  border-color: var(--family-ink-tertiary);
+}
+
+.button[aria-pressed='true'] {
+  color: var(--family-paper);
+  background: var(--family-ink);
+  border-color: var(--family-ink);
+}
+
+.textButton {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--family-ink-secondary);
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-decoration-thickness: var(--family-hairline);
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.groupHeading {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  border-bottom: var(--family-hairline) solid var(--family-ink-tertiary);
+  padding-bottom: var(--family-space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.workHeading {
+  margin-top: var(--family-space-4);
+  font-size: 0.8125rem;
+  color: var(--family-ink-secondary);
+}
+
+.rows > li {
+  border-top: var(--family-hairline) solid var(--family-rule);
+  padding-block: var(--family-space-4);
+}
+
+.rows > li:first-child {
+  border-top: 0;
+}
+
+.rowHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--family-space-1);
+}
+
+@media (min-width: 640px) {
+  .rowHead {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--family-space-4);
+    align-items: baseline;
+  }
+}
+
+.arabic {
+  font-size: 1.25rem;
+  line-height: 2.1;
+  color: var(--family-ink);
+}
+
+.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  margin-top: var(--family-space-1);
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--family-space-3);
+  font-size: 0.75rem;
+  color: var(--family-ink-tertiary);
+}
+
+/* Tradition mark: a short flat line in the tradition's dash pattern, ink only (TraditionMark, labels.ts). */
+.mark {
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline-end: var(--family-space-2);
+  color: var(--family-ink);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--family-space-2);
+  margin-bottom: var(--family-space-3);
+}
+
+.select {
+  background: var(--family-paper);
+  color: var(--family-ink);
+  border: var(--family-hairline) solid var(--family-rule);
+  padding: var(--family-space-1) var(--family-space-2);
+  font-size: 0.8125rem;
+  max-width: 100%;
+}
+
+.canvas {
+  /* height is set inline from the number of layers, capped at 78vh */
+  border: var(--family-hairline) solid var(--family-rule);
+  background: var(--family-paper);
+}
+
+.legend {
+  margin-top: var(--family-space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--family-space-2) var(--family-space-4);
+  font-size: 0.75rem;
+  color: var(--family-ink-secondary);
+}
+
+.chainBlock {
+  border-top: var(--family-hairline) solid var(--family-rule);
+  padding-block: var(--family-space-4);
+}
+
+.chainBlock:first-child {
+  border-top: 0;
+}
+
+.chainHeading {
+  margin-bottom: var(--family-space-3);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}

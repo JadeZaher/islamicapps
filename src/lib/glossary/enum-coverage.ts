@@ -45,4 +45,7 @@ export const PLAIN_LANGUAGE_VALUES: Readonly<Record<EnumValueReference, string>>
   'motif_category.WISDOM': 'Plain topic label (wisdom literature).',
   'motif_category.PERSIAN_INFLUENCE': 'Plain topic label.',
   'motif_category.COSMOLOGY': 'Plain topic label.',
+  'report_correspondence_scope.same_work': 'Shown as “within one work”.',
+  'report_correspondence_scope.cross_work_same_tradition': 'Shown as “across works of one tradition”.',
+  'report_correspondence_scope.cross_tradition': 'Shown as “across traditions”.',
 };

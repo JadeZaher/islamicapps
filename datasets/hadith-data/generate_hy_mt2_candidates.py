@@ -35,26 +35,25 @@ regen = importlib.util.module_from_spec(_regen_spec)
 sys.modules["regen_unified_csvs"] = regen
 _regen_spec.loader.exec_module(regen)
 
-MODEL = "tencent/hy-mt2-30b-a3b"
-PIPELINE = "hy-mt2-openrouter-v1"
-PROMPT_VERSION = "hy-mt2-default-en-prompt-v1"
+PIN = gen.load_translation_pin()  # translation_model.json is the single source for the values below
+MODEL = PIN["model_id"]
+PIPELINE = PIN["pipeline"]
+PROMPT_VERSION = PIN["prompt"]["version"]
+PROMPT_TEMPLATE = PIN["prompt"]["template"]
 GLYPH_PIPELINE = "mechanical-honorific-glyph-substitution-v1"
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-CONTEXT_TOKENS = 8192
-MAX_COMPLETION_TOKENS = 4096
-PRICE_PROMPT = 0.000000074
-PRICE_COMPLETION = 0.000000295
-CHUNK_TARGET_CHARS = 2500
-CHUNK_HARD_LIMIT_CHARS = 5500
-ARABIC_TOKENS_PER_CHAR = 0.6  # measured ~0.54 on 2 pilot probes; padded for safety
-TEMPERATURE = 0.7  # model card recommendation for 30B-A3B
+CONTEXT_TOKENS = PIN["generation"]["context_tokens"]
+MAX_COMPLETION_TOKENS = PIN["generation"]["max_completion_tokens"]
+PRICE_PROMPT = PIN["pricing_usd_per_million_tokens"]["prompt"] / 1_000_000
+PRICE_COMPLETION = PIN["pricing_usd_per_million_tokens"]["completion"] / 1_000_000
+CHUNK_TARGET_CHARS = PIN["chunking"]["target_chars"]
+CHUNK_HARD_LIMIT_CHARS = PIN["chunking"]["hard_limit_chars"]
+ARABIC_TOKENS_PER_CHAR = PIN["chunking"]["arabic_tokens_per_char"]  # measured ~0.54 on 2 pilot probes; padded
+TEMPERATURE = PIN["generation"]["temperature"]
+PROVIDER_POLICY = dict(PIN["provider_policy"])
 REQUEST_TIMEOUT_SECONDS = 120
 MAX_ATTEMPTS = 6
 USER_AGENT = "translation-batch-client/1.0"
-PROMPT_TEMPLATE = (
-    "Translate the following text into English. Note that you should only output the "
-    "translated result without any additional explanation:\n\n{source_text}"
-)
 MODEL_RECORD_EXCLUSIONS = {
     "thaqalayn:06840b21d9e61e1ab351aec4",  # Kitab al-Ghayba Introduction/paratext (README)
     "thaqalayn:2a1ca7a8bc366eadfcbcb80f",
@@ -156,7 +155,7 @@ HONORIFIC_PHRASE_RE = re.compile(
     r"may allah (?:be pleased with (?:him|her|them)|bless him and his family)",
     re.IGNORECASE,
 )
-SCREEN_VERSION = "screen-v2"
+SCREEN_VERSION = PIN["qa_screen"]["version"]
 MIN_LATIN_TO_ARABIC_RATIO = 1.0  # existing accepted Gemini candidates span 1.5-2.3
 MAX_LATIN_TO_ARABIC_RATIO = 3.2
 
@@ -386,7 +385,7 @@ def call_model(key: str, text_ar: str, max_tokens: int) -> dict:
         "messages": [{"role": "user", "content": PROMPT_TEMPLATE.format(source_text=text_ar)}],
         "temperature": TEMPERATURE,
         "max_tokens": max_tokens,
-        "provider": {"data_collection": "deny", "allow_fallbacks": False},
+        "provider": dict(PROVIDER_POLICY),
     }
     payload = json.dumps(body).encode("utf-8")
     delay = 2.0
@@ -512,7 +511,7 @@ def translate_item(item: dict, key: str, args, budget: Budget, output: Path) -> 
         "source_row": source_row(row),
         "source_length_chars": len(text_ar),
         "split": {"chunks": len(item["chunks"]), "boundary": "sentence", "offsets": [list(c) for c in item["chunks"]]},
-        "generation": {"temperature": TEMPERATURE, "stream": False, "provider_policy": {"data_collection": "deny", "allow_fallbacks": False}},
+        "generation": {"temperature": TEMPERATURE, "stream": False, "provider_policy": dict(PROVIDER_POLICY)},
         "model_cost_usd": cost,
         "model_usage": dict(usage_total),
         "model_response_ids": response_ids,
