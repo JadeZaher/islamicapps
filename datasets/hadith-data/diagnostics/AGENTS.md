@@ -6,7 +6,7 @@ Standalone, standard-library Python jobs for the data-gap plan (`.omc/research/p
 
 - `diagnostic_common.py`: paths, hashing, header object, output-path guard (writes cannot leave `diagnostics/`), corpus streaming, loaders for `regen_unified_csvs.py` and `extract_isnad_unified.py` (bytecode writing disabled so no `__pycache__` appears beside canonical modules).
 - `narrator_surface_logic.py`: pure logic (surface categories, name-component parsing, candidate scoring). Tested by `test_narrator_surface_logic.py`.
-- `name_invariant.py`: ordered, individually switchable folding rules giving one key for spelling variants of the same Arabic name; reuses `regen.narrator_normalize` unmodified. Tested by `test_name_invariant.py`. Run both suites with `python -B -m unittest test_narrator_surface_logic test_name_invariant` from this directory.
+- `name_invariant.py`: ordered, individually switchable folding rules giving one key for spelling variants of the same Arabic name; imports the adopted rules from `regen_unified_csvs.py` (no duplicated logic) and defines only the two rules that were not adopted. Tested by `test_name_invariant.py`. Run both suites with `python -B -m unittest test_narrator_surface_logic test_name_invariant` from this directory.
 
 ## Job map
 
@@ -14,6 +14,7 @@ Standalone, standard-library Python jobs for the data-gap plan (`.omc/research/p
 | --- | --- | --- |
 | J1 | `build_narrator_surface_census.py` | `narrator-resolution/` |
 | J2 | `measure_tier0_resolver_delta.py` (name-invariant dry run) | `narrator-resolution/` |
+| proof | `compare_resolver_before_after.py` (before/after of the adopted lookup) | `narrator-resolution/` |
 | J3 | `rank_narrator_resolution_candidates.py` | `narrator-resolution/` |
 | J4 | not built: needs network | |
 | J5 | `sample_extractor_noise.py` | `extractor-noise/` |
@@ -28,5 +29,5 @@ Standalone, standard-library Python jobs for the data-gap plan (`.omc/research/p
 ## Design notes
 
 - The preserved snapshot has 26 columns and no `record_id`; rows are referenced by `id`, `hadith_id`, `source` and file line. `k6:<id>` candidate IDs join to `id` and verify against `arabic_sha256`.
-- Resolution uses the audit's exact path (`extract_isnad_branches`, `narrator_normalize`, `build_narrator_index`), so totals reconcile with `sanad_resolution_audit.json`.
+- Resolution uses the canonical tiered `regen.resolve_narrator` via `diagnostic_common.build_resolver`, so totals reconcile with `narrator-resolution/sanad_resolution_audit_after_adoption.json` (the pre-adoption `sanad_resolution_audit.json` is untouched).
 - Candidate scoring weights and thresholds are triage aids for reviewer attention. They are not confidence in identity.

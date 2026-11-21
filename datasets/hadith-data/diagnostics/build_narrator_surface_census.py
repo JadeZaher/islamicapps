@@ -39,7 +39,7 @@ def main() -> None:
     started = time.time()
     regen = common.load_regen()
     extractor = common.load_extractor()
-    exact_index, blocked_index = regen.build_narrator_index(str(common.REGISTRY_PATH))
+    resolve, exact_index, blocked_index = common.build_resolver(regen)
     norm_cache: dict[str, str] = {}
 
     def normalize(raw: str) -> str:
@@ -85,7 +85,7 @@ def main() -> None:
             for position, (raw, norm) in enumerate(zip(branch, norms)):
                 metrics["surfaces_attempted"] += 1
                 attempted[tradition] += 1
-                if exact_index.get(norm):
+                if resolve(norm):
                     continue
                 metrics["unresolved_surface_occurrences"] += 1
                 unresolved_by_tradition[tradition]["occurrences"] += 1
@@ -188,8 +188,9 @@ def main() -> None:
 
     frequency = Counter(count for _, count in ranked)
     never_single = sum(categories[c]["occurrences"] for c in ("relational_or_fragment", "collective_or_anonymous"))
-    audit_metrics = json.loads((common.HADITH_DATA_DIR / "sanad_resolution_audit.json")
-                               .read_text(encoding="utf-8"))["metrics"]
+    after_audit = common.DIAGNOSTICS_DIR / JOB / "sanad_resolution_audit_after_adoption.json"
+    audit_path = after_audit if after_audit.exists() else common.HADITH_DATA_DIR / "sanad_resolution_audit.json"
+    audit_metrics = json.loads(audit_path.read_text(encoding="utf-8"))["metrics"]
     reconciliation = {
         key: {"this_run": metrics[key], "sanad_resolution_audit": audit_metrics[key],
               "equal": metrics[key] == audit_metrics[key]}
@@ -226,6 +227,7 @@ def main() -> None:
     census_count = common.write_jsonl(out, "surface_census.jsonl.gz", census_rows(), gzipped=True)
     curve = {
         "header": header,
+        "reconciliation_audit_file": common.relative_path(audit_path),
         "reconciliation_with_sanad_resolution_audit": reconciliation,
         "totals": {**dict(metrics), "distinct_unresolved_surfaces": len(ranked),
                    "unresolved_by_tradition": {t: c["occurrences"] for t, c in sorted(unresolved_by_tradition.items())},

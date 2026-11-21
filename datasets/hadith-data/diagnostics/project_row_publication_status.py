@@ -62,7 +62,7 @@ def main() -> None:
     started = time.time()
     regen = common.load_regen()
     extractor = common.load_extractor()
-    exact_index, _ = regen.build_narrator_index(str(common.REGISTRY_PATH))
+    resolve, exact_index, _ = common.build_resolver(regen)
 
     licenses = {family: read_front_matter(doc) for family, doc in FAMILY_SOURCE_DOC.items()}
     dispositions = {}
@@ -134,7 +134,7 @@ def main() -> None:
             for branch in branches:
                 for surface in branch:
                     links += 1
-                    if exact_index.get(regen.narrator_normalize(surface)):
+                    if resolve(surface):
                         resolved += 1
             chain_status = ("complete_exact" if resolved == links
                             else "unresolved" if resolved == 0 else "partial")

@@ -6,6 +6,7 @@ datasets/hadith-data/diagnostics/<job-name>/.
 
 import csv
 import datetime
+import functools
 import gzip
 import hashlib
 import importlib.util
@@ -166,3 +167,14 @@ def row_reference(row_number: int, row: dict) -> dict:
         "source": clean(row.get("source")),
         "line": row_number,
     }
+
+
+def build_resolver(regen):
+    """(resolve, exact_index, blocked_index): resolve(surface) is the canonical tiered regen.resolve_narrator, memoized."""
+    exact_index, blocked_index = regen.build_narrator_index(str(REGISTRY_PATH))
+
+    @functools.lru_cache(maxsize=None)
+    def resolve(surface: str):
+        return regen.resolve_narrator(surface, exact_index, blocked_index)
+
+    return resolve, exact_index, blocked_index

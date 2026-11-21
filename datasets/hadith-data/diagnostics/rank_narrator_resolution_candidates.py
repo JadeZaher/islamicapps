@@ -158,7 +158,7 @@ def main() -> None:
     unit_scope = {row["surface_normalized"] for row in census if row["rank"] <= args.unit_surfaces}
     regen = common.load_regen()
     extractor = common.load_extractor()
-    exact_index, _ = regen.build_narrator_index(str(common.REGISTRY_PATH))
+    resolve, exact_index, _ = common.build_resolver(regen)
     registry = RegistryIndex(regen)
 
     # Pass: full contexts for in-scope surfaces, unit row credit, resolved-in-source frequency.
@@ -179,7 +179,7 @@ def main() -> None:
         for branch in branches:
             norms = [regen.narrator_normalize(raw) for raw in branch]
             for position, norm in enumerate(norms):
-                indx = exact_index.get(norm)
+                indx = resolve(norm)
                 if indx:
                     resolved_by_source[(source, indx)] += 1
                     continue
@@ -245,13 +245,13 @@ def main() -> None:
             candidates = []     # derived relations are resolved from the neighbour at unit level
         else:
             candidates = [dict(c) for c in name_candidates(norm)]
-        teacher_resolved = sum(c for t, c in teacher_ctx[norm].items() if exact_index.get(t))
-        student_resolved = sum(c for s, c in student_ctx[norm].items() if exact_index.get(s))
+        teacher_resolved = sum(c for t, c in teacher_ctx[norm].items() if resolve(t))
+        student_resolved = sum(c for s, c in student_ctx[norm].items() if resolve(s))
         for candidate in candidates:
             teacher_support = sum(c for t, c in teacher_ctx[norm].items()
-                                  if exact_index.get(t) and registry.teacher_edge(candidate["scholar_indx"], exact_index[t]))
+                                  if resolve(t) and registry.teacher_edge(candidate["scholar_indx"], resolve(t)))
             student_support = sum(c for s, c in student_ctx[norm].items()
-                                  if exact_index.get(s) and registry.student_edge(candidate["scholar_indx"], exact_index[s]))
+                                  if resolve(s) and registry.student_edge(candidate["scholar_indx"], resolve(s)))
             candidate["graph_support"] = {
                 "teacher_edge_occurrences": teacher_support, "student_edge_occurrences": student_support,
                 "teacher_edge_share_of_all_occurrences": round(teacher_support / occurrences, 4),
@@ -315,7 +315,7 @@ def main() -> None:
         for key in keep_keys:
             _, axis, context = key
             entry = unit_data[key]
-            context_indx = exact_index.get(context)
+            context_indx = resolve(context)
             candidates = []
             if category == "relational_or_fragment" and context_indx and norm in (FATHER_SURFACES | GRANDFATHER_SURFACES):
                 hops = 2 if norm in GRANDFATHER_SURFACES else 1
@@ -343,7 +343,7 @@ def main() -> None:
                     if neighbor is None:
                         # secondary context: dominant opposite-axis neighbour
                         neighbor = entry["other"].most_common(1)[0][0]
-                    neighbor_indx = exact_index.get(neighbor)
+                    neighbor_indx = resolve(neighbor)
                     edge = registry.teacher_edge if side == "teacher" else registry.student_edge
                     if neighbor_indx and edge(indx, neighbor_indx):
                         features[f"{side}_edge"] = "exact"

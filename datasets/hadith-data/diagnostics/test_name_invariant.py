@@ -71,8 +71,8 @@ class RuleSwitchesAndTrace(unittest.TestCase):
         _, none = trace_name_invariant("سعيد بن جبير", base_normalize=BASE)
         self.assertEqual(none, [])
 
-    def test_no_arabic_letters_gives_empty_key(self):
-        self.assertEqual(key("Abu Hurairah 123"), "")
+    def test_text_without_letters_gives_empty_key(self):
+        self.assertEqual(key("( 123 ، )"), "")
 
     def test_all_rules_listed_in_documented_order(self):
         self.assertEqual(RULE_NAMES[0], "persian_urdu_letter_variants")

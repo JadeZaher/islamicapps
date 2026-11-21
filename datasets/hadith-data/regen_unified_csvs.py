@@ -2204,14 +2204,122 @@ def narrator_normalize(surface: str) -> str:
     return _norm(without_format_controls)
 
 
-def _extract_arabic_name(name_field: str) -> str:
+# --- Narrator spelling folds (adopted 2026-11-21; contract in AGENTS.md "Narrator identity lookup") ---
+# Rules are ordered and applied on top of narrator_normalize. They never strip the definite article and never
+# drop a name component. Not adopted (diagnostics only): hamza on waw/ya carriers, ta marbuta to ha.
+_PERSIAN_URDU_LETTERS = str.maketrans({
+    'ی': 'ي', 'ے': 'ي', 'ک': 'ك', 'ھ': 'ه', 'ہ': 'ه', 'ە': 'ه', 'ۃ': 'ة',
+})
+_THEOPHORIC_JOINED = re.compile(r'^عبد(ال[ء-ي]{2,})$')
+_KUNYA_JOINED = re.compile(r'^(ابو|ابي|ابا)(ال[ء-ي]{2,})$')
+_NASAB_CONNECTOR_FORMS = {'ابن': 'بن', 'ابنة': 'بنت'}
+_KUNYA_HEADS = ('ابو', 'ابي', 'ابا', 'ام')
+_NASAB_CONNECTORS = ('بن', 'بنت')
+_BLESSING_FORMULA = re.compile(
+    r'(?<![ء-ي])(?:'
+    r'رضي الله(?: تعالي)? عن(?:ه|ها|هما|هم|هن)(?: اجمعين)?|'
+    r'عليه(?:ما|م)? السلام|عليها السلام|'
+    r'صلي الله عليه(?: واله)?(?: وسلم)?|سلام الله عليه(?:ا|م)?|'
+    r'رحمه(?:م|ا)? الله(?: تعالي)?'
+    r')(?![ء-ي])'
+)
+
+
+def fold_persian_urdu_letter_variants(text: str) -> str:
+    """Persian/Urdu yeh, kaf and heh forms to the Arabic letters."""
+    return text.translate(_PERSIAN_URDU_LETTERS)
+
+
+def fold_punctuation_and_whitespace(text: str) -> str:
+    """Replace every non-letter character with a space and collapse spaces (letters of any script stay)."""
+    return ' '.join(''.join(
+        char if unicodedata.category(char).startswith('L') else ' ' for char in text
+    ).split())
+
+
+def fold_nasab_connector_forms(text: str) -> str:
+    """ابن to بن and ابنة to بنت; the relational pronoun ابنه ('his son') is left alone."""
+    return ' '.join(_NASAB_CONNECTOR_FORMS.get(token, token) for token in text.split())
+
+
+def fold_theophoric_compound_spacing(text: str) -> str:
+    """عبدالله to 'عبد الله' (ال-names only; عبيد is a different name)."""
+    out: list = []
+    for token in text.split():
+        match = _THEOPHORIC_JOINED.match(token)
+        out.extend(['عبد', match.group(1)] if match else [token])
+    return ' '.join(out)
+
+
+def fold_kunya_compound_spacing(text: str) -> str:
+    """ابوالقاسم to 'ابو القاسم' (joined kunya head plus an ال-name)."""
+    out: list = []
+    for token in text.split():
+        match = _KUNYA_JOINED.match(token)
+        out.extend([match.group(1), match.group(2)] if match else [token])
+    return ' '.join(out)
+
+
+NARRATOR_FOLD_RULES = (
+    ('persian_urdu_letter_variants', fold_persian_urdu_letter_variants),
+    ('punctuation_and_whitespace', fold_punctuation_and_whitespace),
+    ('nasab_connector_forms', fold_nasab_connector_forms),
+    ('theophoric_compound_spacing', fold_theophoric_compound_spacing),
+    ('kunya_compound_spacing', fold_kunya_compound_spacing),
+)
+
+
+def narrator_fold_normalize(surface: str) -> str:
+    """narrator_normalize plus the adopted spelling folds: the tier-1 lookup key."""
+    text = narrator_normalize(surface)
+    for _, rule in NARRATOR_FOLD_RULES:
+        text = rule(text)
+    return text
+
+
+def fold_kunya_case_forms(key: str) -> str:
+    """ابي/ابا to ابو when a non-connector token follows (keeps the name Ubayy in 'ابي بن كعب')."""
+    tokens = key.split()
+    return ' '.join(
+        'ابو' if token in ('ابي', 'ابا') and index + 1 < len(tokens)
+        and tokens[index + 1] not in _NASAB_CONNECTORS else token
+        for index, token in enumerate(tokens)
+    )
+
+
+def kunya_fold_allowed(key: str) -> bool:
+    """Specificity guard: only a surface with a nasab, or several components not led by a kunya, may use the fold."""
+    tokens = key.split()
+    if any(token in _NASAB_CONNECTORS for token in tokens[1:]):
+        return True
+    return len(tokens) >= 2 and tokens[0] not in _KUNYA_HEADS and tokens[0] not in ('ابن', 'بن', 'بنت')
+
+
+def strip_blessing_formulas(normalized_text: str) -> str:
+    """Remove blessing formulas (token-bounded phrases) from an already folded name; never lone letters."""
+    return ' '.join(_BLESSING_FORMULA.sub(' ', normalized_text).split())
+
+
+def _extract_arabic_name(name_field: str, strip_formulas: bool = True) -> str:
     """Extract the Arabic portion from an all_rawis name field.
+
+    By default blessing formulas (رضي الله عنه, ...) are removed from the name, including on the unclosed-parenthesis
+    fallback path, and the result is returned already folded (idempotent under narrator_fold_normalize).
+    strip_formulas=False returns the historical extraction used for tier-0 keys and legacy audit comparison.
 
     all_rawis names follow the pattern: 'English Name ( Arabic Name ( grade )'
     e.g. 'Abu Bakr As-Siddique ( أبو بكر الصديق ( رضي الله عنه'
     Extract the first parenthesised block that contains Arabic letters,
     then strip trailing parenthetical grade/honorific info.
     """
+    extracted = _extract_arabic_name_raw(name_field)
+    if not strip_formulas:
+        return extracted
+    return strip_blessing_formulas(narrator_fold_normalize(extracted))
+
+
+def _extract_arabic_name_raw(name_field: str) -> str:
+    """Historical extraction (formulas kept on the unclosed-parenthesis fallback)."""
     # Try to find Arabic text in parentheses
     for m in _ARABIC_IN_PARENS.finditer(name_field):
         candidate = m.group(1).strip()
@@ -2262,6 +2370,21 @@ def _extract_alias_segments(arabic_name: str) -> list[str]:
     return aliases
 
 
+class NarratorExactIndex(dict):
+    """Tier-0 exact index (dict content, unchanged semantics) carrying the tier-1/tier-2 lookup tables.
+
+    folded         : narrator_fold_normalize(formula-free registry name) -> set of scholar_indx
+    kunya_folded   : fold_kunya_case_forms(folded key) -> set of scholar_indx (guarded use only)
+    exact_ambiguous: tier-0 keys shared by several scholars (never resolve)
+    withheld_bare_names: scholar_indx whose formula-stripped name is a single token (not indexed in tier 1)
+    """
+
+    folded: dict
+    kunya_folded: dict
+    exact_ambiguous: set
+    withheld_bare_names: list
+
+
 def build_narrator_index(all_rawis_path: str):
     """Load all_rawis.csv and return two lookup dicts:
         exact_index  : exact normalized registry names, unique only
@@ -2269,7 +2392,10 @@ def build_narrator_index(all_rawis_path: str):
 
     See `AGENTS.md` under "Sanad and narrator completeness".
     """
-    exact_index = {}    # norm_name -> scholar_indx
+    exact_index = NarratorExactIndex()    # norm_name -> scholar_indx (tier 0)
+    folded_index: dict = {}               # tier 1: folded formula-free name -> {scholar_indx}
+    kunya_folded_index: dict = {}         # tier 2: kunya-case-folded tier-1 key -> {scholar_indx}
+    withheld_bare: list = []
     blocked_index = {}  # block_key -> [(scholar_indx, norm_name)]
     dup_norms = set()   # normalized names that map to multiple scholars
 
@@ -2299,9 +2425,20 @@ def build_narrator_index(all_rawis_path: str):
             # Index the full (English+Arabic mixed) normalized name
             _add(narrator_normalize(name), indx)
             # Also index the Arabic-only portion extracted from parentheses
-            arabic_name = _extract_arabic_name(name)
+            arabic_name = _extract_arabic_name(name, strip_formulas=False)
             if arabic_name:
                 _add(narrator_normalize(arabic_name), indx)
+                # Tier 1/2 keys come from the formula-free name; a name that becomes a single bare token only
+                # because a formula was stripped is withheld (uniqueness is not identity: 'محمد', 'عبد الرحمن').
+                folded_key = narrator_fold_normalize(_extract_arabic_name(name))
+                if folded_key:
+                    if (folded_key != narrator_fold_normalize(arabic_name)
+                            and len(folded_key.split()) == 1):
+                        withheld_bare.append(indx)
+                    else:
+                        folded_index.setdefault(folded_key, set()).add(indx)
+                        kunya_folded_index.setdefault(
+                            fold_kunya_case_forms(folded_key), set()).add(indx)
                 # Collect kunya alias candidates from this Arabic name
                 for alias in _extract_alias_segments(arabic_name):
                     alias_norm = narrator_normalize(alias)
@@ -2311,6 +2448,10 @@ def build_narrator_index(all_rawis_path: str):
     # Remove ambiguous full-name entries from exact_index
     for dn in dup_norms:
         exact_index.pop(dn, None)
+    exact_index.folded = folded_index
+    exact_index.kunya_folded = kunya_folded_index
+    exact_index.exact_ambiguous = set(dup_norms)
+    exact_index.withheld_bare_names = withheld_bare
 
     # Candidate-only: uniqueness is not identity evidence and cannot complete a chain.
     for alias_norm, indxs in alias_candidates.items():
@@ -2327,11 +2468,30 @@ def build_narrator_index(all_rawis_path: str):
 def resolve_narrator(surface: str, exact_index: dict, blocked_index: dict):
     """Resolve a surface-form narrator name to a scholar_indx string.
 
-    Only an exact normalized registry surface may complete a chain. Prefix,
-    containment, and kunya proposals remain non-resolving audit candidates.
+    Only exact registry names may complete a chain, tried in order; the first tier that has the key decides and a
+    key shared by several scholars is ambiguous (None):
+      0. unique exact match under narrator_normalize (unchanged historical behavior);
+      1. unique match of the adopted spelling folds (narrator_fold_normalize) against formula-free registry names;
+      2. unique match after the kunya case fold, only for a surface with a nasab or several name components.
+    Prefix, containment, and other kunya proposals remain non-resolving audit candidates.
+    A plain dict (no tier tables) resolves at tier 0 only.
     """
     norm = narrator_normalize(surface)
-    return exact_index.get(norm)
+    hit = exact_index.get(norm)
+    if hit:
+        return hit
+    folded_index = getattr(exact_index, 'folded', None)
+    if folded_index is None or norm in exact_index.exact_ambiguous:
+        return None
+    key = narrator_fold_normalize(surface)
+    owners = folded_index.get(key)
+    if owners:
+        return next(iter(owners)) if len(owners) == 1 else None
+    if kunya_fold_allowed(key):
+        owners = exact_index.kunya_folded.get(fold_kunya_case_forms(key))
+        if owners and len(owners) == 1:
+            return next(iter(owners))
+    return None
 
 
 def narrator_resolution_candidates(surface: str, blocked_index: dict) -> list:

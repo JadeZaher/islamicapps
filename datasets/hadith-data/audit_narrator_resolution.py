@@ -269,7 +269,7 @@ def legacy_index(regen: Any, registry_path: Path) -> dict[str, str]:
             if not scholar_indx or not name:
                 continue
             add(name, scholar_indx)
-            arabic_name = regen._extract_arabic_name(name)
+            arabic_name = regen._extract_arabic_name(name, strip_formulas=False)
             if arabic_name:
                 add(arabic_name, scholar_indx)
     for normalized in duplicates:

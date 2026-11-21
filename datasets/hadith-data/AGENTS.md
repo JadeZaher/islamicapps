@@ -172,11 +172,32 @@ release. Empty source text may
 reuse an explicit structured fallback, but K6 sidecar data is display-only and
 never overrides an available Arabic source.
 
-Automatic narrator identity resolution is exact-normalization-only. Unicode
-compatibility, format controls, vocalization, tatweel, alef, and ya variants may
-normalize before an exact registry lookup. Kunya, four-character prefixes, and
-prefix/containment matches are review candidates only and can never produce a
-completed narrator ID.
+### Narrator identity lookup (exact-normalization-only, tiered)
+
+Automatic narrator identity resolution (`regen_unified_csvs.resolve_narrator`) is exact-only. It tries three tiers
+in order; the first tier that has the key decides, a key shared by several scholars is ambiguous and never resolves,
+and resolution stays atomic per row.
+
+0. **Exact normalization (unchanged).** `narrator_normalize`: Unicode compatibility, format controls, vocalization,
+   tatweel, alef and ya variants, then a unique exact registry key (`exact_index`, whose dict content is exactly the
+   historical tier-0 index). A tier-0 match is never replaced by a later tier.
+1. **Spelling folds.** `narrator_fold_normalize` applies, in order: `persian_urdu_letter_variants` (ی ے to ي, ک to ك,
+   ھ ہ ە to ه), `punctuation_and_whitespace` (every non-letter becomes a space), `nasab_connector_forms` (ابن to بن,
+   ابنة to بنت; ابنه stays), `theophoric_compound_spacing` (عبدالله to عبد الله, ال-names only) and
+   `kunya_compound_spacing` (ابوالقاسم to ابو القاسم). The key is matched against registry names from which blessing
+   formulas have been removed at the source: `_extract_arabic_name` strips `رضي الله عنه`-style formulas (token-bounded
+   phrases, also on the unclosed-parenthesis fallback). A registry name that becomes a single bare token only because
+   a formula was stripped (for example the Prophet's `محمد`) is withheld from tier 1.
+2. **Guarded kunya case fold.** `fold_kunya_case_forms` (ابي/ابا to ابو when a non-connector token follows) is used
+   only for a surface that has a nasab (`بن`/`بنت`) or several name components not led by a kunya
+   (`kunya_fold_allowed`). A kunya-only or bare single-name surface is never resolved by it, and `ابي بن كعب` keeps its
+   ism.
+
+The folds never strip the definite article and never drop a name component. Not adopted (diagnostics only, see
+`diagnostics/`): hamza on waw/ya carriers and ta marbuta to ha. Kunya matches outside tier 2, four-character prefixes,
+and prefix/containment matches are review candidates only and can never produce a completed narrator ID.
+`_extract_arabic_name(name, strip_formulas=False)` returns the historical extraction used for tier-0 keys.
+Callers must use `resolve_narrator`; a direct `exact_index.get(narrator_normalize(surface))` is tier 0 only.
 
 ### Gold-set provenance and evaluation
 
@@ -221,7 +242,7 @@ extracted, unresolved, and fully resolved rows by tradition and source, along
 with the most frequent unresolved surfaces. Its output is diagnostic evidence,
 not a curation manifest or a publication claim.
 
-`narrator_alias_candidates.json` is deliberately narrower than an alias list.
+`narrator_alias_candidates.json` is deliberately narrower than an alias list (it still reports tier-0 Unicode equivalences only).
 It may contain only an exact unique registry match made possible by Unicode
 compatibility normalization or removal of Unicode format controls. A candidate
 is machine-audited and cannot assert a scholarly alias, replace the registry,

@@ -359,6 +359,77 @@ class NarratorResolverConservatismTests(unittest.TestCase):
         )
 
 
+class NarratorSpellingFoldTests(unittest.TestCase):
+    """Adopted tiered lookup: tier 0 unchanged, tier 1 spelling folds, tier 2 guarded kunya fold."""
+
+    REGISTRY = (
+        ("1", "'Abdullah bin Suraqa ( عبد الله بن سراقة ( رضي الله عنه"),   # unclosed paren keeps the formula
+        ("2", "Prophet Muhammad ( محمد صلى الله عليه وسلم ( رضي الله عنه"),   # bare name only after strip
+        ("3", "Abu Salamah bin Abdur Rahman ( أبو سلمة بن عبد الرحمن )"),
+        ("4", "Abu Salmah ( أبو سلمة )"),
+        ("5", "Ubayy bin Kab ( أبي بن كعب )"),
+        ("6", "Tabi bin Amir ( تبيع بن عامر )"),
+        ("7", "Tby ibn Amir ( تبيع ابن عامر )"),
+        ("8", "Aisha bint Qudama ( عائشة بنت قدامة )"),
+        ("9", "Abd Allah bin Abbas ( عبد الله بن عباس )"),
+        ("10", "Ibn Abi Layla ( ابن ابي ليلى )"),
+        ("11", "Abu al-Qasim ( أبو القاسم )"),
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        with tempfile.TemporaryDirectory() as directory:
+            rawis = Path(directory) / "all_rawis.csv"
+            with rawis.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=("scholar_indx", "name"))
+                writer.writeheader()
+                for indx, name in cls.REGISTRY:
+                    writer.writerow({"scholar_indx": indx, "name": name})
+            cls.exact, cls.blocked = regen.build_narrator_index(str(rawis))
+
+    def resolve(self, surface):
+        return regen.resolve_narrator(surface, self.exact, self.blocked)
+
+    def test_spelling_variants_resolve_to_the_same_identity(self):
+        table = [
+            ("عبد الله بن سراقة", "1"),            # blessing formula removed at the registry source
+            ("عبدالله بن عباس", "9"),              # theophoric spacing
+            ("ابو القاسم", "11"),
+            ("ابوالقاسم", "11"),                   # joined kunya compound
+            ("عائشة ابنة قدامة", "8"),             # ابنة to بنت
+            ("عبد الله ابن عباس", "9"),            # ابن to بن
+            ("( عبد الله بن عباس ،", "9"),                   # punctuation
+            ("ابي سلمة بن عبد الرحمن", "3"),       # guarded kunya case fold: has a nasab
+        ]
+        for surface, expected in table:
+            with self.subTest(surface=surface):
+                self.assertEqual(self.resolve(surface), expected)
+
+    def test_different_names_and_underspecified_surfaces_stay_unresolved(self):
+        table = [
+            "محمد",                 # bare name that is unique only after formula strip is withheld
+            "ابي سلمة",             # kunya-only: the case fold never completes it (registry spells it ابو)
+            "ابو كعب",              # Ubayy is an ism, not a kunya
+            "عائشة ابنه قدامة",     # 'his son' is not a nasab connector
+            "عبيد الله بن عباس",
+            "ابو حسن",
+        ]
+        for surface in table:
+            with self.subTest(surface=surface):
+                self.assertIsNone(self.resolve(surface))
+
+    def test_exact_match_wins_and_ambiguous_folds_never_resolve(self):
+        self.assertEqual(self.resolve("ابي بن كعب"), "5")
+        self.assertEqual(self.resolve("تبيع بن عامر"), "6")      # tier-0 exact, kept although the folds collide
+        self.assertEqual(self.resolve("تبيع ابن عامر"), "7")
+        self.assertIsNone(self.resolve("تبيع  بن   عامر"))        # only tier 1 sees it: two identities, ambiguous
+
+    def test_tier_zero_entries_are_unchanged_and_formula_keys_are_gone_from_tier_one(self):
+        self.assertIn(regen.narrator_normalize("أبو سلمة"), self.exact)
+        self.assertTrue(all(not regen._BLESSING_FORMULA.search(key) for key in self.exact.folded))
+        self.assertEqual(self.exact.withheld_bare_names, ["2"])
+
+
 class ThaqalaynResolverContractTests(unittest.TestCase):
     @staticmethod
     def chain_stats():
