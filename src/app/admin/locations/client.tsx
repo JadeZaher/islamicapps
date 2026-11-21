@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Edit2 } from 'lucide-react';
 import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
-import { describeActionError } from '@/app/admin/_components/actionError';
+import { describeActionError, unwrapAction } from '@/app/admin/_components/actionError';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -52,7 +52,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
         setIsSaving(true);
         setFormError(null);
         try {
-            await createLocation(formData);
+            await unwrapAction(createLocation(formData));
             setFormData({
                 name: '',
                 modern_country: '',
@@ -75,7 +75,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
         setIsSaving(true);
         setFormError(null);
         try {
-            await updateLocation(editingId, formData);
+            await unwrapAction(updateLocation(editingId, formData));
             setFormData({
                 name: '',
                 modern_country: '',
@@ -93,7 +93,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
     };
 
     const handleDelete = async (locationId: string) => {
-        await deleteLocation(locationId);
+        await unwrapAction(deleteLocation(locationId));
         router.refresh();
     };
 

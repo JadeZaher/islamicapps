@@ -25,7 +25,7 @@ function SectionHeading({ id, children }: { id: string; children: React.ReactNod
  * Hadith reading page: one column, isnad before matn as in the sources, English secondary.
  * Computed signals (chain score, inferred marfūʿ) are deliberately not rendered; see src/components/AGENTS.md §Hadith detail.
  */
-export function HadithClientPage({ hadith, nodes, edges, parallels = [] }: HadithClientPageProps) {
+export function HadithClientPage({ hadith, chain, parallels = [] }: HadithClientPageProps) {
     // Prefer the v2 fields; legacy aliases remain a fallback for the live graph.
     const hasArabicMatn = Boolean(hadith.matn_ar?.trim());
     const hasEnglishMatn = Boolean(hadith.matn_en?.trim());
@@ -36,7 +36,7 @@ export function HadithClientPage({ hadith, nodes, edges, parallels = [] }: Hadit
     const isSegmented = hasArabicMatn || hasEnglishMatn;
 
     const sourceSanadText = hadith.sanad ?? hadith.isnad_arabic ?? hadith.chain_text_arabic ?? null;
-    const hasChain = nodes.some((node) => Boolean(node.name_arabic?.trim() || node.name_english?.trim()));
+    const hasChain = (chain?.nodes.length ?? 0) > 0;
     const showChain = Boolean(sourceSanadText?.trim()) || hasChain;
 
     const reference = [hadith.source, hadith.hadith_no].filter(Boolean).join(' ');
@@ -76,7 +76,7 @@ export function HadithClientPage({ hadith, nodes, edges, parallels = [] }: Hadit
             {showChain && (
                 <section aria-labelledby="isnad-heading" className="border-b border-slate-800 py-8">
                     <SectionHeading id="isnad-heading">Isnad · chain of transmission</SectionHeading>
-                    <IsnadChain nodes={nodes} edges={edges} sourceSanadText={sourceSanadText} />
+                    <IsnadChain chain={chain} sourceSanadText={sourceSanadText} />
                 </section>
             )}
 

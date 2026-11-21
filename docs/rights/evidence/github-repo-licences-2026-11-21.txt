@@ -1,0 +1,24 @@
+URL: https://api.github.com/repos/<owner>/<repo>  (field "license")
+Retrieved: 2026-11-21 (UTC), generic client, no authentication
+Intent: What licence GitHub detects for each repository our data or tooling came from
+----
+OpenITI/RELEASE      license: None   description: "OpenITI releases"   pushed 2026-02-09
+OpenITI/0125AH       license: None   (holds the Musnad Zayd working file)
+OpenITI/0175AH       license: None   (holds the Jami' al-Sahih working file)
+OpenITI/0450AH       license: None   (al-Najashi, Rijal)
+OpenITI/0475AH       license: None   (al-Tusi, Rijal / Fihrist / Ikhtiyar)
+OpenITI/0750AH       license: None   (al-Mizzi, Tahdhib al-Kamal)
+OpenITI/0875AH       license: None   (Ibn Hajar, Taqrib al-Tahdhib)
+MohammedArab1/ThaqalaynAPI  license: GPL-3.0  description: "REST + GQL API that can fetch from any of
+                            the hadiths available on thaqalayn.net. Fetches all the hadiths found on
+                            the website on a weekly basis."
+sunnah-com/api       license: None   description: "API for sunnah.com"
+
+Also checked:
+https://raw.githubusercontent.com/OpenITI/RELEASE/master/LICENSE  -> HTTP 404 (no LICENSE file)
+https://raw.githubusercontent.com/sunnah-com/api/master/LICENSE   -> HTTP 404 (no LICENSE file)
+
+Reading: OpenITI declares its licence on the Zenodo release record
+(openiti-zenodo-17767721-2026-11-21.txt: "license": {"id": "cc-by-nc-sa-4.0"}), not in the
+GitHub repositories. The ThaqalaynAPI GPL-3.0 covers that repository's code; it says nothing
+about the hadith content the API serves.

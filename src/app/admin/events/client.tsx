@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit2 } from 'lucide-react';
 import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
-import { describeActionError } from '@/app/admin/_components/actionError';
+import { describeActionError, unwrapAction } from '@/app/admin/_components/actionError';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -74,7 +74,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         setIsSaving(true);
         setFormError(null);
         try {
-            await createHistoricalEvent(formData);
+            await unwrapAction(createHistoricalEvent(formData));
             setFormData({
                 title: '',
                 title_arabic: '',
@@ -100,7 +100,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         setIsSaving(true);
         setFormError(null);
         try {
-            await updateHistoricalEvent(editingId, formData);
+            await unwrapAction(updateHistoricalEvent(editingId, formData));
             setFormData({
                 title: '',
                 title_arabic: '',
@@ -121,7 +121,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
     };
 
     const handleDelete = async (eventId: string) => {
-        await deleteHistoricalEvent(eventId);
+        await unwrapAction(deleteHistoricalEvent(eventId));
         router.refresh();
     };
 

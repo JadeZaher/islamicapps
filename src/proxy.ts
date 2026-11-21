@@ -1,6 +1,7 @@
 /** Request gate (section 10.1): curator session on /admin and export, sign-in throttling, read rate limit, headers. */
 import { NextResponse, type NextRequest } from 'next/server';
 import { clientIp, consumeRead, isSignInBlocked } from '@/lib/auth/throttle';
+import { throttledSignInResponse } from '@/lib/auth/throttled-response';
 import { SESSION_COOKIE_NAME, verifyCuratorToken } from '@/lib/auth/session';
 
 const SIGN_IN_ROUTE = '/api/auth/sign-in';
@@ -34,8 +35,10 @@ export async function proxy(request: NextRequest) {
   const ip = clientIp(request.headers);
   const method = request.method.toUpperCase();
 
-  // Sign-in throttling: 5 failures per IP per 15 minutes, then 429 (recorded by the sign-in route).
-  if (pathname === SIGN_IN_ROUTE && method === 'POST' && isSignInBlocked(ip)) return tooManyRequests(15 * 60);
+  // Early answer for a blocked address; the sign-in route reserves the attempt itself (browsers land on /sign-in?error=throttled).
+  if (pathname === SIGN_IN_ROUTE && method === 'POST' && isSignInBlocked(ip)) {
+    return withSecurityHeaders(throttledSignInResponse(request), true);
+  }
 
   const session = await verifyCuratorToken(request.cookies.get(SESSION_COOKIE_NAME)?.value);
   const admin = isAdminPath(pathname);

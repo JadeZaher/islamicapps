@@ -12,7 +12,7 @@ import { developmentDatabaseUrl, openLoaderClient, type LoaderSql } from '../con
 import { loadProjection } from '../load';
 import { createThrowawaySchema, dropThrowawaySchema, throwawaySchemaName } from './throwaway-schema';
 
-const PROJECTION = process.env.LOAD_TEST_PROJECTION ?? 'datasets/hadith-data/development/pg-load-2026-11-21/projection';
+const PROJECTION = process.env.LOAD_TEST_PROJECTION ?? 'datasets/hadith-data/development/pg-load-2026-11-21/projection-candidates';
 const SLICER = 'datasets/hadith-data/pg_export/slice_projection.py';
 
 interface Expectations {
@@ -100,6 +100,17 @@ test('a real four-tradition slice loads, reloads unchanged, and retires what a l
   assert.equal(extraction_failed_with_chain, 0);
   const [{ visible }] = await loader.unsafe<{ visible: number }[]>('select count(*)::int as visible from public_hadiths');
   assert.equal(visible, 0);
+
+  // Identity candidates loaded with the slice; a disagreement keeps both identities and verifies neither.
+  const [{ differing, differing_verified }] = await loader.unsafe<{ differing: number; differing_verified: number }[]>(
+    `with differing as (select mention_id from chain_mention_candidates where retired_at is null
+                        group by mention_id having count(distinct narrator_id) > 1)
+     select count(*)::int as differing,
+            count(m.narrator_id)::int as differing_verified
+     from differing d join chain_mentions m on m.id = d.mention_id`,
+  );
+  assert.ok(differing > 0, 'the slice includes a mention whose candidates disagree');
+  assert.equal(differing_verified, 0);
 
   // Reloading the same bundle changes zero rows.
   const reloaded = await loadProjection(loader, options(firstDirectory));

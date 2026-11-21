@@ -42,9 +42,42 @@ function callAction(id: string, pathname: string, args: unknown[], headers: Reco
   });
 }
 
-async function signIn(passphrase: string, ip: string): Promise<Response> {
-  const form = new URLSearchParams({ name: CURATOR, passphrase, next: '/admin/commentaries' });
-  return fetch(`${BASE}/api/auth/sign-in`, { method: 'POST', body: form, redirect: 'manual', headers: { 'X-Forwarded-For': ip } });
+async function signIn(passphrase: string, forwardedFor: string, extra: { name?: string; headers?: Record<string, string> } = {}): Promise<Response> {
+  const form = new URLSearchParams({ name: extra.name ?? (passphrase === PASSPHRASE ? CURATOR : `nobody-${Math.random().toString(36).slice(2)}`), passphrase, next: '/admin/commentaries' });
+  return fetch(`${BASE}/api/auth/sign-in`, {
+    method: 'POST',
+    body: form,
+    redirect: 'manual',
+    headers: { 'X-Forwarded-For': forwardedFor, ...extra.headers },
+  });
+}
+
+/** Runs the approve-preview operator script against the fixture database. */
+function approvePreview(...args: string[]): { status: number | null; output: string } {
+  const result = spawnSync(process.execPath, [path.join(ROOT, 'node_modules/tsx/dist/cli.mjs'), 'src/scripts/db/approve-preview.ts', ...args], {
+    cwd: ROOT,
+    env: { ...process.env, DATABASE_URL: fixture.url },
+    encoding: 'utf8',
+  });
+  return { status: result.status, output: `${result.stdout}${result.stderr}` };
+}
+
+/** The result object of a server-action response (RSC flight text), e.g. {"ok":false,"message":"..."}. */
+function actionPayload(text: string): { ok: boolean; message?: string; data?: unknown; fieldErrors?: Record<string, string[]> } {
+  const line = text.split('\n').find((candidate) => /^\d+:\{"ok":/.test(candidate));
+  if (!line) throw new Error(`No result object in the action response: ${text.slice(0, 300)}`);
+  return JSON.parse(line.slice(line.indexOf(':') + 1));
+}
+
+let curatorSession = '';
+
+/** fetch that retries once when a kept-alive socket was closed by the server during a long script run. */
+async function pageFetch(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch {
+    return fetch(url, init);
+  }
 }
 
 async function startServer(env: NodeJS.ProcessEnv): Promise<void> {
@@ -110,6 +143,55 @@ flow('sign-in throttling: five failures from one address, then the sixth attempt
   assert.equal((await signIn(PASSPHRASE, ip)).status, 429, 'even the right passphrase is refused once throttled');
 });
 
+flow('sign-in throttling: a spoofed left-most X-Forwarded-For does not reset the limit', async () => {
+  const edgeAddress = '198.51.100.20';
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    assert.equal((await signIn('wrong passphrase', `10.9.${attempt}.1, ${edgeAddress}`)).status, 303);
+  }
+  assert.equal((await signIn('wrong passphrase', `10.9.99.1, ${edgeAddress}`)).status, 429, 'rotating the client-supplied hop changes nothing');
+  assert.equal((await signIn(PASSPHRASE, `10.9.100.1, ${edgeAddress}`)).status, 429, 'the right passphrase is refused too');
+});
+
+flow('sign-in throttling: concurrent wrong attempts reserve their slot before the slow comparison', async () => {
+  const address = '198.51.100.21';
+  const responses = await Promise.all(Array.from({ length: 6 }, () => signIn('wrong passphrase', address)));
+  const compared = responses.filter((response) => response.status === 303).length;
+  const refused = responses.filter((response) => response.status === 429).length;
+  assert.deepEqual([compared, refused], [5, 1], 'five comparisons allowed, the sixth is 429');
+});
+
+flow('sign-in throttling: a browser form post lands on /sign-in?error=throttled, other callers get 429', async () => {
+  const address = '198.51.100.22';
+  for (let attempt = 1; attempt <= 5; attempt++) await signIn('wrong passphrase', address);
+  const browser = await signIn('wrong passphrase', address, { headers: { Accept: 'text/html,application/xhtml+xml' } });
+  assert.equal(browser.status, 303);
+  assert.match(browser.headers.get('location') ?? '', /\/sign-in\?error=throttled$/);
+  assert.equal((await signIn('wrong passphrase', address)).status, 429);
+  const page = await fetch(`${BASE}/sign-in?error=throttled`);
+  assert.match(await page.text(), /Too many attempts/);
+});
+
+flow('sign-in throttling: one curator name is throttled across addresses, and a correct sign-in clears it', async () => {
+  // Twenty wrong attempts for a name, each from a different address: the next is refused even from a fresh address.
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    assert.equal((await signIn('wrong passphrase', `203.0.113.${attempt}`, { name: 'brute-target' })).status, 303);
+  }
+  assert.equal((await signIn('wrong passphrase', '203.0.113.200', { name: 'brute-target' })).status, 429, 'name limit, new address');
+
+  // A real curator: nineteen wrong attempts from nineteen addresses stay under the limit; the correct one still works
+  // and clears the count, so nineteen more wrong attempts are again allowed.
+  for (let attempt = 1; attempt <= 19; attempt++) {
+    assert.equal((await signIn('wrong passphrase', `192.0.2.${attempt}`, { name: CURATOR })).status, 303);
+  }
+  const correct = await signIn(PASSPHRASE, '192.0.2.100');
+  assert.equal(correct.status, 303);
+  assert.match(correct.headers.get('set-cookie') ?? '', /curator_session=/);
+  for (let attempt = 1; attempt <= 19; attempt++) {
+    assert.equal((await signIn('wrong passphrase', `192.0.2.${100 + attempt}`, { name: CURATOR })).status, 303, 'cleared by the successful sign-in');
+  }
+  assert.equal((await signIn(PASSPHRASE, '192.0.2.200')).status, 303, 'the curator can still sign in afterwards');
+});
+
 flow('curator: sign-in sets an httpOnly SameSite=Strict cookie that opens /admin', async () => {
   const response = await signIn(PASSPHRASE, '192.0.2.44');
   assert.equal(response.status, 303);
@@ -119,6 +201,7 @@ flow('curator: sign-in sets an httpOnly SameSite=Strict cookie that opens /admin
   assert.match(cookie, /HttpOnly/i);
   assert.match(cookie, /SameSite=Strict/i);
   const session = cookie.split(';')[0];
+  curatorSession = session;
   const admin = await fetch(`${BASE}/admin/commentaries`, { headers: { Cookie: session }, redirect: 'manual' });
   assert.equal(admin.status, 200);
 
@@ -132,6 +215,68 @@ flow('curator: sign-in sets an httpOnly SameSite=Strict cookie that opens /admin
   const rows = await fixture.sql`select c.created_by, a.actor from commentaries c join curation_audit a on a.entity_id = c.id
                                  where c.text = 'Written over HTTP by a curator.'`;
   assert.deepEqual(rows.map((row) => [row.created_by, row.actor]), [[`curator:${CURATOR}`, `curator:${CURATOR}`]]);
+});
+
+flow('refusals reach the browser: validation, publish gate and not-found come back as result objects, not thrown errors', async () => {
+  const create = actionId('createCommentary');
+  const publish = actionId('publishCommentary');
+  const page = create.page || '/admin/commentaries';
+  const call = async (id: string, args: unknown[]) => actionPayload(await (await callAction(id, page, args, { Cookie: curatorSession })).text());
+
+  const invalid = await call(create.id, [{ text: '' }]);
+  assert.equal(invalid.ok, false);
+  assert.ok(invalid.fieldErrors && Object.keys(invalid.fieldErrors).length > 0, 'field errors name the offending field');
+
+  const created = await call(create.id, [{ text: 'A commentary without a citation.' }]);
+  assert.equal(created.ok, true);
+  const gated = await call(publish.id, [created.data, 'published']);
+  assert.equal(gated.ok, false);
+  assert.match(gated.message ?? '', /live, reviewed citation/, 'the publish gate speaks in production');
+
+  const missing = await call(publish.id, ['commentary:does-not-exist', 'published']);
+  assert.deepEqual([missing.ok, missing.message], [false, 'Commentary not found.']);
+});
+
+flow('export: curator-only streaming CSV with an allowlist, 204 for no match', async () => {
+  const anonymous = await fetch(`${BASE}/api/export/hadiths?fields=id`, { redirect: 'manual' });
+  assert.equal(anonymous.status, 401);
+
+  const response = await fetch(`${BASE}/api/export/hadiths?fields=id,title,tradition&edges=narrators`, { headers: { Cookie: curatorSession } });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') ?? '', /text\/csv/);
+  const lines = (await response.text()).replace(/^﻿/, '').trim().split('\r\n');
+  assert.equal(lines[0], '"id","title","tradition","narrators"');
+  const [{ count }] = await fixture.sql`select count(*)::int as count from hadiths where retired_at is null`;
+  assert.equal(lines.length - 1, count, 'one row per live hadith');
+  assert.ok(lines.some((line) => line.startsWith('"hadith:k6:1"')));
+
+  const unknownField = await fetch(`${BASE}/api/export/hadiths?fields=id,password`, { headers: { Cookie: curatorSession } });
+  assert.equal(unknownField.status, 400);
+  const none = await fetch(`${BASE}/api/export/hadiths?fields=id&source=No%20Such%20Work`, { headers: { Cookie: curatorSession } });
+  assert.equal(none.status, 204);
+});
+
+flow('preview notice: shown only while a non-release version is current under owner approval, and gone when revoked', async () => {
+  const noticeText = /Preview: this archive(?:&#x27;|')s data is under active review/;
+  assert.doesNotMatch(await (await pageFetch(`${BASE}/`)).text(), noticeText, 'release data carries no notice');
+
+  await fixture.sql`update dataset_versions set release_class = 'non_release', non_release_reason = 'fixture' where is_current`;
+  assert.doesNotMatch(await (await pageFetch(`${BASE}/`)).text(), noticeText, 'non-release without approval shows nothing');
+
+  assert.notEqual(approvePreview('--by', 'owner').status, 0, 'a reason is required');
+  const approved = approvePreview('--by', 'owner', '--reason', 'preview while data is under review');
+  assert.equal(approved.status, 0, approved.output);
+  const audit = await fixture.sql`select actor, action, after from curation_audit where action = 'approve_preview'`;
+  assert.deepEqual([audit[0].actor, audit[0].action, audit[0].after.by], ['system:owner', 'approve_preview', 'owner']);
+  const home = await (await pageFetch(`${BASE}/`)).text();
+  assert.match(home, noticeText);
+  assert.match(home, /href="\/glossary#preview"/);
+  assert.doesNotMatch(await (await pageFetch(`${BASE}/admin/commentaries`, { headers: { Cookie: curatorSession } })).text(), noticeText, 'not under /admin');
+  assert.notEqual(approvePreview('--by', 'owner', '--reason', 'again').status, 0, 'approving twice is refused');
+
+  assert.equal(approvePreview('--revoke', '--by', 'owner', '--reason', 'first release is current').status, 0);
+  assert.doesNotMatch(await (await pageFetch(`${BASE}/`)).text(), noticeText);
+  await fixture.sql`update dataset_versions set release_class = 'release', non_release_reason = null where is_current`;
 });
 
 /**

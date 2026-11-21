@@ -2,12 +2,12 @@
  * Prop types for the HadithClientPage component.
  *
  * Data now comes from the Postgres query layer (src/db/queries): getPublicHadith, getChainGraph,
- * getPublicParallelsForHadith. page.tsx adapts those contracts to the legacy keys below; the section 9.4
- * fields (`assessments`, the mention-keyed node fields) are carried alongside so the client can switch to them.
+ * getPublicParallelsForHadith. page.tsx adapts the hadith contract to the legacy keys below; the chain is passed
+ * through as the section 9.4 `ChainGraph`.
  */
-import type { ChainNode, HadithAssessmentGroup } from '@/db/queries/contracts';
+import type { ChainGraph, ChainNode, HadithAssessmentGroup } from '@/db/queries/contracts';
 
-export type { ChainNode, HadithAssessmentGroup };
+export type { ChainGraph, ChainNode, HadithAssessmentGroup };
 
 export interface MatnVariation {
     source_book?: string;
@@ -77,38 +77,6 @@ export interface HadithNode {
     assessments?: HadithAssessmentGroup[];
 }
 
-/**
- * A chain position. `id` is the narrator ID only when `is_link`; otherwise it is the mention ID (`node_id`) and
- * `name_arabic` carries the surface as written, which must render without a narrator link (section 9.4).
- */
-export interface GraphNode extends Omit<Partial<ChainNode>, 'position' | 'chain_id'> {
-    id: string;
-    label?: string;
-    reliability?: string | null;
-    tabaqah?: string;
-    name_english?: string;
-    name_arabic?: string;
-    chain_id?: string;
-    chain_index?: number | null;
-    position?: number | null;
-    chain_position?: number | null;
-    chain_schema?: 'v2' | 'legacy';
-    [key: string]: unknown;
-}
-
-/** An edge in the isnad graph returned by getFullChainGraph() */
-export interface GraphEdge {
-    source: string;
-    target: string;
-    type?: string;
-    chain_id?: string;
-    chain_index?: number | null;
-    source_position?: number | null;
-    target_position?: number | null;
-    chain_schema?: 'v2' | 'legacy';
-    [key: string]: unknown;
-}
-
 /** The tradition object nested inside a ParallelRecord */
 export interface TraditionRef {
     id: string;
@@ -155,7 +123,7 @@ export interface ParallelRecord {
 
 export interface HadithClientPageProps {
     hadith: HadithNode;
-    nodes: GraphNode[];
-    edges: GraphEdge[];
+    /** Mention-keyed chain with every identity candidate and its basis; null when it could not be read. */
+    chain: ChainGraph | null;
     parallels: ParallelRecord[];
 }

@@ -9,7 +9,7 @@ npx tsx src/db/load/dump-catalog.ts <dir>/catalog.json
 python datasets/hadith-data/pg_export/export_postgres.py --bundle <bundle> \
   --input datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz \
   --rawis datasets/narrator-data/all_rawis.csv --legacy-master datasets/hadith-data/all_hadiths_unified.csv.gz \
-  --catalog <dir>/catalog.json --output <new dir> [--legacy-source-index]
+  --catalog <dir>/catalog.json --output <new dir> [--reconciled datasets/hadith-data/reconciled]
 python -I datasets/hadith-data/pg_export/test_export_postgres.py
 ```
 
@@ -32,17 +32,33 @@ or `grade_value`; non-contiguous mention positions.
 - **Narrator names.** `io.ts` reads `name_english`/`name_arabic` columns that `all_rawis.csv` does not have, so the
   design's "port io.ts" would leave both null. `name_ar` is the resolver's `_extract_arabic_name_raw`; `name_en` is the
   text before the first parenthesised Arabic block. A string split, not an identity claim.
-- **Mention resolution, in precedence order:** the bundle's atomic `RESOLVES_TO` (`report_atomic`); the canonical
-  resolver `resolve_narrator` per mention (`mention_exact`, `extraction_method = name_invariant_tier0|1|2`); the
-  legacy `chain_indx` (`source_index`, only with `--legacy-source-index`). Confidence is 1.0 for all three.
-- **Legacy `source_index` join** (owner question 1): unique (canonical source, SHA-256 of exact Arabic) on both sides;
-  the legacy `hadith_id` must equal the new `hadith_id` or, for works re-keyed in the 37-column file (`pc_9`,
-  `rabi_0825`), the new `hadith_no`; never Imami; every rawi id must exist; branch count and every branch length
-  must equal the extracted chains. Rejections are counted by reason in the manifest.
-- **Conflicting automatic identities are withheld.** Where the legacy index and the mention-exact resolver name
-  different narrators for one mention, the mention stays `unresolved` with
-  `extraction_method = withheld_conflicting_automatic_identities`. The bundle's atomic resolution is kept over the
-  legacy index.
+- **Chains** (projection `2026.11.21.2`). The bundle's text extraction, then the reconciled sidecars
+  (`reconciled/README.md`), each file hash-checked against its build manifest and each row bound to the hadith's
+  exact Arabic (a mismatch refuses): `no_chain_in_source` with `suppress_extracted_chain` drops every chain of that
+  report (Shafi'i, Nahj al-Balagha); `pure_canon_chain` replaces the chains extracted from matn-only `text_ar` with
+  the canonical extraction of the source's own `chain` field (`extraction_method = source_chain_field`, same
+  `chain:`/`mention:` id scheme, empty branches dropped before numbering).
+- **Identity candidates** (`chain_mention_candidates`; owner decisions 2026-11-21, `src/db/AGENTS.md` §Identity
+  candidates). Per mention, every candidate is emitted with its basis; none is preferred:
+  - Sunni reports only: `resolve_narrator` tier 0 -> `name_exact`, tiers 1-2 -> `name_spelling_fold`; otherwise
+    `kunya_only_candidate` -> `name_kunya_only`. Imami, Ibadi and Zaydi reports get no name candidate.
+  - K6 source index (`reconciled/k6_source_index.jsonl.gz`), only where the sidecar's `text_branches` equal the
+    extracted branches exactly: at every `aligned_positions` entry (the positions the Arabic corroborates), basis
+    `source_index_confirmed_by_text` when the report's basis is `source_index_corroborated_by_text`, else
+    `source_index`; `detail` is the agreement class. A tahwil branch inherits the source id of a corroborated twin
+    whose opening surfaces are identical up to that position (`:shared_trunk`); convergences are not inherited
+    (`align_source_index`).
+  - Placeholder rows are never a target (a source-index claim on one is dropped and counted); the only placeholder
+    target is a kunya-only row through `name_kunya_only`.
+- **`chain_mentions.narrator_id`** is set only for an uncontested `source_index_confirmed_by_text` candidate
+  (`verified_narrator`): `resolution = source_index`, `resolution_basis = source_index`, confidence 1.0. Every
+  other mention is `unresolved`. The bundle's `RESOLVES_TO` and the legacy master's `chain_indx` are no longer read
+  for identity: the first is an older name match (and touched non-Sunni rows), the second differs from the K6
+  source's own index on 16,156 of 34,324 comparable rows.
+- **Manifest.** `inputs.reconciled_sidecars` binds the three sidecar files; `counts.identity_candidates` gives
+  candidates per tradition and basis, mentions by agreement, verified links, confirmed-but-contested mentions and
+  dropped claims; `counts.k6_sidecar_built_with_current_resolver` is false once `regen_unified_csvs.py` changes
+  (rebuild the sidecar when the change affects resolution).
 - **Assessments.** Pure Canon `grade_value = ثابت` is `collection_label` (never a grade). `gradings_full` segments
   are `cited_ruling` rows; `grade_canonical` and `grade_detail` port `grade-taxonomy.ts`; the parenthesised citation
   is split into work, volume and page.
@@ -52,4 +68,8 @@ or `grade_value`; non-contiguous mention positions.
   when a model is named, else `unknown_provenance`). The table is not migrated yet, so the loader does not read it.
 - **Review units** are SHA-256 over `\x1f`-joined parts, NULL context as `''`: coarse (surface, teacher, work), fine
   (surface, teacher, student, work).
-- `slice_projection.py` cuts a referentially closed slice of real rows for the loader flow test.
+- `slice_projection.py` cuts a referentially closed slice of real rows for the loader flow test, choosing reports
+  with a verified link, a disagreement and a kunya-only candidate, and closing narrators over the candidates.
+- **Tests.** `test_export_postgres.py` covers the pure rules, the sidecar rules on real sidecar rows, and real
+  mentions read back from the projection under `development/pg-load-2026-11-21/projection-candidates` (`PG_PROJECTION`
+  overrides; skipped when absent).

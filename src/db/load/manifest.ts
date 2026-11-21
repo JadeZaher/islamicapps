@@ -21,7 +21,8 @@ export interface ProjectionManifest {
   content_sha256: string;
   files: ProjectionFile[];
   counts: Record<string, unknown>;
-  options: { legacy_source_index: boolean };
+  /** `source_index` names where source-index candidates come from (the reconciled K6 sidecar). */
+  options: { source_index?: string; name_match_traditions?: string[] };
   source_bundle: {
     path: string;
     content_sha256: string;

@@ -48,3 +48,15 @@ Done when: 7 idle days without probe failures; section 1.4 updated.
 - [ ] Final Neo4j volume dump; owner approval; remove service, volume and the nine variables.
 
 Done when: owner approval is recorded.
+
+## Phase 6 — Remove after the first release (preview approval and notice)
+
+The development snapshot is public as a preview under owner approval, with a notice. Once a release dataset version is
+current the notice hides itself; then remove the rest (same list as `conductor/RUNBOOK.md`, "Remove after the first release").
+
+- [ ] Revoke the approval: `npx tsx src/scripts/db/approve-preview.ts --revoke --by <owner> --reason "first release is current"`.
+- [ ] Delete `src/components/PreviewNotice.tsx`, `src/components/PreviewNoticeBar.tsx`, the mount in `src/app/layout.tsx`, and `getPreviewNotice` (`src/db/queries/dataset.ts`).
+- [ ] Delete the glossary `preview` entry (`/glossary#preview`) if no longer wanted.
+- [ ] Delete `src/scripts/db/approve-preview.ts` and the "preview notice" flow in `http-gate.test.ts` if no more previews are wanted.
+
+Done when: no `PreviewNotice` or `approve-preview` reference remains, and no `dataset_versions` row carries `public_override_by` on a current release.

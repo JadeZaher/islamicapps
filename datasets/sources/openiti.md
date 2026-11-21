@@ -5,9 +5,17 @@ kind: meta-source
 url: https://openiti.org
 retrieved: 2026-06-16
 
-license: unstated
-license_url: https://github.com/OpenITI
+license: CC-BY-NC-SA-4.0
+license_url: https://zenodo.org/records/17767721
 license_notes: |
+  Corrected 2026-11-21 (was "unstated"): the Zenodo record of OpenITI release
+  2025.1.9 (DOI 10.5281/zenodo.17767721, concept DOI 10.5281/zenodo.3082463)
+  declares cc-by-nc-sa-4.0. The GitHub repositories carry no LICENSE file, so
+  cite the Zenodo release, not repository master. Conditions: attribution to
+  OpenITI and the upstream library, non-commercial use, share-alike for
+  adaptations (including our parsed text, chain tables and machine
+  translations). See docs/rights/rights-register.md section 3.
+  Earlier note, kept for the record:
   OpenITI is an umbrella corpus assembled from many upstream community
   libraries (Maktaba Shamila al-Zaydiyya, al-Ibadiyya, etc.). The corpus
   as a whole does not publish a single SPDX-identified license; individual
@@ -99,7 +107,25 @@ Until OpenITI publishes a single canonical license, we treat the corpus as **sha
 - Preserve the upstream identifier (the `0122ZaydIbnCali...` style URI) so the chain of provenance is reconstructable.
 - Carry forward any attribution requirements asserted by the *individual* upstream library (Maktaba Shamila al-Zaydiyya, al-Ibadiyya) when that information is recoverable from the source file.
 
+## Rights review 2026-11-21
+
+Evidence: `docs/rights/evidence/openiti-zenodo-17767721-2026-11-21.txt`,
+`github-repo-licences-2026-11-21.txt`, `local-copy-identity-2026-11-21.md`.
+
+- Licence: CC BY-NC-SA 4.0, declared on the Zenodo release record, not in the
+  GitHub repositories. The "share-alike with attribution" reading above was
+  right in spirit; the non-commercial condition was missing.
+- Our two text files are the official Git blobs `2c97cb75…` (Zayd) and
+  `cd75e853…` (Rabi'), taken from `master` (local file dates 2026-05-08), not
+  a tagged release. Cite release 2025.1.9 and keep the blob ids.
+- `datasets/hadith-data/README.md` still says the Zaydi Arabic came from an
+  Archive.org OCR; that describes the April 2026 pipeline whose English is
+  still in use. The current Arabic is the OpenITI file.
+- Every adaptation we publish (parsed reports, chain and narrator tables,
+  machine translations) must be released CC BY-NC-SA 4.0.
+
 ## Related
 
+- Rights register: `docs/rights/rights-register.md`
 - Strategies that consume this source: [[arabic-text-cleanup]], [[uniform-tahweel-aware-isnad-extraction]]
 - Other sources that this enables: [[musnad-zayd-openiti]], [[jami-sahih-rabi-openiti]], [[musnad-rida-openiti]] (these are *views* of OpenITI scoped to one collection each)

@@ -3,11 +3,11 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPublicParallelsForHadith } from '@/db/queries/comparative';
-import type { ChainGraph, HadithDetail } from '@/db/queries/contracts';
+import type { HadithDetail } from '@/db/queries/contracts';
 import { getChainGraph } from '@/db/queries/isnad';
 import { HadithClientPage } from './client-page';
 import { loadHadith } from './data';
-import type { GraphEdge, GraphNode, HadithNode, ParallelRecord } from './types';
+import type { HadithNode, ParallelRecord } from './types';
 
 interface PageProps {
     params: Promise<{
@@ -26,32 +26,6 @@ function toHadithNode(hadith: HadithDetail): HadithNode {
         variations: hadith.variations,
         assessments: hadith.assessments,
     };
-}
-
-/**
- * Adapts mention-keyed chain nodes to the client's GraphNode keys. Every position is kept, so the isnad reads
- * as written; an unidentified position shows its surface and carries no narrator identity.
- */
-function toGraph(graph: ChainGraph): { nodes: GraphNode[]; edges: GraphEdge[] } {
-    const clientId = new Map(graph.nodes.map((node) => [node.node_id, node.is_link && node.narrator_id ? node.narrator_id : node.node_id]));
-    const nodes: GraphNode[] = graph.nodes.map((node) => ({
-        ...node,
-        id: clientId.get(node.node_id)!,
-        name_arabic: node.is_link ? node.name_ar ?? node.surface_ar : node.surface_ar,
-        name_english: node.is_link ? node.name_en ?? undefined : undefined,
-        chain_id: node.chain_id,
-        chain_index: node.branch,
-        position: node.position,
-        chain_position: node.position,
-        chain_schema: 'v2',
-    }));
-    const edges: GraphEdge[] = graph.edges.map((edge) => ({
-        source: clientId.get(edge.source)!,
-        target: clientId.get(edge.target)!,
-        chain_id: edge.chain_id,
-        chain_schema: 'v2',
-    }));
-    return { nodes, edges };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -76,13 +50,11 @@ export default async function HadithPage({ params }: PageProps) {
     ]);
 
     if (!hadith) notFound();
-    const { nodes, edges } = graph ? toGraph(graph) : { nodes: [], edges: [] };
 
     return (
         <HadithClientPage
             hadith={toHadithNode(hadith)}
-            nodes={nodes}
-            edges={edges}
+            chain={graph}
             parallels={parallels as unknown as ParallelRecord[]}
         />
     );

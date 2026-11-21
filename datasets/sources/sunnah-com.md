@@ -14,6 +14,11 @@ license_notes: |
   an offline dump although a general dump is not currently available. Obtain
   written permission for persistent local storage, normalization, display,
   redistribution, and translator attribution before bulk recovery or release.
+  2026-11-21 rights review: our copy was not taken from sunnah.com. It is the
+  Kaggle dataset fahd09/hadith-dataset (2018, labelled CC0 by its uploader),
+  "scraped from http://qaalarasulallah.com/"; its content matches sunnah.com.
+  The uploader's CC0 cannot license sunnah.com's data or the translators'
+  English. See docs/rights/rights-register.md section 1.
 
 traditions:
   - sunni
@@ -92,8 +97,36 @@ The license is unstated. Retain the Sunnah.com collection URL, displayed
 reference, and named translator where the source supplies one. Do not represent
 the local snapshot as an independently licensed open corpus.
 
+## Correction 2026-11-21: how our copy was acquired
+
+Evidence: `docs/rights/evidence/local-copy-identity-2026-11-21.md`.
+
+- `all_hadiths_clean.csv` was first committed in `2696de8` (2026-03-22) at
+  41,069,994 bytes, the exact size of `all_hadiths_clean.csv` in the Kaggle
+  dataset `fahd09/hadith-dataset` (version 1, 2018-08-22), with the same
+  columns and the `chain_indx` link to the Kaggle narrator dataset. SHA-256 of
+  the first commit: `a6800edb54d45a6e6c5228cf0342c0c72d90eca62a857bcbb5c61684e550db15`.
+  34,441 rows.
+- Kaggle states the data was "scraped from http://qaalarasulallah.com/" and
+  labels the upload "CC0: Public Domain". That site did not respond on
+  2026-11-21; its terms are unknown.
+- Spot checks of four collections (Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah,
+  hadith 1) found the English verbatim and the Arabic letter-for-letter on
+  sunnah.com. Our Arabic has no vocalization.
+- sunnah.com About §8 (captured 2026-11-21): "We do not permit the scraping of
+  our data, nor mass reproduction of entire books or collections on other
+  websites." Individual hadith or selections "for a teaching/didactic/
+  presentation purpose" are permitted.
+- The English is modern published translations (Muhsin Khan, Abdul Hamid
+  Siddiqui and others; sunnah.com grades Tirmidhi, Nasa'i and Ibn Majah as
+  "Darussalam" and cites a printed multi-volume English edition). No licence
+  covers it. Rights status: English `not_permitted`, Arabic `unclear`; see
+  `docs/rights/rights-register.md` §1.
+
 ## Related
 
+- Rights register: `docs/rights/rights-register.md`
+- Kaggle dataset: https://www.kaggle.com/datasets/fahd09/hadith-dataset
 - Canonical consumer: `datasets/hadith-data/regen_unified_csvs.py`
 - Developer/API policy: https://sunnah.com/developers
 - API access request: https://github.com/sunnah-com/api/issues/new?template=request-for-api-access.md

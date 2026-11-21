@@ -1055,7 +1055,8 @@ candidate ranking. Not shown as transmission evidence.
 
 ### 5.5 Isnad
 
-**`chains`** (pipeline, 113,544): one row per branch (tahwil) of a report.
+**`chains`** (pipeline, 114,597 at the projection `2026.11.21.2` load; 31,080 of them from the Pure Canon
+source `chain` field, `extraction_method = source_chain_field`): one row per branch (tahwil) of a report.
 
 | Column | Type | Null | Notes |
 | --- | --- | --- | --- |
@@ -1069,7 +1070,7 @@ candidate ranking. Not shown as transmission evidence.
 | `confidence` | real | null | |
 | `sanad_confidence` | text | null | |
 
-**`chain_mentions`** (pipeline, 441,539): the name as written at one position
+**`chain_mentions`** (pipeline, 538,513 at the same load): the name as written at one position
 of one branch. This single table replaces Neo4j's `INCLUDES`,
 `INCLUDES_MENTION`, `NameMention`, `RESOLVES_TO` and `NEXT_IN_CHAIN`.
 
@@ -1088,13 +1089,48 @@ of one branch. This single table replaces Neo4j's `INCLUDES`,
 | `link_kind` | link_kind | not null, default `unclassified` | Derived column (section 4.1) |
 | `resolution` | mention_resolution | not null, default `unresolved` | Derived column |
 | `resolution_basis` | resolution_basis | null | How a resolved mention was resolved |
-| `narrator_id` | text | null | FK `narrators`. Derived column. **Never required.** Unresolved names are stored as written and never guessed |
+| `narrator_id` | text | null | FK `narrators`. Derived column: the **verified** identity only. **Never required.** Unresolved names are stored as written and never guessed. Since migration `0006` it is set only by an uncontested `source_index_confirmed_by_text` candidate (`resolution = source_index`) or a reviewer decision; every other identity is a row in `chain_mention_candidates` |
 | `decision_id` | text | null | FK `narrator_surface_decisions`, set by replay or `apply_decision` |
 | `confidence` | real | null | Guardrail G-2. Check: not null when `narrator_id` is not null |
 | `extraction_method` | text | null | How the resolution was made |
 
 Next link is `position + 1` in the same chain; no relationship row is stored
 for it.
+
+**`chain_mention_candidates`** (pipeline, 212,921 at the 2026-11-21 load;
+owner decisions 2026-11-21): every automatic identity proposed for a mention,
+each with where it comes from. Where the name matcher and the K6 source
+narrator index both identify a narrator they disagree on 24 to 49 percent of
+matches, so one `narrator_id` per name would misrepresent the data. Nothing is
+chosen between candidates: all are stored and shown with their basis.
+
+| Column | Type | Null | Notes |
+| --- | --- | --- | --- |
+| `id` | text | PK | `candidate:<record_id>:<branch>:<position>:<basis>:rawi:<scholar_indx>` |
+| `mention_id` | text | not null | FK `chain_mentions`. Unique (`mention_id`, `narrator_id`, `basis`) |
+| `hadith_id` | text | not null | FK `hadiths`; copied from the mention |
+| `narrator_id` | text | not null | FK `narrators`. Never a placeholder row (`narrators.placeholder_reason`), except a kunya-only row under `name_kunya_only` |
+| `basis` | mention_candidate_basis | not null | See below. Check: never `reviewer_decision` |
+| `detail` | text | null | Resolver tier (`tier0`, `tier1`, `tier2`, `kunya_only_registry_entry`) or the K6 agreement class, suffixed `:shared_trunk` when a tahwil branch inherits its twin's corroborated id |
+| `source_position` | integer | null | 0-based position in the source's own index. Check: set exactly for the two source bases |
+| + pipeline bookkeeping | | | |
+
+| Basis | Emitted when | Label shown |
+| --- | --- | --- |
+| `name_exact` | Sunni report; `resolve_narrator` tier 0 | matched by name |
+| `name_spelling_fold` | Sunni report; tiers 1 and 2 | matched by name |
+| `name_kunya_only` | Sunni report; the surface is a bare kunya whose only registry owner is a kunya-only row (`kunya_only_candidate`) | matched by kunya only |
+| `source_index` | The K6 source index names an id at a position the Arabic corroborates, in a report whose agreement class is not full | source index |
+| `source_index_confirmed_by_text` | The same, in a report whose sidecar basis is `source_index_corroborated_by_text` (full agreement, or every source id aligned) | confirmed by source and text |
+| `reviewer_decision` | Never stored here; `public_chain_mention_candidates` reads it from the mention's live decision | confirmed by a reviewer |
+
+Name candidates are emitted for Sunni reports only: sanads stay per
+tradition, and the lexicon is Sunni-centred, so Imami, Ibadi and Zaydi names
+are shown as written (their source-provided data, when any exists, still
+applies). The loader sets `chain_mentions.narrator_id` from a candidate only
+when it is `source_index_confirmed_by_text` and no other candidate of the
+mention names someone else; a confirmed but contested mention stays
+`unresolved` and both candidates are shown.
 
 **`chain_absence_dispositions`** (curation): records that a report has no
 isnad by nature (for example the 2,260 Nahj al-Balagha sermons), so it is
@@ -1190,11 +1226,12 @@ migrated.
 **`narrator_transmissions`** (derived materialized view): who narrated from
 whom, using only consecutive verified links. If a chain reads A, unknown, C,
 no A-to-C link exists. A pair counts only when both links are trustworthy as
-adjacency evidence: both mentions inside a chain the bundle resolved
-atomically (`chains.resolved`, which kept the branch-shape cross-check), or
-both resolved by a human decision. Mention-exact links render on the chain
-page but do not create transmissions unless the owner accepts them (section
-14 question 11); then `'mention_exact'` joins the basis list below.
+adjacency evidence: both resolved from a confirmed source index
+(`resolution_basis = 'source_index'`; the report's agreement class already
+checked the branch shape against the Arabic), or both resolved by a human
+decision. Since migration `0006` name matches are candidates, not links, so
+they never create a transmission (this supersedes the earlier
+`report_atomic` rule and section 14 question 11).
 
 ```sql
 create materialized view narrator_transmissions as
@@ -1208,9 +1245,9 @@ with pairs as (
   join chains c on c.id = a.chain_id
   where a.retired_at is null and b.retired_at is null and c.retired_at is null
     and a.narrator_id is not null and b.narrator_id is not null
-    and a.resolution in ('exact_registry','human_verified','derived_relation_verified')
-    and b.resolution in ('exact_registry','human_verified','derived_relation_verified')
-    and ((c.resolved and a.resolution_basis = 'report_atomic' and b.resolution_basis = 'report_atomic')
+    and a.resolution in ('source_index','human_verified','derived_relation_verified')
+    and b.resolution in ('source_index','human_verified','derived_relation_verified')
+    and ((a.resolution_basis = 'source_index' and b.resolution_basis = 'source_index')
       or (a.resolution_basis = 'human_decision' and b.resolution_basis = 'human_decision'))
 )
 select p.student_id, p.teacher_id,
@@ -1239,8 +1276,10 @@ group by p.student_id, p.teacher_id,
          sl.birth_min, sl.birth_max, sl.disputed, tl.death_min, tl.death_max, tl.disputed;
 ```
 
-`source_index` is added to the resolution lists only if the owner approves it
-(section 14, question 1). The view has a unique index on (`student_id`,
+`source_index` is in the resolution lists since `0006` (owner decisions
+2026-11-21): only a confirmed, uncontested source index writes it. A pair with
+one source-index neighbour and one human-decision neighbour is not counted yet
+(open). The view has a unique index on (`student_id`,
 `teacher_id`) so it can be refreshed concurrently. The TypeScript
 `assessTemporalPlausibility` stays as a pure function with a table-driven test
 that asserts it agrees with this SQL. Because lifespans come mostly from the
@@ -1629,7 +1668,7 @@ migrated, mapped and verified before it is needed.
 | Corpus | 8 | `traditions`, `sources`, `collections`, `collection_rights`, `books`, `chapters`, `hadiths`, `translations` | |
 | Candidates | 2 | | `translation_candidates` (reviewer mode), `resolution_review_units` (J3 output) |
 | Narrators | 4 | `narrators`, `narrator_lexicon_profiles`, `narrator_aliases`, `narrator_teachers` | |
-| Isnad | 4, plus 1 materialized view and 1 view | `chains`, `chain_mentions`, `chain_absence_dispositions`, `narrator_surface_decisions`; `narrator_transmissions`, `narrator_lifespans` | |
+| Isnad | 5, plus 1 materialized view and 1 view | `chains`, `chain_mentions`, `chain_absence_dispositions`, `narrator_surface_decisions`; `narrator_transmissions`, `narrator_lifespans` | `chain_mention_candidates` (migration `0006`, owner decisions 2026-11-21) |
 | Assessments and biography | 4 | `hadith_assessments`, `narrator_assessments`, `narrator_bios` | `narrator_same_as` (Imami authority) |
 | Evidence | 5 | `bibliographic_works`, `editions`, `citations` | `biographical_assertions`, `temporal_assertions` (first claims in `evidence_curation.json`) |
 | History | 5, plus 1 view | `locations`, `historical_events`, `narrator_events`, `narrator_locations`; `published_historical_events` | `epochs` (first epoch writer) |
@@ -1637,9 +1676,10 @@ migrated, mapped and verified before it is needed.
 | Comparative | 9 | `religious_traditions`, `schools_of_thought`, `source_texts`, `cross_parallels`, `motif_tags`, `hadith_motif_tags`, `parallel_motif_tags`, `narrator_religious_traditions`, `location_religious_traditions` | |
 | Operations | 2 | `dataset_versions`, `curation_audit` | |
 | Vector | 1 | | `hadith_embeddings` (step 11) |
-| **Total** | **47** | **40** | **7** |
+| **Total** | **48** | **40** | **8** (1 shipped: `chain_mention_candidates`) |
 
-Plus the public views in section 11.3.
+Plus the public views in section 11.3. Live today: 41 tables, 6 views, 1
+materialized view (`npm run db:verify`).
 
 ### 5.15 Contribution system (planned, not in the 47)
 
@@ -2078,7 +2118,7 @@ per-work `collection_rights.english_policy = 'source_provided_allowed'`
 | Rights | `collection_rights.rights_status` | `cleared`, `pending`, `restricted` (no row means `pending`) | Only `cleared` works publish text or English. This is the one corpus-level gate kept |
 | Translation | `translations.state` and `quality_status` | `human_verified`, `source_verified`, `source_provided`; candidates live in `translation_candidates` | English shown, with attribution, when `quality_status = 'complete'`, `arabic_sha256` matches the hadith, and the state is `human_verified` or `source_verified` (or `source_provided` where the work's `english_policy` allows it). Candidates only in reviewer mode |
 | Chain | `hadiths.chain_status` | `complete`, `partial`, `unresolved`, `absent_in_source`, `extraction_failed` | The isnad is always shown as written in Arabic; links are overlaid only where verified |
-| Link | `chain_mentions.resolution` | `exact_registry`, `human_verified`, `derived_relation_verified` (plus `source_index` if approved), then `undecidable`, `unresolved` | Only the verified ones render as narrator links. Others show the surface verbatim with a neutral "not identified" marker. A candidate name is never shown |
+| Link | `chain_mentions.resolution`, plus `chain_mention_candidates` | Verified: `source_index` (only from an uncontested `source_index_confirmed_by_text` candidate), `human_verified`, `derived_relation_verified`; then `undecidable`, `unresolved`. `exact_registry` is no longer verified (owner decisions 2026-11-21) | Every name shows as written. Every candidate is shown as a link labelled with its basis ("confirmed by source and text", "source index", "matched by name", "matched by kunya only", "confirmed by a reviewer"); candidates that name different people are shown side by side under a neutral note that the sources differ. A name with no candidate is marked not yet identified. Only verified links feed facets and `narrator_transmissions` |
 | Grading | `hadiths.grading_status` | `cited_assessments`, `compiler_criterion`, `none_recorded` | Placeholders do not exist; `collection_label` rows are never shown as grades |
 | Narrator verdict, curated bio, commentary, parallel | `status` | `published` only | Published verdicts and bios must cite (check constraints), and the citation must be live and reviewed (section 5.8). Verdicts show only for the tradition in view. A parallel shows only on a public hadith |
 | Lexicon biography | `narrator_lexicon_profiles.review_state` | `lexicon_unverified` | Hidden on public pages by default (section 14, question 4) |
@@ -2107,7 +2147,8 @@ tables and shows each facet as a badge.
 | --- | --- |
 | `public_hadiths` | `hadiths` where `retired_at is null`, not `quality_excluded`, `source_text_status <> 'missing'`, the collection has a `collection_rights` row with `rights_status = 'cleared'`, and the current dataset version is publicly servable (release-class, or a recorded override) |
 | `public_translations` | `translations` on a public hadith, `retired_at is null`, `quality_status = 'complete'`, `arabic_sha256` equal to the hadith's, and `state in ('human_verified','source_verified')`, or `state = 'source_provided'` where the work's `english_policy = 'source_provided_allowed'`. Never `translation_candidates` |
-| `public_chain_links` | `chain_mentions` of public hadiths, with `narrator_id` exposed only when the resolution renders as a link |
+| `public_chain_links` | `chain_mentions` of public hadiths, with `narrator_id` exposed only when the mention is a verified link |
+| `public_chain_mention_candidates` | Every live candidate of a mention in `public_chain_links` whose narrator is live, with `basis`, `detail` and `verified_basis` (true for `source_index_confirmed_by_text` and `reviewer_decision`); reviewer decisions come from the mention's live decision, never from the pipeline table. Unverified candidates are read only here (migration `0006`) |
 | `published_historical_events` | Section 5.9 |
 
 ### 11.4 What a load must still prove (the kept gates)
@@ -2123,7 +2164,8 @@ load if any is false. `npm run db:verify` runs the same checks on demand.
 | Every live hadith's `tradition_id` equals its collection's | Source-tradition rule |
 | Arabic round trip: for every live hadith, `encode(sha256(convert_to(coalesce(text_ar,''),'UTF8')),'hex') = arabic_sha256` | Bundle `arabic_round_trip` gate, recomputed inside Postgres |
 | Retirement is exact: per pipeline table, rows retired by this load equal IDs live before the load minus IDs in staging | Anti-join merge correctness |
-| No `chain_mentions` row has a `narrator_id` with a non-rendering resolution, except `source_index` when not approved; every resolved mention has a non-null `confidence` | G-5, "no unverified link rendered as a link"; G-2 |
+| No `chain_mentions` row has a `narrator_id` with a non-verified resolution; every resolved mention has a non-null `confidence` | G-5, "no unverified link rendered as a link"; G-2 |
+| Every live candidate sits on a live mention of the same hadith and names a live narrator; no candidate targets a placeholder row except `name_kunya_only`, which targets only kunya-only rows; no name candidate on a non-Sunni report; an automatic `narrator_id` has its `source_index_confirmed_by_text` candidate and no live candidate of that mention names someone else | Owner decisions 2026-11-21 (a) to (d) |
 | No live `narrator_surface_decisions` row lacks a reviewer and time; no `derived_relation` decision has the coarse scope | G-5; derived identity depends on the student |
 | Contiguous positions in every chain: positions 0 to `length - 1` | Bundle chain-integrity gate |
 | No row in `public_translations` has `quality_status <> 'complete'`, a hash that differs from its hadith's, or a state outside the policy | Translation release gate |

@@ -1,0 +1,239 @@
+URL: https://raw.githubusercontent.com/MohammedArab1/ThaqalaynAPI/main/README.md
+Retrieved: 2026-11-21T15:50:39Z
+HTTP: 200 text/plain; charset=utf-8 https://raw.githubusercontent.com/MohammedArab1/ThaqalaynAPI/main/README.md
+Intent: ThaqalaynAPI README terms
+Client: generic user agent, no authentication
+----
+# Thaqalayn.net API
+
+![Weekly Data Update](https://github.com/mohammedarab1/ThaqalaynAPI/actions/workflows/main.yml/badge.svg)
+
+## Introduction
+
+https://www.thaqalayn-api.net/
+
+- A Rest + GQL API that allows for the retrieval of hadiths from thaqalayn.net in JSON format. To create it, I first built a web scraper (python) to get all the hadiths on thaqalayn.net. Afterwards I stored the data in a cloud PostgreSQL database (Neon) and created an API using node.js + express. I also created a simple front-end with react to showcase one of the endpoints (api/random). The front-end can be reached at https://thaqalayn-api-423621.web.app <br>
+
+- The app also provides an endpoint for retrieving ingredients in foods and their Islamic rulings as fetched from [Al Maarif](https://al-m.ca/halalguide/). The endpoint can be reached at `.../api/v2/ingredients`
+
+## How to use
+
+Here is a simple example of how to fetch one of the endpoints using axios. Change `url` to whatever endpoint you'd like.<br>
+
+```javascript
+const url = "https://www.thaqalayn-api.net/api/v2/random";
+
+request = axios.get(url).then((res) => {
+  console.log(res.data);
+  //...
+});
+```
+
+## Endpoints
+
+### All endpoints
+
+The GraphQl endpoint can be found at: https://www.thaqalayn-api.net/graphql
+
+A list of endpoints can be found on the Swagger UI page: https://www.thaqalayn-api.net/api-docs/
+
+1. Retrieve all the available books, with minimum and maximum Id's:
+   - `https://www.thaqalayn-api.net/api/v2/allbooks`
+2. Retrieve a random hadith from any book:
+   - `https://www.thaqalayn-api.net/api/v2/random`
+3. Retrieve a random hadith from a given book:
+   - `https://www.thaqalayn-api.net/api/v2/[bookId]/random`
+4. Make a query throughout the entire database. This is a full-text search that accepts both english and arabic: words are matched as normalized word forms (english is stemmed, e.g. `running` matches `run`) rather than substrings, and results are ranked by relevance. Use it with query `q`. Use the pipe character `|` to separate multiple queries (matches containing query 1 OR query 2 are retrieved):
+   - `https://www.thaqalayn-api.net/api/v2/query?q=[query]`
+   - `https://www.thaqalayn-api.net/api/v2/query?q=[query1]|[query2]`
+5. Make a query for a specific book. Same rules as above apply here:
+   - `https://www.thaqalayn-api.net/api/v2/query/[bookId]?q=[query]`
+6. Get all the hadiths for a particular book:
+   - `https://www.thaqalayn-api.net/api/v2/[bookId]`
+7. Return a specific hadith based on id:
+   - `https://www.thaqalayn-api.net/api/v2/[bookId]/[id]`
+8. Retrieve ingredients in foods and their Islamic rulings as fetched from [Al Maarif](https://al-m.ca/halalguide/):
+   - `https://www.thaqalayn-api.net/api/v2/ingredients`
+
+### Examples
+
+1. Retrieve a random hadith from a given book:
+   - https://www.thaqalayn-api.net/api/v2/Al-Amali-Mufid/random
+2. Make a query throughout all books:
+   - https://www.thaqalayn-api.net/api/v2/query?q=misery%20and%20wretchedness
+3. Make a query throughout all books with multiple queries:
+   - https://www.thaqalayn-api.net/api/v2/query?q=misery%20and%20wretchedness|We%20seek%20refuge%20in%20Allah%20from%20the%20Fire
+4. Make a query for a specific book:
+   - https://www.thaqalayn-api.net/api/v2/query/Al-Kafi-Volume-6-Kulayni?q=misery%20and%20wretchedness
+5. Get all the hadiths for a particular book:
+   - https://www.thaqalayn-api.net/api/v2/Al-Amali-Mufid
+6. Get a specific hadith based on id:
+   - https://www.thaqalayn-api.net/api/v2/Uyun-akhbar-al-Rida-Volume-1-Saduq/80
+
+<br>
+
+## V3 API (Beta)
+
+> ⚠️ **This is in beta and subject to change.** The V3 contract is not yet stable — response shapes and query parameters may change without notice.
+
+V3 introduces pagination, filtering, and input validation. It reads the same data as V2 but returns a structured `{ data, pagination }` envelope for list endpoints.
+
+### Endpoints
+
+1. List a book's hadiths with pagination and filters:
+   - `https://www.thaqalayn-api.net/api/v3/[bookId]?page=1&limit=50`
+   - Optional filters: `chapter`, `category`, `grading` (matches `grade_en` or `grade_ar`, case-insensitive)
+2. Search all books (paginated):
+   - `https://www.thaqalayn-api.net/api/v3/query?q=[query]&page=1&limit=50`
+3. Search a specific book (paginated):
+   - `https://www.thaqalayn-api.net/api/v3/query/[bookId]?q=[query]&page=1&limit=50`
+4. Get a specific hadith (validated integer id):
+   - `https://www.thaqalayn-api.net/api/v3/[bookId]/[id]`
+
+### Pagination parameters
+
+- `page` — page number (default `1`, minimum `1`)
+- `limit` — results per page (default `50`, maximum `100`)
+
+### Search parameters
+
+Search endpoints (`/query` and `/query/[bookId]`) use PostgreSQL full-text search:
+
+- `q` — the query. Words are matched as word forms, not substrings (english is stemmed, so `running` matches `run`). Use `|` to separate multiple queries in an OR fashion.
+- `lang` — scope the search: `en` (english only), `ar` (arabic only), or `any` (default, both languages)
+- `highlight` — when `true`, each result includes a `highlight` object with snippets where matched words are wrapped in `<b>` tags (languages that didn't match are `null`)
+
+Search results are sorted by relevance and each item includes a `score` (higher is better).
+
+### Response shape
+
+Paginated endpoints return:
+
+```json
+{
+  "data": [ ... ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 1234,
+    "totalPages": 25,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+```
+
+Invalid input returns HTTP `400` with a `{ code, message, details }` body.
+
+## Rate limiting
+
+Anonymous requests are limited per client IP using a fixed 60-second window. The default quota is **30 requests per minute**, covering `/api/*` and `/graphql`; the landing page (`/`) and `/api-docs` are exempt.
+
+Every limited response includes:
+
+- `X-RateLimit-Limit` — requests allowed per window
+- `X-RateLimit-Remaining` — requests left in the current window
+- `X-RateLimit-Reset` — when the window resets, in Unix epoch seconds
+
+When the quota is exceeded, the API returns `429 Too Many Requests` with `Retry-After` (seconds) and the uniform error body:
+
+```json
+{
+  "code": "RATE_LIMITED",
+  "message": "Too many requests",
+  "details": { "retryAfter": 12 }
+}
+```
+
+Rate limiting fails open: if Redis is unavailable, requests are served without a quota and the failure is logged. It is configured with:
+
+- `RATE_LIMIT_ENABLED` — default `true`; set to `false` to disable
+- `RATE_LIMIT_LIMIT` — default `30`
+- `RATE_LIMIT_WINDOW_MS` — default `60000`
+
+## Extra info
+
+Most folders in the V1 directory are no longer used (except for the /V1/DB/models).
+
+In the V2 directory, you'll find of relevance:
+
+1. ThaqalaynData directory, which is all the data that was fetched from the website manually. This data is stored in a JSON format. This will not include any new data that has been added and fetched using the automated github actions workflow.
+2. WebScraper directory, which contains the Go script that fetches all the data from the website. The main package is found under /WebScraper/cmd. The script has the following flags associated with it:
+   - -datapath: Required if using the script to scrape. Provides the path where the data will be stored after being scraped. DO NOT PUT a slash at the end. Ex. `go run main.go -datapath=../ThaqalaynData`
+   - -singlebook: The Thaqalayn ID (int) of a single book to scrape. This flag is optional and if not provided, the script will scrape all the books. Ex. go run main.go -datapath=../ThaqalaynData -singlebook=17
+   - -booknamesonly: This flag signifies that you only want to create the "allBooks.json" (all books combined into a single json) and "BookNames.json" (Book metadata) files. This requires that the books have already been scraped. When this flag is used, no scraping will be done. The flag value represents the path where the data (the two files mentioned) is stored. DO NOT PUT a slash at the end. Ex. go run main.go -booknamesonly=../ThaqalaynData
+   - -webapp-url: The URL of the webapp. This is required if you want to scrape the data. Ex. go run main.go -datapath=../ThaqalaynData -webapp-url=https://someWebAppUrl.com . I cannot make public the URL of Thaqalayn's GQL API. This can be either a flag or an environment variable, where the environment variable takes precedence.
+   - -webapp-api-key: The API key of the webapp. This is required if you want to scrape the data. Ex. go run main.go -datapath=../ThaqalaynData -webapp-url=https://someWebAppUrl.com -webapp-api-key=SomeAPIKey. This can be either a flag or an environment variable, where the environment variable takes precedence.
+
+To do any scraping, the `WEBAPP_URL` and `WEBAPP_API_KEY` env variables need to be set.
+
+A developer can use `make load_all` to publish the per-book JSON files and ingredient data from `/V2/ThaqalaynData` to PostgreSQL. The loader uses `jq` and `psql` to stage the data and atomically replace the live V2 tables.
+
+The database runs in the `postgres` service from `docker-compose.yml`. The data lives in the named volume `thaqalayn_pgdata`. Do not pass `-v` to `docker compose down`: it deletes the volume.
+
+On first setup, run the loader once with Docker:
+
+1. `docker build -t thaqalayn-db-load ./docker/db-load`
+2. `docker compose up -d --wait`
+3. `docker run --rm --network thaqalayn_net -e DATABASE_URL='postgresql://thaqalayn:PASSWORD@postgres:5432/thaqalayn' -v "$PWD/V2:/data:ro" thaqalayn-db-load bash Deploy/load.sh all`
+
+The API applies the Drizzle migrations on every start, so the tables exist before step 3.
+
+Feel free to use any part of this project and modify as you'd like.
+
+## Developer Setup
+
+### This is a monorepo composed of a couple of different related projects:
+
+#### Web Scraper
+
+The scraper fetches the data and converts it to the appropriate format. It finishes by updating the data in the database. Lives under [V2](./V2/). [V1](./V1/) is an older, deprecated version of the scraper.
+
+You will find all the data in json format at [ThaqalaynData](./V2/ThaqalaynData/) But this is outdated and no longer maintained.
+
+##### Scraper Setup
+
+1. Clone the repository
+2. Make sure Thaqalayn API credentials are set. This can be done by setting the `WEBAPP_URL` and `WEBAPP_API_KEY` environment variables or by using the -webapp-api-key and -webapp-url flags when running the script. Environment variables take precedence. If you want to use environment variables, copy the .env.example file to V2/WebScraper/cmd folder, rename to .env and fill in the values 2 api values.
+3. `cd V2/WebScraper/cmd`
+4. To scrape all the books: `go run main.go -datapath=../../ThaqalaynData`. Add the `-webapp-api-key` and `-webapp-url` flags if you haven't set the environment variables.
+5. To scrape a single book: `go run main.go -datapath=../../ThaqalaynData -singlebook=17`. Add the `-webapp-api-key` and `-webapp-url` flags if you haven't set the environment variables. Replace 17 with the book ID you want to scrape.
+
+#### Data Sync Cron
+
+This is a cron job that is set to run on a weekly basis. It runs the Web Scraper to update the data in the database.
+
+##### Deployment
+
+The Cron job runs on a VPS hosted on Hetzner. Deployment is made through Ansible. Ansible deployments must be made from a machine that has ansible installed and can access, via SSH, the VPS. to deploy, run the following command from such machine, in the root project directory: `ansible-playbook -i inventory.yaml pipelines/cron-playbook.yaml`
+
+Ansible logs into the VPS server on your behalf and completes the following steps (playbook.yaml):
+
+1. Pulls changes from git
+2. Stop the currently running container and remove image
+3. Build a new image and run container.
+
+It is also possible, in the future, to add this service as part of the docker compose and have it run when we deploy the API.
+
+#### API
+
+This is the actual REST and GQL backend that calls the database.
+
+### API Setup
+
+1. Clone the repository
+2. run `npm install`
+3. Using the `.env.example` file, create a `.env` file at the root of the directory. You need a value for `DATABASE_URL`, and the matching `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` values. Start the database with `docker compose up -d postgres redis`. For host access, use port 5434, for example `postgresql://thaqalayn:password@localhost:5434/thaqalayn`.
+4. run `npm run dev` (starts Redis with Docker Compose, then the API in watch mode)
+
+#### API Deployment
+
+The application runs on a VPS hosted on Hetzner. Deployment is made through Ansible. To deploy, run the following command from such machine, in the root project directory: `ansible-playbook -i inventory.yaml playbook.yaml`
+
+Ansible logs into the VPS server on your behalf and completes the following steps (playbook.yaml):
+
+1. Pulls changes from git
+   - Changes are pulled via HTTPS. If the git pull step does not work, the git credential cache has expired and you'd need to ssh into the server and re-establish the cache or establish SSH connection to github
+2. `Docker compose down` to remove the current container running the application
+3. `Docker compose up` to rebuild the container and run it
+4. Drops Docker build cache older than one week

@@ -80,7 +80,7 @@ async function prepareVersion(sql: LoaderSql, projection: VerifiedProjection, op
       manifest.release.release_class,
       manifest.release.non_release_reason,
       options.loadPurpose,
-      `projection ${manifest.projection_version}${manifest.options.legacy_source_index ? ' +source_index' : ''}`,
+      `projection ${manifest.projection_version}${manifest.options.source_index ? ` +candidates(${manifest.options.source_index})` : ''}`,
       manifest.source_bundle.expected_record_count,
       manifest.release.attribution_disclaimer,
       options.loadedBy,

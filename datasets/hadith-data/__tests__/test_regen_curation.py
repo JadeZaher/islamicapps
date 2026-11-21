@@ -484,6 +484,31 @@ class NarratorPlaceholderAndNestedNameTests(unittest.TestCase):
         self.assertEqual(self.resolve("لبابة بنت الحارث"), "141")
         self.assertEqual(regen._extract_arabic_name_raw(self.REGISTRY[4][1]), "عبد الله بن حق بن أوس")
 
+    def test_kunya_only_candidate_is_labelled_and_never_a_resolution(self):
+        table = [
+            ("أبو معاوية", "19383"),    # the kunya-only entry itself
+            ("ابي معاوية", "19383"),    # genitive after عن: the case fold applies to a bare kunya here
+            ("شعبة", None),             # a Shykh-marker placeholder is never a target, even as a candidate
+            ("يحيى", None),             # bare single-token entry
+            ("أبو معاوية الضرير", None),  # not a kunya alone
+            ("معاوية", None),
+        ]
+        for surface, expected in table:
+            with self.subTest(surface=surface):
+                self.assertEqual(regen.kunya_only_candidate(surface, self.exact), expected)
+                self.assertIsNone(self.resolve(surface))    # resolve_narrator is unchanged
+
+    def test_kunya_only_candidate_refuses_a_kunya_shared_by_two_entries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            rawis = Path(directory) / "all_rawis.csv"
+            with rawis.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=("scholar_indx", "name"))
+                writer.writeheader()
+                writer.writerow({"scholar_indx": "1", "name": "Abu Mua'wiya أبو معاوية"})
+                writer.writerow({"scholar_indx": "2", "name": "Abu Muawiya ( أبو معاوية )"})
+            exact, _ = regen.build_narrator_index(str(rawis))
+        self.assertIsNone(regen.kunya_only_candidate("أبو معاوية", exact))
+
     def test_a_chain_with_a_placeholder_surface_stays_atomic(self):
         with self.assertRaises(regen.UnresolvedNarratorError):
             regen._compute_chain_indx(

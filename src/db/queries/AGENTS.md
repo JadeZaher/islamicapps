@@ -18,6 +18,8 @@ these modules but never `drizzle-orm`, `postgres`, `@/db/client` or `@/db/schema
 | `write.ts` | `curationWrite` envelope and `audit` |
 | `*-review.ts` | Reviewer-mode reads of base tables; importable only from `/admin` and curation actions (rule 9, linted) |
 | `health.ts` | `select 1` under a timeout |
+| `dataset.ts` | `getPreviewNotice`: is the current version a non-release served under owner approval |
+| `hadith-export-review.ts` | Curator CSV export batches (live base tables); only `/api/export/hadiths` imports it |
 | `enums.ts` | Enum value lists for zod in actions |
 
 ## Rules as implemented
@@ -42,8 +44,20 @@ these modules but never `drizzle-orm`, `postgres`, `@/db/client` or `@/db/schema
 - **Publication gates:** commentary `published` needs a live reviewed citation (no owner commentary policy is
   recorded, question 10); parallel `published` needs its hadith in `public_hadiths`, and a new manual parallel
   starts `published` only when that holds; bio/verdict `published` need the citation (and a tradition).
-- **Chain nodes** are keyed by mention ID. Narrator name and verdict are filled only on verified links; an
-  unidentified position carries only its surface. No chain-health score is computed (no computed grade).
+- **Chain nodes** are keyed by mention ID. Every node carries its surface as written and all its identity
+  candidates from `public_chain_mention_candidates`, strongest basis first, plus `identity` (`unidentified`,
+  `agreed`, `differ`); narrator name and verdict on the node itself are filled only on verified links
+  (`src/db/AGENTS.md` §Identity candidates). `getChainGraph` also returns the tradition and source work. No
+  chain-health score is computed (no computed grade).
+
+## Preview approval
+
+A non-release dataset version is public only while `dataset_versions.public_override_*` is set (the gate in
+`public_hadiths`). The operator script `src/scripts/db/approve-preview.ts` (`--by`, `--reason`; `--revoke`) writes the three
+columns and an `approve_preview` / `revoke_preview` row in `curation_audit` (actor `system:owner`) in one transaction; it
+refuses production, a load in progress, a release version, and a second approval. `getPreviewNotice()` reads the same
+predicate, so the site-wide notice (`src/components/PreviewNotice.tsx`) turns itself off when a release version becomes
+current or the approval is revoked. Temporary: see `conductor/RUNBOOK.md`, "Remove after the first release".
 
 ## Tests
 
@@ -51,6 +65,9 @@ these modules but never `drizzle-orm`, `postgres`, `@/db/client` or `@/db/schema
 development database (`fixture-database.ts`, refusing production), loads real rows copied from the 2026-11-21
 bundle (`fixtures/corpus.json`: 14 hadiths across the four traditions, 53 mentions, 12 narrators, two Majlisi
 grades, one Phase-0 verdict), and sets `DATABASE_URL`'s `search_path` to it so the app client runs unchanged.
+`fixtures/identity-candidates.json` adds the real identity candidates and verified links for those reports from the
+2026-11-21 projection (`generated_from` names it), plus Sahih Muslim `k6:10008`, whose chain has an agreeing, a
+disagreeing, an unidentified and a kunya-only name.
 `__tests__/http-gate.test.ts` drives the proxy, sign-in and actions over HTTP against `next start`.
 
 ```

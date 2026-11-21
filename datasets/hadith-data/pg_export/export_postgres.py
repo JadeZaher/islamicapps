@@ -32,7 +32,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.21.1"
+PROJECTION_VERSION = "2026.11.21.2"
 ATTRIBUTION_DISCLAIMER = (
     "kathrat al-riwaya describes transmission volume only; it is not a judgment "
     "of narrator reliability or hadith authenticity."
@@ -60,8 +60,15 @@ BEFORE_HIJRA = re.compile(r"(?<![A-Za-z0-9_])BH(?![A-Za-z0-9_])", re.IGNORECASE)
 CITATION_VOLUME_PAGE = re.compile(r"^(.*\S)\s*\(\s*([^()/]+?)\s*/\s*([^()/]+?)\s*\)$")
 ARRAY_ELEMENT = re.compile(r"^[a-z_]+$")
 UNRESOLVED = (None, "unresolved", None, None, None)
-# Mention-exact and legacy-index identities that disagree: stored unresolved, counted, never guessed.
-WITHHELD_CONFLICT = (None, "unresolved", None, None, "withheld_conflicting_automatic_identities")
+# The only automatic identity that is verified: an uncontested source_index_confirmed_by_text candidate (AGENTS.md).
+VERIFIED_RESOLUTION = ("source_index", "source_index", 1.0, "source_index_confirmed_by_text")
+VERIFIED_BASES = frozenset({"source_index_confirmed_by_text"})
+SOURCE_BASES = frozenset({"source_index", "source_index_confirmed_by_text"})
+NAME_BASIS_BY_TIER = {"tier0": "name_exact", "tier1": "name_spelling_fold", "tier2": "name_spelling_fold"}
+# Owner decision (c): automatic name matches against the (Sunni-centred) lexicon only on Sunni reports.
+NAME_MATCH_TRADITIONS = frozenset({"Sunni"})
+K6_CONFIRMED_BASIS = "source_index_corroborated_by_text"   # the K6 sidecar's report-level basis label
+RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
 INT4_MAX = 2**31 - 1
 
@@ -228,45 +235,57 @@ def review_unit_ids(surface: str, teacher: str | None, student: str | None, sour
     return coarse, fine
 
 
-def parse_chain_indx(value: str) -> list[list[int]]:
-    """Same grammar as export_bundle._parse_chain_indx: branches split by '|', ids by ','."""
-    text = str(value or "").strip()
-    if not text or text in {"[]", "nan"}:
-        return []
-    if text.startswith("[") and text.endswith("]") and "|" not in text:
-        text = text[1:-1].strip()
-    if not text:
-        return []
-    branches: list[list[int]] = []
-    for branch_text in text.split("|"):
-        tokens = [token.strip() for token in branch_text.split(",")]
-        if not tokens or any(not token for token in tokens):
-            raise ValueError(f"empty chain_indx token in {value!r}")
-        branch = []
-        for token in tokens:
-            if not token.isdigit() or int(token) <= 0:
-                raise ValueError(f"invalid chain_indx token {token!r}")
-            branch.append(int(token))
-        branches.append(branch)
-    return branches
+def align_source_index(row: dict, branches: Sequence[Sequence[str]]) -> dict[tuple[int, int], tuple[int, bool]] | None:
+    """(branch, position) -> (source position, shared_trunk) for every position the K6 sidecar corroborated.
+
+    None when the sidecar's text branches are not exactly the extracted branches (then no position is mapped).
+    In a multi-branch report an uncorroborated position inherits the source position of a corroborated twin whose
+    branch opens with the identical surfaces up to and including it: the same tahwil trunk written once in the
+    Arabic. Convergence (shared endings) is not inherited: a relational surface such as أبيه there may name
+    different people.
+    """
+    if [list(branch) for branch in (row.get("text_branches") or [])] != [list(branch) for branch in branches]:
+        return None
+    aligned: dict[tuple[int, int], tuple[int, bool]] = {}
+    for item in row.get("aligned_positions") or []:
+        key = (int(item["branch"]), int(item["branch_position"]))
+        if key in aligned:
+            raise ProjectionError(f"{row['record_id']}: aligned position {key} listed twice")
+        aligned[key] = (int(item["source_position"]), False)
+    inherited: dict[tuple[int, int], tuple[int, bool]] = {}
+    for branch_index, surfaces in enumerate(branches):
+        for position in range(len(surfaces)):
+            if (branch_index, position) in aligned:
+                continue
+            for (twin_branch, twin_position), (source_position, _) in sorted(aligned.items()):
+                if (twin_branch != branch_index and twin_position == position
+                        and list(branches[twin_branch][:position + 1]) == list(surfaces[:position + 1])):
+                    inherited[(branch_index, position)] = (source_position, True)
+                    break
+    aligned.update(inherited)
+    return aligned
 
 
-def provider_ids_agree(legacy_id: str, provider_hadith_id: str | None, hadith_no: str | None) -> bool:
-    """Corroborating id check on a unique Arabic join. Some works were re-keyed in the 37-column file
-    (`pc_9`, `rabi_0825`) while the legacy `hadith_id` is the hadith number, so equal-to-`hadith_no` also agrees."""
-    legacy_id = (legacy_id or "").strip()
-    if not legacy_id or not provider_hadith_id:
-        return True
-    return legacy_id == provider_hadith_id.strip() or legacy_id == (hadith_no or "").strip()
+def verified_narrator(candidates: Sequence[tuple[str, str]]) -> str | None:
+    """The narrator a mention's (narrator_id, basis) candidates verify, or None.
+
+    Verified only when a source_index_confirmed_by_text candidate exists and no other candidate names a different
+    narrator: a contested identity is shown with both candidates and is never presented as settled.
+    """
+    confirmed = {narrator for narrator, basis in candidates if basis in VERIFIED_BASES}
+    if len(confirmed) != 1:
+        return None
+    return next(iter(confirmed)) if {narrator for narrator, _ in candidates} == confirmed else None
 
 
-def shapes_match(index_branches: Sequence[Sequence[int]], chain_lengths: Sequence[int]) -> bool:
-    """Legacy links load only when branch count and every branch length equal the extracted chains."""
-    return (
-        len(index_branches) > 0
-        and len(index_branches) == len(chain_lengths)
-        and all(len(branch) == length for branch, length in zip(index_branches, chain_lengths))
-    )
+def candidate_agreement(narrator_ids: Iterable[str]) -> str:
+    """How a mention's candidates relate: 'none', 'one' (one narrator, any number of bases) or 'differ'."""
+    distinct = set(narrator_ids)
+    return "none" if not distinct else "one" if len(distinct) == 1 else "differ"
+
+
+def candidate_id(mention_id: str, basis: str, narrator_id: str) -> str:
+    return f"candidate:{mention_id.removeprefix('mention:')}:{basis}:{narrator_id.removeprefix('narrator:')}"
 
 
 def pg_array(values: Iterable[str]) -> str:
@@ -459,6 +478,78 @@ def load_unified(path: Path) -> dict[str, dict[str, str]]:
                 raise ProjectionError(f"unified CSV record_id blank or duplicated: {record_id!r}")
             rows[record_id] = {column: row[column] for column in columns}
     return rows
+
+
+def load_reconciled_sidecars(directory: Path) -> tuple[dict[str, dict[str, dict]], dict[str, str], str | None]:
+    """The three reconciled sidecars keyed by record_id, each file hash-checked against its build manifest.
+
+    Returns (rows by file, file SHA-256 by file, the resolver SHA-256 the K6 corroboration was computed with).
+    """
+    k6_manifest = json.loads((directory / "k6_source_index.manifest.json").read_text(encoding="utf-8"))
+    canon_manifest = json.loads((directory / "pure_canon_chain.manifest.json").read_text(encoding="utf-8"))
+    expected = {k6_manifest["output"]["file"]: k6_manifest["output"]["sha256"]}
+    expected.update({item["file"]: item["sha256"] for item in canon_manifest["outputs"]})
+    loaded: dict[str, dict[str, dict]] = {}
+    hashes: dict[str, str] = {}
+    for name in RECONCILED_SIDECARS:
+        path = directory / name
+        if not path.is_file():
+            raise ProjectionError(f"reconciled/{name} is missing; rebuild it with its script (reconciled/README.md)")
+        digest = sha256_file(path)
+        if digest != expected.get(name):
+            raise ProjectionError(f"reconciled/{name}: SHA-256 differs from its build manifest")
+        rows: dict[str, dict] = {}
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            for line in handle:
+                row = json.loads(line)
+                if row["record_id"] in rows:
+                    raise ProjectionError(f"reconciled/{name}: {row['record_id']} listed twice")
+                rows[row["record_id"]] = row
+        loaded[name], hashes[name] = rows, digest
+    return loaded, hashes, k6_manifest["code_sha256"].get("datasets/hadith-data/regen_unified_csvs.py")
+
+
+def apply_chain_sidecars(branches_by_hadith: dict[str, list[dict]], no_chain: dict[str, dict],
+                         pure_canon: dict[str, dict], hadith_info: dict[str, dict],
+                         record_to_hadith: dict[str, str], normalize) -> Counter:
+    """Drop chains the source does not have, and replace Pure Canon chains extracted from matn-only `text_ar` with
+    the extraction of the source's own chain field. Both sidecars must be bound to the hadith's exact Arabic."""
+    counts: Counter = Counter()
+    for record_id, row in sorted(no_chain.items()):
+        hadith_id = record_to_hadith.get(record_id)
+        if hadith_id is None:
+            counts["no_chain_in_source:record_not_in_bundle"] += 1
+            continue
+        if row["text_ar_sha256"] != hadith_info[hadith_id]["arabic_sha256"]:
+            raise ProjectionError(f"{record_id}: no_chain_in_source sidecar is bound to different Arabic")
+        if row.get("suppress_extracted_chain") is not True:
+            counts[f"no_chain_in_source:{row['reason']}:kept"] += 1
+            continue
+        removed = branches_by_hadith.pop(hadith_id, [])
+        counts[f"no_chain_in_source:{row['reason']}:reports"] += 1
+        counts[f"no_chain_in_source:{row['reason']}:invented_chains_dropped"] += len(removed)
+    for record_id, row in sorted(pure_canon.items()):
+        hadith_id = record_to_hadith.get(record_id)
+        if hadith_id is None:
+            counts["pure_canon_chain:record_not_in_bundle"] += 1
+            continue
+        if record_id in no_chain:
+            raise ProjectionError(f"{record_id}: both a source chain and no_chain_in_source")
+        if row["text_ar_sha256"] != hadith_info[hadith_id]["arabic_sha256"]:
+            raise ProjectionError(f"{record_id}: pure_canon_chain sidecar is bound to different Arabic")
+        counts["pure_canon_chain:text_ar_chains_replaced"] += len(branches_by_hadith.pop(hadith_id, []))
+        branches = [branch for branch in (row.get("branches") or []) if branch]
+        for index, surfaces in enumerate(branches):
+            branches_by_hadith.setdefault(hadith_id, []).append({
+                "id": f"chain:{record_id}:{index:04d}", "branch": index, "resolved": False,
+                "extraction_method": "source_chain_field", "sanad_confidence": None,
+                "mentions": [(f"mention:{record_id}:{index:04d}:{position:04d}", surface, normalize(surface))
+                             for position, surface in enumerate(surfaces)],
+            })
+        counts["pure_canon_chain:reports_with_source_chain" if branches
+               else "pure_canon_chain:reports_without_extracted_narrator"] += 1
+        counts["pure_canon_chain:chains"] += len(branches)
+    return counts
 
 
 def project(args: argparse.Namespace) -> dict:
@@ -657,7 +748,9 @@ def project(args: argparse.Namespace) -> dict:
     candidates.write("translation_candidates", ["id", "hadith_id", "language", "candidate_source", "text", "state",
                                                 "model", "quality_status", "arabic_sha256"], candidate_rows)
 
-    # narrators, lexicon profiles, aliases, teachers
+    # narrators, lexicon profiles, aliases, teachers. The resolver's index also names the placeholder rows.
+    exact_index, blocked_index = resolver_module.build_narrator_index(str(args.rawis))
+    placeholders: dict[str, str] = exact_index.placeholders
     narrators = []
     narrator_ids: set[str] = set()
     for row in bundle.rows("nodes/narrators.csv"):
@@ -665,9 +758,11 @@ def project(args: argparse.Namespace) -> dict:
         name_ar = blank_to_none(resolver_module._extract_arabic_name_raw(name))
         narrator_ids.add(row["id"])
         narrators.append([row["id"], "rawi", row["scholar_indx"], int(row["scholar_indx"]), name, name_ar,
-                          english_name(name), arabic_norm(name_ar) if name_ar else None])
+                          english_name(name), arabic_norm(name_ar) if name_ar else None,
+                          placeholders.get(row["scholar_indx"])])
     canonical.write("narrators", ["id", "authority", "authority_key", "scholar_indx", "name", "name_ar", "name_en",
-                                  "name_ar_normalized"], narrators)
+                                  "name_ar_normalized", "placeholder_reason"], narrators)
+    counts["narrator_placeholders"] = dict(sorted(Counter(placeholders.values()).items()))
     biography_subject = bundle.one_to_one("relationships/biography_of.csv")
     profiles = []
     for row in bundle.rows("nodes/biographies.csv"):
@@ -704,35 +799,62 @@ def project(args: argparse.Namespace) -> dict:
     canonical.write("narrator_teachers", ["student_id", "teacher_id", "evidence_fields", "evidence_count",
                                           "reciprocal", "review_state"], teachers, key_width=2)
 
-    # chains
+    # chains and mentions: the bundle's text extraction, then the reconciled sidecars (AGENTS.md "Chains")
+    from extract_isnad_unified import name_normalize
     chain_owner = {row["end"]: row["start"] for row in bundle.rows("relationships/has_chain.csv")}
-    chains = []
-    chain_rows: dict[str, dict] = {}
-    chains_by_hadith: dict[str, list[tuple[int, int, str]]] = defaultdict(list)
-    for row in bundle.rows("nodes/chains.csv"):
-        if chain_owner.get(row["id"]) != row["hadith_id"]:
-            raise ProjectionError(f"{row['id']}: has_chain disagrees with the chain's hadith_id")
-        chain_rows[row["id"]] = row
-        chains_by_hadith[row["hadith_id"]].append((int(row["branch"]), int(row["length"]), row["id"]))
-        chains.append([row["id"], row["hadith_id"], int(row["branch"]), int(row["length"]), row["resolved"] == "true",
-                       row["extraction_method"], None, blank_to_none(row["sanad_confidence"])])
-    canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
-                               "sanad_confidence"], chains)
-    for branches in chains_by_hadith.values():
-        branches.sort()
-
-    # chain mentions: bundle (report_atomic) -> per-mention exact (mention_exact) -> legacy index (source_index)
-    resolves_to = bundle.one_to_one("relationships/resolves_to.csv")
     mentions_by_chain: dict[str, list[dict]] = defaultdict(list)
     for row in bundle.rows("nodes/name_mentions.csv"):
         mentions_by_chain[row["chain_id"]].append(row)
-    exact_index, blocked_index = resolver_module.build_narrator_index(str(args.rawis))
-    surface_cache: dict[str, tuple[str | None, str | None]] = {}
+    branches_by_hadith: dict[str, list[dict]] = defaultdict(list)
+    for row in bundle.rows("nodes/chains.csv"):
+        if chain_owner.get(row["id"]) != row["hadith_id"]:
+            raise ProjectionError(f"{row['id']}: has_chain disagrees with the chain's hadith_id")
+        rows = sorted(mentions_by_chain.pop(row["id"], []), key=lambda item: int(item["position"]))
+        if [int(item["position"]) for item in rows] != list(range(len(rows))) or len(rows) != int(row["length"]):
+            raise ProjectionError(f"{row['id']}: mention positions are not contiguous 0..length-1")
+        if any(item["hadith_id"] != row["hadith_id"] for item in rows):
+            raise ProjectionError(f"{row['id']}: a mention names another hadith than its chain")
+        branches_by_hadith[row["hadith_id"]].append({
+            "id": row["id"], "branch": int(row["branch"]), "resolved": row["resolved"] == "true",
+            "extraction_method": row["extraction_method"], "sanad_confidence": blank_to_none(row["sanad_confidence"]),
+            "mentions": [(item["id"], item["surface"], item["normalized_surface"]) for item in rows],
+        })
+    if mentions_by_chain:
+        raise ProjectionError(f"{len(mentions_by_chain)} mention chains have no chain row")
 
-    def resolve_surface(surface: str) -> tuple[str | None, str | None]:
-        if surface not in surface_cache:
+    sidecars, sidecar_hashes, k6_resolver_sha = load_reconciled_sidecars(args.reconciled)
+    counts["chain_sidecars"] = dict(sorted(apply_chain_sidecars(
+        branches_by_hadith, sidecars["no_chain_in_source.jsonl.gz"], sidecars["pure_canon_chain.jsonl.gz"],
+        hadith_info, record_to_hadith, name_normalize).items()))
+
+    # K6 source index: mapped onto the extracted branches only where the sidecar's text branches are exactly them.
+    source_counts: Counter = Counter()
+    source_alignment: dict[str, tuple[dict, dict]] = {}
+    for record_id, row in sorted(sidecars["k6_source_index.jsonl.gz"].items()):
+        hadith_id = record_to_hadith.get(record_id)
+        if hadith_id is None:
+            source_counts["reports_not_in_bundle"] += 1
+            continue
+        if row["arabic_sha256"] != hadith_info[hadith_id]["arabic_sha256"]:
+            raise ProjectionError(f"{record_id}: K6 sidecar is bound to different Arabic")
+        if not row.get("source_ids"):
+            source_counts["reports_without_source_index"] += 1
+            continue
+        branches = sorted(branches_by_hadith.get(hadith_id, []), key=lambda branch: branch["branch"])
+        alignment = align_source_index(row, [[surface for _, surface, _ in branch["mentions"]] for branch in branches])
+        if alignment is None:
+            source_counts["reports_whose_text_branches_differ_from_the_extraction"] += 1
+            continue
+        source_alignment[hadith_id] = (row, alignment)
+        source_counts[f"reports_mapped:{row['basis']}"] += 1
+
+    name_cache: dict[str, tuple[str, str, str] | None] = {}
+
+    def name_match(surface: str) -> tuple[str, str, str] | None:
+        """(scholar_indx, basis, detail) from the canonical resolver tiers, else a labelled kunya-only candidate."""
+        if surface not in name_cache:
+            match = None
             scholar = resolver_module.resolve_narrator(surface, exact_index, blocked_index)
-            tier = None
             if scholar:
                 if exact_index.get(resolver_module.narrator_normalize(surface)):
                     tier = "tier0"
@@ -740,62 +862,100 @@ def project(args: argparse.Namespace) -> dict:
                     tier = "tier1"
                 else:
                     tier = "tier2"
-            surface_cache[surface] = (scholar, tier)
-        return surface_cache[surface]
+                match = (scholar, NAME_BASIS_BY_TIER[tier], tier)
+            else:
+                kunya = resolver_module.kunya_only_candidate(surface, exact_index)
+                if kunya:
+                    match = (kunya, "name_kunya_only", "kunya_only_registry_entry")
+            name_cache[surface] = match
+        return name_cache[surface]
 
-    resolution: dict[str, tuple] = {}  # mention id -> (narrator_id, resolution, basis, confidence, method)
-    for chain_id, rows in mentions_by_chain.items():
-        for row in rows:
-            narrator_id = resolves_to.get(row["id"])
-            if narrator_id is not None:
-                resolution[row["id"]] = (narrator_id, "exact_registry", "report_atomic", 1.0, "bundle_chain_indx")
-                continue
-            scholar, tier = resolve_surface(row["surface"])
-            candidate = f"narrator:rawi:{scholar}" if scholar else None
-            if candidate in narrator_ids:
-                resolution[row["id"]] = (candidate, "exact_registry", "mention_exact", 1.0, f"name_invariant_{tier}")
-
-    legacy_counts: Counter = Counter()
-    if args.legacy_source_index:
-        legacy_counts = apply_legacy_source_index(
-            args.legacy_master, hadith_info, tradition_names, chains_by_hadith, mentions_by_chain, narrator_ids,
-            resolution,
-        )
-    resolution_counts: Counter = Counter()
-
+    chains = []
     mentions = []
+    identity_rows = []
+    identity: dict[str, Counter] = defaultdict(Counter)
     empty_normalized = 0
-    for chain_id in sorted(mentions_by_chain):
-        rows = sorted(mentions_by_chain[chain_id], key=lambda item: int(item["position"]))
-        positions = [int(row["position"]) for row in rows]
-        if positions != list(range(len(rows))) or len(rows) != int(chain_rows[chain_id]["length"]):
-            raise ProjectionError(f"{chain_id}: mention positions are not contiguous 0..length-1")
-        owner = hadith_info[chain_rows[chain_id]["hadith_id"]]
+    for hadith_id in sorted(branches_by_hadith):
+        branches = sorted(branches_by_hadith[hadith_id], key=lambda branch: branch["branch"])
+        if [branch["branch"] for branch in branches] != list(range(len(branches))):
+            raise ProjectionError(f"{hadith_id}: chain branches are not contiguous 0..n-1")
+        owner = hadith_info[hadith_id]
         work = owner["source_work_id"]
         tradition = tradition_names[owner["tradition_id"]]
-        for index, row in enumerate(rows):
-            # A surface such as a bare conjunction 'و' normalizes to '': keep '' (known empty), never NULL (unknown).
-            surface = Verbatim(row["normalized_surface"])
-            teacher = Verbatim(rows[index + 1]["normalized_surface"]) if index + 1 < len(rows) else None
-            student = Verbatim(rows[index - 1]["normalized_surface"]) if index > 0 else None
-            if surface == "":
-                empty_normalized += 1
-            coarse, fine = review_unit_ids(surface, teacher, student, work)
-            narrator_id, resolved_as, basis, confidence, method = resolution.get(row["id"], UNRESOLVED)
-            resolution_counts[f"{tradition}:{resolved_as}:{method or 'none'}"] += 1
-            mentions.append([
-                row["id"], chain_id, row["hadith_id"], int(row["position"]), row["surface"], surface, teacher,
-                student, coarse, fine, "person" if narrator_id else "unclassified", resolved_as, basis, narrator_id,
-                confidence, method,
-            ])
+        source = source_alignment.get(hadith_id)
+        for branch in branches:
+            rows = branch["mentions"]
+            chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
+                           branch["extraction_method"], None, branch["sanad_confidence"]])
+            for position, (mention_id, surface_ar, normalized) in enumerate(rows):
+                # A surface such as a bare conjunction 'و' normalizes to '': keep '' (known empty), never NULL.
+                surface = Verbatim(normalized)
+                teacher = Verbatim(rows[position + 1][2]) if position + 1 < len(rows) else None
+                student = Verbatim(rows[position - 1][2]) if position > 0 else None
+                if surface == "":
+                    empty_normalized += 1
+                coarse, fine = review_unit_ids(surface, teacher, student, work)
+
+                found: list[tuple[str, str, str, int | None]] = []   # narrator_id, basis, detail, source position
+                if tradition in NAME_MATCH_TRADITIONS:
+                    match = name_match(surface_ar)
+                    if match:
+                        scholar, basis, detail = match
+                        if f"narrator:rawi:{scholar}" not in narrator_ids:
+                            identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
+                        elif placeholders.get(scholar) and basis != "name_kunya_only":
+                            raise ProjectionError(f"{mention_id}: {basis} targets placeholder rawi {scholar}")
+                        else:
+                            found.append((f"narrator:rawi:{scholar}", basis, detail, None))
+                if source is not None:
+                    row, alignment = source
+                    hit = alignment.get((branch["branch"], position))
+                    if hit is not None:
+                        source_position, shared_trunk = hit
+                        scholar = row["source_ids"][source_position]
+                        basis = "source_index_confirmed_by_text" if row["basis"] == K6_CONFIRMED_BASIS else "source_index"
+                        if f"narrator:rawi:{scholar}" not in narrator_ids:
+                            identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
+                        elif placeholders.get(scholar):
+                            # Owner decision (d): a placeholder row is never a match target, whoever names it.
+                            identity["dropped"][f"{basis}:placeholder:{placeholders[scholar]}"] += 1
+                        else:
+                            detail = row["agreement_class"] + (":shared_trunk" if shared_trunk else "")
+                            found.append((f"narrator:rawi:{scholar}", basis, detail, source_position))
+
+                for narrator_id, basis, detail, source_position in found:
+                    identity_rows.append([candidate_id(mention_id, basis, narrator_id), mention_id, hadith_id,
+                                       narrator_id, basis, detail, source_position])
+                    identity["candidates_by_basis"][f"{tradition}:{basis}"] += 1
+                pairs = [(narrator_id, basis) for narrator_id, basis, _, _ in found]
+                agreement = candidate_agreement(narrator_id for narrator_id, _ in pairs)
+                identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
+                distinct = len({narrator_id for narrator_id, _ in pairs})
+                identity["mentions_by_candidate_narrators"][f"{tradition}:{min(distinct, 2)}{'+' if distinct >= 2 else ''}"] += 1
+                verified = verified_narrator(pairs)
+                if verified is None and any(basis in VERIFIED_BASES for _, basis in pairs):
+                    identity["confirmed_but_contested"][tradition] += 1
+                narrator_id, resolved_as, resolution_basis, confidence, method = (
+                    (verified, *VERIFIED_RESOLUTION) if verified else UNRESOLVED)
+                identity["verified_links"][tradition] += 1 if verified else 0
+                mentions.append([
+                    mention_id, branch["id"], hadith_id, position, surface_ar, surface, teacher, student, coarse, fine,
+                    "person" if narrator_id else "unclassified", resolved_as, resolution_basis, narrator_id,
+                    confidence, method,
+                ])
+    canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
+                               "sanad_confidence"], chains)
     canonical.write("chain_mentions", [
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",
         "resolution_basis", "narrator_id", "confidence", "extraction_method",
     ], mentions)
-    counts["mention_resolution"] = dict(sorted(resolution_counts.items()))
+    canonical.write("chain_mention_candidates", ["id", "mention_id", "hadith_id", "narrator_id", "basis", "detail",
+                                                 "source_position"], identity_rows)
     counts["mentions_with_empty_normalized_surface"] = empty_normalized
-    counts["legacy_source_index"] = dict(sorted(legacy_counts.items()))
+    counts["k6_source_index"] = dict(sorted(source_counts.items()))
+    counts["identity_candidates"] = {key: dict(sorted(value.items())) for key, value in sorted(identity.items())}
+    counts["k6_sidecar_built_with_current_resolver"] = k6_resolver_sha == sha256_file(Path(resolver_module.__file__))
 
     # hadith assessments
     assessments = []
@@ -865,6 +1025,8 @@ def project(args: argparse.Namespace) -> dict:
             "resolver_sha256": sha256_file(Path(resolver_module.__file__)),
             "arabic_norm_sha256": sha256_file(DATASETS_DIR / "classify_attribution.py"),
             "projection_sha256": sha256_file(Path(__file__)),
+            "reconciled_sidecars": {f"reconciled/{name}": digest for name, digest in sorted(sidecar_hashes.items())},
+            "k6_sidecar_resolver_sha256": k6_resolver_sha,
         },
         "release": {
             "release_class": "release" if source_release_state == "release" else "non_release",
@@ -872,7 +1034,7 @@ def project(args: argparse.Namespace) -> dict:
             else f"source_release_state={source_release_state}; bundle publication_ready=false",
             "attribution_disclaimer": ATTRIBUTION_DISCLAIMER,
         },
-        "options": {"legacy_source_index": bool(args.legacy_source_index)},
+        "options": {"source_index": "k6_sidecar", "name_match_traditions": sorted(NAME_MATCH_TRADITIONS)},
     }
     manifests = {}
     for writer in (canonical, candidates):
@@ -899,73 +1061,6 @@ def record_hadith_id(info: dict) -> str:
     return f"hadith:{info['record_id']}"
 
 
-def apply_legacy_source_index(legacy_master: Path, hadith_info: dict, tradition_names: dict,
-                              chains_by_hadith: dict, mentions_by_chain: dict, narrator_ids: set,
-                              resolution: dict) -> Counter:
-    """Owner Q1: load the legacy chain_indx as source_index links, only on a unique join and an exact shape match."""
-    counts: Counter = Counter()
-    bundle_keys: dict[tuple[str, str], list[str]] = defaultdict(list)
-    for hadith_id, info in hadith_info.items():
-        bundle_keys[(info["source"], info["arabic_sha256"])].append(hadith_id)
-    legacy_keys: Counter = Counter()
-    indexed_rows: list[tuple[tuple[str, str], str, str]] = []
-    with open_text(legacy_master) as handle:
-        for row in csv.DictReader(handle):
-            key = (row["source"].strip(), sha256_text(row["text_ar"]))
-            legacy_keys[key] += 1
-            if row["chain_indx"].strip() not in {"", "[]", "nan"}:
-                indexed_rows.append((key, row["hadith_id"].strip(), row["chain_indx"]))
-    counts["legacy_rows_with_chain_indx"] = len(indexed_rows)
-    for key, legacy_provider_id, chain_indx in indexed_rows:
-        targets = bundle_keys.get(key, [])
-        if not targets:
-            counts["rejected_no_unique_match:none"] += 1
-            continue
-        if len(targets) > 1:
-            counts["rejected_no_unique_match:ambiguous_bundle"] += 1
-            continue
-        if legacy_keys[key] > 1:
-            counts["rejected_no_unique_match:duplicate_legacy"] += 1
-            continue
-        hadith_id = targets[0]
-        info = hadith_info[hadith_id]
-        if not provider_ids_agree(legacy_provider_id, info["provider_hadith_id"], info["hadith_no"]):
-            counts["rejected_provider_id_conflict"] += 1
-            continue
-        tradition = tradition_names[info["tradition_id"]]
-        if tradition == "Imami":
-            counts["rejected_imami"] += 1
-            continue
-        try:
-            branches = parse_chain_indx(chain_indx)
-        except ValueError:
-            counts["rejected_parse_error"] += 1
-            continue
-        if any(f"narrator:rawi:{scholar}" not in narrator_ids for branch in branches for scholar in branch):
-            counts["rejected_unknown_rawi"] += 1
-            continue
-        chain_list = chains_by_hadith.get(hadith_id, [])
-        if not shapes_match(branches, [length for _, length, _ in chain_list]):
-            counts["rejected_shape_mismatch" if chain_list else "rejected_no_extracted_chain"] += 1
-            continue
-        counts[f"accepted_reports:{tradition}"] += 1
-        for (_, _, chain_id), branch in zip(chain_list, branches):
-            mentions = sorted(mentions_by_chain[chain_id], key=lambda item: int(item["position"]))
-            for mention, scholar in zip(mentions, branch):
-                narrator_id = f"narrator:rawi:{scholar}"
-                existing = resolution.get(mention["id"])
-                if existing is not None:
-                    verdict = "agree" if existing[0] == narrator_id else "disagree"
-                    counts[f"mentions_existing:{verdict}:{existing[4]}"] += 1
-                    if verdict == "disagree" and existing[2] == "mention_exact":
-                        # Two automated sources name different people: withhold both, never pick one.
-                        resolution[mention["id"]] = WITHHELD_CONFLICT
-                    continue
-                resolution[mention["id"]] = (narrator_id, "source_index", "source_index", 1.0, "legacy_chain_indx")
-                counts["mentions_linked"] += 1
-    return counts
-
-
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--bundle", required=True, type=Path, help="validated Neo4j-format bundle directory")
@@ -975,8 +1070,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--catalog", required=True, type=Path,
                         help="live catalog JSON from `tsx src/db/load/dump-catalog.ts` (headers must match)")
     parser.add_argument("--output", required=True, type=Path, help="new, empty output directory")
-    parser.add_argument("--legacy-source-index", action="store_true",
-                        help="load legacy chain_indx links as resolution source_index (owner question 1)")
+    parser.add_argument("--reconciled", type=Path, default=HADITH_DATA_DIR / "reconciled",
+                        help="reconciled sidecar directory (K6 source index, Pure Canon chains, no-chain flags)")
     return parser
 
 

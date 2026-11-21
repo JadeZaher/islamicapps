@@ -46,14 +46,21 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
         mentions_by_chain[mention["chain_id"]].append(mention)
     with_translation = {row["hadith_id"] for row in tables["translations"][1]}
     with_assessment = {row["hadith_id"] for row in tables["hadith_assessments"][1]}
-    with_source_index = {row["hadith_id"] for row in tables["chain_mentions"][1] if row["resolution"] == "source_index"}
-    with_exact = {row["hadith_id"] for row in tables["chain_mentions"][1] if row["resolution"] == "exact_registry"}
+    with_verified_link = {row["hadith_id"] for row in tables["chain_mentions"][1] if row["narrator_id"]}
+    candidates_by_mention: dict[str, list[dict]] = defaultdict(list)
+    for candidate in tables["chain_mention_candidates"][1]:
+        candidates_by_mention[candidate["mention_id"]].append(candidate)
+    with_disagreement = {rows[0]["hadith_id"] for rows in candidates_by_mention.values()
+                         if len({row["narrator_id"] for row in rows}) > 1}
+    with_kunya_only = {row["hadith_id"] for row in tables["chain_mention_candidates"][1]
+                       if row["basis"] == "name_kunya_only"}
 
     chosen: set[str] = set()
     for tradition in ("tradition:sunni", "tradition:imami", "tradition:zaydi", "tradition:ibadi"):
         pool = sorted(row["id"] for row in hadiths if row["tradition_id"] == tradition)
         for predicate in (chains_by_hadith.__contains__, with_translation.__contains__, with_assessment.__contains__,
-                          with_source_index.__contains__, with_exact.__contains__):
+                          with_verified_link.__contains__, with_disagreement.__contains__,
+                          with_kunya_only.__contains__):
             chosen.update([hadith_id for hadith_id in pool if predicate(hadith_id)][:per_tradition])
     if omit_hadith is not None:
         if omit_hadith not in chosen:
@@ -70,6 +77,8 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
         for index, row in enumerate(ordered):
             row["teacher_context_normalized"] = ordered[index + 1]["surface_normalized"] if index + 1 < len(ordered) else None
             row["student_context_normalized"] = ordered[index - 1]["surface_normalized"] if index > 0 else None
+    keep["chain_mention_candidates"] = [row for row in tables["chain_mention_candidates"][1]
+                                        if row["hadith_id"] in chosen]
     keep["translations"] = [row for row in tables["translations"][1] if row["hadith_id"] in chosen]
     keep["hadith_assessments"] = [row for row in tables["hadith_assessments"][1] if row["hadith_id"] in chosen]
     # Narrators, collections and structure are closed over the FULL slice (including any omitted hadith), so
@@ -78,6 +87,8 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
     full_chains = {row["id"] for row in tables["chains"][1] if row["hadith_id"] in full_chosen}
     narrator_ids = {row["narrator_id"] for row in tables["chain_mentions"][1]
                     if row["chain_id"] in full_chains and row["narrator_id"]}
+    narrator_ids |= {row["narrator_id"] for row in tables["chain_mention_candidates"][1]
+                     if row["hadith_id"] in full_chosen}
     full_hadiths = [row for row in hadiths if row["id"] in full_chosen]
     collection_ids = {row["collection_id"] for row in full_hadiths}
     chapter_ids = {row["chapter_id"] for row in full_hadiths if row["chapter_id"]}

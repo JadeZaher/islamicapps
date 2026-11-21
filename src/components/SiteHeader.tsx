@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: '/hadith', label: 'Hadith' },
   { href: '/narrator', label: 'Narrators' },
   { href: '/comparative', label: 'Comparative' },
+  { href: '/glossary', label: 'Glossary' },
 ] as const;
 
 /** Public top bar; the admin area renders its own chrome, so it is hidden there. */

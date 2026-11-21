@@ -69,8 +69,46 @@ lead reviewing, verifying and committing at each join.
 - Kunya-only lexicon entries: automatic matching is allowed only as a labelled,
   lower-confidence match (shown with a marker, excluded from verified
   transmissions). This reading of the owner's answer is to be confirmed.
+- Rights are the publication gate. A per-work rights register
+  (`docs/rights/rights-register.md`) carries the evidence and a proposal; the
+  owner approves each work. Nothing is cleared by default.
+- The development data snapshot may be served publicly as a preview, with a
+  visible notice driven by database state. The approval and the notice are
+  removed after the first release (see "Remove after the first release").
+- Chain display: show every identity match for a name with its source; where
+  sources disagree, show both. Only source-index matches confirmed by the
+  Arabic text, and reviewer decisions, count as verified.
+- Kunya-only entries match automatically but are marked "matched by kunya
+  only". All terms, including kunya, are defined in the glossary
+  (`src/lib/glossary/terms.ts`, `/glossary`).
+- The 21 hand-written narrator verdicts are Sunni.
+- Lexicon dates and places are to be rechecked against authoritative sources
+  before they are relied on.
+- Fetch hadith-kg and the Riwayat corpus into `datasets/sources/external/`.
+- Push the branch to GitHub; ask before any production deploy. The push needs
+  the 140 MB `unified_hadith_consolidated.csv` removed from unpushed history
+  (approved): rewrite the unpushed commits, ignore the file, keep it on disk.
+- Dataset backups go to a Railway bucket in the same project.
+- After cutover the first priority is the contribution system.
+- Curator names are decided at cutover.
 - Code is committed to the branch at each join. Nothing is pushed or deployed
   without the owner asking.
+
+## Remove after the first release
+
+The development snapshot is served publicly as a preview under the owner's recorded approval (2026-11-21), with a
+visible notice. When a release dataset version becomes current the notice already hides itself (it is driven by
+`dataset_versions`); remove the rest:
+
+- [ ] Revoke the approval row: `npx tsx src/scripts/db/approve-preview.ts --revoke --by <owner> --reason "first release is current"`
+  (clears `public_override_*` and writes a `revoke_preview` row to `curation_audit`; the `approve_preview` audit row stays as history).
+- [ ] Delete the notice component: `src/components/PreviewNotice.tsx`, `src/components/PreviewNoticeBar.tsx`, the
+  `<PreviewNotice />` line and import in `src/app/layout.tsx`, and `getPreviewNotice` in `src/db/queries/dataset.ts`
+  (delete the file if nothing else is in it).
+- [ ] Delete the glossary `preview` entry the notice links to (`/glossary#preview`, `src/lib/glossary/terms.ts`) if no longer wanted.
+- [ ] Delete `src/scripts/db/approve-preview.ts` if no further previews are wanted, and the "preview notice" flow in
+  `src/db/queries/__tests__/http-gate.test.ts`.
+- [ ] Delete the "Preview approval" section of `src/db/queries/AGENTS.md` and this section.
 
 ## Rules every lane follows
 

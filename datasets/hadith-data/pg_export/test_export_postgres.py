@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import csv
+import gzip
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -88,30 +91,6 @@ class LexiconRules(unittest.TestCase):
 
 
 class IsnadRules(unittest.TestCase):
-    def test_shapes_match(self):
-        cases = [
-            ([[1, 2, 3]], [3], True),
-            ([[1, 2], [3]], [2, 1], True),
-            ([[1, 2], [3]], [1, 2], False),     # same total, different branch lengths
-            ([[1, 2, 3]], [3, 1], False),       # branch count differs
-            ([], [], False),
-        ]
-        for branches, lengths, expected in cases:
-            with self.subTest(branches=branches, lengths=lengths):
-                self.assertEqual(ep.shapes_match(branches, lengths), expected)
-
-    def test_provider_ids_agree(self):
-        cases = [
-            ("522", "pc_9", "522", True),       # re-keyed work: legacy id is the hadith number
-            ("522", "522", "1", True),
-            ("523", "pc_9", "522", False),
-            ("", "pc_9", "522", True),          # nothing to compare
-            ("522", None, "522", True),
-        ]
-        for legacy, provider, number, expected in cases:
-            with self.subTest(legacy=legacy, provider=provider):
-                self.assertEqual(ep.provider_ids_agree(legacy, provider, number), expected)
-
     def test_review_unit_ids(self):
         coarse_a, fine_a = ep.review_unit_ids("سفيان", "الزهري", "الحميدي", "sunni:bukhari")
         coarse_b, fine_b = ep.review_unit_ids("سفيان", "الزهري", "علي", "sunni:bukhari")
@@ -121,12 +100,145 @@ class IsnadRules(unittest.TestCase):
         self.assertNotEqual(coarse_a, coarse_c)  # teacher context separates units
         self.assertEqual(len(coarse_a), 64)
 
-    def test_parse_chain_indx(self):
-        self.assertEqual(ep.parse_chain_indx("[1, 2, 3]"), [[1, 2, 3]])
-        self.assertEqual(ep.parse_chain_indx("1,2|3"), [[1, 2], [3]])
-        self.assertEqual(ep.parse_chain_indx(""), [])
-        with self.assertRaises(ValueError):
-            ep.parse_chain_indx("1,,2")
+
+RECONCILED = Path(__file__).resolve().parent.parent / "reconciled"
+PROJECTION = Path(os.environ.get(
+    "PG_PROJECTION",
+    Path(__file__).resolve().parent.parent / "development" / "pg-load-2026-11-21" / "projection-candidates"))
+
+
+def sidecar_rows(name: str, record_ids: set[str]) -> dict[str, dict]:
+    rows = {}
+    with gzip.open(RECONCILED / name, "rt", encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            if row["record_id"] in record_ids:
+                rows[row["record_id"]] = row
+    return rows
+
+
+class IdentityRules(unittest.TestCase):
+    """Owner decisions 2026-11-21: every candidate kept with its basis; verified only when confirmed and uncontested."""
+
+    def test_verified_narrator(self):
+        confirmed = "source_index_confirmed_by_text"
+        cases = [
+            ([("n:1", "name_exact"), ("n:1", confirmed)], "n:1"),               # name and source agree
+            ([("n:1", confirmed)], "n:1"),
+            ([("n:2", "name_exact"), ("n:1", confirmed)], None),               # contested: shown, never settled
+            ([("n:3", "name_kunya_only"), ("n:1", confirmed)], None),          # a kunya-only match contests too
+            ([("n:1", "name_exact"), ("n:1", "source_index")], None),          # agreement without confirmation
+            ([("n:1", "name_spelling_fold")], None),
+            ([], None),
+        ]
+        for candidates, expected in cases:
+            with self.subTest(candidates=candidates):
+                self.assertEqual(ep.verified_narrator(candidates), expected)
+
+    def test_candidate_agreement(self):
+        cases = [([], "none"), (["n:1"], "one"), (["n:1", "n:1"], "one"), (["n:1", "n:2"], "differ")]
+        for narrators, expected in cases:
+            with self.subTest(narrators=narrators):
+                self.assertEqual(ep.candidate_agreement(narrators), expected)
+
+
+@unittest.skipUnless((RECONCILED / "k6_source_index.jsonl.gz").is_file(), "reconciled sidecars not built")
+class SidecarRulesOnRealRows(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.k6 = sidecar_rows("k6_source_index.jsonl.gz", {"k6:1", "k6:47"})
+        cls.canon = sidecar_rows("pure_canon_chain.jsonl.gz", {"pure-canon:pc_9"})
+        cls.no_chain = sidecar_rows("no_chain_in_source.jsonl.gz", {"pure-canon:pc_236"})
+
+    def test_full_agreement_maps_every_position_to_its_source_id(self):
+        row = self.k6["k6:1"]
+        alignment = ep.align_source_index(row, row["text_branches"])
+        self.assertEqual(alignment, {(0, position): (position, False) for position in range(6)})
+        # Any difference from the extracted branches maps nothing rather than shifting identities.
+        self.assertIsNone(ep.align_source_index(row, [row["text_branches"][0][:-1]]))
+
+    def test_a_tahwil_trunk_inherits_its_twins_source_id_but_a_convergence_does_not(self):
+        row = self.k6["k6:47"]       # روح عن عوف عن الحسن / محمد عن أبي هريرة
+        alignment = ep.align_source_index(row, row["text_branches"])
+        self.assertEqual(alignment[(1, 0)], (0, True))        # the shared opening, written once in the Arabic
+        self.assertEqual(alignment[(1, 2)], (2, True))
+        self.assertEqual(alignment[(1, 3)], (4, False))       # محمد, corroborated in its own branch
+        self.assertNotIn((0, 4), alignment)                    # أبي هريرة at the convergence: not inherited
+
+    def test_pure_canon_chain_replaces_the_matn_extraction_and_no_chain_drops_invented_chains(self):
+        hadith_info = {"hadith:pure-canon:pc_9": {"arabic_sha256": self.canon["pure-canon:pc_9"]["text_ar_sha256"]},
+                       "hadith:pure-canon:pc_236": {"arabic_sha256": self.no_chain["pure-canon:pc_236"]["text_ar_sha256"]}}
+        record_to_hadith = {"pure-canon:pc_9": "hadith:pure-canon:pc_9", "pure-canon:pc_236": "hadith:pure-canon:pc_236"}
+        invented = {"id": "chain:pure-canon:pc_9:0000", "branch": 0, "mentions": [("m", "اركبها", "اركبها")]}
+        branches = {"hadith:pure-canon:pc_9": [invented], "hadith:pure-canon:pc_236": [dict(invented)]}
+        counts = ep.apply_chain_sidecars(branches, self.no_chain, self.canon, hadith_info, record_to_hadith, str)
+        self.assertNotIn("hadith:pure-canon:pc_236", branches)
+        [chain] = branches["hadith:pure-canon:pc_9"]
+        self.assertEqual(chain["extraction_method"], "source_chain_field")
+        self.assertEqual([surface for _, surface, _ in chain["mentions"]],
+                         ["إسحاق ابن عيسى", "ليث", "ابن شهاب", "عروة", "عائشة"])
+        self.assertEqual(chain["mentions"][0][0], "mention:pure-canon:pc_9:0000:0000")
+        self.assertEqual(counts["pure_canon_chain:text_ar_chains_replaced"], 1)
+        # A sidecar bound to other Arabic is refused, never applied.
+        hadith_info["hadith:pure-canon:pc_9"]["arabic_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ep.ProjectionError, "different Arabic"):
+            ep.apply_chain_sidecars({}, {}, self.canon, hadith_info, record_to_hadith, str)
+
+
+@unittest.skipUnless((PROJECTION / "canonical" / "manifest.json").is_file(), "full projection not built")
+class ProjectionOutputOnRealRows(unittest.TestCase):
+    """Real mentions read back from the projection the development database was loaded from."""
+
+    @classmethod
+    def setUpClass(cls):
+        wanted = {"hadith:k6:11089", "hadith:k6:11880", "hadith:k6:10000", "hadith:k6:10035",
+                  "hadith:thaqalayn:0020ba715081e8ba3e669657"}
+        canonical = PROJECTION / "canonical"
+        with (canonical / "chain_mentions.csv").open(encoding="utf-8", newline="") as handle:
+            cls.mentions = {row["id"]: row for row in csv.DictReader(handle) if row["hadith_id"] in wanted}
+        cls.candidates: dict[str, list[tuple[str, str]]] = {}
+        with (canonical / "chain_mention_candidates.csv").open(encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle):
+                if row["hadith_id"] in wanted:
+                    cls.candidates.setdefault(row["mention_id"], []).append((row["narrator_id"], row["basis"]))
+        with (canonical / "narrators.csv").open(encoding="utf-8", newline="") as handle:
+            cls.placeholders = {row["id"]: row["placeholder_reason"] for row in csv.DictReader(handle)
+                                if row["placeholder_reason"]}
+
+    def test_name_match_and_source_index_agree_and_the_link_is_verified(self):
+        mention = "mention:k6:11880:0000:0000"            # عبد الله بن عبد الرحمن الدارمي
+        self.assertEqual(sorted(self.candidates[mention]), [
+            ("narrator:rawi:30025", "name_exact"), ("narrator:rawi:30025", "source_index_confirmed_by_text")])
+        self.assertEqual(self.mentions[mention]["narrator_id"], "narrator:rawi:30025")
+        self.assertEqual(self.mentions[mention]["resolution"], "source_index")
+
+    def test_disagreeing_identities_are_both_emitted_and_nothing_is_verified(self):
+        mention = "mention:k6:11089:0000:0001"            # حسين بن محمد
+        self.assertEqual(sorted(self.candidates[mention]), [
+            ("narrator:rawi:20384", "source_index"), ("narrator:rawi:39284", "name_exact")])
+        self.assertEqual(self.mentions[mention]["narrator_id"], "")
+        self.assertEqual(self.mentions[mention]["resolution"], "unresolved")
+
+    def test_kunya_only_match_is_labelled_and_contests_a_confirmed_source_id(self):
+        mention = "mention:k6:10000:0000:0001"            # أبو معاوية
+        self.assertEqual(sorted(self.candidates[mention]), [
+            ("narrator:rawi:19383", "name_kunya_only"), ("narrator:rawi:20354", "source_index_confirmed_by_text")])
+        self.assertEqual(self.placeholders["narrator:rawi:19383"], "kunya_only_name")
+        self.assertEqual(self.mentions[mention]["narrator_id"], "")
+
+    def test_an_imami_mention_has_no_automatic_candidate(self):
+        imami = [mention for mention, row in self.mentions.items() if row["hadith_id"].startswith("hadith:thaqalayn:")]
+        self.assertTrue(imami)
+        self.assertTrue(all(mention not in self.candidates for mention in imami))
+
+    def test_a_placeholder_row_is_never_targeted(self):
+        mention = "mention:k6:10035:0000:0002"            # شعبة: the Shykh stub 29483 holds the bare key
+        self.assertEqual(self.mentions[mention]["surface_ar"], "شعبة")
+        self.assertEqual(self.candidates[mention], [("narrator:rawi:20020", "source_index")])
+        self.assertEqual(self.placeholders["narrator:rawi:29483"], "unidentified_shaykh_marker")
+        for mention_candidates in self.candidates.values():
+            for narrator_id, basis in mention_candidates:
+                self.assertTrue(basis == "name_kunya_only" or narrator_id not in self.placeholders)
 
 
 class CsvCells(unittest.TestCase):

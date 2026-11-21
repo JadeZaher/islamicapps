@@ -5,10 +5,14 @@ kind: corpus
 url: https://github.com/OpenITI/RELEASE/tree/master/data/0122ZaydIbnCali/0122ZaydIbnCali.Musnad
 retrieved: 2026-07-20
 
-license: unstated
-license_url: https://github.com/OpenITI/RELEASE
+license: CC-BY-NC-SA-4.0
+license_url: https://zenodo.org/records/17767721
 license_notes: |
-  Inherits the per-text license ambiguity documented by the OpenITI registry.
+  Corrected 2026-11-21 (was "unstated"): OpenITI release 2025.1.9 is
+  CC BY-NC-SA 4.0 (Zenodo record 17767721). Title flag: OpenITI's reviewer note
+  on the parent file says "Page 434 onwards ... is a different text; a Musnad by
+  Imam Musa", while the text's own heading is "مسند الإمام علي الرضا". Settle the
+  title before publication. See docs/rights/rights-register.md §3.
 
 traditions:
   - shia-imami

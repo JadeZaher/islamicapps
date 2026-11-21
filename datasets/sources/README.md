@@ -8,14 +8,17 @@ The canonical, machine-readable list is whatever currently lives in this directo
 
 | Slug | Source | Traditions | Kind | License | Status |
 | --- | --- | --- | --- | --- | --- |
-| [openiti](./openiti.md) | Open Islamicate Texts Initiative | cross-tradition | meta-source | CC-BY-NC-SA-4.0 | ✅ documented |
-| [thaqalayn-api](./thaqalayn-api.md) | Thaqalayn API V2 | shia-imami | api | GPL-3.0 (API repo) | ⚠️ upstream outage / corpus-rights review |
-| [sunnah-com](./sunnah-com.md) | Sunnah.com canonical-six snapshot/API | sunni | api | unstated | ⚠️ license/recovery review |
-| [sheikahmad-pure-canon](./sheikahmad-pure-canon.md) | Pure Canon Authentica (NabiMuhammad.com / SheikhAhmad) | sunni | dataset | unstated | ⚠️ license review |
-| [musnad-zayd-openiti](./musnad-zayd-openiti.md) | Musnad al-Imam Zayd ibn Ali (via OpenITI) | zaydi | corpus | unstated | ⚠️ one-row reconciliation |
-| [jami-sahih-rabi-openiti](./jami-sahih-rabi-openiti.md) | Jami' al-Sahih (Musnad al-Rabi, Ibadi) via OpenITI | ibadi | corpus | unstated | ⚠️ translation collision |
-| [musnad-rida-openiti](./musnad-rida-openiti.md) | Sahifat al-Imam Ali al-Rida appendix via OpenITI | shia-imami | corpus | unstated | ⚠️ license review |
-| [narrator-lexicon](./narrator-lexicon.md) | Local controlled rawi vocabulary | cross-tradition | lexicon | unstated | ⚠️ provenance incomplete |
+| [openiti](./openiti.md) | Open Islamicate Texts Initiative | cross-tradition | meta-source | CC-BY-NC-SA-4.0 (Zenodo release 2025.1.9) | ✅ documented |
+| [thaqalayn-api](./thaqalayn-api.md) | Thaqalayn API V2 | shia-imami | api | CC-BY-4.0 for rights Thaqalayn holds (content); GPL-3.0 (API code) | ⚠️ translations unconfirmed |
+| [sunnah-com](./sunnah-com.md) | Six books, via Kaggle `fahd09/hadith-dataset`, content from sunnah.com | sunni | api | unstated (uploader's CC0 label not effective) | ⚠️ English not permitted; Arabic unclear |
+| [sheikahmad-pure-canon](./sheikahmad-pure-canon.md) | Pure Canon Authentica (NabiMuhammad.com / SheikhAhmad) | sunni | dataset | unstated; provider "All Rights Reserved" | ⚠️ permission needed |
+| [musnad-zayd-openiti](./musnad-zayd-openiti.md) | Musnad al-Imam Zayd ibn Ali (via OpenITI) | zaydi | corpus | CC-BY-NC-SA-4.0 | ⚠️ one-row reconciliation |
+| [jami-sahih-rabi-openiti](./jami-sahih-rabi-openiti.md) | Jami' al-Sahih (Musnad al-Rabi, Ibadi) via OpenITI | ibadi | corpus | CC-BY-NC-SA-4.0 | ⚠️ translation collision |
+| [musnad-rida-openiti](./musnad-rida-openiti.md) | Sahifat al-Imam Ali al-Rida appendix via OpenITI | shia-imami | corpus | CC-BY-NC-SA-4.0 | ⚠️ title to confirm |
+| [narrator-lexicon](./narrator-lexicon.md) | Rawi vocabulary, via Kaggle `fahd09/hadith-narrators`, from muslimscholars.info | cross-tradition | lexicon | unstated (Arees Institute copyright) | ⚠️ permission needed for public display |
+
+> Licence column corrected 2026-11-21 from the rights review; evidence and per-work status in
+> [`docs/rights/rights-register.md`](../../docs/rights/rights-register.md).
 
 > Status legend: ✅ documented · ⏳ pending · ⚠️ needs review (license unclear, data updated upstream, scope change).
 

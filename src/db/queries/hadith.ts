@@ -73,7 +73,7 @@ function matchedIds(term: string, relations: HadithRelations): SQL | null {
 }
 
 /** Filter predicates on aliases `h` (hadith), `t` (tradition), `col` (collection); null means "matches nothing". */
-function filterPredicates(filters: HadithFilters): SQL[] | null {
+export function filterPredicates(filters: HadithFilters): SQL[] | null {
   const predicates: SQL[] = [];
   const code = resolveTraditionCode(filters.tradition);
   if (code === null) return null;

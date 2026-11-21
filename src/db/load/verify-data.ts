@@ -24,7 +24,9 @@ export interface DataCheckReport {
   reported: Record<string, unknown>;
 }
 
-const RENDERING_RESOLUTIONS = `('exact_registry', 'human_verified', 'derived_relation_verified')`;
+/** Verified-link resolutions since 0006 (src/db/AGENTS.md §Verified link). A name match is never one. */
+const RENDERING_RESOLUTIONS = `('source_index', 'human_verified', 'derived_relation_verified')`;
+const NAME_BASES = `('name_exact', 'name_spelling_fold', 'name_kunya_only')`;
 
 async function scalar(sql: LoaderSql, query: string): Promise<number> {
   const [row] = await sql.unsafe<{ value: number }[]>(query);
@@ -126,14 +128,44 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where t.retired_at is null and t.arabic_sha256 <> h.arabic_sha256`,
   );
   await check(
-    'no narrator_id on a non-rendering resolution (source_index excepted); resolved mentions carry confidence',
+    'no narrator_id on a non-verified resolution; resolved mentions carry confidence',
     `select count(*)::int as value from chain_mentions where retired_at is null and narrator_id is not null
-       and (resolution not in ${RENDERING_RESOLUTIONS.slice(0, -1)}, 'source_index') or confidence is null)`,
+       and (resolution not in ${RENDERING_RESOLUTIONS} or confidence is null)`,
+  );
+  // Identity candidates (owner decisions 2026-11-21, src/db/AGENTS.md §Identity candidates).
+  await check(
+    'every live candidate sits on a live mention of the same hadith and names a live narrator',
+    `select count(*)::int as value from chain_mention_candidates c
+     left join chain_mentions m on m.id = c.mention_id and m.retired_at is null
+     left join narrators n on n.id = c.narrator_id and n.retired_at is null
+     where c.retired_at is null and (m.id is null or n.id is null or m.hadith_id <> c.hadith_id)`,
   );
   await check(
-    'source_index links never on Imami reports',
-    `select count(*)::int as value from chain_mentions m join hadiths h on h.id = m.hadith_id
-     where m.retired_at is null and m.resolution = 'source_index' and h.tradition_id = 'tradition:imami'`,
+    'no candidate targets a placeholder row except name_kunya_only, which targets only kunya-only rows',
+    `select count(*)::int as value from chain_mention_candidates c join narrators n on n.id = c.narrator_id
+     where c.retired_at is null
+       and ((c.basis <> 'name_kunya_only' and n.placeholder_reason is not null)
+         or (c.basis = 'name_kunya_only' and n.placeholder_reason is distinct from 'kunya_only_name'))`,
+  );
+  await check(
+    'no automatic name candidate on a non-Sunni report (sanads stay per tradition)',
+    `select count(*)::int as value from chain_mention_candidates c join hadiths h on h.id = c.hadith_id
+     where c.retired_at is null and c.basis in ${NAME_BASES} and h.tradition_id <> 'tradition:sunni'`,
+  );
+  await check(
+    'a verified narrator_id has a confirming source-index candidate or a reviewer decision',
+    `select count(*)::int as value from chain_mentions m
+     where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
+       and not (m.resolution = 'source_index' and exists (
+         select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
+           and c.narrator_id = m.narrator_id and c.basis = 'source_index_confirmed_by_text'))`,
+  );
+  await check(
+    'an automatic verified link is uncontested: no live candidate of that mention names someone else',
+    `select count(*)::int as value from chain_mentions m
+     where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
+       and exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
+                     and c.narrator_id <> m.narrator_id)`,
   );
   await check(
     'live decisions have a reviewer and time; no derived_relation decision has the coarse scope',
@@ -237,6 +269,11 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     mention_resolution: await sql.unsafe(
       `select h.tradition_id, m.resolution, m.resolution_basis, count(*)::int as mentions
        from chain_mentions m join hadiths h on h.id = m.hadith_id where m.retired_at is null group by 1, 2, 3 order by 1, 2, 3`,
+    ),
+    identity_candidates: await sql.unsafe(
+      `select h.tradition_id, c.basis, count(*)::int as candidates
+       from chain_mention_candidates c join hadiths h on h.id = c.hadith_id
+       where c.retired_at is null group by 1, 2 order by 1, 2`,
     ),
     transmissions: await scalar(sql, 'select count(*)::int as value from narrator_transmissions'),
     server_settings: await sql.unsafe(

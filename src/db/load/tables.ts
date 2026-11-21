@@ -49,6 +49,8 @@ export const PIPELINE_TABLES: PipelineTableSpec[] = [
     loaderDerived: ['decision_id'],
     derivedFromStaging: ['link_kind', 'resolution', 'resolution_basis', 'narrator_id', 'confidence', 'extraction_method'],
   },
+  // After chain_mentions and narrators: every candidate references both (src/db/AGENTS.md §Identity candidates).
+  { name: 'chain_mention_candidates', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'hadith_assessments', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
 ];
 

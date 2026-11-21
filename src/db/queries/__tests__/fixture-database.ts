@@ -33,6 +33,17 @@ interface Corpus {
   narrator_assessments: FixtureRow[];
 }
 
+/** Real identity candidates copied from the 2026-11-21 projection (fixtures/identity-candidates.json). */
+export interface IdentityFixture {
+  generated_from: { projection_content_sha256: string; projection_version: string };
+  /** One extra Sahih Muslim report (k6:10008) whose chain has every identity case. */
+  extra: { hadiths: FixtureRow[]; chains: FixtureRow[]; mentions: FixtureRow[] };
+  narrators: Array<{ id: string; scholar_indx: string; name: string; name_ar: string | null; name_en: string | null; placeholder_reason: string | null }>;
+  /** Mentions whose narrator_id the loader verified (uncontested confirmed source index). */
+  verified: Array<{ mention_id: string; narrator_id: string }>;
+  candidates: Array<{ mention_id: string; hadith_id: string; narrator_id: string; basis: string; detail: string | null; source_position: number | null }>;
+}
+
 export interface FixtureDatabase {
   schema: string;
   /** DATABASE_URL with the fixture search_path; the app client reads it. */
@@ -40,6 +51,7 @@ export interface FixtureDatabase {
   /** A direct client on the fixture schema, for assertions on stored rows. */
   sql: Sql;
   corpus: Corpus;
+  identity: IdentityFixture;
   close(): Promise<void>;
 }
 
@@ -101,7 +113,13 @@ const ENGLISH_POLICY: Record<string, 'reviewed_only' | 'source_provided_allowed'
   'imami:al-kafi': 'source_provided_allowed',
 };
 
-async function loadRows(sql: Sql, corpus: Corpus): Promise<void> {
+async function loadRows(sql: Sql, baseCorpus: Corpus, identity: IdentityFixture): Promise<void> {
+  const corpus: Corpus = {
+    ...baseCorpus,
+    hadiths: [...baseCorpus.hadiths, ...identity.extra.hadiths],
+    chains: [...baseCorpus.chains, ...identity.extra.chains],
+    mentions: [...baseCorpus.mentions, ...identity.extra.mentions],
+  };
   const pipeline = { first_seen_dataset_version_id: FIXTURE_VERSION_ID, changed_in_dataset_version_id: FIXTURE_VERSION_ID };
   const curated = { created_by: FIXTURE_ACTOR, updated_by: FIXTURE_ACTOR };
 
@@ -251,6 +269,26 @@ async function loadRows(sql: Sql, corpus: Corpus): Promise<void> {
       };
     }),
   )}`;
+  const corpusNarrators = new Set(corpus.narrators.map((narrator) => narrator.id));
+  const extraNarrators = identity.narrators.filter((narrator) => !corpusNarrators.has(narrator.id));
+  if (extraNarrators.length > 0) {
+    await sql`insert into narrators ${sql(
+      extraNarrators.map((narrator) => ({
+        id: narrator.id,
+        authority: 'rawi',
+        authority_key: narrator.scholar_indx,
+        scholar_indx: Number(narrator.scholar_indx),
+        name: narrator.name,
+        name_en: narrator.name_en,
+        name_ar: narrator.name_ar,
+        name_ar_normalized: narrator.name_ar ? norm(narrator.name_ar) : null,
+        ...pipeline,
+      })),
+    )}`;
+  }
+  for (const narrator of identity.narrators.filter((row) => row.placeholder_reason)) {
+    await sql`update narrators set placeholder_reason = ${narrator.placeholder_reason} where id = ${narrator.id}`;
+  }
   await sql`update narrators set name_en_folded = lower(unaccent(name_en))`;
 
   await sql`insert into narrator_lexicon_profiles ${sql(
@@ -283,10 +321,12 @@ async function loadRows(sql: Sql, corpus: Corpus): Promise<void> {
     })),
   )}`;
 
-  const links = new Map(corpus.links.map((link) => [`${link.chain_id}#${link.position}`, link.narrator_id]));
+  // Verified identity exactly as the loader writes it (src/db/AGENTS.md §Identity candidates): only an uncontested
+  // confirmed source index. The bundle's name links in corpus.links are candidates now, not links.
+  const verified = new Map(identity.verified.map((row) => [row.mention_id, row.narrator_id]));
   await sql`insert into chain_mentions ${sql(
     corpus.mentions.map((mention) => {
-      const narratorId = links.get(`${mention.chain_id}#${mention.position}`) ?? null;
+      const narratorId = verified.get(mention.id!) ?? null;
       return {
         id: mention.id,
         chain_id: mention.chain_id,
@@ -297,15 +337,26 @@ async function loadRows(sql: Sql, corpus: Corpus): Promise<void> {
         review_unit_id: `unit:${mention.normalized_surface}`,
         review_unit_fine_id: `unit-fine:${mention.chain_id}:${mention.position}`,
         link_kind: narratorId ? 'person' : 'unclassified',
-        // The bundle's INCLUDES links are exact registry matches inside atomically resolved reports.
-        resolution: narratorId ? 'exact_registry' : 'unresolved',
-        resolution_basis: narratorId ? 'report_atomic' : null,
+        resolution: narratorId ? 'source_index' : 'unresolved',
+        resolution_basis: narratorId ? 'source_index' : null,
         narrator_id: narratorId,
         confidence: narratorId ? 1 : null,
-        extraction_method: mention.extraction_method,
+        extraction_method: narratorId ? 'source_index_confirmed_by_text' : null,
         ...pipeline,
       };
     }),
+  )}`;
+  await sql`insert into chain_mention_candidates ${sql(
+    identity.candidates.map((candidate) => ({
+      id: `candidate:${candidate.mention_id.replace(/^mention:/, '')}:${candidate.basis}:${candidate.narrator_id.replace(/^narrator:/, '')}`,
+      mention_id: candidate.mention_id,
+      hadith_id: candidate.hadith_id,
+      narrator_id: candidate.narrator_id,
+      basis: candidate.basis,
+      detail: candidate.detail,
+      source_position: candidate.source_position,
+      ...pipeline,
+    })),
   )}`;
 
   const traditionOf = new Map(corpus.hadiths.map((hadith) => [hadith.id!, hadith.tradition]));
@@ -365,17 +416,19 @@ async function loadRows(sql: Sql, corpus: Corpus): Promise<void> {
 export async function prepareFixtureDatabase(schema = process.env.QUERY_FIXTURE_SCHEMA || 'query_fixture'): Promise<FixtureDatabase> {
   const url = fixtureUrl(schema);
   const corpus = JSON.parse(readFileSync(path.join(__dirname, 'fixtures/corpus.json'), 'utf8')) as Corpus;
+  const identity = JSON.parse(readFileSync(path.join(__dirname, 'fixtures/identity-candidates.json'), 'utf8')) as IdentityFixture;
   const sql = postgres(url, { ...connectionOptions(url, 1), onnotice: () => {} });
   await sql.unsafe(`drop schema if exists ${schema} cascade`);
   await sql.unsafe(`create schema ${schema}`);
   for (const statement of migrationStatements(schema)) await sql.unsafe(statement);
-  await loadRows(sql, corpus);
+  await loadRows(sql, corpus, identity);
   process.env.DATABASE_URL = url;
   return {
     schema,
     url,
     sql,
     corpus,
+    identity,
     close: () => sql.end({ timeout: 5 }),
   };
 }

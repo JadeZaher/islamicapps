@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit2 } from 'lucide-react';
 import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
-import { describeActionError } from '@/app/admin/_components/actionError';
+import { describeActionError, unwrapAction } from '@/app/admin/_components/actionError';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -86,7 +86,7 @@ export function CommentariesManagerClient({
             if (hadithSearch.trim()) {
                 setIsSearching(true);
                 try {
-                    const results = await searchHadithsForCuration(hadithSearch);
+                    const results = await unwrapAction(searchHadithsForCuration(hadithSearch));
                     setHadithResults(results.items);
                 } catch (error) {
                     setHadithResults([]);
@@ -126,7 +126,7 @@ export function CommentariesManagerClient({
         setIsSaving(true);
         setFormError(null);
         try {
-            await createCommentary(formData);
+            await unwrapAction(createCommentary(formData));
             setFormData({
                 source_work: '',
                 author: '',
@@ -158,7 +158,7 @@ export function CommentariesManagerClient({
             const content: Partial<typeof formData> = { ...formData };
             delete content.hadith_id;
             delete content.narrator_id;
-            await updateCommentary(editingId, content);
+            await unwrapAction(updateCommentary(editingId, content));
             setFormData({
                 source_work: '',
                 author: '',
@@ -181,7 +181,7 @@ export function CommentariesManagerClient({
     };
 
     const handleDelete = async (commentaryId: string) => {
-        await deleteCommentary(commentaryId);
+        await unwrapAction(deleteCommentary(commentaryId));
         setRetiredIds((ids) => new Set(ids).add(commentaryId));
     };
 
@@ -194,7 +194,7 @@ export function CommentariesManagerClient({
             return next;
         });
         try {
-            await publishCommentary(commentary.id, target);
+            await unwrapAction(publishCommentary(commentary.id, target));
             router.refresh();
         } catch (error) {
             const fallback = target === 'published' ? 'Could not publish this commentary.' : 'Could not unpublish this commentary.';

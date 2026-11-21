@@ -15,7 +15,8 @@ import {
     linkNarratorToTradition,
 } from '@/app/actions/curation/comparative';
 import { searchHadithsForCuration } from '@/app/actions/curation/search';
-import { describeActionError } from '@/app/admin/_components/actionError';
+import type { ActionResult } from '@/app/actions/curation/result';
+import { describeActionError, unwrapAction } from '@/app/admin/_components/actionError';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,13 +56,13 @@ function useActionRunner(onRefresh: () => void) {
     const [error, setError] = useState<string | null>(null);
     const inFlight = useRef(false);
 
-    const run = async (task: () => Promise<unknown>, failureMessage: string): Promise<boolean> => {
+    const run = async (task: () => Promise<ActionResult<unknown>>, failureMessage: string): Promise<boolean> => {
         if (inFlight.current) return false;
         inFlight.current = true;
         setPending(true);
         setError(null);
         try {
-            await task();
+            await unwrapAction(task());
             onRefresh();
             return true;
         } catch (cause) {
@@ -445,7 +446,7 @@ function ParallelManager({ parallels, traditions, sourceTexts, motifTags, onRefr
         if (term.length < 2) { setHadithResults([]); setSearching(false); return; }
         setSearching(true);
         try {
-            const results = await searchHadithsForCuration(term);
+            const results = await unwrapAction(searchHadithsForCuration(term));
             if (ticket === latestSearch.current) setHadithResults(results.items);
         } catch (cause) {
             if (ticket === latestSearch.current) setSearchError(describeActionError(cause, "Couldn't search hadiths. Try again."));

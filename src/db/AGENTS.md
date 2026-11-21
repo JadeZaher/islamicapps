@@ -14,7 +14,7 @@ the rationale that code comments point to, plus every decision taken while imple
 | `schema/corpus.ts` | traditions, sources, collections, collection_rights, books, chapters, hadiths, translations; `public_hadiths`, `public_translations` view declarations |
 | `schema/narrators.ts` | narrators, narrator_lexicon_profiles, narrator_aliases, narrator_teachers |
 | `schema/evidence.ts` | bibliographic_works, editions, citations |
-| `schema/isnad.ts` | chains, chain_mentions, chain_absence_dispositions, narrator_surface_decisions; `narrator_lifespans`, `narrator_transmissions`, `public_chain_links` declarations |
+| `schema/isnad.ts` | chains, chain_mentions, chain_mention_candidates, chain_absence_dispositions, narrator_surface_decisions; `narrator_lifespans`, `narrator_transmissions`, `public_chain_links`, `public_chain_mention_candidates` declarations |
 | `schema/assessments.ts` | hadith_assessments, narrator_assessments, narrator_bios |
 | `schema/history.ts` | locations, historical_events, narrator_events, narrator_locations; `published_historical_events` declaration |
 | `schema/commentary.ts` | commentaries, commentary_hadiths, commentary_narrators |
@@ -43,11 +43,43 @@ shown as better than it is.
 
 ## Verified link (one predicate, three places)
 
-A mention is a verified link when `resolution in ('exact_registry','human_verified','derived_relation_verified')`
-and `narrator_id` points at a live narrator. The same predicate is written in `public_chain_links`
-(`drizzle/core/0003_views.sql`) and twice in `refresh_publication_facets` (`0004_functions.sql`). If the
-owner approves `source_index` (question 1) or `mention_exact` transmissions (question 11), change all of them
-in one migration. `narrator_transmissions` keeps its own stricter basis rule from section 5.5.
+Since `0006`: a mention is a verified link when `resolution in ('source_index','human_verified','derived_relation_verified')`
+and `narrator_id` points at a live narrator. `exact_registry` is no longer in the list: a name match is a candidate,
+never a link. The predicate is written in `public_chain_links` and twice in `refresh_publication_facets` (all three
+redefined in `0006_mention_identity_candidates.sql`); `db:verify` fails if the view still names `exact_registry`.
+`narrator_transmissions` keeps a stricter rule: both neighbours `resolution_basis = 'source_index'`, or both
+`human_decision` (mixed pairs are not counted; owner question below).
+
+## Identity candidates (owner decisions 2026-11-21)
+
+Where the name matcher and the K6 source index both identify a narrator they disagree on 24-49% of matches, so one
+`narrator_id` per name misrepresents the data. Decisions: (a) show every identity for a name with its source, both
+when they disagree; (b) kunya-only lexicon entries may match, marked; (c) sanads stay per tradition, so automatic
+name matches are emitted only for Sunni reports; (d) placeholder lexicon rows are never a target, except kunya-only
+rows through (b).
+
+- **`chain_mention_candidates`** (pipeline, written only by the loader): one row per (mention, narrator, basis),
+  unique on that triple, with `detail` (resolver tier or K6 agreement class) and `source_position` (set exactly for
+  the two source bases, check). Bases: `name_exact` (resolver tier 0), `name_spelling_fold` (tiers 1-2),
+  `name_kunya_only` (`kunya_only_candidate` in `regen_unified_csvs.py`), `source_index` (the K6 source's own index
+  at a position the Arabic corroborates, in a report whose agreement class is not full), and
+  `source_index_confirmed_by_text` (the sidecar's report-level basis `source_index_corroborated_by_text`: full
+  agreement, or every source id aligned). `reviewer_decision` is never stored (check): one writer per table, so the
+  public view reads it from `narrator_surface_decisions` through `chain_mentions.decision_id`.
+- **What sets `chain_mentions.narrator_id`** (the verified identity, meaning unchanged from section 5.5): the loader
+  writes it only for a mention with a `source_index_confirmed_by_text` candidate that no other candidate contradicts
+  (`resolution = 'source_index'`, `resolution_basis = 'source_index'`, `extraction_method =
+  'source_index_confirmed_by_text'`, confidence 1.0); a reviewer decision writes the rest. A name match, a kunya-only
+  match and an unconfirmed source index never do. A confirmed but contested mention stays `unresolved` with both
+  candidates shown (`verified_narrator` in `export_postgres.py`).
+- **`narrators.placeholder_reason`** (pipeline): `registry_placeholder_reason` of the lexicon row, so the
+  "never a placeholder target" rule is checkable in SQL.
+- **`public_chain_mention_candidates`**: every candidate of a public mention with `basis`, `detail` and
+  `verified_basis` (confirmed source index or reviewer decision). Unverified candidates appear here and nowhere in
+  `public_chain_links.narrator_id` or `narrator_transmissions`.
+- **Load invariants** (`load/verify-data.ts`): candidate on a live mention of the same hadith naming a live narrator;
+  no placeholder target except `name_kunya_only`, which targets only `kunya_only_name` rows; no name basis on a
+  non-Sunni report; an automatic `narrator_id` has its confirming candidate and is uncontested.
 
 ## Migrations
 
@@ -56,7 +88,10 @@ in one migration. `narrator_transmissions` keeps its own stricter basis rule fro
   migrations in ONE transaction (verified in `pg-core/dialect.js`), so `create index concurrently` can never be
   a migration: heavy indexes live in `ops/indexes-heavy.sql`.
 - Order: `0000_extensions` (pg_trgm, unaccent; idempotent) -> `0001_core_schema` (generated) ->
-  `0002_table_storage` (fillfactor 90) -> `0003_views` -> `0004_functions`.
+  `0002_table_storage` (fillfactor 90) -> `0003_views` -> `0004_functions` -> `0005` (research feature removed) ->
+  `0006_mention_identity_candidates` (generated table, enums and column, then hand-written: `public_chain_links`
+  and `refresh_publication_facets` redefined, `public_chain_mention_candidates` created, `narrator_transmissions`
+  dropped and recreated with its two indexes).
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.
 - Expand only (section 2.6). Views written as `select h.*` freeze their column list at creation: adding a
@@ -152,6 +187,10 @@ Where the doc was ambiguous or contradicted the orchestrator brief, the stricter
 
 ## Deferred
 
+- Identity candidates: mixed transmission pairs (one confirmed source-index neighbour, one human decision); whether a
+  kunya-only candidate should contest a confirmed source identity (it does now); source-index claims that name a
+  placeholder row are dropped and counted in the projection manifest, not emitted; the narrator page still lists
+  only reports where the narrator is a verified link.
 - `ops/roles.sql` (`schema_owner`, `app_rw`, grants, `app_rw` timeouts) and `ops/railway-tuning.sql`. The step 4
   migrations ran as the Railway template superuser, so every object is owned by it: `roles.sql` must
   `REASSIGN OWNED` / `ALTER ... OWNER TO schema_owner` before the app switches roles.

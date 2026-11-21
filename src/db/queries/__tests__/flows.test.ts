@@ -5,7 +5,9 @@
 import assert from 'node:assert/strict';
 import { prepareFixtureDatabase, type FixtureDatabase } from './fixture-database';
 import { flow, rejection, runFlows } from './harness';
+import { attempt } from '../../../app/actions/curation/result';
 import { historicalEventCreateSchema, historicalEventPatchSchema } from '../../../app/actions/curation/schemas';
+import { UnauthorizedError } from '../../../lib/auth/require-curator';
 import * as commentary from '../commentary';
 import * as comparative from '../comparative';
 import { listParallelsForReview } from '../comparative-review';
@@ -29,6 +31,7 @@ const IBADI_NIYYAT = 'hadith:openiti:ibadi:rabi_0001b|1|';
 const ZAYDI_FIRST = 'hadith:openiti:zaydi:zayd_0001|1|V01P059';
 const MALIK = 'narrator:rawi:20001';
 const HUSAYN_BIN_MUHAMMAD = 'narrator:rawi:39284';
+const MARWAN_BIN_MUHAMMAD = 'narrator:rawi:20640';
 
 const CURATOR_NAME = 'fixture-curator';
 const CURATOR_PASSPHRASE = 'correct horse battery staple';
@@ -87,39 +90,73 @@ flow('hadith detail: text, gated English and per-tradition grades with no defaul
   assert.equal(await getPublicHadith('hadith:does-not-exist'), null);
 });
 
-flow('isnad: every position in order, keyed by mention, links only where verified', async () => {
-  const resolved = await getChainGraph(MUSLIM_RESOLVED);
-  const expected = fixture.corpus.links.filter((link) => link.chain_id === 'chain:k6:11089:0000');
-  assert.deepEqual(resolved.nodes.map((node) => node.position), [0, 1, 2, 3, 4]);
-  assert.deepEqual(resolved.nodes.map((node) => node.narrator_id), expected.map((link) => link.narrator_id));
-  assert.ok(resolved.nodes.every((node) => node.is_link && node.node_id.startsWith('mention:')));
+flow('isnad: every name in order as written, every identity candidate with its basis, links only where verified', async () => {
+  // Sahih Muslim k6:10008, real candidates: agreeing, disagreeing, unidentified and kunya-only names in one chain.
+  const chain = await getChainGraph('hadith:k6:10008');
+  assert.deepEqual([chain.tradition, chain.source_work], ['Sunni', 'Sahih Muslim']);
+  assert.deepEqual(chain.nodes.map((node) => node.surface_ar), [
+    'داود بن رشيد', 'الوليد بن مسلم', 'سعيد بن عبد العزيز', 'إسماعيل بن عبيد الله', 'أم الدرداء', 'أبي الدرداء',
+  ]);
+  const view = chain.nodes.map((node) => ({
+    identity: node.identity,
+    candidates: node.candidates.map((candidate) => `${candidate.narrator_id.replace('narrator:rawi:', '')}:${candidate.basis}`),
+  }));
+  assert.deepEqual(view, [
+    // The name matcher and the source index name the same man: one identity, both bases.
+    { identity: 'agreed', candidates: ['30248:source_index', '30248:name_exact'] },
+    // They name different men: both are kept and neither is preferred.
+    { identity: 'differ', candidates: ['20733:source_index', '17993:name_exact'] },
+    { identity: 'differ', candidates: ['20638:source_index', '4501:name_spelling_fold'] },
+    { identity: 'unidentified', candidates: [] },
+    // A lexicon entry recorded only by its kunya: matched, and marked as such.
+    { identity: 'agreed', candidates: ['11457:name_kunya_only'] },
+    { identity: 'agreed', candidates: ['37:source_index'] },
+  ]);
+  assert.ok(chain.nodes.every((node) => !node.is_link && node.narrator_id === null), 'no candidate here is verified');
+  assert.equal(chain.nodes[4].candidates[0].name_ar, 'أم الدرداء');
   assert.deepEqual(
-    resolved.edges.map((edge) => [edge.source, edge.target]),
-    resolved.nodes.slice(0, -1).map((node, index) => [node.node_id, resolved.nodes[index + 1].node_id]),
+    chain.edges.map((edge) => [edge.source, edge.target]),
+    chain.nodes.slice(0, -1).map((node, index) => [node.node_id, chain.nodes[index + 1].node_id]),
   );
-  assert.ok(resolved.nodes.every((node) => node.verdict === null), 'no published verdict in Sunni scope for these narrators');
+
+  // Source index confirmed by the Arabic, uncontested: verified links, and the candidates still say why.
+  const bukhari = await getChainGraph(BUKHARI_1);
+  assert.equal(bukhari.nodes[0].surface_ar, 'الحميدي عبد الله بن الزبير');
+  assert.deepEqual(bukhari.nodes.map((node) => node.narrator_id), fixture.identity.verified
+    .filter((row) => row.mention_id.startsWith('mention:k6:1:')).map((row) => row.narrator_id));
+  assert.ok(bukhari.nodes.every((node) => node.is_link && node.candidates[0].basis === 'source_index_confirmed_by_text'));
+  assert.ok(bukhari.nodes.every((node) => node.verdict === null), 'no published verdict in Sunni scope for these narrators');
+
+  // A confirmed source index that a name match contests is shown, not settled.
+  const muslim = await getChainGraph(MUSLIM_RESOLVED);
+  assert.deepEqual(muslim.nodes.map((node) => node.position), [0, 1, 2, 3, 4]);
+  assert.ok(muslim.nodes.every((node) => !node.is_link));
+  assert.deepEqual(muslim.nodes.map((node) => node.identity), ['agreed', 'differ', 'agreed', 'agreed', 'differ']);
 
   const branches = await getChainGraph(MUSLIM_TWO_BRANCHES);
   assert.deepEqual(branches.nodes.map((node) => [node.branch, node.position]), [[0, 0], [1, 0]]);
   assert.equal(branches.edges.length, 0, 'no edge crosses branches');
 
-  const unresolved = await getChainGraph(BUKHARI_1);
-  assert.equal(unresolved.nodes.length, 6);
-  assert.equal(unresolved.nodes[0].surface_ar, 'الحميدي عبد الله بن الزبير');
-  assert.ok(unresolved.nodes.every((node) => !node.is_link && node.narrator_id === null && node.name_ar === null));
+  // Sanads stay per tradition: no automatic name match on an Imami report.
+  const kafi = await getChainGraph(KAFI_SAHIH);
+  assert.ok(kafi.nodes.length > 0 && kafi.nodes.every((node) => node.identity === 'unidentified'));
 });
 
 flow('narrator: teachers and students from transmissions, tradition-scoped verdicts, lexicon hidden publicly', async () => {
-  const network = await getNarratorNetwork(HUSAYN_BIN_MUHAMMAD);
-  assert.deepEqual(network.teachers.map((peer) => peer.id), ['narrator:rawi:16458']);
-  assert.deepEqual(network.students.map((peer) => peer.id), ['narrator:rawi:30375']);
+  // Transmissions come only from verified links: Sunan al-Darimi k6:11880 reads الدارمي عن مروان عن الليث.
+  const network = await getNarratorNetwork(MARWAN_BIN_MUHAMMAD);
+  assert.deepEqual(network.teachers.map((peer) => peer.id), ['narrator:rawi:20023']);
+  assert.deepEqual(network.students.map((peer) => peer.id), ['narrator:rawi:30025']);
   assert.deepEqual([network.teacher_total, network.student_total], [1, 1]);
   assert.match(network.attribution_disclaimer ?? '', /Test fixture/);
+  // A name match alone (حسين بن محمد in k6:11089, contested by the source index) creates no transmission.
+  const husaynNetwork = await getNarratorNetwork(HUSAYN_BIN_MUHAMMAD);
+  assert.deepEqual([husaynNetwork.teacher_total, husaynNetwork.student_total], [0, 0]);
 
-  const husayn = await getNarratorDetail(HUSAYN_BIN_MUHAMMAD);
-  assert.ok(husayn);
-  assert.equal(husayn.name_arabic, 'حسين بن محمد');
-  assert.deepEqual(husayn.hadiths.items.map((hadith) => hadith.id), [MUSLIM_RESOLVED]);
+  const marwan = await getNarratorDetail(MARWAN_BIN_MUHAMMAD);
+  assert.ok(marwan);
+  assert.equal(marwan.name_arabic, 'مروان بن محمد بن حسان الأسدي');
+  assert.deepEqual(marwan.hadiths.items.map((hadith) => hadith.id), ['hadith:k6:11880']);
 
   const malik = await getNarratorDetail(MALIK);
   assert.ok(malik);
@@ -213,6 +250,24 @@ flow('commentary: create, edit, publish gate, publish, retire; every change audi
   assert.ok(audits.every((row) => row.actor === actor));
   assert.equal(audits[1].before?.text, 'Fixture commentary (test only).');
   assert.equal(audits[1].after?.text, 'Fixture commentary, edited.');
+});
+
+flow('result contract: expected refusals become { ok: false, message }, unexpected failures still throw', async () => {
+  const validation = await attempt(async () => historicalEventCreateSchema.parse({}));
+  assert.equal(validation.ok, false);
+  assert.ok(!validation.ok && validation.fieldErrors && Object.keys(validation.fieldErrors).length > 0);
+
+  const refusals: Array<[string, () => Promise<unknown>, string]> = [
+    ['not found', () => commentary.updateCommentary(actor, 'commentary:missing', { text: 'x' }), 'Commentary not found.'],
+    ['not signed in', async () => { throw new UnauthorizedError(); }, 'Sign in as a curator to make changes.'],
+    ['no actor', () => curationWrite('', async () => 'unreachable'), 'A named curator is required.'],
+  ];
+  for (const [label, run, message] of refusals) {
+    const result = await attempt(run);
+    assert.deepEqual(result.ok ? null : result.message, message, label);
+  }
+  assert.deepEqual(await attempt(async () => 42), { ok: true, data: 42 });
+  await assert.rejects(attempt(async () => { throw new Error('database exploded'); }), /database exploded/);
 });
 
 flow('refusals: no actor, unknown id, and writes during a load are refused without changing data', async () => {

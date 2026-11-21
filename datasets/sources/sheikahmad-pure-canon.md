@@ -10,6 +10,10 @@ license_url: https://nabimuhammad.com
 license_notes: |
   Contributor spreadsheets and derived files carry no explicit license in the
   repository. Confirm redistribution terms with the contributor/source owner.
+  2026-11-21 rights review: the provider's "Hadith Pure Canon Authentica" page
+  (https://nabimuhammad.com/Prophet_Muhammad_Hadith-Canon.html) ends "© 2026
+  NabiMuhammad.com — All Rights Reserved"; no licence or terms page found.
+  Status: permission_needed. See docs/rights/rights-register.md section 2.
 
 traditions:
   - sunni
@@ -68,6 +72,28 @@ row is blank and the immutable ID plus Arabic text agree.
 License terms are unstated. Preserve the source asset name and record ID and
 confirm redistribution rights with the contributor/source owner.
 
+## Rights review 2026-11-21
+
+Evidence: `docs/rights/evidence/nabimuhammad-hadith-canon-2026-11-21.txt`,
+`local-copy-identity-2026-11-21.md`.
+
+- Provider: NabiMuhammad.com, led by Ahmad Darwish. Its site says "All Rights
+  Reserved" and offers the Green Book workbook for download; downloading is
+  not a licence to republish.
+- `Hadith-Pure-Canon-Authentica.xlsx`: creator "DELL", created 2026-03-29, no
+  licence sheet. How it reached the project is not recorded.
+- Every one of the 100,217 rows has `ruling = ثابت`, the provider's own seal,
+  not a scholar's grading.
+- Several rows embed edition blocks from an electronic hadith library (for
+  example Darimi: Dar al-Kitab al-Arabi, Beirut 1987, ed. Zamarli and
+  al-Sab' al-'Alami; Muwatta': ed. Muhammad Fu'ad 'Abd al-Baqi).
+- Identity flag: the provider's 14 listed references do not include a Musnad
+  al-Shafi'i; confirm what the label `شافعي` (2,054 rows) denotes.
+- Open alternatives: OpenITI holds Ahmad's *Musnad*, Malik's *Muwatta'* and
+  al-Shafi'i's *Musnad* (CC BY-NC-SA 4.0).
+
 ## Related
 
+- Rights register: `docs/rights/rights-register.md`
+- Provider page: https://nabimuhammad.com/Prophet_Muhammad_Hadith-Canon.html
 - Canonical consumer: `datasets/hadith-data/regen_unified_csvs.py`

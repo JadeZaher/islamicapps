@@ -25,6 +25,7 @@ import { collections, hadiths } from './corpus';
 import {
   decisionScopeEnum,
   linkKindEnum,
+  mentionCandidateBasisEnum,
   mentionResolutionEnum,
   resolutionBasisEnum,
   surfaceDecisionKindEnum,
@@ -93,6 +94,41 @@ export const chainMentions = pgTable(
     index('chain_mentions_review_unit_fine_id_idx').on(table.reviewUnitFineId),
     index('chain_mentions_surface_normalized_idx').on(table.surfaceNormalized),
     ...pipelineBookkeepingForeignKeys('chain_mentions', table),
+  ],
+);
+
+/**
+ * Every automatic identity candidate for a mention, each with its basis; disagreeing candidates are all kept.
+ * Pipeline-owned. `reviewer_decision` is never stored here (check): it is read from the decision in the public view.
+ * See src/db/AGENTS.md §Identity candidates.
+ */
+export const chainMentionCandidates = pgTable(
+  'chain_mention_candidates',
+  {
+    id: text('id').primaryKey(),
+    mentionId: text('mention_id').notNull(),
+    hadithId: text('hadith_id').notNull(),
+    narratorId: text('narrator_id').notNull(),
+    basis: mentionCandidateBasisEnum('basis').notNull(),
+    /** Resolver tier, or the source index's agreement class against the Arabic. */
+    detail: text('detail'),
+    /** 0-based position in the source's own narrator index (source bases only). */
+    sourcePosition: integer('source_position'),
+    ...pipelineBookkeeping(),
+  },
+  (table) => [
+    unique('chain_mention_candidates_mention_narrator_basis_key').on(table.mentionId, table.narratorId, table.basis),
+    restrictForeignKey('chain_mention_candidates_mention_id_fk', table.mentionId, chainMentions.id),
+    restrictForeignKey('chain_mention_candidates_hadith_id_fk', table.hadithId, hadiths.id),
+    restrictForeignKey('chain_mention_candidates_narrator_id_fk', table.narratorId, narrators.id),
+    check('chain_mention_candidates_pipeline_basis_check', sql`${table.basis} <> 'reviewer_decision'`),
+    check(
+      'chain_mention_candidates_source_position_check',
+      sql`(${table.basis} in ('source_index', 'source_index_confirmed_by_text')) = (${table.sourcePosition} is not null)`,
+    ),
+    index('chain_mention_candidates_hadith_id_idx').on(table.hadithId),
+    index('chain_mention_candidates_narrator_id_idx').on(table.narratorId),
+    ...pipelineBookkeepingForeignKeys('chain_mention_candidates', table),
   ],
 );
 
@@ -197,4 +233,16 @@ export const publicChainLinks = pgView('public_chain_links', {
   isLink: boolean('is_link').notNull(),
   narratorId: text('narrator_id'),
   confidence: real('confidence'),
+}).existing();
+
+/** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */
+export const publicChainMentionCandidates = pgView('public_chain_mention_candidates', {
+  mentionId: text('mention_id').notNull(),
+  chainId: text('chain_id').notNull(),
+  hadithId: text('hadith_id').notNull(),
+  narratorId: text('narrator_id').notNull(),
+  basis: mentionCandidateBasisEnum('basis').notNull(),
+  detail: text('detail'),
+  /** True only for the bases that may set a verified link: confirmed source index, reviewer decision. */
+  verifiedBasis: boolean('verified_basis').notNull(),
 }).existing();

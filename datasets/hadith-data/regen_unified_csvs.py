@@ -2556,6 +2556,31 @@ def _sole_person(owners: set, placeholders: dict):
     return None if owner in placeholders else owner
 
 
+def kunya_only_candidate(surface: str, exact_index: dict):
+    """The single kunya-only registry entry a bare kunya surface names ('ابي معاوية' -> 'أبو معاوية'), else None.
+
+    A labelled, lower-confidence candidate (owner decision 2026-11-21), never a resolution: `resolve_narrator`
+    still refuses it, and callers must label the result "matched by kunya only". The surface must itself be a kunya
+    alone (two tokens, kunya head first); the first lookup that has the key decides, as in `resolve_narrator`, and
+    the key's sole owner must be a `kunya_only_name` entry (any other placeholder, or a shared key, gives None).
+    """
+    placeholders = getattr(exact_index, 'placeholders', None)
+    folded_index = getattr(exact_index, 'folded', None)
+    if not placeholders or folded_index is None:
+        return None
+    key = narrator_fold_normalize(surface)
+    tokens = key.split()
+    if len(tokens) != 2 or tokens[0] not in _KUNYA_HEADS:
+        return None
+    for owners in (folded_index.get(key), exact_index.kunya_folded.get(fold_kunya_case_forms(key))):
+        if owners:
+            if len(owners) != 1:
+                return None
+            owner = next(iter(owners))
+            return owner if placeholders.get(owner) == 'kunya_only_name' else None
+    return None
+
+
 def narrator_resolution_candidates(surface: str, blocked_index: dict) -> list:
     """Return deterministic, non-resolving curation candidates."""
     norm = narrator_normalize(surface)

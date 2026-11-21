@@ -85,6 +85,24 @@ export const resolutionBasisEnum = pgEnum('resolution_basis', [
   'human_decision',
 ]);
 
+/** Where an identity candidate for a mention comes from (owner decisions 2026-11-21; see src/db/AGENTS.md §Identity candidates). */
+export const mentionCandidateBasisEnum = pgEnum('mention_candidate_basis', [
+  'name_exact',
+  'name_spelling_fold',
+  'name_kunya_only',
+  'source_index',
+  'source_index_confirmed_by_text',
+  'reviewer_decision',
+]);
+
+/** Why a lexicon row cannot name one person (`registry_placeholder_reason` in regen_unified_csvs.py). */
+export const narratorPlaceholderReasonEnum = pgEnum('narrator_placeholder_reason', [
+  'unidentified_shaykh_marker',
+  'no_arabic_name',
+  'bare_single_token_name',
+  'kunya_only_name',
+]);
+
 export const surfaceDecisionKindEnum = pgEnum('surface_decision_kind', [
   'same_as',
   'derived_relation',

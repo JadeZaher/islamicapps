@@ -6,12 +6,13 @@ interface TabaqahTimelineProps {
 const TABAQAH_LEVELS = [
     { key: 'PROPHET', label: 'The Prophet' },
     { key: 'SAHABA', label: 'Companions (ṣaḥāba)' },
-    { key: 'TABI_UN', label: 'Successors (tābiʿūn)' },
-    { key: 'TABI_TABI_IN', label: 'Successors of the Successors' },
+    { key: 'TABIUN', label: 'Successors (tābiʿūn)' },
+    { key: 'ATBA_TABIUN', label: 'Successors of the Successors' },
+    { key: 'ATBA_ATBA', label: 'Their successors' },
     { key: 'LATER_SCHOLAR', label: 'Later scholars' },
 ] as const;
 
-/** Generation (ṭabaqa) as a five-step scale; only a recorded level is highlighted, unknown is said plainly. */
+/** Generation (ṭabaqa) as a six-step scale; only a recorded level is highlighted, unknown is said plainly. */
 export function TabaqahTimeline({ currentTabaqah }: TabaqahTimelineProps) {
     const currentIndex = TABAQAH_LEVELS.findIndex((level) => level.key === currentTabaqah);
     if (currentIndex === -1) {

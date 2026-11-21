@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Amiri } from "next/font/google";
+import { PreviewNotice } from "@/components/PreviewNotice";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${amiri.variable} antialiased`}
       >
         <SiteHeader />
+        <PreviewNotice />
         {children}
       </body>
     </html>

@@ -7,7 +7,7 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
 
 | File | What |
 | --- | --- |
-| `tables.ts` | The load contract: 17 pipeline tables in merge (FK) order, key columns, loader-derived columns |
+| `tables.ts` | The load contract: 18 pipeline tables in merge (FK) order, key columns, loader-derived columns |
 | `catalog.ts` | Reads `information_schema` and classifies each column (`csv`, `bookkeeping`, `generated`, `loader_derived`) |
 | `dump-catalog.ts` | Writes that classification as JSON for `export_postgres.py --catalog` |
 | `manifest.ts` | Re-checks the projection manifest (file hashes, headers, content hash, source bundle `import_ready`, input hash) |
@@ -48,3 +48,7 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
   so the same check covers the throwaway test schema (which has no FK constraints).
 - **Section 11.4 server-settings checks** (`max_connections = 20`, `shared_buffers = 64MB`) are reported, not fatal,
   until `ops/railway-tuning.sql` exists.
+- **`chain_mention_candidates` merges like any pipeline table** (after `chain_mentions`, by `id`); a candidate whose
+  mention or narrator leaves the projection retires with it. Four checks guard the owner decisions of 2026-11-21
+  (`verify-data.ts`, `src/db/AGENTS.md` §Identity candidates); `reported.identity_candidates` counts candidates per
+  tradition and basis.

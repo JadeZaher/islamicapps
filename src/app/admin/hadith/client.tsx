@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { exportHadiths, type ExportConfig } from '@/app/actions/graph-actions';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -76,28 +75,22 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
         setIsExporting(true);
         setError(null);
         try {
-            const config: ExportConfig = {
-                filters: {
-                    source: exportSource || undefined,
-                    tradition: exportTradition || undefined,
-                },
-                fields: Object.entries(exportFields).filter(([, v]) => v).map(([k]) => k),
-                edges: Object.entries(exportEdges).filter(([, v]) => v).map(([k]) => k),
-            };
-            const rows = await exportHadiths(config);
-            if (rows.length === 0) {
+            const query = new URLSearchParams({
+                fields: Object.entries(exportFields).filter(([, on]) => on).map(([key]) => key).join(','),
+                edges: Object.entries(exportEdges).filter(([, on]) => on).map(([key]) => key).join(','),
+            });
+            if (exportSource) query.set('source', exportSource);
+            if (exportTradition) query.set('tradition', exportTradition);
+            const response = await fetch(`/api/export/hadiths?${query}`);
+            if (response.status === 204) {
                 setError('No hadiths matched the selected filters.');
                 return;
             }
-            const headers = Object.keys(rows[0]);
-            const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-            const csv = [
-                headers.map(escape).join(','),
-                ...rows.map((row) => headers.map((h) => escape(row[h] || '')).join(',')),
-            ].join('\n');
-
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
+            if (!response.ok) {
+                setError(response.status === 401 ? 'Sign in again to export.' : 'Export failed. Try again.');
+                return;
+            }
+            const url = URL.createObjectURL(await response.blob());
             const a = document.createElement('a');
             a.href = url;
             a.download = `hadith-export-${new Date().toISOString().slice(0, 10)}.csv`;

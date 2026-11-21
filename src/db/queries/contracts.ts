@@ -78,6 +78,26 @@ export interface HadithDetail extends HadithListItem {
   assessments: HadithAssessmentGroup[];
 }
 
+/** Where an identity candidate comes from (owner decisions 2026-11-21; src/db/AGENTS.md §Identity candidates). */
+export type IdentityBasis =
+  | 'reviewer_decision'
+  | 'source_index_confirmed_by_text'
+  | 'source_index'
+  | 'name_exact'
+  | 'name_spelling_fold'
+  | 'name_kunya_only';
+
+/** One identity a source or matcher gives a mention; several may disagree and all are shown. */
+export interface ChainMentionCandidate {
+  narrator_id: string;
+  name_ar: string | null;
+  name_en: string | null;
+  basis: IdentityBasis;
+}
+
+/** `differ`: the candidates name more than one narrator. */
+export type MentionIdentity = 'unidentified' | 'agreed' | 'differ';
+
 /** A chain position, keyed by mention ID (section 9.4). Narrator fields are set only when `is_link`. */
 export interface ChainNode {
   node_id: string;
@@ -90,9 +110,13 @@ export interface ChainNode {
   name_en: string | null;
   resolution: string;
   link_kind: string;
+  /** Verified link: a confirmed source index nobody contests, or a reviewer decision. */
   is_link: boolean;
   /** Published verdict in the hadith's tradition, or null. */
   verdict: string | null;
+  /** Every candidate with its basis, strongest basis first; verified or not. */
+  candidates: ChainMentionCandidate[];
+  identity: MentionIdentity;
 }
 
 export interface ChainEdge {
@@ -104,6 +128,8 @@ export interface ChainEdge {
 export interface ChainGraph {
   hadith_id: string;
   tradition: HadithTraditionCode | null;
+  /** The source work (collection) the chain comes from; each sanad stays within its tradition and work. */
+  source_work: string | null;
   chain_schema: 'v2';
   nodes: ChainNode[];
   edges: ChainEdge[];

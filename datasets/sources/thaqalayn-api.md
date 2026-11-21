@@ -5,13 +5,19 @@ kind: api
 url: https://github.com/MohammedArab1/ThaqalaynAPI
 retrieved: 2026-07-21
 
-license: GPL-3.0
-license_url: https://github.com/MohammedArab1/ThaqalaynAPI/blob/main/LICENSE
+license: CC-BY-4.0
+license_url: https://thaqalayn.com/terms#content-license
 license_notes: |
-  GPL-3.0 is stated for the API repository and its software. The repository
-  license does not by itself establish redistribution rights for every scraped
-  Arabic edition or third-party translation. Preserve project, book, URL, and
-  translator attribution and verify corpus permission before redistribution.
+  Corrected 2026-11-21 (was GPL-3.0, which is the ThaqalaynAPI code licence,
+  https://github.com/MohammedArab1/ThaqalaynAPI/blob/main/LICENSE, and says
+  nothing about the hadith content). Thaqalayn's Terms of Use (updated
+  2026-10-01) license "public library content, including translations" under
+  CC BY 4.0, but "This grant covers the rights held by Stichting Thaqalayn",
+  and Thaqalayn says it uses already available translations. Arabic of the
+  classical works: CC BY 4.0 with attribution. English: unconfirmed per
+  translator. Mu'jam al-Ahadith al-Mu'tabara is a modern compilation (Muhsini,
+  d. 2019). Credit Thaqalayn, author and translator, link source and licence,
+  state changes. See docs/rights/rights-register.md section 4.
 
 traditions:
   - shia-imami
@@ -85,9 +91,30 @@ rights are not clearly stated on the public About or Privacy pages. Preserve
 the API source URL, exact work identity, translator metadata, retrieval time,
 and payload hashes, and obtain clarification before public bulk redistribution.
 
+## Rights review 2026-11-21
+
+Evidence: `docs/rights/evidence/thaqalayn-terms-2026-11-21.txt`,
+`thaqalayn-about-2026-11-21.txt`, `local-copy-identity-2026-11-21.md`.
+
+- thaqalayn.net now redirects to thaqalayn.com. Terms of Use §2: CC BY 4.0
+  for the rights Thaqalayn holds; attribution must credit Thaqalayn (Stichting
+  Thaqalayn), keep author and translator notices, link source and licence,
+  indicate changes, and not imply endorsement.
+- The text in use is the April 2026 pull: the `v2_books` files are dated
+  2026-04-19 and last changed in `acbf394` (2026-04-20). The 2026-07-22
+  refresh published nothing, so `retrieved: 2026-07-21` records the last
+  attempt, not the data date. The October 2026 terms postdate the pull; the
+  terms in force in April were not captured.
+- The translator is carried per book in `BookNames.json` and is lost in the
+  unified master; the attribution the licence requires needs it on the page.
+- Gradings: al-Majlisi (classical) on al-Kafi; Bihbudi (*Sahih al-Kafi*) and
+  Muhsini are modern scholars, rights unclear.
+
 ## Related
 
+- Rights register: `docs/rights/rights-register.md`
+- Thaqalayn Terms of Use: https://thaqalayn.com/terms
 - Live manifest: https://www.thaqalayn-api.net/api/v2/allbooks
 - Public REST documentation: https://github.com/MohammedArab1/ThaqalaynAPI#endpoints
 - Repository license: https://github.com/MohammedArab1/ThaqalaynAPI/blob/main/LICENSE
-- Thaqalayn About: https://thaqalayn.net/about
+- Thaqalayn About: https://thaqalayn.com/about (thaqalayn.net redirects here since at least 2026-11-21)

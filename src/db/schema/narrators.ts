@@ -11,7 +11,7 @@ import {
   unique,
 } from 'drizzle-orm/pg-core';
 import { pipelineBookkeeping, pipelineBookkeepingForeignKeys, restrictForeignKey } from './columns';
-import { evidenceReviewStateEnum, narratorAuthorityEnum } from './enums';
+import { evidenceReviewStateEnum, narratorAuthorityEnum, narratorPlaceholderReasonEnum } from './enums';
 
 /** Narrator identity only: no verdict, grade or reliability column, ever (G-1). */
 export const narrators = pgTable(
@@ -26,6 +26,8 @@ export const narrators = pgTable(
     nameEn: text('name_en'),
     nameArNormalized: text('name_ar_normalized'),
     nameEnFolded: text('name_en_folded'),
+    /** Set when the lexicon row cannot name one person; never an automatic match target except kunya-only. */
+    placeholderReason: narratorPlaceholderReasonEnum('placeholder_reason'),
     ...pipelineBookkeeping(),
   },
   (table) => [

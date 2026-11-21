@@ -17,8 +17,9 @@ import postgres from 'postgres';
 import { connectionOptions, requireDatabaseUrl } from './connection-options';
 import * as schema from './schema';
 
-const EXPECTED_TABLE_COUNT = 40;
-const EXPECTED_VIEW_COUNT = 5;
+/** 40 launch tables plus chain_mention_candidates (0006); views add public_chain_mention_candidates. */
+const EXPECTED_TABLE_COUNT = 41;
+const EXPECTED_VIEW_COUNT = 6;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];
 /** Indexes created by hand-written migrations, not by drizzle-kit. */
@@ -259,6 +260,11 @@ async function main() {
     };
     const [{ applied }] = await sql<{ applied: number }[]>`select count(*)::int as applied from drizzle.__drizzle_migrations`;
     expect(applied === journal.entries.length, `applied migrations ${applied}, journal has ${journal.entries.length}`);
+
+    // The verified-link predicate (0006) must not count name matches: exact_registry is a candidate, never a link.
+    const [{ definition }] = await sql<{ definition: string }[]>`select pg_get_viewdef('public_chain_links'::regclass) as definition`;
+    expect(!definition.includes('exact_registry'), 'public_chain_links still treats exact_registry as a verified link');
+    expect(definition.includes('source_index'), 'public_chain_links does not treat confirmed source_index as a verified link');
 
     console.log(
       [
