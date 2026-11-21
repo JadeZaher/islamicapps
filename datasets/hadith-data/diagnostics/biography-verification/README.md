@@ -39,7 +39,7 @@ separate rows; ranges and qualifiers are kept as written. Nothing here changes a
 
 ```
 python -B datasets/hadith-data/diagnostics/biography-verification/verify_lexicon_against_rijal.py     # part B, ~30 s
-python -B datasets/hadith-data/diagnostics/biography-verification/profile_external_datasets.py        # part A, ~15 min
+python -B datasets/hadith-data/diagnostics/biography-verification/profile_external_datasets.py        # part A, ~10 min
 python -B datasets/hadith-data/diagnostics/biography-verification/measure_imami_authority_inputs.py   # Imami, ~90 s
 cd datasets/hadith-data/diagnostics/biography-verification && python -B -m unittest test_rijal_parsing
 ```
@@ -192,6 +192,15 @@ and the lexicon's companion names are often short forms.
   the lexicon value once reviewed. Places can be shown with the same label, but generic regions such as "Hijaz"
   (8,818 cells) carry little information.
 
+### Examples
+
+| Case | Lexicon | Source passage (verbatim) and locator | Comparison |
+| --- | --- | --- | --- |
+| Agreement, `scholar_indx` 35157 | `248 AH` | Taqrib entry 7115, v1 p560: `نصر بن عبد الرحمن بن بكار الناجي الكوفي الوشاء ثقة من العاشرة مات سنة ثمان وأربعين ت ق` (tenth tabaqa, so 248 by Ibn Hajar's rule); Tahdhib entry 6401, v29 p352: `في شوال سنة ثمان وأربعين ومئتين` reported by Muhammad b. Abd Allah al-Hadrami | agree with both |
+| One-year variant, 579 (Musa b. Talha b. Ubayd Allah) | `104 AH (Kufa)` | Taqrib entry 6978, v1 p551: `… نزيل الكوفة ثقة جليل من الثانية … مات سنة ثلاث ومائة على الصحيح ع`; Tahdhib entry 6269, v29 p86-87 reports 103, 104 and 106 | Ibn Hajar's preferred 103 vs lexicon 104; the lexicon value is one of the reports Mizzi records |
+| Gross conflict, 34156 (Umar b. Shabba) | `352 AH` | Taqrib entry 4918, v1 p413: `عمر بن شبة … البصري نزيل بغداد صدوق له تصانيف من كبار الحادية عشرة مات سنة اثنتين وستين وقد جاوز التسعين ق` (eleventh tabaqa, so 262) | 90 years apart; 352 is impossible for an eleventh-tabaqa man and looks like a digit slip in the lexicon |
+| Source-side error, 20202 (Makki b. Ibrahim) | `215 AH` | Taqrib entry 6877, v1 p545: `… ثقة ثبت من التاسعة مات سنة خمس عشرة ومائة وله تسعون سنة ع` | `differs_by_exactly_100`: the OpenITI text's `ومائة` contradicts its own ninth tabaqa; the lexicon is likely right |
+
 ## Files
 
 | File | Rows | Contents |
@@ -242,7 +251,26 @@ lexicon rows in hadith-kg and 8,026 in Riwayat.
 equal; level 2 = their matn (at least 40 letters) contained in our `text_ar`, found by its last 30 letters and
 verified by hash. Our corpus: 99,283 rows.
 
-REPORT_TABLE_PLACEHOLDER
+| Our tradition (rows) | hadith-kg: whole text / matn contained / matched | same work among matched | Riwayat: whole text / matn contained / matched | same work among matched |
+| --- | --- | --- | --- | --- |
+| Sunni (64,356) | 20,909 / 16,762 / **37,671 (58.5%)** | 35,120 (93.2%) | 20,920 / 13,383 / **34,303 (53.3%)** | 31,773 (92.6%) |
+| Imami (33,225) | 1 / 298 / **299 (0.9%)**, all Sunni parallels | 0 | 17,552 / 3,920 / **21,472 (64.6%)** | 21,170 of 21,454 mapped (98.7%) |
+| Ibadi (1,004) | 259 / 265 / **524 (52.2%)** | 502 (*Musnad al-Rabi'*) | 259 / 231 / **490 (48.8%)** | 473 |
+| Zaydi (698) | 0 / 293 / **293 (42.0%)** | 285 (*Musnad Zayd*) | 0 / 265 / **265 (38.0%)** | 256 |
+
+- By collection (hadith-kg / Riwayat): al-Nasa'i 93.1% / 92.8%, Ibn Majah 85.7 / 86.4, Bukhari 78.0 / 77.3, Abu
+  Dawud 75.7 / 76.7, Tirmidhi 69.4 / 72.5, Muslim 61.7 / 64.7; the Pure Canon matn-only rows match less (Ahmad 38.5
+  / 23.7, Muwatta 40.8 / 33.3, Darimi 29.2 / 20.8) because their text has no chain and the editions differ. Imami:
+  al-Kafi 93.1% and al-Faqih 53.5% in Riwayat (both drawn from Thaqalayn), 0.6% in hadith-kg.
+- "Same work" = at least one matched external row comes from the same collection (title fragment map
+  `SAME_WORK`); the rest are the same matn in another book, which is expected for parallels.
+- A matched row often has several candidates (Sunni: 1 candidate for 30,347 of 37,671 in hadith-kg). Every match is a
+  candidate correspondence, not an identity; per-row candidates are in `report_join_*.jsonl.gz`.
+- hadith-kg includes the Zaydi *Musnad Zayd* (book 55) and the Ibadi *Musnad al-Rabi' b. Habib* (book 56), and
+  Riwayat inherits both labelled **`sunni`** (1,082 and 966 rows). Any use must re-attribute them to their
+  traditions.
+- hadith-kg's `aqwal` (127,863 critic statements) is the larger opportunity for attributed verdicts, but 11,660 rows
+  are attributed to `تعليق` (editorial commentary), not to a critic, and must be excluded.
 
 ## Imami narrator authority: what the inputs offer (`measure_imami_authority_inputs.py`, measurement only)
 

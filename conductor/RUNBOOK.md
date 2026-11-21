@@ -147,3 +147,41 @@ git log --oneline -12
 npx tsc --noEmit && npm run db:verify
 railway status
 ```
+
+## Status at end of the 2026-11-21 session
+
+Branch `refactor/postgres-drizzle` is pushed to GitHub. Nothing is deployed;
+the live site still runs the July build on Neo4j.
+
+Done and committed: Postgres schema (41 tables, 6 views), loader with 25 data
+checks, query layer, curator access control with audit, refined interface,
+glossary, rights register, preview notice, identity candidates with basis
+labels, reconciled chain sidecars, translation and recovery candidates,
+report-correspondence candidates, biography verification, dataset backup.
+
+Next, in order:
+
+1. Owner decisions: approve the 23 rights-clear works; rebuild the Sunni
+   Arabic from OpenITI or wait on permissions; whether a kunya-only match may
+   block a confirmed source identity; whether a correct passphrase should
+   always succeed despite the per-name sign-in limit.
+2. Report correspondences: tables (candidates, decisions, cluster members),
+   loader, hadith-page section, review screen. Proposal in
+   `datasets/hadith-data/diagnostics/report-correspondence/README.md`.
+3. Export curation from Neo4j (commentaries, events, parallels, the 21
+   biographies, recorded as Sunni) into the curation tables.
+4. Load recovered data: generation markers, places, cited Imami rulings,
+   Tirmidhi compiler statements, Taqrib verdicts and cited date candidates.
+5. Identity review: the function that applies a reviewer decision, and a
+   review screen over the queue.
+6. Database roles, memory tuning, backups, deploy config; confirm at deploy
+   that Railway's edge overwrites a client-sent `X-Real-IP`.
+7. Cutover with the owner's approval, then about a week of observation, then
+   retire Neo4j.
+8. Contribution system (design section 5.15), the owner's first priority
+   after cutover.
+
+Known defects to fix in the ETL: 1,597 Sunni rows carry another report's matn
+(non-unique join on source and hadith number); 12,617 matn values still
+contain the chain; the census and audit count an empty chain as resolved;
+Riwayat labels Musnad Zayd and Musnad al-Rabi' as Sunni.

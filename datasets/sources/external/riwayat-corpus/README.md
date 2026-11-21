@@ -40,7 +40,8 @@ carry their sources' terms. Use:
 > https://huggingface.co/datasets/emadjumaah/hadith-kg) and ThaqalaynData for the Shi'i texts.
 
 Shi'i rows come from Thaqalayn (`hadith.source_ids` = `{"thaqalayn": "T:<book>:..."}`); their rights follow the
-project's Thaqalayn source card, not CC0.
+project's Thaqalayn source card, not CC0. The Zaydi *Musnad Zayd* (1,082 rows) and the Ibadi *Musnad al-Rabi' b.
+Habib* (966 rows), inherited from hadith-kg, are labelled `tradition = 'sunni'` here; re-attribute them before use.
 
 ## Profile
 
