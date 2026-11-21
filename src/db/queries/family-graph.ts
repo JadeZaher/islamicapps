@@ -60,11 +60,12 @@ export const COLUMN_WIDTH = 168;
 
 /**
  * Merge key of a written name. Only a standing identity (`is_link`, the chain_mentions.narrator_id the pipeline or a
- * reviewer set) merges; every other name stays one node per mention, even when the text is identical, and nothing
- * merges across traditions except through such an identity.
+ * reviewer set) merges, and only within one tradition (owner, 2026-11-21: identities are never merged across traditions
+ * automatically; since 0010 one external record can stand in two traditions). Every other name stays one node per
+ * mention, even when the text is identical.
  */
-export function mergeKey(node: ChainNode): string {
-  return node.is_link && node.narrator_id ? `narrator:${node.narrator_id}` : `mention:${node.node_id}`;
+export function mergeKey(node: ChainNode, tradition?: HadithTraditionCode): string {
+  return node.is_link && node.narrator_id ? `narrator:${tradition ?? ''}:${node.narrator_id}` : `mention:${node.node_id}`;
 }
 
 interface Draft {
@@ -108,7 +109,7 @@ export function buildFamilyGraph(tellings: FamilyTelling[], options: { sharedOnl
   for (const telling of tellings) {
     for (const chain of chainsOf(telling)) {
       for (const node of chain) {
-        const key = mergeKey(node);
+        const key = mergeKey(node, telling.tradition);
         if (key.startsWith('narrator:')) chainsPerIdentity.set(key, (chainsPerIdentity.get(key) ?? new Set()).add(node.chain_id));
       }
     }
@@ -125,7 +126,7 @@ export function buildFamilyGraph(tellings: FamilyTelling[], options: { sharedOnl
       const path: string[] = [];
       let skipped = 0;
       for (const node of chain) {
-        const key = mergeKey(node);
+        const key = mergeKey(node, telling.tradition);
         if (options.sharedOnly && !shared(key)) {
           skipped++;
           continue;

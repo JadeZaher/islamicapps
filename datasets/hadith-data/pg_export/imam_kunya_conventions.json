@@ -1,0 +1,66 @@
+{
+  "meaning": "Which conventional kunya, followed in the text by the honorific marker, names which Imam in an Imami chain. Owner decision 2026-11-21: such a mention identifies that Imam and counts toward the machine-reviewed tier; every other kunya-only name stays a label. Reviewable data, not a scholarly claim: edit this file to change the rule, then rebuild the projection.",
+  "status": "proposed_for_owner_review",
+  "applies_to": {
+    "tradition": "Imami",
+    "works": "every Imami work in the archive; all were compiled after the eleventh Imam, so no period restriction separates the Imams who share a kunya",
+    "never": "Sunni, Ibadi and Zaydi chains (an Imami convention; a kunya-only name there stays a label)"
+  },
+  "marker": {
+    "required": true,
+    "forms": ["ع", "(ع)", "عليه السلام", "عليهما السلام", "عليهم السلام", "صلوات الله عليه"],
+    "where": "at the end of the written surface, or immediately after the name in the report's own Arabic"
+  },
+  "rule": "A surface that is exactly a kunya below, optionally followed by one listed qualifier, with the marker. Unshared kunya, or a qualifier naming one Imam: that Imam (basis imam_kunya_convention). A kunya shared by several Imams with no qualifier: a labelled candidate for each listed Imam (basis imam_kunya_candidate), never the machine-reviewed tier. Any other words after the kunya (al-Barqi, al-Ahwal, al-ʿAbdi ...): not an Imam, nothing is emitted.",
+  "imams": [
+    {"ordinal": 1, "id": "narrator:imam:1", "name_ar": "علي بن أبي طالب", "name_latin": "ʿAli ibn Abi Talib", "known_as": "Amir al-Muʾminin"},
+    {"ordinal": 2, "id": "narrator:imam:2", "name_ar": "الحسن بن علي", "name_latin": "al-Hasan ibn ʿAli", "known_as": "al-Mujtaba"},
+    {"ordinal": 3, "id": "narrator:imam:3", "name_ar": "الحسين بن علي", "name_latin": "al-Husayn ibn ʿAli", "known_as": "Sayyid al-Shuhadaʾ"},
+    {"ordinal": 4, "id": "narrator:imam:4", "name_ar": "علي بن الحسين", "name_latin": "ʿAli ibn al-Husayn", "known_as": "Zayn al-ʿAbidin, al-Sajjad"},
+    {"ordinal": 5, "id": "narrator:imam:5", "name_ar": "محمد بن علي الباقر", "name_latin": "Muhammad ibn ʿAli al-Baqir", "known_as": "al-Baqir"},
+    {"ordinal": 6, "id": "narrator:imam:6", "name_ar": "جعفر بن محمد الصادق", "name_latin": "Jaʿfar ibn Muhammad al-Sadiq", "known_as": "al-Sadiq"},
+    {"ordinal": 7, "id": "narrator:imam:7", "name_ar": "موسى بن جعفر الكاظم", "name_latin": "Musa ibn Jaʿfar al-Kazim", "known_as": "al-Kazim"},
+    {"ordinal": 8, "id": "narrator:imam:8", "name_ar": "علي بن موسى الرضا", "name_latin": "ʿAli ibn Musa al-Rida", "known_as": "al-Rida"},
+    {"ordinal": 9, "id": "narrator:imam:9", "name_ar": "محمد بن علي الجواد", "name_latin": "Muhammad ibn ʿAli al-Jawad", "known_as": "al-Jawad"},
+    {"ordinal": 10, "id": "narrator:imam:10", "name_ar": "علي بن محمد الهادي", "name_latin": "ʿAli ibn Muhammad al-Hadi", "known_as": "al-Hadi"},
+    {"ordinal": 11, "id": "narrator:imam:11", "name_ar": "الحسن بن علي العسكري", "name_latin": "al-Hasan ibn ʿAli al-ʿAskari", "known_as": "al-ʿAskari"},
+    {"ordinal": 12, "id": "narrator:imam:12", "name_ar": "محمد بن الحسن المهدي", "name_latin": "Muhammad ibn al-Hasan al-Mahdi", "known_as": "al-Mahdi, al-Qaʾim"}
+  ],
+  "kunyas": [
+    {
+      "kunya": "أبو عبد الله",
+      "shared_by": [6, 3],
+      "unqualified": 6,
+      "why_unqualified": "Owner's example (2026-11-21): in Imami chains a bare Abu ʿAbd Allah with the marker is al-Sadiq; al-Husayn is written with his name.",
+      "qualifiers": {"الصادق": 6, "جعفر بن محمد": 6, "جعفر بن محمد الصادق": 6, "الصادق جعفر بن محمد": 6, "الحسين": 3, "الحسين بن علي": 3}
+    },
+    {
+      "kunya": "أبو جعفر",
+      "shared_by": [5, 9],
+      "unqualified": null,
+      "why_unqualified": "Shared by al-Baqir and al-Jawad (Abu Jaʿfar al-Thani), both cited bare in al-Kafi; owner question whether bare means al-Baqir by convention.",
+      "qualifiers": {"الباقر": 5, "الأول": 5, "محمد بن علي الباقر": 5, "محمد الباقر": 5, "الثاني": 9, "الجواد": 9, "محمد بن علي الرضا": 9, "محمد بن علي الثاني": 9, "بن الرضا": 9}
+    },
+    {
+      "kunya": "أبو الحسن",
+      "shared_by": [7, 8, 10],
+      "unqualified": null,
+      "why_unqualified": "Shared by al-Kazim (al-Awwal), al-Rida (al-Thani) and al-Hadi (al-Thalith).",
+      "qualifiers": {"الأول": 7, "موسى": 7, "موسى بن جعفر": 7, "الماضي": 7, "الكاظم": 7, "الرضا": 8, "الثاني": 8, "علي بن موسى": 8, "علي بن موسى الرضا": 8, "الثالث": 10, "الهادي": 10, "علي بن محمد": 10, "العسكري": 10}
+    },
+    {
+      "kunya": "أبو إبراهيم",
+      "shared_by": [7],
+      "unqualified": 7,
+      "why_unqualified": "The conventional kunya of al-Kazim in Imami chains.",
+      "qualifiers": {"موسى": 7, "موسى بن جعفر": 7}
+    },
+    {
+      "kunya": "أبو محمد",
+      "shared_by": [2, 4, 11],
+      "unqualified": null,
+      "why_unqualified": "Shared by al-Hasan al-Mujtaba, ʿAli ibn al-Husayn and al-Hasan al-ʿAskari.",
+      "qualifiers": {"العسكري": 11, "الحسن بن علي العسكري": 11, "الحسن العسكري": 11}
+    }
+  ]
+}

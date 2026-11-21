@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 import { ArabicText } from '@/components/ArabicText';
-import { ReportSourceCredit } from '@/components/archive/SourceCredit';
+import { ReportEnglish } from '@/components/archive/ReportEnglish';
 import { CrossCulturalParallelCard } from '@/components/CrossCulturalParallelCard';
 import { BilingualTitle } from '@/components/NarratorName';
 import { TraditionBadge } from '@/components/TraditionBadge';
@@ -113,18 +113,12 @@ export function HadithClientPage({ hadith, chain, parallels = [], family = null,
                                     {arabicText}
                                 </ArabicText>
                             )}
-                            {englishText && (
-                                <div className={arabicText ? 'mt-6' : ''}>
-                                    <p className="mb-2 type-small text-ink-muted" data-english-label>
-                                        {hadith.english_attribution?.label ?? 'English translation, not yet reviewed'}
-                                        {segmentationDiffers && ' · includes the chain'}
-                                    </p>
-                                    <p className="whitespace-pre-line type-reading text-ink">{englishText}</p>
-                                    {hadith.english_attribution?.reference && (
-                                        <ReportSourceCredit reference={hadith.english_attribution.reference} />
-                                    )}
-                                </div>
-                            )}
+                            <ReportEnglish
+                                text={englishText}
+                                attribution={hadith.english_attribution}
+                                note={segmentationDiffers ? ' · includes the chain' : undefined}
+                                className={arabicText ? 'mt-6' : ''}
+                            />
                         </section>
                     )}
 

@@ -1,0 +1,132 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "correspondence",
+  "prompt_version": "1.0.0",
+  "packet_id": "correspondence/pilot-1/packet-05",
+  "verdicts": [
+    {
+      "claim_id": "I1",
+      "outcome": "contradicts",
+      "reading": "shared_formula_or_verse",
+      "reasons": [
+        "Both texts use the same frame: an act after which a person will not smell the scent of Paradise, whose scent is found from a great distance.",
+        "The act differs completely: A is about killing a man of the people of the dhimma; B is about invoking blessing on the Prophet without his family.",
+        "The distance also differs (seventy years in A, five hundred years in B). The overlap is a standard frame filled with different content, not one report."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "من قتل رجلا من أهل الذمة لم يجد ريح الجنة" },
+        { "passage_id": "B", "quote": "من صلى علي ولم يصل على آلي، لم يجد ريح الجنة" },
+        { "passage_id": "A", "quote": "وإن ريحها ليوجد من مسيرة سبعين عاما" },
+        { "passage_id": "B", "quote": "وإن ريحها ليوجد من مسيرة خمسمائة عام" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Only a text showing one of these acts in the other's frame, or a sign that one wording derives from the other, would change this.",
+      "proposals": [
+        { "kind": "note", "text": "The shared closing clause about the scent of Paradise is a recurring frame; matching on it alone links reports about unrelated acts." }
+      ]
+    },
+    {
+      "claim_id": "I2",
+      "outcome": "supports",
+      "reading": "same_report_variant",
+      "reasons": [
+        "Both state that every boy is held in pledge for his aqiqa, slaughtered on the seventh day, his head shaved and he is named.",
+        "Differences are of wording only: رهين / مرتهن, A adds عنه, and يوم السابع / يوم سابعه."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "كل غلام رهين بعقيقته تذبح عنه يوم السابع ويحلق رأسه ويسمى" },
+        { "passage_id": "B", "quote": "كل غلام مرتهن بعقيقته تذبح يوم سابعه ويحلق رأسه ويسمى" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Neither passage includes its chain, so the speaker is not shown; a chain attributing the two to different speakers would make this a same-ruling-different-speaker case.",
+      "proposals": [
+        { "kind": "difference", "text": "A says the sacrifice is slaughtered 'on his behalf' (عنه); B omits this." }
+      ]
+    },
+    {
+      "claim_id": "I3",
+      "outcome": "supports",
+      "reading": "same_report_variant",
+      "reasons": [
+        "Both have Abu Sa'id al-Khudri telling a man who loves sheep and the desert to raise his voice when he calls to prayer, because whatever hears the muezzin's voice will bear witness for him on the Day of Resurrection.",
+        "Both close with Abu Sa'id saying he heard it from the Messenger of God.",
+        "Differences are minor wording: و / أو, للصلاة / بالصلاة, B adds بالنداء and مدى."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "إني أراك تحب الغنم والبادية فإذا كنت في غنمك وباديتك فأذنت للصلاة فارفع صوتك" },
+        { "passage_id": "B", "quote": "إني أراك تحب الغنم والبادية، فإذا كنت في غنمك أو باديتك فأذنت بالصلاة فارفع صوتك بالنداء" },
+        { "passage_id": "A", "quote": "فإنه لا يسمع صوت المؤذن جن ولا إنس ولا شيء إلا شهد له يوم القيامة" },
+        { "passage_id": "B", "quote": "فإنه لا يسمع مدى صوت المؤذن جن ولا إنس ولا شىء إلا شهد له يوم القيامة" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Little would change this; the wording is nearly identical apart from small additions.",
+      "proposals": [
+        { "kind": "difference", "text": "B says 'the extent (مدى) of the muezzin's voice'; A says 'the muezzin's voice'." },
+        { "kind": "difference", "text": "A says 'your sheep and your desert'; B says 'your sheep or your desert'." }
+      ]
+    },
+    {
+      "claim_id": "I4",
+      "outcome": "supports",
+      "reading": "shared_passage",
+      "reasons": [
+        "A is a long narrative of Hunayn ending with the Prophet's address to the Ansar; B gives that address without the narrative.",
+        "The core sayings match: whether the Ansar are not content that people take worldly goods while they take the Prophet home, and that if people took a valley and the Ansar a mountain path he would take the Ansar's path.",
+        "B adds a closing not in A (the Ansar are his intimates, and but for the hijra he would have been one of the Ansar), and wording differs (برسول الله / بمحمد, بيوتكم / دياركم, لأخذت / لسلكت)."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "ألا ترضون أن يذهب الناس بالدنيا، وتذهبون برسول الله صلى الله عليه وسلم تحوزونه إلى بيوتكم" },
+        { "passage_id": "B", "quote": "أما ترضون أن يذهب الناس بالدنيا وتذهبون بمحمد إلى دياركم" },
+        { "passage_id": "A", "quote": "لو سلك الناس واديا، وسلكت الأنصار شعبا لأخذت شعب الأنصار" },
+        { "passage_id": "B", "quote": "لو سلك الناس واديا وسلكت الأنصار شعبا لسلكت شعب الأنصار" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "B carries no chain or narrative context, so the packet does not show that its address belongs to the same occasion as A; if B's full text placed it on another occasion, this would be a shared saying rather than one report.",
+      "proposals": [
+        { "kind": "difference", "text": "B adds: 'The Ansar are my intimates and confidants (كرشي وعيبتي), and but for the hijra I would have been one of the Ansar' — absent from A." },
+        { "kind": "difference", "text": "B adds an oath, 'By Him in whose hand is the soul of Muhammad', before the valley saying; A has none." },
+        { "kind": "difference", "text": "A adds that they would 'take him (تحوزونه) to your houses'; B has 'to your lands' (دياركم)." }
+      ]
+    },
+    {
+      "claim_id": "I5",
+      "outcome": "contradicts",
+      "reading": "shared_formula_or_verse",
+      "reasons": [
+        "A is a long dialogue defining islam, iman and ihsan, the signs of the Hour, and identifying the questioner as Jibril.",
+        "B is a short ruling on how a woman performs the iqama: she says the takbir and bears witness.",
+        "The only overlap is the shahada formula, which both quote for different purposes."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "وأن تشهد أن لا إله إلا الله وأن محمدا عبده ورسوله" },
+        { "passage_id": "B", "quote": "إِقَامَةُ الْمَرْأَةِ أَنْ تُكَبِّرَ" },
+        { "passage_id": "A", "quote": "هذا جبريل جاء ليعلم الناس دينهم" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Nothing in either text suggests a shared report beyond the shahada.",
+      "proposals": [
+        { "kind": "note", "text": "Overlap here is the shahada only; such pairs should not be offered as tellings." }
+      ]
+    },
+    {
+      "claim_id": "I6",
+      "outcome": "contradicts",
+      "reading": "shared_formula_or_verse",
+      "reasons": [
+        "Both open with the same frame: three whom God will not speak to, look at or purify on the Day of Resurrection, and who will have a painful punishment.",
+        "The three named are entirely different: A names an old adulterer, a tyrant king and a proud poor man; B names a man withholding surplus water from the traveller, a man who swears falsely in a sale after 'asr, and a man who pledges allegiance to a leader only for worldly gain.",
+        "This is a standard frame filled with different content."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "شَيْخٌ زَانٍ وَمَلِكٌ جَبَّارٌ وَمُقِلٌّ مُخْتَالٌ" },
+        { "passage_id": "B", "quote": "رجل على فضل ماء بالفلاة يمنعه من ابن السبيل" },
+        { "passage_id": "B", "quote": "ورجل بايع إماما لا يبايعه إلا لدنيا" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Only a telling that listed any of the same three persons would make these two related reports.",
+      "proposals": [
+        { "kind": "note", "text": "The 'three whom God will not speak to' opening is a recurring frame (it echoes Qur'anic wording); matching on it alone pairs reports with different content." }
+      ]
+    }
+  ]
+}

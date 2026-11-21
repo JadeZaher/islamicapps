@@ -18,12 +18,14 @@ import { connectionOptions, requireDatabaseUrl } from './connection-options';
 import * as schema from './schema';
 
 /**
- * 40 launch tables, chain_mention_candidates (0006), the three report-correspondence tables (0007) and epochs (0008).
+ * 40 launch tables, chain_mention_candidates (0006), the three report-correspondence tables (0007), epochs (0008) and
+ * narrator_source_profiles, narrator_external_ids, narrator_link_candidates (0010).
  * Views: the 5 launch views, public_chain_mention_candidates (0006), report_correspondence_shown_pairs,
- * report_correspondence_display and public_report_correspondences (0007), and published_epochs (0008).
+ * report_correspondence_display and public_report_correspondences (0007), published_epochs (0008) and
+ * public_chain_mention_candidates_v2 (0011).
  */
-const EXPECTED_TABLE_COUNT = 45;
-const EXPECTED_VIEW_COUNT = 10;
+const EXPECTED_TABLE_COUNT = 48;
+const EXPECTED_VIEW_COUNT = 11;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];
 /** Indexes created by hand-written migrations, not by drizzle-kit. */
@@ -269,6 +271,15 @@ async function main() {
     const [{ definition }] = await sql<{ definition: string }[]>`select pg_get_viewdef('public_chain_links'::regclass) as definition`;
     expect(!definition.includes('exact_registry'), 'public_chain_links still treats exact_registry as a verified link');
     expect(definition.includes('source_index'), 'public_chain_links does not treat confirmed source_index as a verified link');
+
+    // The extended tier (0011): Riwayat's automatic linker and label-like records never carry it; the pre-0010 view keeps
+    // only the bases a build before 0010 understands.
+    const [{ tier }] = await sql<{ tier: string }[]>`select pg_get_viewdef('public_chain_mention_candidates_v2'::regclass) as tier`;
+    expect(tier.includes("'riwayat_automatic_linking'") && tier.includes('label_reason IS NULL'),
+      'public_chain_mention_candidates_v2 lets an automatic link or a label carry the machine-reviewed tier');
+    const [{ legacy }] = await sql<{ legacy: string }[]>`select pg_get_viewdef('public_chain_mention_candidates'::regclass) as legacy`;
+    expect(!legacy.includes('source_riwayat') && legacy.includes("'name_kunya_only'"),
+      'public_chain_mention_candidates exposes bases added in 0010 to a build that predates them');
 
     // The correspondence display rule (0007): rejected pairs never shown, confirmed pairs always, decisions hash-bound.
     const [{ shown }] = await sql<{ shown: string }[]>`select pg_get_viewdef('report_correspondence_shown_pairs'::regclass) as shown`;

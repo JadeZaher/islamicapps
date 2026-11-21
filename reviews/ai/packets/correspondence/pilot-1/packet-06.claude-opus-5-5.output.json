@@ -1,0 +1,74 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "correspondence",
+  "prompt_version": "1.0.0",
+  "packet_id": "correspondence/pilot-1/packet-06",
+  "verdicts": [
+    {
+      "claim_id": "I1",
+      "outcome": "supports",
+      "reading": "same_report_variant",
+      "reasons": [
+        "Both matns have the same frame: the Companions say they know how to give the salam on the Prophet and ask how to give the salat, and he answers 'say: O God, bless Muhammad ... as You blessed ... Ibrahim', then the same with baraka.",
+        "The wording differs: A has 'and the family of Muhammad' in both halves, 'the family of Ibrahim', and the closing 'innaka hamidun majid' twice; B adds 'Your servant and messenger', has 'Ibrahim' instead of 'the family of Ibrahim', and has no closing formula.",
+        "The questioners differ: Ka'b ibn 'Ujra in A and Abu Sa'id al-Khudri in B. The question-and-answer is the same, so these read as variant tellings of one teaching, not just a shared formula."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "فكيف الصلاة قال" },
+        { "passage_id": "A", "quote": "قولوا اللهم صل على محمد وعلى آل محمد، كما صليت على آل إبراهيم" },
+        { "passage_id": "B", "quote": "السلام عليك قد عرفناه فكيف الصلاة عليك" },
+        { "passage_id": "B", "quote": "قولوا اللهم صل على محمد عبدك ورسولك كما صليت على إبراهيم" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "The answer is a liturgical formula taught in more than one setting, and the two Companions differ. A reader who treats the formula as a standard prayer, and not as one report, could read this as shared_formula_or_verse.",
+      "proposals": [
+        { "kind": "difference", "text": "B adds 'عبدك ورسولك' (Your servant and messenger) after Muhammad in the first half; A does not." },
+        { "kind": "difference", "text": "A has 'وعلى آل محمد' in the first half and 'آل إبراهيم' in both halves; B's first half has no 'family of Muhammad' and both halves say 'إبراهيم' alone." },
+        { "kind": "difference", "text": "A ends each half with 'إنك حميد مجيد'; B has no closing formula." },
+        { "kind": "note", "text": "Different Companions report the exchange: Ka'b ibn 'Ujra (A) and Abu Sa'id al-Khudri (B)." }
+      ]
+    },
+    {
+      "claim_id": "I2",
+      "outcome": "supports",
+      "reading": "same_report_variant",
+      "reasons": [
+        "Both contain the saying that a belly filled with pus is better than one filled with poetry, in almost the same words.",
+        "A says 'a man's belly' and B says 'the belly of one of you'.",
+        "A adds an opening order to seize 'the devil', which B does not have. A has no chain and does not name the speaker; B attributes the saying to the Messenger of God."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "لأن يمتلئ جوف رجل قيحا خير له من أن يمتلئ شعرا" },
+        { "passage_id": "B", "quote": "لأن يمتلئ جوف أحدكم قيحا خير له من أن يمتلئ شعرا" },
+        { "passage_id": "A", "quote": "خذوا الشيطان أو أمسكوا الشيطان" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "A is stored without a chain or a named speaker. If the full text of A gave the saying to someone other than the Prophet, the reading would become same_ruling_different_speaker. Because of A's narrative opening, shared_passage could also apply.",
+      "proposals": [
+        { "kind": "difference", "text": "A opens with an order, 'Seize the devil' (or 'Hold back the devil'), with the narrator unsure which word was used. This points to an occasion that B does not describe." },
+        { "kind": "difference", "text": "A says 'جوف رجل' (a man's belly); B says 'جوف أحدكم' (the belly of one of you)." },
+        { "kind": "note", "text": "B ends with the compiler's grading remark 'حديث حسن صحيح', which is not part of the matn." }
+      ]
+    },
+    {
+      "claim_id": "I3",
+      "outcome": "supports",
+      "reading": "same_report",
+      "reasons": [
+        "The two matns are almost word for word the same: the call for the man who asked about the Hour, his reply, the question 'what have you prepared for it', his answer that he loves God and His Messenger, and the reply 'you are with whom you love'.",
+        "The only differences are small particles: 'qala' in A and 'fa-qala' in B, and B's 'fa-anta' against A's 'anta' with an explicit attribution to the Messenger of God."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "أين السائل عن الساعة فقال الرجل ها أنا ذا يا رسول الله" },
+        { "passage_id": "B", "quote": "أين السائل عن الساعة فقال الرجل ها أنا ذا يا رسول الله" },
+        { "passage_id": "A", "quote": "أنت مع من أحببت" },
+        { "passage_id": "B", "quote": "قال فأنت مع من أحببت" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Both are stored without chains. The only thing that would change this answer is evidence that one of the texts was stored incorrectly.",
+      "proposals": [
+        { "kind": "note", "text": "A names the final speaker explicitly ('فقال رسول الله ... أنت مع من أحببت'); B has only 'قال فأنت مع من أحببت'. The meaning is the same." }
+      ]
+    }
+  ]
+}

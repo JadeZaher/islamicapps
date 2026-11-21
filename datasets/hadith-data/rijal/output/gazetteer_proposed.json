@@ -1,0 +1,576 @@
+{
+ "status": "proposed_unreviewed",
+ "rule": "a written place maps to an id only when one of these letter-folded forms (optionally with ب/و/ل) matches it exactly; anything else stays as written and unmapped",
+ "not_mapped_on_purpose": {
+  "عمان": "Oman and Amman are written alike unvocalised",
+  "الهمداني": "a Yemeni tribe, not Hamadhan",
+  "البخاري/النسائي": "compilers' nisbas"
+ },
+ "places": {
+  "medina": {
+   "cities": [
+    "المدينة"
+   ],
+   "nisbas": [
+    "المدني",
+    "المديني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "makkah": {
+   "cities": [
+    "مكة"
+   ],
+   "nisbas": [
+    "المكي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "taif": {
+   "cities": [
+    "الطائف"
+   ],
+   "nisbas": [
+    "الطائفي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "basra": {
+   "cities": [
+    "البصرة"
+   ],
+   "nisbas": [
+    "البصري"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "kufa": {
+   "cities": [
+    "الكوفة"
+   ],
+   "nisbas": [
+    "الكوفي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "baghdad": {
+   "cities": [
+    "بغداد"
+   ],
+   "nisbas": [
+    "البغدادي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "wasit": {
+   "cities": [
+    "واسط"
+   ],
+   "nisbas": [
+    "الواسطي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "madain": {
+   "cities": [
+    "المدائن"
+   ],
+   "nisbas": [
+    "المدائني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "egypt": {
+   "cities": [
+    "مصر"
+   ],
+   "nisbas": [
+    "المصري"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "alexandria": {
+   "cities": [
+    "الاسكندرية"
+   ],
+   "nisbas": [
+    "الاسكندراني",
+    "الاسكندري"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "syria": {
+   "cities": [
+    "الشام"
+   ],
+   "nisbas": [
+    "الشامي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "damascus": {
+   "cities": [
+    "دمشق"
+   ],
+   "nisbas": [
+    "الدمشقي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "hims": {
+   "cities": [
+    "حمص"
+   ],
+   "nisbas": [
+    "الحمصي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "ramla": {
+   "cities": [
+    "الرملة"
+   ],
+   "nisbas": [
+    "الرملي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "antioch": {
+   "cities": [
+    "انطاكية"
+   ],
+   "nisbas": [
+    "الانطاكي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "asqalan": {
+   "cities": [
+    "عسقلان"
+   ],
+   "nisbas": [
+    "العسقلاني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "palestine": {
+   "cities": [
+    "فلسطين"
+   ],
+   "nisbas": [
+    "الفلسطيني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "jordan": {
+   "cities": [
+    "الاردن"
+   ],
+   "nisbas": [
+    "الاردني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "beirut": {
+   "cities": [
+    "بيروت"
+   ],
+   "nisbas": [
+    "البيروتي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "jerusalem": {
+   "cities": [
+    "بيت المقدس",
+    "القدس",
+    "ايلياء"
+   ],
+   "nisbas": [
+    "المقدسي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "tarsus": {
+   "cities": [
+    "طرسوس"
+   ],
+   "nisbas": [
+    "الطرسوسي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "massisa": {
+   "cities": [
+    "المصيصة"
+   ],
+   "nisbas": [
+    "المصيصي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "thughur": {
+   "cities": [
+    "الثغر"
+   ],
+   "nisbas": [
+    "الثغري"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "jazira": {
+   "cities": [
+    "الجزيرة"
+   ],
+   "nisbas": [
+    "الجزري"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "harran": {
+   "cities": [
+    "حران"
+   ],
+   "nisbas": [
+    "الحراني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "raqqa": {
+   "cities": [
+    "الرقة"
+   ],
+   "nisbas": [
+    "الرقي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "ruha": {
+   "cities": [
+    "الرها"
+   ],
+   "nisbas": [
+    "الرهاوي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "mosul": {
+   "cities": [
+    "الموصل"
+   ],
+   "nisbas": [
+    "الموصلي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "yemen": {
+   "cities": [
+    "اليمن"
+   ],
+   "nisbas": [
+    "اليماني",
+    "اليمني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "sanaa": {
+   "cities": [
+    "صنعاء"
+   ],
+   "nisbas": [
+    "الصنعاني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "yamama": {
+   "cities": [
+    "اليمامة"
+   ],
+   "nisbas": [
+    "اليمامي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "bahrain": {
+   "cities": [
+    "البحرين"
+   ],
+   "nisbas": [
+    "البحراني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "hijaz": {
+   "cities": [
+    "الحجاز"
+   ],
+   "nisbas": [
+    "الحجازي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "najd": {
+   "cities": [
+    "نجد"
+   ],
+   "nisbas": [
+    "النجدي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "iraq": {
+   "cities": [
+    "العراق"
+   ],
+   "nisbas": [
+    "العراقي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "khurasan": {
+   "cities": [
+    "خراسان"
+   ],
+   "nisbas": [
+    "الخراساني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "merv": {
+   "cities": [
+    "مرو"
+   ],
+   "nisbas": [
+    "المروزي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "balkh": {
+   "cities": [
+    "بلخ"
+   ],
+   "nisbas": [
+    "البلخي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "nishapur": {
+   "cities": [
+    "نيسابور"
+   ],
+   "nisbas": [
+    "النيسابوري"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "nasa": {
+   "cities": [
+    "نسا"
+   ],
+   "nisbas": [],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "herat": {
+   "cities": [
+    "هراة"
+   ],
+   "nisbas": [
+    "الهروي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "rayy": {
+   "cities": [
+    "الري"
+   ],
+   "nisbas": [
+    "الرازي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "hamadhan": {
+   "cities": [
+    "همذان"
+   ],
+   "nisbas": [
+    "الهمذاني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "isfahan": {
+   "cities": [
+    "اصبهان",
+    "اصفهان"
+   ],
+   "nisbas": [
+    "الاصبهاني",
+    "الاصفهاني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "samarqand": {
+   "cities": [
+    "سمرقند"
+   ],
+   "nisbas": [
+    "السمرقندي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "bukhara": {
+   "cities": [
+    "بخاري"
+   ],
+   "nisbas": [],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "sijistan": {
+   "cities": [
+    "سجستان"
+   ],
+   "nisbas": [
+    "السجستاني"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "persia": {
+   "cities": [
+    "فارس"
+   ],
+   "nisbas": [],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "abyssinia": {
+   "cities": [
+    "الحبشة"
+   ],
+   "nisbas": [
+    "الحبشي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "africa": {
+   "cities": [
+    "افريقية"
+   ],
+   "nisbas": [
+    "الافريقي"
+   ],
+   "source": "biography-verification rijal_parsing.GAZETTEER"
+  },
+  "qum": {
+   "cities": [
+    "قم"
+   ],
+   "nisbas": [
+    "القمي"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "samarra": {
+   "cities": [
+    "سامرا",
+    "سامراء",
+    "سر من راي"
+   ],
+   "nisbas": [],
+   "source": "rijal layer proposal"
+  },
+  "karbala": {
+   "cities": [
+    "الحائر",
+    "كربلا",
+    "كربلاء"
+   ],
+   "nisbas": [],
+   "source": "rijal layer proposal"
+  },
+  "fustat": {
+   "cities": [
+    "الفسطاط"
+   ],
+   "nisbas": [],
+   "source": "rijal layer proposal"
+  },
+  "oman": {
+   "cities": [],
+   "nisbas": [
+    "العماني"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "hira": {
+   "cities": [
+    "الحيرة"
+   ],
+   "nisbas": [
+    "الحيري"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "ahwaz": {
+   "cities": [
+    "الاهواز"
+   ],
+   "nisbas": [
+    "الاهوازي"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "tus": {
+   "cities": [
+    "طوس"
+   ],
+   "nisbas": [
+    "الطوسي"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "jurjan": {
+   "cities": [
+    "جرجان"
+   ],
+   "nisbas": [
+    "الجرجاني"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "qazwin": {
+   "cities": [
+    "قزوين"
+   ],
+   "nisbas": [
+    "القزويني"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "kashan": {
+   "cities": [
+    "قاشان",
+    "كاشان"
+   ],
+   "nisbas": [
+    "القاشاني",
+    "الكاشاني"
+   ],
+   "source": "rijal layer proposal"
+  },
+  "najaf": {
+   "cities": [
+    "الغري",
+    "النجف"
+   ],
+   "nisbas": [],
+   "source": "rijal layer proposal"
+  },
+  "kish": {
+   "cities": [
+    "كش"
+   ],
+   "nisbas": [
+    "الكشي"
+   ],
+   "source": "rijal layer proposal"
+  }
+ }
+}

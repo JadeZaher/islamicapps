@@ -1,12 +1,17 @@
-/** Writes the live pipeline-table catalog as JSON for `export_postgres.py --catalog`. Usage: tsx src/db/load/dump-catalog.ts <out.json> */
+/**
+ * Writes the live pipeline-table catalog as JSON for `export_postgres.py --catalog` (read-only).
+ * Usage: tsx src/db/load/dump-catalog.ts <out.json> [--database production --confirm-production]
+ */
 import { writeFileSync } from 'node:fs';
+import { resolveTargetDatabase } from '../target-database';
 import { readCatalog } from './catalog';
-import { developmentDatabaseUrl, openLoaderClient } from './connection';
+import { openLoaderClient } from './connection';
 
 async function main() {
   const outputPath = process.argv[2];
-  if (!outputPath) throw new Error('usage: tsx src/db/load/dump-catalog.ts <out.json>');
-  const sql = openLoaderClient(developmentDatabaseUrl());
+  if (!outputPath || outputPath.startsWith('--')) throw new Error('usage: tsx src/db/load/dump-catalog.ts <out.json> [--database ...]');
+  const target = resolveTargetDatabase(process.argv.slice(3), { required: false });
+  const sql = openLoaderClient(target.url);
   try {
     const catalog = await readCatalog(sql);
     writeFileSync(outputPath, `${JSON.stringify(catalog, null, 2)}\n`, 'utf8');

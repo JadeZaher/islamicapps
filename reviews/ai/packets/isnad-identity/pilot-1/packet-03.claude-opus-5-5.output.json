@@ -1,0 +1,214 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "isnad-identity",
+  "prompt_version": "1.0.0",
+  "packet_id": "isnad-identity/pilot-1/packet-03",
+  "verdicts": [
+    {
+      "claim_id": "I1.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written kunya أبي هريرة (genitive of أبو هريرة) matches the kunya in the candidate's recorded names.",
+        "The target is the last link of the chain and transmits directly from the Prophet, which fits a Companion; the candidate's record carries the Companion honorific and a death year of 59.",
+        "No other candidate is proposed and nothing in the packet points to a different bearer of this kunya."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن أبي هريرة، قال قال رسول الله" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The packet has no rijal passage for this candidate and no record of Abu Salih as his student; the identification rests on the kunya plus the chain's end-point. A passage naming another Companion with this kunya would change the answer.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I2.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The written name محمد بن جعفر is consistent with C1's ism and nasab, but it is a common name and the packet gives no teacher or student links for C1.",
+        "P1 describes C1 as a Medinan of the seventh tabaqa; the packet says nothing about whether he transmitted from شعبة or to أحمد بن عبد الله بن الحكم, so the chain context neither confirms nor excludes him."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا محمد بن جعفر، قال حدثنا شعبة" },
+        { "passage_id": "P1", "quote": "المدني أخو إسماعيل وهو الأكبر ثقة من السابعة" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Outside knowledge, not relied on: the محمد بن جعفر who transmits from شعبة in Sunni chains is usually the Basran Ghundar (محمد بن جعفر الهذلي), Shu'ba's well-known student, not Ibn Abi Kathir. A rijal passage listing C1's teachers and students, or one for Ghundar, would settle it.",
+      "proposals": [
+        { "kind": "other_person", "text": "Consider adding محمد بن جعفر الهذلي البصري (Ghundar) as a candidate; this is outside knowledge and must be checked against a rijal passage listing شعبة among his teachers." }
+      ]
+    },
+    {
+      "claim_id": "I2.C2",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "C2's recorded names are the bare ism and nasab محمد بن جعفر with no nisba, death year, generation or rijal passage, so the packet gives nothing to test against the chain (student أحمد بن عبد الله بن الحكم, teacher شعبة).",
+        "A bare shared name (mushtarak) alone cannot fix the identity."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا محمد بن جعفر، قال حدثنا شعبة" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Any record giving C2's nisba, period or teachers would allow a decision. C2 may be a generic lexicon entry that conflates several men of this name.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I3.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written name زيد بن الحباب matches C1's recorded name exactly, and P1 (attached to C1) is the entry for زيد بن الحباب أبو الحسين العكلي, a Kufan traveller in hadith.",
+        "P1's work symbols include م and 4 (the four Sunan), which covers Ibn Majah, the collection this report comes from; his student here, أبو بكر بن أبي شيبة, fits a narrator of P1's ninth tabaqa.",
+        "P1's names are the same as C2's recorded names, so C1 and C2 appear to be two records of one person rather than rival candidates."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا أبو بكر بن أبي شيبة، حدثنا زيد بن الحباب، عن الضحاك بن عثمان" },
+        { "passage_id": "P1", "quote": "أبو الحسين العكلي" },
+        { "passage_id": "P1", "quote": "وكان بالكوفة" },
+        { "passage_id": "P1", "quote": "ر م 4" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "P1 gives the death year as ثلاثين ومائتين (230) while C2's record gives 203; this does not change who is meant but one figure is likely a text or data error. Outside knowledge, not relied on: the usually cited death year is 203.",
+      "proposals": [
+        { "kind": "note", "text": "C1 and C2 appear to be duplicate records of the same narrator (زيد بن الحباب أبو الحسين العكلي, Kufa); consider merging them. Reconcile the death year: P1 reads 230, C2's record says 203." }
+      ]
+    },
+    {
+      "claim_id": "I3.C2",
+      "outcome": "supports",
+      "reasons": [
+        "C2's recorded name زيد بن الحباب أبو الحسين العكلي matches the written name and agrees in kunya and nisba with P1.",
+        "C2's recorded death place Kufa agrees with P1's statement that he was at Kufa, and P1's symbols include the four Sunan, covering Ibn Majah.",
+        "C2 and C1 appear to be the same person, so supporting one does not count against the other."
+      ],
+      "evidence": [
+        { "passage_id": "P1", "quote": "زيد بن الحباب بضم المهملة وموحدتين أبو الحسين العكلي" },
+        { "passage_id": "P1", "quote": "وكان بالكوفة" },
+        { "passage_id": "report", "quote": "حدثنا زيد بن الحباب" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Death year conflict: C2's record says 203, P1 reads مات سنة ثلاثين ومائتين (230). It does not affect the identification.",
+      "proposals": [
+        { "kind": "note", "text": "Duplicate of I3.C1; merge the records and resolve the 203/230 death-year discrepancy." }
+      ]
+    },
+    {
+      "claim_id": "I4.C1",
+      "outcome": "contested",
+      "reasons": [
+        "The written form أبي عبد الله followed by عليه السلام is the Imami convention of naming an Imam by kunya plus honorific, and both C1 (جعفر بن محمد الصادق) and C2 (الحسين بن علي) are listed by the same convention table as bearers of this kunya.",
+        "The packet gives no dates, generations or rijal passages for the teacher حبيب الخثعمي or for either Imam, so nothing in the packet decides between them.",
+        "The same chain uses the kunya أبي عبد الله for a non-Imam (محمد بن خالد البرقي), confirming the kunya alone does not fix a person."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن حبيب الخثعمي، عن أبي عبد الله عليه السلام" },
+        { "passage_id": "report", "quote": "عن أبي عبد الله محمد بن خالد البرقي" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: in Imami chains an unqualified أبو عبد الله عليه السلام conventionally denotes al-Sadiq, and the chain depth (five transmitters between al-Saduq's father and the Imam) fits al-Sadiq's period better than al-Husayn's. A packet passage stating the convention's default, or the tabaqa of حبيب الخثعمي, would likely move this to supports.",
+      "proposals": [
+        { "kind": "note", "text": "Add to the packet the convention table's rule for an unqualified أبو عبد الله عليه السلام and a rijal passage for حبيب الخثعمي giving his period or teacher." }
+      ]
+    },
+    {
+      "claim_id": "I4.C2",
+      "outcome": "contested",
+      "reasons": [
+        "C2 (الحسين بن علي) bears the kunya أبو عبد الله under the same convention table as C1, and the written form with عليه السلام fits an Imam.",
+        "The packet records no dates or generations for C2 or for the teacher حبيب الخثعمي, so it cannot exclude C2 on period grounds, nor prefer C1."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن حبيب الخثعمي، عن أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: the chain length and the convention make al-Husayn an unlikely reading here. Evidence of حبيب الخثعمي's period would likely make this contradicts.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I5.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The bare ism عبد الرحمن is consistent with C1's name عبد الرحمن بن مهدي, but a bare ism cannot by itself fix the person.",
+        "The packet gives no rijal passage for C1 and no record of his transmitting from شعبة or to محمد بن بشار; his recorded death year 198 cannot be checked against the chain because the packet gives no dates for the neighbours."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا محمد بن جعفر، وعبد الرحمن، قالا حدثنا شعبة" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: محمد بن بشار (Bundar) narrating from Ghundar and عبد الرحمن together, both from شعبة, is a familiar pairing in which عبد الرحمن is Ibn Mahdi. A rijal passage listing شعبة among C1's teachers or محمد بن بشار among his students would support C1.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I5.C2",
+      "outcome": "contradicts",
+      "reasons": [
+        "C2's record (عبد الرحمن رضي الله عنه, 'Abdur Rahman bin Sakran bin 'Amr) carries the Companion honorific, but the target transmits from شعبة, who is three links below ابن عمر in this chain; a Companion cannot sit at that position.",
+        "P1, attached to C2, is about a different man, عبد الرحمن مولى قيس, a Basran of the eighth tabaqa, so the passage does not support C2's record and itself names a different person."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن يعلى بن عطاء، أنه سمع عليا الأزدي، أنه سمع ابن عمر" },
+        { "passage_id": "P1", "quote": "عبد الرحمن مولى قيس بصري مجهول من الثامنة ت" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The contradiction rests on C2's record being a Companion. If the link was meant for P1's man (مولى قيس) instead, that would be a separate candidate needing its own evidence; P1's symbol ت (Tirmidhi only) does not list al-Nasa'i.",
+      "proposals": [
+        { "kind": "note", "text": "P1 (عبد الرحمن مولى قيس) does not describe C2's record (Ibn Sakran, a Companion); the passage was attached to the wrong person." }
+      ]
+    },
+    {
+      "claim_id": "I6.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The written name حماد ابن سلمة matches C1's recorded name حماد بن سلمة in ism and nasab.",
+        "The stored report text contains only the matn and no chain, so the name and its neighbours cannot be checked against the report text, and the packet gives no rijal passage or teacher/student links for C1."
+      ],
+      "evidence": [],
+      "uncertainty": "medium",
+      "uncertainty_note": "The exact name match makes C1 plausible, and nothing in the packet points elsewhere; a report text that includes the isnad, or a passage listing سعيد الجريري among C1's teachers or حسن ابن موسى among his students, would move this to supports. Outside knowledge, not relied on: حماد بن سلمة (d. 167) is well known as a student of al-Jurayri.",
+      "proposals": [
+        { "kind": "note", "text": "The stored text_ar for Musnad Ahmad no. 21 lacks the isnad; the chain cannot be verified against the report text." }
+      ]
+    },
+    {
+      "claim_id": "I7.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The written name شيبة ابن هشام الراسبي matches C1's recorded name in ism, nasab and nisba.",
+        "The stored report text contains no chain, so the name cannot be checked against the report, and the packet has no rijal passage or teacher/student information for C1."
+      ],
+      "evidence": [],
+      "uncertainty": "medium",
+      "uncertainty_note": "A three-part name match including the nisba is strong, and no competing candidate is offered; a report text including the isnad, or a passage linking C1 to حماد ابن زيد, would justify supports.",
+      "proposals": [
+        { "kind": "note", "text": "The stored text_ar for Sunan al-Darimi no. 3267 lacks the isnad; the chain cannot be verified against the report text." }
+      ]
+    },
+    {
+      "claim_id": "I8.C1",
+      "outcome": "contested",
+      "reasons": [
+        "The written form أبي عبد الله with عليه السلام fits an Imam named by kunya, and both C1 (الحسين بن علي) and C2 (جعفر بن محمد الصادق) are listed by the same convention table for this kunya.",
+        "The packet gives no dates or generations for the teacher هشام بن الحكم or for either Imam, so it cannot exclude C1 or prefer C2."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن هشام بن الحكم، عن أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: هشام بن الحكم is known as a companion of al-Sadiq and al-Kazim, which would exclude al-Husayn; a rijal passage stating هشام بن الحكم's period or teachers would likely make this contradicts.",
+      "proposals": [
+        { "kind": "note", "text": "Add a rijal passage for هشام بن الحكم giving his period or the Imams he transmitted from." }
+      ]
+    },
+    {
+      "claim_id": "I8.C2",
+      "outcome": "contested",
+      "reasons": [
+        "C2 (جعفر بن محمد الصادق) bears the kunya أبو عبد الله under the convention table, and the written form with عليه السلام fits an Imam.",
+        "Without dates or a rijal passage for هشام بن الحكم, the packet supports C2 no more than C1."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن هشام بن الحكم، عن أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: هشام بن الحكم transmitted from al-Sadiq, and the unqualified kunya conventionally denotes al-Sadiq in Imami chains. Packet evidence of either fact would move this to supports.",
+      "proposals": []
+    }
+  ]
+}

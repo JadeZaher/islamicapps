@@ -36,8 +36,8 @@ export const SOURCES: readonly SourceRecord[] = [
     code: 'THQ',
     anchor: 'thq',
     name: 'Thaqalayn (Stichting Thaqalayn)',
-    supplies: ['text', 'translation', 'gradings'],
-    took: "Arabic and English of twenty classical Imami works and Muhsini's Mu'jam, with the gradings Thaqalayn records (al-Majlisi, al-Behbudi, Muhsini, al-Najafi), through ThaqalaynAPI.",
+    supplies: ['text', 'translation', 'gradings', 'identity claims'],
+    took: "Arabic and English of twenty classical Imami works and Muhsini's Mu'jam, with the gradings Thaqalayn records (al-Majlisi, al-Behbudi, Muhsini, al-Najafi), through ThaqalaynAPI. Its English chains give the Latin form of Imami narrators' names, and its narrator annotation (carried by the Riwayat corpus, re-keyed to this edition) identifies Imami narrators.",
     licence: { name: 'CC BY 4.0', url: CC_BY_4 },
     requiredWording:
       'Source: Thaqalayn (Stichting Thaqalayn) — [link to the hadith on thaqalayn.com]. Arabic text of [work] by [author]. Translation: [translator], where shown. CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/. Changes: text normalized and chains of narrators extracted by Shura wa Istehsan. Thaqalayn does not endorse this site.',
@@ -131,7 +131,7 @@ export const SOURCES: readonly SourceRecord[] = [
     anchor: 'hkg',
     name: 'hadith-kg (“al-Jami — Hadith Knowledge Graph”) by emadjumaah',
     supplies: ['identity claims'],
-    took: 'Chains, narrator identities and critics’ statements, used to measure and propose identity candidates (unreviewed).',
+    took: 'Narrator identities per chain position and its narrator records (names, generation, dates, places), matched to this archive’s reports and shown as identity claims with their own narrator pages. Its grading words are not shown.',
     licence: { name: 'CC BY 4.0', url: CC_BY_4 },
     requiredWording:
       'hadith-kg — "الجامع — Hadith Knowledge Graph" by emadjumaah, https://huggingface.co/datasets/emadjumaah/hadith-kg (revision 8ae7e3d5), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Compiled by its author from hadithdb (2017). Measurements and candidate rows derived from it by this project are unreviewed; the database itself was not changed.',
@@ -145,7 +145,7 @@ export const SOURCES: readonly SourceRecord[] = [
     anchor: 'rwy',
     name: 'Riwāyāt: A Corpus of Sunni and Shīʿī Hadith Transmission (Abdullah Ansar)',
     supplies: ['identity claims'],
-    took: 'Parsed chains and narrator identifications, used to measure and propose identity candidates (unreviewed).',
+    took: 'Narrator identifications per chain position (its own, or carried from Thaqalayn’s and hadith-kg’s annotation), its narrator records and their crosswalk ids, shown as identity claims with their own narrator pages; its automatic links are shown and never counted.',
     licence: { name: 'CC0 1.0 (embedded texts under their own licences)', url: 'https://creativecommons.org/publicdomain/zero/1.0/' },
     requiredWording:
       'Abdullah Ansar, "Riwāyāt: A Corpus of Sunni and Shīʿī Hadith Transmission", v1, Zenodo, 2026, https://doi.org/10.5281/zenodo.23630501 (CC0 1.0). Hadith texts and annotations derive from third-party datasets under their own licences, including hadith-kg by emadjumaah (CC BY 4.0, https://huggingface.co/datasets/emadjumaah/hadith-kg) and ThaqalaynData for the Shi\'i texts.',
@@ -159,7 +159,7 @@ export const SOURCES: readonly SourceRecord[] = [
     anchor: 'swi',
     name: 'Shura wa Istehsan (this archive)',
     supplies: ['translation', 'identity claims'],
-    took: 'Our own layer: chain extraction, machine translations (labelled unreviewed), reviewer decisions, and the historical seed data, which is unverified until cited.',
+    took: 'Our own layer: chain extraction, machine translations (labelled unreviewed), reviewer decisions, the transliteration of narrator names, the register of the Imams’ conventional kunyas, and the historical seed data, which is unverified until cited.',
     licence: { name: 'Same licence as the source material it derives from', url: null },
     requiredWording: 'Machine translation by Shura wa Istehsan ([model]), not reviewed.',
     link: null,
@@ -280,7 +280,34 @@ export const WORK_CREDITS: Readonly<Record<string, WorkCredit>> = {
 export function sourceForIdentityBasis(basis: string): SourceCode {
   if (basis === 'source_index' || basis === 'source_index_confirmed_by_text') return 'K6I';
   if (basis.startsWith('name_')) return 'MSD';
+  if (basis.startsWith('source_hadith_kg')) return 'HKG';
+  if (basis.startsWith('source_riwayat')) return 'RWY';
   return 'SWI';
+}
+
+/**
+ * Every source behind one identity claim (reconciled/README.md §e): a Riwayat id taken from an upstream annotation is
+ * also credited to that annotation's author, Thaqalayn in Imami chains and hadith-kg elsewhere.
+ */
+export function sourcesForIdentityClaim(basis: string, origin: string | null | undefined, tradition: string | null): SourceCode[] {
+  const primary = sourceForIdentityBasis(basis);
+  if (primary === 'RWY' && origin === 'upstream_annotation') return ['RWY', tradition === 'Imami' ? 'THQ' : 'HKG'];
+  return [primary];
+}
+
+/** The source of a chain name's Latin form: the provider's English, the identified record's register, or this archive. */
+export function sourceForLatinName(basis: string, narratorId: string | null | undefined): SourceCode {
+  if (basis === 'provider_english') return 'THQ';
+  if (basis === 'identity_name') return narratorId?.startsWith('narrator:rawi:') ? 'MSD' : 'SWI';
+  return 'SWI';
+}
+
+/** The source of a narrator record by its authority (narrators.authority). */
+export function sourceForNarratorAuthority(authority: string): SourceCode {
+  if (authority === 'hadith_kg') return 'HKG';
+  if (authority === 'riwayat') return 'RWY';
+  if (authority === 'imam_register') return 'SWI';
+  return 'MSD';
 }
 
 /** Hadith gradings shipped with a work come from the work's text source (Thaqalayn records the Imami graders). */

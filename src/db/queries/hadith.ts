@@ -186,7 +186,7 @@ export function hadithDetailStatement(relations: HadithRelations, hadithId: stri
 }
 
 /** The English row's label and credit (src/lib/sources/report-credit.ts), so every surface words it the same way. */
-function englishAttribution(state: string, detail: Record<string, unknown>): EnglishAttribution {
+export function englishAttribution(state: string, detail: Record<string, unknown>): EnglishAttribution {
   const english = { state, translator: text(detail.translator), model: text(detail.english_model) };
   return {
     ...english,

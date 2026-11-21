@@ -1,0 +1,30 @@
+{
+  "specialist_id": "correspondence",
+  "prompt_version": "1.0.0",
+  "prompt_sha256": "ef05214c2cd2166d990d5792321fe7c831a9d89ba14dd51584a740cac3e009d4",
+  "batch": "pilot-1",
+  "seed": "pilot-1",
+  "drawn_from": {
+    "database": "production (SELECT only, READ ONLY transaction)",
+    "dataset_version_id": "e2430eae674e77c54303186fc5e88a81f86ee3df9a2ac8017d5e5283f7cd89f4"
+  },
+  "sampling": "per stratum, the first 5 live candidates by sha256(seed || candidate id); gold and worked-example pairs always included",
+  "strata": {
+    "same_wording": "relation_class = 'same_wording'",
+    "variant_shown": "relation_class = 'same_report_variant_wording' and jaccard >= 0.4 and scope <> 'cross_tradition'",
+    "variant_below_display": "relation_class = 'same_report_variant_wording' and jaccard < 0.4",
+    "partial_shown": "relation_class = 'partial_overlap' and containment >= 0.7",
+    "partial_below_display": "relation_class = 'partial_overlap' and containment < 0.7",
+    "cross_tradition_shown": "scope = 'cross_tradition' and (relation_class = 'same_wording' or (relation_class = 'same_report_variant_wording' and jaccard >= 0.4) or (relation_class = 'partial_overlap' and containment >= 0.7))"
+  },
+  "items": 33,
+  "code_sha256": "8fb984f93dc4048480040638d66cbcd8d29ca331a98fbf6f702aa6fd62294b59",
+  "packets": [
+    "reviews/ai/packets/correspondence/pilot-1/packet-01.json",
+    "reviews/ai/packets/correspondence/pilot-1/packet-02.json",
+    "reviews/ai/packets/correspondence/pilot-1/packet-03.json",
+    "reviews/ai/packets/correspondence/pilot-1/packet-04.json",
+    "reviews/ai/packets/correspondence/pilot-1/packet-05.json",
+    "reviews/ai/packets/correspondence/pilot-1/packet-06.json"
+  ]
+}

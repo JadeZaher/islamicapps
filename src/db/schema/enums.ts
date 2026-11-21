@@ -54,7 +54,8 @@ export const translationStateEnum = pgEnum('translation_state', [
   'unknown_provenance',
 ]);
 
-export const narratorAuthorityEnum = pgEnum('narrator_authority', ['rawi', 'imami_rijal']);
+/** `hadith_kg`, `riwayat`: an external dataset's own narrator record; `imam_register`: the Imams (0010, src/db/AGENTS.md §External identity). */
+export const narratorAuthorityEnum = pgEnum('narrator_authority', ['rawi', 'imami_rijal', 'hadith_kg', 'riwayat', 'imam_register']);
 
 export const tabaqahClassEnum = pgEnum('tabaqah_class', [
   'PROPHET',
@@ -98,6 +99,20 @@ export const mentionCandidateBasisEnum = pgEnum('mention_candidate_basis', [
   'source_index',
   'source_index_confirmed_by_text',
   'reviewer_decision',
+  'source_hadith_kg',
+  'source_hadith_kg_confirmed_by_text',
+  'source_riwayat',
+  'source_riwayat_confirmed_by_text',
+  'imam_kunya_convention',
+  'imam_kunya_candidate',
+]);
+
+/** How a chain mention's Latin name was obtained (0010; src/db/AGENTS.md §Latin names). Never an identification. */
+export const nameLatinBasisEnum = pgEnum('name_latin_basis', [
+  'provider_english',
+  'identity_name',
+  'transliteration_vocalized',
+  'transliteration_table',
 ]);
 
 /** Why a lexicon row cannot name one person (`registry_placeholder_reason` in regen_unified_csvs.py). */
@@ -106,6 +121,9 @@ export const narratorPlaceholderReasonEnum = pgEnum('narrator_placeholder_reason
   'no_arabic_name',
   'bare_single_token_name',
   'kunya_only_name',
+  'relational_name',
+  'collective_or_anonymous_name',
+  'hadith_kg_stub_narrator',
 ]);
 
 export const surfaceDecisionKindEnum = pgEnum('surface_decision_kind', [

@@ -1,0 +1,128 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "correspondence",
+  "prompt_version": "1.0.0",
+  "packet_id": "correspondence/pilot-1/packet-03",
+  "verdicts": [
+    {
+      "claim_id": "I1",
+      "outcome": "supports",
+      "reading": "shared_passage",
+      "reasons": [
+        "B consists only of the oath instruction, which appears almost word for word as the closing clause of A.",
+        "Both are addressed by the Prophet to Abd al-Rahman ibn Samura ('قال لي'), so the setting matches as well as the wording.",
+        "A adds a preceding instruction about not asking for command (al-imara), which B lacks."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "وإذا حلفت على يمين فرأيت غيرها خيرا منها، فأت الذي هو خير، وكفر عن يمينك" },
+        { "passage_id": "B", "quote": "إذا حلفت على يمين فرأيت غيرها خيرا منها فأت الذي هو خير وكفر عن يمينك" },
+        { "passage_id": "A", "quote": "لا تسأل الإمارة" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Could also be read as same_report_variant (B abridged from the fuller telling); the outcome would not change.",
+      "proposals": [
+        { "kind": "difference", "text": "A opens with the instruction not to ask for command (لا تسأل الإمارة) and its rationale; B carries only the oath clause." }
+      ]
+    },
+    {
+      "claim_id": "I2",
+      "outcome": "supports",
+      "reading": "same_report_variant",
+      "reasons": [
+        "Both report that the Messenger of God cursed al-wasila and al-mustawsila, in the same words.",
+        "A adds al-washima and al-mustawshima; B adds an explanatory gloss.",
+        "In both the curse is attributed to the Prophet; in B it is relayed by Abu Abd Allah, which is a matter of transmission rather than a different speaker of the ruling."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "لعن رسول الله صلى الله عليه وسلم الواصلة والمستوصلة والواشمة والمستوشمة" },
+        { "passage_id": "B", "quote": "لعن رسول الله صلى الله عليه وآله الواصلة والمستوصلة يعني الزانية والقوادة" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "The gloss in B gives the two terms a very different sense from their plain meaning (hair-joining). A reader who treats the gloss as defining the content of the report could judge this contested; I treat the shared core sentence as decisive.",
+      "proposals": [
+        { "kind": "difference", "text": "B glosses al-wasila and al-mustawsila as 'the adulteress and the procuress' (يعني الزانية والقوادة); A gives no gloss." },
+        { "kind": "difference", "text": "A adds the woman who tattoos and the woman who asks to be tattooed (الواشمة والمستوشمة), absent from B." }
+      ]
+    },
+    {
+      "claim_id": "I3",
+      "outcome": "contradicts",
+      "reading": "shared_formula_or_verse",
+      "reasons": [
+        "A is a long account of Abu Musa correcting a man after prayer and relaying the Prophet's sermon on following the imam; the tashahhud appears only at its end.",
+        "B is a short report that the Prophet taught the tashahhud of prayer and of need, quoting the tashahhud.",
+        "The only overlap is the tashahhud formula, and even its opening wording differs between the two."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "فليكن من أول قول أحدكم التحيات الطيبات الصلوات لله السلام عليك أيها النبي" },
+        { "passage_id": "B", "quote": "التحيات لله والصلوات والطيبات السلام عليك أيها النبي" },
+        { "passage_id": "A", "quote": "إذا صليتم فأقيموا صفوفكم ثم ليؤمكم أحدكم" },
+        { "passage_id": "B", "quote": "علمنا رسول الله صلى الله عليه وسلم التشهد في الصلاة والتشهد في الحاجة" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "If the claim were only that both preserve a telling of the Prophet's tashahhud teaching, one could call it a shared passage; but the narrative content, setting and formula wording differ.",
+      "proposals": [
+        { "kind": "difference", "text": "Tashahhud wording differs: A 'التحيات الطيبات الصلوات لله', B 'التحيات لله والصلوات والطيبات'." },
+        { "kind": "note", "text": "B also mentions a tashahhud of need (التشهد في الحاجة), which A does not." }
+      ]
+    },
+    {
+      "claim_id": "I4",
+      "outcome": "contradicts",
+      "reading": "shared_formula_or_verse",
+      "reasons": [
+        "A is mainly Ali's description of the Prophet's appearance, followed by a separately chained five-part blessing formula 'counted on the hand'.",
+        "B is only a two-part blessing formula on Muhammad, his wives and his offspring.",
+        "The overlap is the standard Abrahamic blessing frame, filled differently: A blesses 'آل محمد' with five verbs; B blesses 'أزواجه وذريته' with two."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "اللهم صل على محمد وعلى آل محمد كما صليت على إبراهيم وعلى آل إبراهيم انك حميد مجيد" },
+        { "passage_id": "B", "quote": "اللهم صل على محمد وأزواجه وذريته كما صليت على آل إبراهيم" },
+        { "passage_id": "A", "quote": "صف لنا رسول الله صلى الله عليه وآله كأنا ننظر إليه" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "B has no chain or context in the packet; if it were shown to be the conclusion of a report about the same teaching occasion, a variant reading of the formula portion would be arguable.",
+      "proposals": [
+        { "kind": "difference", "text": "A's formula names 'آل محمد' and adds mercy (ترحم), tenderness (تحنن) and peace (سلم) clauses; B names 'أزواجه وذريته' and has only blessing and benediction." },
+        { "kind": "note", "text": "A combines two distinct units: a description of the Prophet (shama'il) and a chained blessing formula; only the second is near B." }
+      ]
+    },
+    {
+      "claim_id": "I5",
+      "outcome": "supports",
+      "reading": "same_report_variant",
+      "reasons": [
+        "Both say there is no envy except in two cases, and describe the same two men in nearly identical words.",
+        "The order of the two men is reversed, and A has 'في' where B has 'على'."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "لا حسد إلا في اثنتين رجل آتاه الله مالا فهو ينفق منه آناء الليل وآناء النهار" },
+        { "passage_id": "B", "quote": "لا حسد إلا على اثنتين رجل آتاه الله القرآن فهو يقوم به آناء الليل وآناء النهار" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "B carries no chain in the packet; that does not affect the matn comparison.",
+      "proposals": [
+        { "kind": "difference", "text": "A names the man given wealth first; B names the man given the Qur'an first." }
+      ]
+    },
+    {
+      "claim_id": "I6",
+      "outcome": "contradicts",
+      "reading": "shared_formula_or_verse",
+      "reasons": [
+        "Both use the same frame 'whoever ... out of faith and seeking reward is forgiven his past sins', but fill it with different acts.",
+        "A concerns standing in prayer on Laylat al-Qadr; B concerns standing in prayer during Ramadan ('يقول لرمضان ... من قامه')."
+      ],
+      "evidence": [
+        { "passage_id": "A", "quote": "من يقم ليلة القدر إيمانا واحتسابا غفر له ما تقدم من ذنبه" },
+        { "passage_id": "B", "quote": "من قامه إيمانا واحتسابا غفر له ما تقدم من ذنبه" },
+        { "passage_id": "B", "quote": "يقول لرمضان" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "A reader who regards these as two clauses of one longer report (which some tellings combine) could treat this as a shared passage; nothing in these two texts shows that, so I read them as distinct sayings in a common frame.",
+      "proposals": [
+        { "kind": "difference", "text": "A's object is Laylat al-Qadr; B's object is the month of Ramadan." }
+      ]
+    }
+  ]
+}

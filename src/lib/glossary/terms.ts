@@ -1326,10 +1326,97 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     definition:
       'A machine check found that the source’s own narrator index names this person at this position and that the name written in the Arabic agrees with it.',
     inArchive:
-      'The archive’s top automatic tier, shown as “machine-reviewed”, never as verified: a sample found about one in twenty of these wrong where two people share a name. It stands only when no other match names someone else (a kunya-only match does not count against it). Teacher-to-student links built from it are machine-reviewed too. Only a reviewer’s decision is called verified.',
-    related: ['basis', 'source-index', 'identity-decision'],
+      'The archive’s top automatic tier, shown as “machine-reviewed”, never as verified: a sample found about one in twenty of these wrong where two people share a name. It rests on one of: the six-books source index, hadith-kg’s index, or Thaqalayn’s annotation carried by the Riwayat corpus, each confirmed by the Arabic; two independent sources agreeing; or an Imam’s conventional kunya in an Imami chain. Riwayat’s own automatic links never count. It stands only when no other source names someone else (a kunya-only match does not count against it). Teacher-to-student links built from it are machine-reviewed too. Only a reviewer’s decision is called verified.',
+    related: ['basis', 'source-index', 'two-sources-agree', 'imam-kunya', 'identity-decision'],
     aliases: ['confirmed by source and text', 'machine review', 'AI review'],
-    enumValues: ['mention_candidate_basis.source_index_confirmed_by_text'],
+    enumValues: [
+      'mention_candidate_basis.source_index_confirmed_by_text',
+      'mention_candidate_basis.source_hadith_kg_confirmed_by_text',
+      'mention_candidate_basis.source_riwayat_confirmed_by_text',
+    ],
+  },
+  {
+    slug: 'two-sources-agree',
+    section: 'archive',
+    term: 'Two sources agree',
+    definition:
+      'Two independent compilations name the same person at the same place in the chain: the six-books source index and hadith-kg.',
+    inArchive:
+      'Counts toward the machine-reviewed tier under its own label (owner, 2026-11-21). The two records are taken as one person only through a machine-proposed link between them, which is shown as a candidate. The Riwayat corpus’s ids for Sunni chains are hadith-kg’s own, so Riwayat agreeing with hadith-kg is not a second source.',
+    related: ['confirmed-by-source-and-text', 'external-source-record'],
+    aliases: ['independent agreement'],
+  },
+  {
+    slug: 'imam-kunya',
+    section: 'archive',
+    term: 'Imam’s conventional kunya',
+    english: 'e.g. Abu ʿAbd Allah (ʿa) for al-Sadiq',
+    definition:
+      'In Imami chains the Imams are often named by kunya alone, followed by the honorific: Abu ʿAbd Allah (ʿa) is Jaʿfar al-Sadiq, Abu Ibrahim (ʿa) is Musa al-Kazim.',
+    inArchive:
+      'In an Imami chain, a kunya with the honorific identifies the Imam and counts toward the machine-reviewed tier (owner, 2026-11-21). A kunya several Imams share (Abu Jaʿfar, Abu al-Hasan, Abu Muhammad) is decided only when a word after it names one Imam (al-Rida, al-Thani); otherwise every Imam who shares it is shown as an undecided candidate. The rule is a reviewable file, never applied outside Imami chains.',
+    related: ['kunya', 'matched-by-kunya-only', 'confirmed-by-source-and-text'],
+    aliases: ['Abu Abd Allah', 'Abu Jafar', 'Abu al-Hasan', 'kunya of the Imam'],
+    enumValues: [
+      'mention_candidate_basis.imam_kunya_convention',
+      'mention_candidate_basis.imam_kunya_candidate',
+      'narrator_authority.imam_register',
+    ],
+  },
+  {
+    slug: 'external-source-record',
+    section: 'archive',
+    term: 'External source record',
+    definition:
+      'A narrator as another open dataset describes it, under that dataset’s own id: hadith-kg (narrator ids for the Sunni and some Ibadi and Zaydi chains) or the Riwayat corpus (Sunni and Shiʿi chains).',
+    inArchive:
+      'Such a record has its own narrator page, credited to its dataset, listing what the dataset records (never its grading words) and every chain it is named in. Its claims at a chain position are shown with their source: an id confirmed by the Arabic, or only aligned. A record is never merged with a lexicon entry automatically; a proposed link is shown as a candidate.',
+    related: ['source-index', 'label-id', 'riwayat-automatic-link', 'two-sources-agree'],
+    aliases: ['hadith-kg', 'Riwayat', 'external narrator'],
+    enumValues: [
+      'narrator_authority.hadith_kg',
+      'narrator_authority.riwayat',
+      'mention_candidate_basis.source_hadith_kg',
+      'mention_candidate_basis.source_riwayat',
+    ],
+  },
+  {
+    slug: 'riwayat-automatic-link',
+    section: 'archive',
+    term: 'Riwayat automatic link',
+    definition:
+      'An identification the Riwayat corpus made with its own matching software, rather than taking it from Thaqalayn’s or hadith-kg’s annotation.',
+    inArchive:
+      'Shown, labelled as such, and never counted toward the machine-reviewed tier: a sample read one in eight wrong, against none of 52 taken from Thaqalayn’s annotation.',
+    related: ['external-source-record', 'confirmed-by-source-and-text'],
+  },
+  {
+    slug: 'label-id',
+    section: 'archive',
+    term: 'Label id',
+    definition:
+      'A source id that names a name as it is written in chains rather than an established person: a name several men share, one word, a kunya alone, or a group.',
+    inArchive:
+      'Its narrator page says so plainly, and its claims never carry the machine-reviewed tier, because matching the text cannot tell which man a shared label means.',
+    related: ['external-source-record', 'mushtarak', 'single-name-mention'],
+    aliases: ['label-like', 'shared label'],
+  },
+  {
+    slug: 'latin-name',
+    section: 'archive',
+    term: 'Name in Latin letters',
+    definition:
+      'Every name in a chain is shown with a Latin form beside the Arabic, so a reader without Arabic can follow the chain. It renders the name as written; it does not say who the person is.',
+    inArchive:
+      'Taken, in order, from the source’s own English for that name (Thaqalayn’s English chains), the English name of the record the name is identified with, a transliteration of the vowelled Arabic, or a transliteration assembled only from common name parts whose reading is fixed. Where none applies the name is shown in Arabic alone rather than guessed. Each form shows how it was obtained and its source.',
+    related: ['mention', 'not-yet-identified', 'external-source-record'],
+    aliases: ['transliteration', 'Latin name', 'English name'],
+    enumValues: [
+      'name_latin_basis.provider_english',
+      'name_latin_basis.identity_name',
+      'name_latin_basis.transliteration_vocalized',
+      'name_latin_basis.transliteration_table',
+    ],
   },
   {
     slug: 'source-index',
@@ -1431,13 +1518,17 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     section: 'archive',
     term: 'Placeholder entry',
     definition: 'A narrator-lexicon entry that cannot name one person, because it is only a single word, only a kunya, has no Arabic name, or is marked as an unidentified shaykh.',
-    inArchive: 'Placeholder entries are never used as match targets; they remain for review.',
-    related: ['single-name-mention', 'matched-by-name'],
+    inArchive:
+      'Placeholder entries are never used as match targets; they remain for review. An external source’s record of the same kind (a kunya alone, a relation, a group, or a hadith-kg stub) is shown when the source names it, as a label that never contests another identity.',
+    related: ['single-name-mention', 'matched-by-name', 'label-id'],
     enumValues: [
       'narrator_placeholder_reason.unidentified_shaykh_marker',
       'narrator_placeholder_reason.no_arabic_name',
       'narrator_placeholder_reason.bare_single_token_name',
       'narrator_placeholder_reason.kunya_only_name',
+      'narrator_placeholder_reason.relational_name',
+      'narrator_placeholder_reason.collective_or_anonymous_name',
+      'narrator_placeholder_reason.hadith_kg_stub_narrator',
     ],
   },
   {

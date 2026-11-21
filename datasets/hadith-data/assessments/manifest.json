@@ -1,0 +1,61 @@
+{
+ "code_sha256": {
+  "datasets/hadith-data/assessments/assessment_logic.py": "2fa07446b3d9649527608c7c8bd178bbb307f1d33b06b6477bde663a1748263c",
+  "datasets/hadith-data/assessments/build_assessments.py": "f5757d75c8692a47d97d5634b8118c9979354ed9bfa2a0f0383109ce6c754b5e",
+  "datasets/hadith-data/diagnostics/biography-verification/rijal_sources.py": "f1320f20dc23ecdab93859fbf69205f99148a59d4b1a1baee3d50ae0e1346941"
+ },
+ "command": "python -B datasets/hadith-data/assessments/build_assessments.py",
+ "inputs_sha256": {
+  "datasets/hadith-data/archive/sheikahmad-pure-canon/pure_canon.jsonl": "0cb5ec01959b326c895a6063574955997067e8646c103863285403c3ba6550ac",
+  "datasets/hadith-data/development/pg-load-2026-11-21/projection-v3/canonical/hadith_assessments.csv": "913aa025ce8b9b444c75889effb12be632c661331337f585d52bb535892ac0de",
+  "datasets/hadith-data/development/pg-load-2026-11-21/projection-v3/canonical/hadiths.csv": "2afcb9e4b2461a3e26790ddbfc905d6e00a3720b32ee549267a7183c5ecb88f9",
+  "datasets/hadith-data/development/pg-load-2026-11-21/projection-v3/canonical/narrators.csv": "6420e4aeba41c1c8fecb94280c42992e2d071a088c2dacff04a71d75ce2d031b",
+  "datasets/hadith-data/diagnostics/biography-recovery/narrator_assessment_candidates.jsonl": "7358595959d44390e6bdc0e91fd57685c1d2fe09d0b0de443615eb3213ef6c8b",
+  "datasets/hadith-data/diagnostics/biography-verification/lexicon_rijal_links.jsonl.gz": "56cad0c9d003a479ae986b77a0681221c2251c630ee939484c0a2b563e5a122a",
+  "datasets/hadith-data/diagnostics/biography-verification/rijal_entries_taqrib.jsonl.gz": "a0606d1a73b85aaf65a15f1f64e91f3bd1715266f16f755b8a21492fcbfb1399",
+  "datasets/hadith-data/diagnostics/grading-recovery/compiler_criterion_basis.jsonl": "3b58ba721ed3982e3fd2644700841c5cf8012e44cc3f4d6110ba0a30aff1eefb",
+  "datasets/hadith-data/diagnostics/grading-recovery/pure_canon_closing_statement_candidates.jsonl": "5423440b4f014cdfd2f7cb082280d820cfb73a4cbd3eeb568ef48d8cebfe90c7",
+  "datasets/hadith-data/reconciled/external_narrator_lexicon_links.jsonl.gz": "2772ffb4f8b15d9f4db5dde1f0f83e53ee7086c7d90a99ebe6563897ec070dbc",
+  "datasets/hadith-data/reconciled/hadith_kg_narrators.jsonl.gz": "ee220cdaf630071d2de52c876c2ab075091fc9a278419f25f5b532a01fe28ebc",
+  "datasets/hadith-data/rijal/output/rijal_entries_ibn_hajar_taqrib.jsonl.gz": "bad2db76d991dddb69f0275f83728074ba45945e5f75d4d1faddb6cfa6258485",
+  "datasets/hadith-data/rijal/output/rijal_entries_mizzi_tahdhib_kamal.jsonl.gz": "99fc17893de3d34e32d2439dd1184c61047ee5f44f10c12a2bb4e7e49fd45879",
+  "datasets/hadith-data/rijal/output/rijal_entries_najashi_rijal.jsonl.gz": "2f5a027adc7ef47cc8e8ac53bc09b647109f87ba239492a9d70d9ca3e6736546",
+  "datasets/hadith-data/rijal/output/rijal_entries_tusi_fihrist.jsonl.gz": "dc1d66296c1a086bb83c90cfd61e4db69919471496768ffe7554a4adddde01ad",
+  "datasets/hadith-data/rijal/output/rijal_entries_tusi_rijal.jsonl.gz": "97299b7c7286bf2c674ec95ecca95322a82e9fe9b1563c99b4a2a61c83957efb",
+  "datasets/hadith-data/rijal/output/rijal_entry_statements.jsonl.gz": "58495ee127fb8a9a0bde4d066b59f7130633cc2f1d7de323c2815327898572f0",
+  "datasets/hadith-data/rijal/output/rijal_works.json": "3b91f5af2cafcf1201fad7278d132ba10d573f373dee644621f4f733bfe89433",
+  "datasets/sources/external/hadith-kg/hadith-kg.db": "d528084321e715006712e0e2461809a3afc9408065a1d1af90238c8b723815a6",
+  "datasets/sources/external/openiti-0450Najashi.Rijal/0450Najashi.Rijal.Shia002931-ara1.mARkdown": "a34bc95dbf6afef2b860bfd99e6a47fd16e3d16d2879ab145d30bf0abb5941e6",
+  "datasets/sources/external/openiti-0460ShaykhTusi.Fihrist/0460ShaykhTusi.Fihrist.Shia002934-ara1.mARkdown": "1c4975a18ca0bae40d4c062edad05eef5a8c2c243951dcc2a9bf785415db88df",
+  "datasets/sources/external/openiti-0460ShaykhTusi.Rijal/0460ShaykhTusi.Rijal.Shia002935-ara1.mARkdown": "955b2b7114a5e2d96f11d23b0638c4ab2c9ec3a57ab13119d97cf7c2e128f678",
+  "datasets/sources/external/openiti-0742Mizzi.TahdhibKamal/0742Mizzi.TahdhibKamal.Shamela0003722-ara1.mARkdown": "f4f26e71dd9c0c70ef09285fc0b4de8abe3fe586c0eddba19985155df175f58f",
+  "datasets/sources/external/riwayat-corpus/hadith_master.db": "278e674ee72ac04886059b14fe6f8e52e70797ac6c65cba08409bafc2d61133b"
+ },
+ "outputs": {
+  "compiler_criterion_links.jsonl.gz": {
+   "rows": 14966,
+   "sha256": "5d11dd89209156ac7693b626da6df3b4afa04a4d5d489e26ef23de82eaee0d7a"
+  },
+  "hadith_assessments.jsonl.gz": {
+   "rows": 18486,
+   "sha256": "718b20533745199d8a23c4c3acbf42fc7daf7b024d4f15c27647a70ba31bd392"
+  },
+  "hadith_assessments_held_back.jsonl.gz": {
+   "rows": 4475,
+   "sha256": "8e124a6f999d85bacb8861eabab62aa22e76e9b260abfd26ae033af6f93e6811"
+  },
+  "narrator_assessments.jsonl.gz": {
+   "rows": 114841,
+   "sha256": "165af661ea99a36ded6daf6ea6014caa18065163099a72139587bc5a58be4948"
+  },
+  "narrator_assessments_held_back.jsonl.gz": {
+   "rows": 1007,
+   "sha256": "5234003054719a65088ab9e56939261dd3d094e655bec8c58562b51ae7b93dce"
+  },
+  "pure_canon_column_l_joins.jsonl.gz": {
+   "rows": 4286,
+   "sha256": "e05b9a08b503f4d9d0efccab0455e8fd7512fd8ce6111bf7002fef7a8010cba1"
+  }
+ },
+ "review_state": "every row is candidate_only (unreviewed)"
+}

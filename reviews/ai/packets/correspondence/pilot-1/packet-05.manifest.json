@@ -1,0 +1,70 @@
+{
+  "packet_id": "correspondence/pilot-1/packet-05",
+  "do_not_show_to_reviewer": true,
+  "items": [
+    {
+      "item_id": "I1",
+      "claim_id": "I1",
+      "claim_kind": "correspondence",
+      "claim_key": "correspondence|hadith:k6:29205|hadith:thaqalayn:89b9f27d58113eb599ee7d57",
+      "content_sha256": "75bb1ccbd6f458ed5c188f4d31214144a6117e05bc36fccd1b4795d7facd8fb6",
+      "stratum": "variant_below_display",
+      "pipeline_view": "class=same_report_variant_wording; jaccard=0.30; containment=0.47; scope=cross_tradition; A=hadith:k6:29205; B=hadith:thaqalayn:89b9f27d58113eb599ee7d57"
+    },
+    {
+      "item_id": "I2",
+      "claim_id": "I2",
+      "claim_kind": "correspondence",
+      "claim_key": "correspondence|hadith:pure-canon:pc_68827|hadith:pure-canon:pc_68839",
+      "content_sha256": "8c378bcdeab432c50187ee77a38064e4664c9929106b2e18fcc015d1b6af9877",
+      "stratum": "variant_below_display",
+      "pipeline_view": "class=same_report_variant_wording; jaccard=0.32; containment=0.50; scope=same_work; A=hadith:pure-canon:pc_68827; B=hadith:pure-canon:pc_68839"
+    },
+    {
+      "item_id": "I3",
+      "claim_id": "I3",
+      "claim_kind": "correspondence",
+      "claim_key": "correspondence|hadith:k6:596|hadith:openiti:ibadi:rabi_0176|176|V01P046",
+      "content_sha256": "95bf21a1546114ae00303f803e45356e9fa771f0d6660e518701a18f5ba91b5f",
+      "stratum": "cross_tradition_shown",
+      "pipeline_view": "class=same_report_variant_wording; jaccard=0.52; containment=0.72; scope=cross_tradition; A=hadith:openiti:ibadi:rabi_0176|176|V01P046; B=hadith:k6:596"
+    },
+    {
+      "item_id": "I4",
+      "claim_id": "I4",
+      "claim_kind": "correspondence",
+      "claim_key": "correspondence|hadith:k6:4162|hadith:pure-canon:pc_96912",
+      "content_sha256": "9b90fe72d4795719b6ec07042eaa498bac968ee8fc6973cb732dae775a2523a3",
+      "stratum": "partial_below_display",
+      "pipeline_view": "class=partial_overlap; jaccard=0.13; containment=0.61; scope=cross_work_same_tradition; A=hadith:k6:4162; B=hadith:pure-canon:pc_96912"
+    },
+    {
+      "item_id": "I5",
+      "claim_id": "I5",
+      "claim_kind": "correspondence",
+      "claim_key": "correspondence|hadith:pure-canon:pc_29780|hadith:thaqalayn:466e90b70a62c5cf0454e4da",
+      "content_sha256": "218995b58861f2497ee14f431cbfddc0946935443473d7699d51ee023cbe8948",
+      "stratum": "gold",
+      "pipeline_view": "recorded reading; A=hadith:pure-canon:pc_29780; B=hadith:thaqalayn:466e90b70a62c5cf0454e4da",
+      "known_answer": {
+        "outcome": "contradicts",
+        "reading": "shared_formula_or_verse",
+        "source": "report-correspondence README example 6 (only the shahada is shared)"
+      }
+    },
+    {
+      "item_id": "I6",
+      "claim_id": "I6",
+      "claim_kind": "correspondence",
+      "claim_key": "correspondence|hadith:k6:33185|hadith:thaqalayn:e532c2d8d54f19057995a200",
+      "content_sha256": "3184f685f8d1430e4461eebbef46d340ae7ed9cf37f25ffe20b5c9f54275992a",
+      "stratum": "gold",
+      "pipeline_view": "recorded reading; A=hadith:thaqalayn:e532c2d8d54f19057995a200; B=hadith:k6:33185",
+      "known_answer": {
+        "outcome": "contradicts",
+        "reading": "shared_formula_or_verse",
+        "source": "report-correspondence README example 5 (same frame, different three)"
+      }
+    }
+  ]
+}

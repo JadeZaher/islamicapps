@@ -1,0 +1,28 @@
+{
+  "specialist_id": "isnad-identity",
+  "prompt_version": "1.0.0",
+  "prompt_sha256": "a348a2e3723be76344aee7fc5bddf4ca99d8ad9a8e0456751ae0550f58beae8e",
+  "batch": "pilot-1",
+  "seed": "pilot-1",
+  "drawn_from": {
+    "database": "production (SELECT only, READ ONLY transaction)",
+    "dataset_version_id": "e2430eae674e77c54303186fc5e88a81f86ee3df9a2ac8017d5e5283f7cd89f4"
+  },
+  "sampling": "per stratum, the first 8 mentions by sha256(seed || mention id); gold items always included",
+  "strata": {
+    "gold": 5,
+    "ai_reviewed_uncontested": 8,
+    "contested": 8,
+    "name_match_only": 8,
+    "imam_kunya": 4
+  },
+  "items": 33,
+  "code_sha256": "5f5193813a85663e137da4a5d0255df2c89baf34e4514759293f35bdb62766f2",
+  "packets": [
+    "reviews/ai/packets/isnad-identity/pilot-1/packet-01.json",
+    "reviews/ai/packets/isnad-identity/pilot-1/packet-02.json",
+    "reviews/ai/packets/isnad-identity/pilot-1/packet-03.json",
+    "reviews/ai/packets/isnad-identity/pilot-1/packet-04.json",
+    "reviews/ai/packets/isnad-identity/pilot-1/packet-05.json"
+  ]
+}

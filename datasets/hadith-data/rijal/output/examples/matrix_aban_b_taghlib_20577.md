@@ -1,0 +1,15 @@
+| Tradition | Perspective (entry; link state) | verdict_term | reliability_qualifier | generation_or_imam | death_date | places | teachers | students | books | doctrinal_or_other_note |
+|---|---|---|---|---|---|---|---|---|---|---|
+| imami | Ahmad b. Ali al-Najashi, Rijal al-Najashi (Fihrist asma' musannifi al-Shi'a) — `najashi_rijal:7`; CANDIDATE (one of 6; link not established) |  |  |  | مات - [10] (subject_may_differ) |  | جعفر بن محمد من التابعين [10]<br>من قاربهم فقال [10]<br>+ more | وصافحه واعتنقه وسائله ورحب [10] | كتب [10]<br>كتاب صفين [10] |  |
+| imami | Shaykh al-Ta'ifa Muhammad b. al-Hasan al-Tusi, al-Fihrist — `tusi_fihrist:61`; CANDIDATE (one of 6; link not established) | ثقة [57] | جليل القدر، عظيم المنزلة في أصحابنا، لقي أبا محمد [57] |  |  |  | ابيه عن ايوب بن الحر - كما في رجال النجاشي [57] | لزم ان يكون عمره ازيد من مائة [57]<br>عشرين سنينا تقريبا [57]<br>+ more | كتاب الغريب في القرآن وذكر شواهده من الشعر [57]<br>كتاب ابان ومحمد بن السائب الكلبي وأبي روق بن عطية بن الحارث [57] |  |
+| imami | Shaykh al-Ta'ifa Muhammad b. al-Hasan al-Tusi, Rijal al-Tusi — `tusi_rijal:1066`; CANDIDATE (one of 6; link not established) |  |  | أصحاب أبي محمد علي بن الحسين عليهما السلام [109]<br>روى عن ابي جعفر [109]<br>روى عن ابي عبد الله [109] | توفي سنة احدي واربعين ومائة في خلافة ابي جعفر، [109] |  |  |  |  |  |
+| imami | Shaykh al-Ta'ifa Muhammad b. al-Hasan al-Tusi, Rijal al-Tusi — `tusi_rijal:1265`; CANDIDATE (one of 6; link not established) |  |  | أصحاب أبي جعفر محمد بن علي بن الحسين عليهم السلام [126] |  |  |  |  |  |  |
+| imami | Shaykh al-Ta'ifa Muhammad b. al-Hasan al-Tusi, Rijal al-Tusi — `tusi_rijal:1871`; CANDIDATE (one of 6; link not established) |  |  | أصحاب أبي عبد الله جعفر بن محمد الصادق عليهما السلام [164] |  |  |  |  |  |  |
+| sunni | Ibn Hajar al-Asqalani, Taqrib al-Tahdhib — `ibn_hajar_taqrib:136`; machine link (unique, unreviewed) | ثقة تكلم فيه للتشيع [87] |  | من السابعة [87] | مات سنة اربعين م 4 [87] | {"nisba_places": ["kufa"]} [87] |  |  |  |  |
+| not tradition-scoped | Narrator lexicon (not yet cited) | Succ. (Taba' Tabi') [7th generation] |  | Succ. (Taba' Tabi') [7th generation] | 140 AH ()[ Natural ] | al-Kufa | Abu Ishaq al-Sabay'ai' [11049] , al-Hakam bin 'Utayba [1106… | Musa bin 'Uqba [11106] , Shu'bah bin al-Hajjaj [20020] , Ha… | NA |  |
+
+**Timelines, one row per source (never merged)**
+
+- imami · Ahmad b. Ali al-Najashi, Rijal al-Najashi (Fihrist asma' musannifi al-Shi'a) (`najashi_rijal:7`; CANDIDATE (one of 6; link not established)): died: «مات -» [10]; travelled_or_arrived: «قدم المدينة تقوضت إليه الحلق» @ المدينة [10]
+- imami · Shaykh al-Ta'ifa Muhammad b. al-Hasan al-Tusi, Rijal al-Tusi (`tusi_rijal:1066`; CANDIDATE (one of 6; link not established)): died: «توفي سنة أحدي وأربعين ومائة في خلافة أبي جعفر،» → 141 AH [109]; regnal_dating: «في خلافة أبي» [109]
+- sunni · Ibn Hajar al-Asqalani, Taqrib al-Tahdhib (`ibn_hajar_taqrib:136`; machine link (unique, unreviewed)): died: «مات سنة أربعين م 4» → 140 AH [87]

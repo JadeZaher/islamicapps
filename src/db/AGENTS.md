@@ -12,9 +12,9 @@ the rationale that code comments point to, plus every decision taken while imple
 | `schema/columns.ts` | Pipeline, curation and link bookkeeping column groups; `restrictForeignKey`; `isLive` |
 | `schema/operations.ts` | `dataset_versions`, `curation_audit` |
 | `schema/corpus.ts` | traditions, sources, collections, collection_rights, books, chapters, hadiths, translations; `public_hadiths`, `public_translations` view declarations |
-| `schema/narrators.ts` | narrators, narrator_lexicon_profiles, narrator_aliases, narrator_teachers |
+| `schema/narrators.ts` | narrators, narrator_lexicon_profiles, narrator_aliases, narrator_teachers; narrator_source_profiles, narrator_external_ids, narrator_link_candidates (0010) |
 | `schema/evidence.ts` | bibliographic_works, editions, citations |
-| `schema/isnad.ts` | chains, chain_mentions, chain_mention_candidates, chain_absence_dispositions, narrator_surface_decisions; `narrator_lifespans`, `narrator_transmissions`, `public_chain_links`, `public_chain_mention_candidates` declarations |
+| `schema/isnad.ts` | chains, chain_mentions, chain_mention_candidates, chain_absence_dispositions, narrator_surface_decisions; `narrator_lifespans`, `narrator_transmissions`, `public_chain_links`, `public_chain_mention_candidates`, `public_chain_mention_candidates_v2` declarations |
 | `schema/assessments.ts` | hadith_assessments, narrator_assessments, narrator_bios |
 | `schema/history.ts` | locations, historical_events, narrator_events, narrator_locations; `published_historical_events` declaration |
 | `schema/commentary.ts` | commentaries, commentary_hadiths, commentary_narrators |
@@ -91,6 +91,59 @@ rows through (b).
   no placeholder target except `name_kunya_only`, which targets only `kunya_only_name` rows; no name basis on a
   non-Sunni report; an automatic `narrator_id` has its confirming candidate and no non-kunya candidate contests it.
 
+## External identity (0010-0011; owner decisions 2026-11-21, fifth round)
+
+The source identity claims built in `datasets/hadith-data/reconciled/` (hadith-kg, the Riwayat corpus) are loaded as
+candidates, following that README's load proposal. Projection rules: `datasets/hadith-data/pg_export/AGENTS.md`
+§External identity.
+
+- **External narrators are narrator rows under their own authority** (`narrator_authority` `hadith_kg`, `riwayat`), ids
+  `narrator:hadith-kg:<rawi id>` and `narrator:riwayat:<N id>`, `authority_key` the dataset id, no `scholar_indx`. Only
+  records some claim or link names are loaded (15,529). The Imams are a fourth authority, `imam_register`
+  (`narrator:imam:<1-12>`, from `pg_export/imam_kunya_conventions.json`), so an Imami chain's Imam is never the Sunni
+  lexicon's row (no cross-tradition merge).
+- **`narrator_source_profiles`** (one per external or register row): the dataset's own fields verbatim (`assertions`
+  jsonb), licence, `asserted_by`, and `label_reason` when the source's id names a label as written in chains rather than
+  an established person (`riwayat_label_reason`: placeholder name, a name several ids hold with real use, Riwayat's own
+  merge or junk flag, a bare nasab). No verdict column (G-1); hadith-kg's `rank` stays in the jsonb and is never shown.
+- **`narrator_external_ids`**: Riwayat's crosswalk ids (Thaqalayn, hadith-kg, Itqan, SemanticHadith). **`narrator_link_candidates`**:
+  the sidecar's machine links from an external record to a lexicon row, with evidence. Candidates only: they compare two
+  claims, never merge narrators (G-5).
+- **Candidate bases** added to `mention_candidate_basis`: `source_hadith_kg`, `source_hadith_kg_confirmed_by_text`,
+  `source_riwayat`, `source_riwayat_confirmed_by_text` (with `source_position`, `source_ref` and
+  `source_assertion_origin`, each set exactly for the external bases, checks), `imam_kunya_convention`,
+  `imam_kunya_candidate`. Placeholder reasons added: `relational_name`, `collective_or_anonymous_name`,
+  `hadith_kg_stub_narrator`.
+- **Standing identity, extended.** The predicate is unchanged (`resolution in (...)` and a live `narrator_id`; written once
+  in `public_chain_links`, twice in `refresh_publication_facets`); what the loader may write into `narrator_id` widened.
+  `resolution`/`resolution_basis` stay `source_index` (the historic name of the automatic tier, like
+  `verified_link_count`) and `extraction_method` names the evidence: `source_index_confirmed_by_text`, `two_sources_agree`
+  (a K6 claim and a hadith-kg claim whose person keys meet), `source_hadith_kg_confirmed_by_text`,
+  `source_riwayat_confirmed_by_text` (an annotation origin, never `riwayat_automatic_linking`, never a label record),
+  `imam_kunya_convention`. Uncontested means no two contesting candidates name different people of one registry: person
+  keys bridge records through link candidates and Riwayat's single hadith-kg crosswalk id; an unlinked pair across
+  registries is not comparable. Kunya-only names, an undecided shared Imam kunya and placeholder records never contest.
+  The teacher-student view inherits the tier unchanged (both neighbours `resolution_basis = 'source_index'`).
+- **Views (0011).** `public_chain_links` gains `name_latin`, `name_latin_basis`, `name_latin_narrator_id` and
+  `standing_basis` at the end. `public_chain_mention_candidates` now returns only the pre-0010 bases, so a build that
+  predates them reads what it understands; `public_chain_mention_candidates_v2` returns every basis with `source_ref`,
+  `source_assertion_origin` and `tier_basis`. `db:verify` checks both definitions.
+- **Load invariants** (`load/verify-data.ts`): no candidate targets a placeholder except the labelled kinds; an automatic
+  `narrator_id` rests on the evidence its `extraction_method` names and is uncontested (person keys, same rule as the
+  projection); the tier never rests on a Riwayat automatic link; Imam-kunya candidates only in Imami chains and only on
+  register rows; external narrators carry one profile naming their source; provider English only on Imami Thaqalayn
+  reports.
+
+## Latin names (0010)
+
+`chain_mentions.name_latin` / `name_latin_basis` (`name_latin_basis` enum) / `name_latin_narrator_id`: every name in a
+chain carries a Latin form where a source or rule gives one, computed in the projection, never at request time:
+`provider_english` (Thaqalayn's English sanad, Imami only), `identity_name` (the English name of the standing identity,
+or of the one person all candidates name; the narrator whose name it is is recorded), `transliteration_vocalized`,
+`transliteration_table`. A check keeps the three columns consistent. `narrators.name_latin` / `name_latin_basis` carry a
+transliteration for external rows, which have no English name. Rules: `datasets/hadith-data/pg_export/AGENTS.md`
+§Latin names.
+
 ## Report correspondences (0007; design §5.5.1)
 
 Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
@@ -126,7 +179,9 @@ write decisions.
   dropped and recreated with its two indexes) -> `0007_report_correspondences` (generated tables and enums, then the
   three hand-written views) -> `0008_epochs` (the history lane's pending `epochs` table and `published_epochs` view,
   promoted from `ops/pending/`; idempotent) -> `0009_public_english_policy` (enum value
-  `source_provided_and_machine_allowed`, `public_translations` redefined; see §Public English). A `--custom` generate snapshots the previous schema: after promoting a
+  `source_provided_and_machine_allowed`, `public_translations` redefined; see §Public English) ->
+  `0010_external_identity` (generated: enum values, the three external tables, Latin-name and source-reference columns,
+  checks) -> `0011_external_identity_views` (hand-written views, see §External identity). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.
@@ -234,6 +289,11 @@ reviewed here" credited to the text source and its translator (`WORK_CREDITS`), 
   refuses an enum value as a literal in the transaction that added it ("unsafe use of new value"), so `0009` and the load
   check compare `english_policy::text`. `db:verify` fails if the view loses the machine branch, gains
   `unknown_provenance`, or drops the quality or hash gate.
+- **Honorific symbols are not leakage** (projection `2026.11.21.4`). 10,650 Sunni and 9 Imami source-provided English
+  texts were held out of `public_translations` as `arabic_leakage` only because they write ﷺ (U+FDFA), a one-character
+  honorific symbol, which the bundle's release QA counts as Arabic script. The projection reclassifies a text whose only
+  Arabic-script characters are those symbols as `complete` (`english_quality`, counted in
+  `counts.translation_quality_reclassified`); 741 Imami texts with real Arabic stay held. Sunan Abi Dawud `k6:19122` was one.
 - **What is loaded.** The loader ingests only the canonical `translations` (66,776 rows, all `source_provided`: K6 and
   Thaqalayn). Machine English stays in `candidates/translation_candidates.csv` (31,652 rows of projection
   `2026.11.21.3`) because `translation_candidates` is not migrated, and the load check "no candidate-only rows in
@@ -260,6 +320,9 @@ headroom.
 
 ## Deferred
 
+- External identity: the Qur'an citation table (README proposal d) is not loaded; Riwayat's Imami label records stand
+  only as candidates when label-like; bare Abu Jaʿfar / Abu al-Hasan / Abu Muhammad with the marker stay undecided
+  candidates until the owner rules on them (`imam_kunya_conventions.json`).
 - Identity candidates: mixed transmission pairs (one confirmed source-index neighbour, one human decision); whether a
   kunya-only candidate should contest a confirmed source identity (it does now); source-index claims that name a
   placeholder row are dropped and counted in the projection manifest, not emitted; the narrator page still lists

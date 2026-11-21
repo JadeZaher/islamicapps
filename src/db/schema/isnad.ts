@@ -27,6 +27,7 @@ import {
   linkKindEnum,
   mentionCandidateBasisEnum,
   mentionResolutionEnum,
+  nameLatinBasisEnum,
   resolutionBasisEnum,
   surfaceDecisionKindEnum,
 } from './enums';
@@ -76,10 +77,21 @@ export const chainMentions = pgTable(
     decisionId: text('decision_id'),
     confidence: real('confidence'),
     extractionMethod: text('extraction_method'),
+    /** The name as written, in Latin letters, and how it was obtained (0010; never an identification). */
+    nameLatin: text('name_latin'),
+    nameLatinBasis: nameLatinBasisEnum('name_latin_basis'),
+    /** The narrator whose English name was used (basis identity_name only). */
+    nameLatinNarratorId: text('name_latin_narrator_id'),
     ...pipelineBookkeeping(),
   },
   (table) => [
     unique('chain_mentions_chain_id_position_key').on(table.chainId, table.position),
+    restrictForeignKey('chain_mentions_name_latin_narrator_id_fk', table.nameLatinNarratorId, narrators.id),
+    check(
+      'chain_mentions_name_latin_check',
+      sql`(${table.nameLatin} is null) = (${table.nameLatinBasis} is null)
+        and ((${table.nameLatinBasis}::text = 'identity_name') is true) = (${table.nameLatinNarratorId} is not null)`,
+    ),
     restrictForeignKey('chain_mentions_chain_id_fk', table.chainId, chains.id),
     restrictForeignKey('chain_mentions_hadith_id_fk', table.hadithId, hadiths.id),
     restrictForeignKey('chain_mentions_narrator_id_fk', table.narratorId, narrators.id),
@@ -114,6 +126,10 @@ export const chainMentionCandidates = pgTable(
     detail: text('detail'),
     /** 0-based position in the source's own narrator index (source bases only). */
     sourcePosition: integer('source_position'),
+    /** The external report the claim was read from (`hadith-kg:hadith:<id>`, `riwayat:<H id>`; external bases only). */
+    sourceRef: text('source_ref'),
+    /** Who asserted the external id: `dataset_index` (hadith-kg) or Riwayat's id origin (external bases only). */
+    sourceAssertionOrigin: text('source_assertion_origin'),
     ...pipelineBookkeeping(),
   },
   (table) => [
@@ -122,9 +138,17 @@ export const chainMentionCandidates = pgTable(
     restrictForeignKey('chain_mention_candidates_hadith_id_fk', table.hadithId, hadiths.id),
     restrictForeignKey('chain_mention_candidates_narrator_id_fk', table.narratorId, narrators.id),
     check('chain_mention_candidates_pipeline_basis_check', sql`${table.basis} <> 'reviewer_decision'`),
+    // Compared as text: 0010 adds the enum values in the same transaction (see src/db/AGENTS.md §Public English).
     check(
       'chain_mention_candidates_source_position_check',
-      sql`(${table.basis} in ('source_index', 'source_index_confirmed_by_text')) = (${table.sourcePosition} is not null)`,
+      sql`(${table.basis}::text in ('source_index', 'source_index_confirmed_by_text', 'source_hadith_kg',
+        'source_hadith_kg_confirmed_by_text', 'source_riwayat', 'source_riwayat_confirmed_by_text'))
+        = (${table.sourcePosition} is not null)`,
+    ),
+    check(
+      'chain_mention_candidates_source_ref_check',
+      sql`(${table.basis}::text in ('source_hadith_kg', 'source_hadith_kg_confirmed_by_text', 'source_riwayat',
+        'source_riwayat_confirmed_by_text')) = (${table.sourceRef} is not null and ${table.sourceAssertionOrigin} is not null)`,
     ),
     index('chain_mention_candidates_hadith_id_idx').on(table.hadithId),
     index('chain_mention_candidates_narrator_id_idx').on(table.narratorId),
@@ -233,6 +257,11 @@ export const publicChainLinks = pgView('public_chain_links', {
   isLink: boolean('is_link').notNull(),
   narratorId: text('narrator_id'),
   confidence: real('confidence'),
+  /** Appended in 0010: the Latin name, its basis and source narrator, and what set a standing identity. */
+  nameLatin: text('name_latin'),
+  nameLatinBasis: nameLatinBasisEnum('name_latin_basis'),
+  nameLatinNarratorId: text('name_latin_narrator_id'),
+  standingBasis: text('standing_basis'),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */
@@ -245,4 +274,21 @@ export const publicChainMentionCandidates = pgView('public_chain_mention_candida
   detail: text('detail'),
   /** True only for the bases that may set a verified link: confirmed source index, reviewer decision. */
   verifiedBasis: boolean('verified_basis').notNull(),
+}).existing();
+
+/**
+ * Public view (0010): every identity candidate of a public mention, every basis, with the external source reference and
+ * assertion origin. `public_chain_mention_candidates` keeps only the pre-0010 bases so a build that predates them reads
+ * what it understands. `tier_basis` marks a candidate that can carry the machine-reviewed tier by itself.
+ */
+export const publicChainMentionCandidatesV2 = pgView('public_chain_mention_candidates_v2', {
+  mentionId: text('mention_id').notNull(),
+  chainId: text('chain_id').notNull(),
+  hadithId: text('hadith_id').notNull(),
+  narratorId: text('narrator_id').notNull(),
+  basis: mentionCandidateBasisEnum('basis').notNull(),
+  detail: text('detail'),
+  sourceRef: text('source_ref'),
+  sourceAssertionOrigin: text('source_assertion_origin'),
+  tierBasis: boolean('tier_basis').notNull(),
 }).existing();

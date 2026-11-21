@@ -101,11 +101,11 @@ the July build until the session lead merges `refactor/postgres-drizzle` to `mai
 
 | What | State |
 | --- | --- |
-| Migrations | `0000` to `0009` on both databases; `db:verify` passes on both |
-| Dataset version | `e2430eae674e77c54303186fc5e88a81f86ee3df9a2ac8017d5e5283f7cd89f4` (projection `2026.11.21.3`, `development/pg-load-2026-11-21/projection-v3`), current and complete on both databases; production load log `prod-load-2.log` beside the development logs (`prod-load-1.log`: first attempt, cancelled and rolled back) |
-| Preview approval | Recorded on both for that version: by `owner`, "preview while data is under review; approved 2026-11-21" |
+| Migrations | Production: `0000` to `0011` (`0010`/`0011` external identity, 2026-11-21 names pass); `db:verify` passes. Development: `0009`, not touched since (owner: no development database) |
+| Dataset version | Production: `bbafb2f142136246bcf30abcbb3b0d04452555dc5ca64c2eef5df8664e4f11f5` (projection `2026.11.21.4`, `development/pg-load-2026-11-21/projection-v4`), current and complete; logs `prod-load-3.log` (failed on `/dev/shm`, rolled back), `prod-load-4.log` (loaded), `prod-load-5-reload.log` (identical reload: 0 rows changed). Superseded: `e2430eae…` (`2026.11.21.3`) |
+| Preview approval | Recorded on production for `bbafb2f1…`: by `owner`, "preview while data is under review; approved 2026-11-21" |
 | Rights | All 34 works `cleared`, English policy `source_provided_and_machine_allowed`, actor `system:owner-decision` (`npm run db:record-rights`) |
-| Public | 99,273 reports (Sunni 64,348, Imami 33,223, Ibadi 1,004, Zaydi 698); 55,359 English texts, all source-provided (Sunni 22,926, Imami 32,433); 114,594 chains; 85,277 machine-reviewed links; 10,835 teacher-student links; 66,666 correspondence pairs shown; 0 eras and 0 events (38 eras and 54 events seeded, unpublished until cited); 21 biographies seeded, unpublished |
+| Public | 99,273 reports (Sunni 64,348, Imami 33,223, Ibadi 1,004, Zaydi 698); 66,017 English texts, all source-provided (was 55,359: 10,658 held back only for the ﷺ symbol); 114,594 chains; 157,471 machine-reviewed links (Sunni 132,815, Imami 23,959, Ibadi 697); 27,173 teacher-student links; 66,666 correspondence pairs shown; 0 eras and 0 events (38 eras and 54 events seeded, unpublished until cited); 21 biographies seeded, unpublished |
 | Search indexes | `indexes-heavy.sql` built on production |
 | Server tuning | Applied with `ALTER SYSTEM` and reloaded; `shared_buffers`, `max_connections`, `huge_pages` wait for a Postgres restart |
 | Service variables | `SITE_URL=https://islamicapps-production.up.railway.app` and `NEXT_TELEMETRY_DISABLED=1` set with `--skip-deploys`; `AUTH_ENABLED` and `PRIVATE_PREVIEW` absent (off) |
@@ -309,3 +309,138 @@ State after this join: 45 tables and 10 views; migrations 0000 to 0008;
 the all-chains view, report correspondences, eras, source registry and
 credits, browse pages, stable report addresses, the auth switch (off by
 default) and the model registry are in.
+
+## Owner decisions, fifth round (2026-11-21)
+
+- The site went live on main at commit b00af72 on 2026-11-21.
+- No development database. Work against production directly; the site is
+  low traffic and breakage is acceptable. `islamicapps_dev` is to be retired.
+  Keep the safeguards that protect data: additive migrations, transactional
+  loads, data invariants, backups.
+- Gap filling runs as a matrix of parallel agents, one per gap. Data-side
+  lanes write only new files under their own directory and produce
+  load-ready output with a load specification. One lane at a time owns the
+  schema, migrations, projection and loader.
+- Narrator names carry a Latin form beside the Arabic, names link to narrator
+  pages, and English is rendered on detail pages.
+
+## Owner decisions, sixth round (2026-11-21)
+
+- Neo4j may be retired at any time. Take and verify the final dump first.
+- Publication: claims are published as "AI-reviewed", with the review
+  workflow and the citations documented and visible. Human review is not
+  required to publish.
+- Human review is plural: any item may carry reviews from many separate
+  human reviewers. There is never a single reviewer or one overwritten
+  status.
+- The goal is discussion around every hadith from every side, driven by
+  context: threads anchored to a precise context (a report, a telling, a
+  chain, a name in a chain, an identity claim, a grading, a passage, a
+  narrator, an event) and surfaced from every view that touches it.
+- AI reviews are done by dedicated specialist reviewer agents that are cut
+  off from context: each sees only a self-contained review packet and works
+  from a saved, documented system prompt (`reviews/ai/prompts/`). Every
+  review records the model that performed it, the prompt version and hash,
+  and the time. Rule-based checks are recorded separately as procedures, with
+  no model. "AI-reviewed" is never claimed for an item no reviewer saw.
+- Narrator pages show a perspectives matrix: one row per source of a view
+  (each rijal author and work, each critic quoted by name, the lexicon, any
+  external dataset), grouped by tradition; columns are the aspects a view can
+  speak to (verdict as written, generation, dates, places, teachers and
+  students, notes). Cells hold the verbatim text with its locator; an empty
+  cell means that source is silent. Disagreement is shown, never reduced to a
+  consensus. Report gradings follow the same shape.
+- One citation standard throughout. Every claim shown to a reader carries the
+  same required record: the work (author, title, tradition); the edition or
+  digital source as its own metadata names it; the locator (volume, page,
+  entry, verse, or URL with retrieval date, or dataset version and record
+  id); the verbatim passage relied on; the source short reference and
+  licence; and the hash of the text it was checked against. A claim without
+  one is labelled "not yet cited". The standard is defined in
+  docs/review/citations.md and checked by a validator; every lane's output
+  must pass it before it is loaded.
+- Narrator biography: the page states whether any biography is available and
+  from which sources, and what each covers; "no biography in any source the
+  archive holds" is said plainly. Narrators are connected to events and
+  places through cited passages. Timelines are drawn per perspective: one row
+  per source or tradition for the same narrator, never merged, so agreement
+  and difference are visible. The same citation standard applies.
+
+## Neo4j retired (2026-11-21)
+
+- Owner approved retirement after a verified dump. Final export is in the
+  backup bucket under `neo4j-final/2026-11-21/` (626,938 nodes, 1,539,277
+  relationships); all three objects were re-hashed by the session lead and
+  match `docs/backups/neo4j-final-2026-11-21.manifest.jsonl`.
+- Deleted on Railway: service `neo4j-hadith-graph-alltraditions` and volume
+  `neo4j-volume`. Removed from the `islamicapps` service: `NEO4J_URL`,
+  `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_PLUGINS`, `HEAP_INITIAL_SIZE`,
+  `HEAP_MAX_SIZE`, `PAGECACHE_SIZE`, `NODE_CSV_URLS`, `RELATION_CSV_URLS`,
+  `YOU_API_KEY`. The service keeps `DATABASE_URL`, `SITE_URL`,
+  `NEXT_TELEMETRY_DISABLED`.
+- Still to do in code: delete the Neo4j-era files nothing imports
+  (`src/lib/db/neo4j*.ts`, `src/app/actions/graph-actions.ts`,
+  `comparative-actions.ts`, the Neo4j scripts and tests) and the
+  `neo4j-driver` dependency; remove `NEO4J_*` from `.env.local`.
+- Backups: `db/2026-11-21/` and `db/2026-11-21-schema0011/` in the bucket;
+  restore drill passed (docs/backups/README.md). The three locked curation
+  files are still not backed up.
+- Open operations items: restart Postgres once when no load is running
+  (pending `shared_buffers`, `max_connections`); Postgres memory peaked at
+  4.5 GB during loads against a 250 to 450 MB budget, to be re-measured at
+  rest; `railway.json` conversion before 2026-12-01 drops the restart policy
+  if applied as generated (see docs/backups/README.md operations notes).
+
+## Specialist review pilot 1 (2026-11-21)
+
+- Model `claude-opus-5-5`, fresh subagent per packet, packet staged alone.
+- Narrator identity: 46 claims recorded (13 supports, 4 contradicts, 10
+  contested, 19 insufficient evidence); hidden known answers 3 of 5.
+- Report correspondence: 4 of 6 packets recorded at first attempt (21 pairs);
+  two rejected by the recorder (inexact quotes; reading and outcome
+  mismatch) and re-run with fresh reviewers.
+- Finding: identity packets need each candidate's rijal passages and
+  attested teachers and students.
+
+## Names, identities and English pass (2026-11-21)
+
+The owner's three problems with the live all-chains view, fixed (code uncommitted on `refactor/postgres-drizzle`;
+production database already loaded). Detail: `src/db/AGENTS.md` §External identity and §Latin names,
+`datasets/hadith-data/pg_export/AGENTS.md`, `DESIGN.md` change log.
+
+- **Latin names.** Every chain name carries a Latin form where a source or rule gives one, computed in the projection
+  with its basis (`chain_mentions.name_latin*`): Thaqalayn's English, the identified record's name, or a transliteration
+  of the vowelled text or of curated name parts; otherwise Arabic alone. Coverage of public names: Sunni 86.4%, Imami
+  90.0%, Zaydi 87.1%, Ibadi 56.0%.
+- **Identities.** hadith-kg and Riwayat claims (366,007) loaded with their records as narrators (15,529) and an Imam
+  register (12). Machine-reviewed now also on hadith-kg or Thaqalayn's annotation confirmed by the text, two sources
+  agreeing (6,791) and the Imams' kunyas in Imami chains (9,561). Names with any identity (linking to a page): Sunni
+  240,147 of 363,456, Imami 67,002 of 169,530, Ibadi 877 of 2,402, Zaydi 8 of 3,119.
+- **English.** The family view, each telling and report lists show public English with the same label and credit as
+  the report page, and "No English available yet" where none exists.
+
+### Deploy (session lead)
+
+1. Production is ahead of the deployed build and safe for it: migrations are additive; `public_chain_mention_candidates`
+   still returns only the bases the deployed build knows; the deployed build shows the 10,658 newly public English texts
+   and the new machine-reviewed links (merged in its diagram), and simply does not show Latin names or external
+   claims until the new code ships.
+2. Pick-up checks: `npx tsc --noEmit`; `DATABASE_URL=<production> npm run db:verify`;
+   `npm run db:verify-data -- --database production --confirm-production`.
+3. Commit, merge `refactor/postgres-drizzle` to `main`, push. No migration or load is needed at deploy.
+4. Check live: `/hadith/k6/19122/chains` (Latin names, Imam link to `/narrator/narrator%3Aimam%3A6`, English under each
+   telling), `/hadith/openiti/ibadi/rabi_0003%7C3%7CV01P006` ("No English available yet"),
+   `/narrator/narrator%3Ariwayat%3AN0152717`, `/narrator/narrator%3Ariwayat%3AN0001038` (label notice).
+5. Roll back the code by redeploying `b00af72`; the data needs no rollback for it. To return the data to `e2430eae…`,
+   load `projection-v3` again (a full load) and re-record the preview approval.
+
+### For the owner
+
+- Check `datasets/hadith-data/pg_export/imam_kunya_conventions.json`: which kunya plus marker means which Imam. Bare Abu
+  Jaʿfar (2,346 mentions), Abu al-Hasan (315) and Abu Muhammad (1) stay undecided candidates; say if bare Abu Jaʿfar
+  should mean al-Baqir by convention.
+- Two-part Thaqalayn labels (`أحمد بن محمد`, `محمد بن يحيى`, …) are not treated as label-like: 11,157 of the 14,398
+  Imami mentions machine-reviewed through Riwayat rest on such labels (707 records). Say if they should be labels (then
+  they stay candidates).
+- The loader now runs with parallel query off (the container's `/dev/shm` is too small for the load's joins); a
+  Postgres restart is still pending for the tuning in "Production state".

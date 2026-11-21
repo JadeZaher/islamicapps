@@ -1,0 +1,170 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "isnad-identity",
+  "prompt_version": "1.0.0",
+  "packet_id": "isnad-identity/pilot-1/packet-02",
+  "verdicts": [
+    {
+      "claim_id": "I1.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written ism and nasab عياش بن الوليد match the candidate's recorded name and the head of the Taqrib entry exactly.",
+        "The Taqrib entry carries the symbol خ, marking him as a narrator in al-Bukhari, and this report is from Sahih al-Bukhari, where he is the compiler's direct teacher at position 0.",
+        "The entry's death date (226) matches the recorded death year, and nothing in the packet points to another person of this name."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا عياش بن الوليد، حدثنا عبد الأعلى" },
+        { "passage_id": "P1", "quote": "عياش بن الوليد الرقام أبو الوليد البصري" },
+        { "passage_id": "P1", "quote": "مات سنة ست وعشرين ومائتين خ د س" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The passage does not name his teachers, so the link to عبد الأعلى is not shown directly. A passage naming a second عياش بن الوليد among al-Bukhari's teachers would change this.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I2.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written ism and nasab بشر بن السري match the candidate's recorded name and the head of the Taqrib entry.",
+        "The entry carries the symbol ع (all six books, which include al-Nasa'i) and puts him in the ninth tabaqa. Its death date (195 or 196) agrees with the recorded death year of 196.",
+        "Nothing in the packet points to another person with this name."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "قال حدثنا بشر بن السري، قال حدثنا سفيان" },
+        { "passage_id": "P1", "quote": "بشر بن السري أبو عمرو الأفوه بصري سكن مكة" },
+        { "passage_id": "P1", "quote": "من التاسعة مات سنة خمس أو ست وتسعين وله ثلاث وستون ع" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The passage does not list his teachers (سفيان) or his students (محمود بن غيلان), so the chain relation rests on the name and the book symbol alone.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I3.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The chain gives only a bare nasab, ابن إدريس. It is consistent with the candidate's recorded name عبد الله بن إدريس بن يزيد الأودي, but any son of an Idris would fit it.",
+        "The packet has no rijal passage for this candidate and records nothing about his teachers (ابن إسحاق) or students (ابن العلاء), so the chain context cannot be checked."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "وحدثنا ابن العلاء، حدثنا ابن إدريس، عن ابن إسحاق" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "A rijal passage naming Ibn Ishaq as his teacher or Ibn al-Ala' as his student would settle this. Outside knowledge, not relied on: Abu Dawud's teacher Muhammad ibn al-Ala' (Abu Kurayb) is commonly recorded as transmitting from Abdullah ibn Idris al-Awdi, who is in turn recorded as transmitting from Ibn Ishaq.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I4.C1",
+      "outcome": "contested",
+      "reasons": [
+        "The written ism and nasab جابر بن عبد الله match C1's recorded name, and the report has him transmitting directly about the Prophet, which fits a Companion, as C1's honorific رضي الله عنه indicates.",
+        "C2 carries the same name and the same Companion honorific, and the packet gives no passage, nisba or teacher/student detail that separates the two candidates."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن جابر بن عبد الله، أن النبي صلى الله عليه وسلم نهى عن ثمن الهر" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "C1 and C2 come from different datasets and may be two records of the same person. If so, this is not a real dispute between two people. C1's recorded death place, Baghdad, is unsupported by any passage. Outside knowledge, not relied on: Jabir ibn Abd Allah al-Ansari is usually recorded as dying in Medina.",
+      "proposals": [
+        { "kind": "note", "text": "C1 (Six-books index) and C2 (narrator lexicon) appear to be the same Companion, جابر بن عبد الله, recorded in two datasets. Consider reconciling them into one identity rather than treating them as rival candidates. Check C1's recorded death place, Baghdad, against a rijal source." }
+      ]
+    },
+    {
+      "claim_id": "I4.C2",
+      "outcome": "contested",
+      "reasons": [
+        "C2's recorded name, جابر بن عبد الله with the Companion honorific, matches the written name exactly, and he is shown transmitting directly about the Prophet.",
+        "C1 fits the written name equally well, and nothing in the packet decides between them."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "أنه سمع أبا الزبير، عن جابر بن عبد الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "C2 has no recorded death year and no rijal passage. If C1 and C2 are confirmed to be the same person, both claims become supports for that single identity.",
+      "proposals": [
+        { "kind": "note", "text": "C2 is likely the same person as C1, recorded in a different dataset. Reconcile them as one identity." }
+      ]
+    },
+    {
+      "claim_id": "I5.C1",
+      "outcome": "contradicts",
+      "reasons": [
+        "The written name is قيس بن أبي غرزة, while C1 is قيس بن أبي حازم: the father's kunya in the nasab is different, so the written name cannot be this person.",
+        "P1 is about Qays ibn Abi Hazim al-Bajali, a mukhadram of the second tabaqa. P2 names a different person, Qays ibn Abi Gharaza al-Ghifari, who exactly matches the written name."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن أبي وائل، عن قيس بن أبي غرزة، قال" },
+        { "passage_id": "P1", "quote": "قيس بن أبي حازم البجلي أبو عبد الله الكوفي" },
+        { "passage_id": "P2", "quote": "قيس بن أبي غرزة بمعجمة وراء وزاي مفتوحات الغفاري صحابي" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "Only a variant reading of the report that gave أبي حازم at this position would change this. The packet shows none.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I5.C2",
+      "outcome": "supports",
+      "reasons": [
+        "The written name قيس بن أبي غرزة matches C2's recorded name and the head of P2 exactly, and P2 fixes the spelling of غرزة.",
+        "P2 calls him a Companion (صحابي), which fits the report, where he describes the Prophet coming out to the traders. P2 also says he settled in Kufa.",
+        "P2's book symbol 4 (the four Sunan) covers al-Nasa'i, the source of this report."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن قيس بن أبي غرزة، قال كنا بالمدينة نبيع الأوساق" },
+        { "passage_id": "report", "quote": "فخرج إلينا رسول الله صلى الله عليه وسلم ذات يوم" },
+        { "passage_id": "P2", "quote": "الغفاري صحابي نزل الكوفة 4" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "P2 does not name أبو وائل as his student. A passage tying أبو وائل to another Qays ibn Abi Gharaza would change this, but the packet suggests no such person.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I6.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The chain names the narrator only by the laqab غندر, and C1's recorded name contains that laqab: محمد بن جعفر غندر.",
+        "Nothing in the packet points to another person bearing this laqab. However, the packet gives no rijal passage, so the teacher (شعبة) and student (محمد بن بشار) relations are not confirmed by the packet."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا محمد بن بشار، حدثنا غندر، حدثنا شعبة" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "A laqab can be shared by more than one narrator (mushtarak). A rijal passage showing Muhammad ibn Ja'far Ghundar as a student of Shu'ba would lower the uncertainty, and a second Ghundar in the same period would raise it. Outside knowledge, not relied on: Muhammad ibn Ja'far Ghundar is widely known as Shu'ba's student and as Bundar's (Muhammad ibn Bashshar's) teacher.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I7.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written kunya أبو اليمان matches C1's recorded name, and P1 states that he is known by this kunya (مشهور بكنيته). That fixes the convention for this kunya.",
+        "P1 says most of his hadith is from Shu'ayb, which matches his teacher at position 1 of this chain (أخبرنا شعيب). P1's symbol ع covers al-Bukhari."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا أبو اليمان، أخبرنا شعيب" },
+        { "passage_id": "P1", "quote": "أبو اليمان الحمصي مشهور بكنيته" },
+        { "passage_id": "P1", "quote": "يقال إن أكثر حديثه عن شعيب مناولة" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The death dates disagree. The candidate record gives 211, but P1 gives مات سنة اثنتين وعشرين, read in the tenth tabaqa as 222. The record's date should be checked. This does not affect the identification.",
+      "proposals": [
+        { "kind": "note", "text": "The recorded death year of 211 for الحكم بن نافع conflicts with P1 (Taqrib), which gives 222 (مات سنة اثنتين وعشرين). Review the stored date." }
+      ]
+    },
+    {
+      "claim_id": "I8.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The candidate's recorded name, محمد بن أبي عدي, matches the written name, apart from the spelling ابن for بن in the middle of the name.",
+        "The stored report text contains only the matn and no isnad, so neither the name nor its link to حميد can be checked against the report. The packet has no rijal passage for the candidate.",
+        "The chain as stored ends at حميد, but the matn opens with a narrator who asked أم المؤمنين (سألت). That narrator is missing from the chain, so the chain context is incomplete."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "سألت أم المؤمنين عن صلاة رسول الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "The report text with its full isnad, and a rijal passage linking Ibn Abi Adi to Humayd, would very likely settle this in the candidate's favour. Outside knowledge, not relied on: Muhammad ibn Abi Adi is a well-known teacher of Ahmad who transmits from Humayd al-Tawil.",
+      "proposals": [
+        { "kind": "chain_cut", "text": "The stored report text has no isnad, and the chain stops at حميد, while the matn's speaker (سألت أم المؤمنين) is not in the chain. The chain looks truncated after حميد, and possibly before محمد ابن أبي عدي. Re-extract it from the source text." }
+      ]
+    }
+  ]
+}

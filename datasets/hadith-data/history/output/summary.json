@@ -1,0 +1,215 @@
+{
+  "ai_review_rule": "history-ai-review-v1",
+  "citations": 171,
+  "claims": {
+    "ai_review": {
+      "failed": 19,
+      "passed": 163
+    },
+    "citation_status": {
+      "cited": 182
+    },
+    "failure_reasons": {
+      "century_not_written": 15,
+      "date_not_stated_as_a_year": 4
+    },
+    "seed_comparison_of_passing": {
+      "agrees": 84,
+      "differs_by_1": 5,
+      "differs_by_4": 1,
+      "new_event": 54,
+      "within_seed_range": 19
+    },
+    "total": 182
+  },
+  "contradicted_or_competing": [
+    {
+      "boundary": "start",
+      "citation_id": "cit:history:242dbbe83c16539df44d",
+      "cited_year": 36,
+      "seed_comparison": "differs_by_1",
+      "source": "Khalifa b. Khayyat al-Usfuri",
+      "target": "epoch:caliphate-ali"
+    },
+    {
+      "boundary": "end",
+      "citation_id": "cit:history:f9ca9804d29cb9f296f8",
+      "cited_year": 133,
+      "seed_comparison": "differs_by_1",
+      "source": "Nur al-Din al-Salimi",
+      "target": "epoch:ibadi-first-imamate-oman"
+    },
+    {
+      "boundary": "start",
+      "citation_id": "cit:history:75528d98d51d9f587170",
+      "cited_year": 280,
+      "seed_comparison": "differs_by_4",
+      "source": "Abu Talib Yahya b. al-Husayn al-Haruni",
+      "target": "epoch:zaydi-imamate-yemen"
+    },
+    {
+      "boundary": null,
+      "citation_id": "cit:history:242dbbe83c16539df44d",
+      "cited_year": 36,
+      "seed_comparison": "differs_by_1",
+      "source": "Khalifa b. Khayyat al-Usfuri",
+      "target": "Ali becomes Caliph"
+    },
+    {
+      "boundary": null,
+      "citation_id": "cit:history:4b9ea2ba28213a5ae3f8",
+      "cited_year": 63,
+      "seed_comparison": "differs_by_1",
+      "source": "Khalifa b. Khayyat al-Usfuri",
+      "target": "Siege of Makkah"
+    },
+    {
+      "boundary": null,
+      "citation_id": "cit:history:3b0aa528599e19302455",
+      "cited_year": 24,
+      "seed_comparison": "differs_by_1",
+      "source": "Khalifa b. Khayyat al-Usfuri",
+      "target": "Uthman becomes Caliph"
+    }
+  ],
+  "epochs": {
+    "both_boundaries_cited_and_passing": 31,
+    "end": {
+      "cited_but_not_stated_as_year": 2,
+      "nothing_found": 3,
+      "open_ended": 1,
+      "supported": 31,
+      "supported_with_competing_date": 1
+    },
+    "start": {
+      "cited_but_not_stated_as_year": 2,
+      "contradicted": 2,
+      "nothing_found": 1,
+      "supported": 33
+    },
+    "total": 38
+  },
+  "inputs_sha256": {
+    "0240IbnKhayyatCusfuri.Tarikh.JK000412-ara1": "2f6bb2a4012eef27307c5ba244205d4391445f4928a1a71c92bb4368b2c89c2f",
+    "0310Tabari.Tarikh.Shamela0009783BK1-ara1": "bcf92c29492a25317b64b3af7df00e498a3d6e5fefadff490c01c6e7690c92fd",
+    "0362AbuFarajIsbahani.MaqatilTalibiyyin.Shamela0012404-ara1": "c75803177016ae6b55428e82dce74ce48bc2c625ef351462ee9b9b8733c82a08",
+    "0413ShaykhMufid.Irshad.Shia001294Vols-ara1": "8d54fefec481d38e3b0937360a6b31a91e23b5605285faec31bfd233dbdcfd70",
+    "0424AbuTalibYahyaHaruni.IfadaFiTarikhAimma.Zaydiyya0000088-ara1": "c2fc1cd797ae096b1060762fa9a8acdce22b8cf269f062ec21a35aafefbaa6dd",
+    "0460ShaykhTusi.Ghayba.Zaydiyya0000283-ara1": "84a0ed1850ccae6e00efdc522241c7aa35d7bb71c1b0159894b26c27860335c8",
+    "0670AhmadDarjini.TabaqatMashayikhBiMaghrib.ShamIbadiyya0000107-ara1": "1c4b6a9c3cd00cfc3c1d23b70ca3d83be7b4a2a4e3c01c85c58f8d159f8117e2",
+    "0852IbnHajarCasqalani.TaqribTahdhib.JK000121-ara1": "178d493bd150032bc64a81ed4397d7e4a828209ee690deed283c1e63cada4637",
+    "0911Suyuti.TabaqatHuffaz.JK000753-ara1": "7151039d775463dd498a803de7ff586ceaacf2ac7284ef02ce042cfd209dfe08",
+    "0911Suyuti.TarikhKhulafa.Shamela0011997-ara1": "cb64ba4de9a6b4d9d0659dc582d07d61a3f4617177f33201ee948ddb0620ff11",
+    "0928AbuCabbasShammakhi.Siyar.ShamIbadiyya0000115-ara1": "dbe665ca840f2df2e64dbc7ef2be15f6e89ae7474b6fead28c0412fbf54ffc63",
+    "1332NurDinSalimi.TuhfatAcyan.ShamIbadiyya0000281-ara1": "311a6a95f283ca5a3df5f533a5b96539be701c9ff35834dc63f8fe560d65d2a9",
+    "lexicon_rijal_links.jsonl.gz": "56cad0c9d003a479ae986b77a0681221c2251c630ee939484c0a2b563e5a122a",
+    "seed-history.ts": "279749da758cfcdd2c26babec10c64293d7afe91ac05c8dda490beb05516a4cc"
+  },
+  "narrator_event_candidates": {
+    "ai_review": {
+      "failed": 42,
+      "passed": 22
+    },
+    "by_event": {
+      "Battle of Badr": 19,
+      "Battle of Siffin": 7,
+      "Battle of Uhud": 12,
+      "Battle of Yarmouk": 1,
+      "Battle of the Camel": 5,
+      "Conquest of Persia (Battle of Qadisiyyah)": 4,
+      "battle-of-al-harra": 11,
+      "battle-of-yamama": 5
+    },
+    "failure_reasons": {
+      "no_unique_lexicon_link_for_this_entry": 39,
+      "reported_as_it_is_said": 5,
+      "source_rejects_the_report": 1,
+      "subject_may_differ": 1
+    },
+    "total": 64
+  },
+  "new_events_by_tradition": {
+    "Ibadi": 10,
+    "Imami": 13,
+    "Sunni": 10,
+    "Zaydi": 7,
+    "general": 11
+  },
+  "new_events_publishable": 49,
+  "nothing_found_searches": 2,
+  "seed_events": {
+    "cited_but_not_stated_as_year": 3,
+    "compilation_split_proposals": 10,
+    "contradicted": 2,
+    "nothing_found": 19,
+    "supported": 29,
+    "supported_with_competing_date": 1,
+    "total": 54
+  },
+  "seed_events_by_assessment": {
+    "cited_but_not_stated_as_year": [
+      "Birth of Prophet Muhammad",
+      "Fall of Baghdad to Mongols",
+      "First Revelation (Bi'thah)"
+    ],
+    "contradicted": [
+      "Ali becomes Caliph",
+      "Uthman becomes Caliph"
+    ],
+    "nothing_found": [
+      "Abu Dawud compiles Sunan",
+      "Al-Dhahabi writes Siyar A'lam al-Nubala",
+      "Al-Nawawi writes Sharh Sahih Muslim",
+      "Battle of Tours",
+      "Battle of the Trench (Khandaq)",
+      "Compilation of Quran (First)",
+      "Construction of Dome of the Rock",
+      "Foundation of Basra",
+      "Foundation of Fustat",
+      "Ibn Hajar al-Asqalani writes Fath al-Bari",
+      "Ibn Majah compiles Sunan",
+      "Ibn Taymiyyah's Era",
+      "Imam Bukhari compiles Sahih",
+      "Imam Muslim compiles Sahih",
+      "Isra and Mi'raj",
+      "Migration to Abyssinia",
+      "Nasa'i compiles Sunan",
+      "Standardization of Quran (Uthmanic Codex)",
+      "Tirmidhi compiles Jami'"
+    ],
+    "supported": [
+      "Abbasid Revolution",
+      "Abu Bakr becomes Caliph",
+      "Ahmad ibn Hanbal and the Mihna",
+      "Assassination of Ali",
+      "Assassination of Uthman",
+      "Battle of Badr",
+      "Battle of Siffin",
+      "Battle of Uhud",
+      "Battle of Yarmouk",
+      "Battle of the Camel",
+      "Conquest of Jerusalem",
+      "Conquest of Makkah",
+      "Conquest of Persia (Battle of Qadisiyyah)",
+      "Conquest of Spain",
+      "Death of Imam Abu Hanifa",
+      "Death of Imam Ahmad ibn Hanbal",
+      "Death of Imam Malik",
+      "Death of Imam al-Shafi'i",
+      "Death of Prophet Muhammad",
+      "Farewell Pilgrimage",
+      "Foundation of Baghdad",
+      "Foundation of Kufa",
+      "Martyrdom of Husayn at Karbala",
+      "Mu'awiya founds Umayyad Caliphate",
+      "The Hijra (Migration to Medina)",
+      "Treaty of Hudaybiyyah",
+      "Umar becomes Caliph",
+      "Umar ibn Abd al-Aziz's Caliphate",
+      "Wars of Apostasy (Ridda)"
+    ],
+    "supported_with_competing_date": [
+      "Siege of Makkah"
+    ]
+  }
+}

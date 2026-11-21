@@ -10,6 +10,7 @@ import type {
   ReportFamily,
   TellingCorrespondence,
 } from './contracts';
+import { englishAttribution } from './hadith';
 import { chainEdges, chainNodesJson, PUBLIC_CHAIN_RELATIONS, REVIEW_CHAIN_RELATIONS, toChainNode, type ChainRelations } from './isnad';
 import { text } from './mappers';
 import { oneRow } from './sql-helpers';
@@ -32,13 +33,18 @@ export interface FamilyRelations {
   /** Columns of `report_correspondence_display`. */
   correspondences: SQL;
   chains: ChainRelations;
+  /** Columns of `translations`, restricted to the English the reader may see. */
+  translations: SQL;
 }
 
 export const PUBLIC_FAMILY_RELATIONS: FamilyRelations = {
   hadiths: sql`public_hadiths`,
   correspondences: sql`public_report_correspondences`,
   chains: PUBLIC_CHAIN_RELATIONS,
+  translations: sql`public_translations`,
 };
+
+const LIVE_TRANSLATIONS = sql`(select x.* from translations x where x.retired_at is null)`;
 
 /** The family relations for a resolved visibility: hadiths through the shared resolver (`hadithRelationsFor`). */
 export function familyRelationsFor(visibility: ReadVisibility): FamilyRelations {
@@ -48,6 +54,7 @@ export function familyRelationsFor(visibility: ReadVisibility): FamilyRelations 
     hadiths: sql`(select h.* from ${relations.hadiths} h where ${relations.liveHadith})`,
     correspondences: sql`report_correspondence_display`,
     chains: REVIEW_CHAIN_RELATIONS,
+    translations: LIVE_TRANSLATIONS,
   };
 }
 
@@ -56,6 +63,7 @@ export const CURATOR_FAMILY_RELATIONS: FamilyRelations = {
   hadiths: sql`(select h.* from hadiths h where h.retired_at is null)`,
   correspondences: sql`report_correspondence_display`,
   chains: REVIEW_CHAIN_RELATIONS,
+  translations: LIVE_TRANSLATIONS,
 };
 
 const CLASS_RANK = sql`case x.relation_class when 'same_wording' then 0 when 'same_report_variant_wording' then 1
@@ -90,6 +98,9 @@ function familyStatement(relations: FamilyRelations, hadithId: string, cap: numb
                  'hadith_no', h.hadith_no, 'volume', h.volume, 'url', h.url, 'page_ref', h.page_ref,
                  'chapter', h.chapter_title, 'text_ar', h.text_ar,
                  'matn_ar', h.matn_ar, 'sanad', h.sanad,
+                 'english', case when tr.text is not null then json_build_object(
+                   'text', tr.text, 'state', tr.state, 'translator', tr.translator, 'english_model', tr.model,
+                   'english_source', tr.source, 'source_slug', src.slug, 'source_work_id', col.source_work_id) end,
                  'correspondence', case when m.rank > 0 then json_build_object(
                    'relation_class', c.relation_class, 'jaccard', c.jaccard, 'containment', c.containment,
                    'scope', c.scope, 'decision', c.decision, 'reviewed_relation', c.reviewed_relation,
@@ -98,8 +109,14 @@ function familyStatement(relations: FamilyRelations, hadithId: string, cap: numb
         from members m
         join ${relations.hadiths} h on h.id = m.id
         join collections col on col.id = h.collection_id
+        join sources src on src.id = col.source_id
         join traditions t on t.id = h.tradition_id
         left join corresponding c on c.id = m.id and m.rank > 0
+        left join lateral (
+          select x.text, x.state, x.translator, x.model, x.source from ${relations.translations} x
+          where x.hadith_id = h.id and x.language = 'en'
+          order by x.id limit 1
+        ) tr on true
       ) as tellings,
       ${chainNodesJson(relations.chains, sql`array(select id from members)`)} as nodes
   `;
@@ -118,6 +135,14 @@ function toCorrespondence(value: unknown): TellingCorrespondence | null {
     reviewed_relation: (text(row.reviewed_relation) as TellingCorrespondence['reviewed_relation']) ?? null,
     confirmed: row.confirmed === true,
   };
+}
+
+function toTellingEnglish(value: unknown): FamilyTelling['english'] {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as Record<string, unknown>;
+  const englishText = text(row.text);
+  if (!englishText) return null;
+  return { text: englishText, attribution: englishAttribution(String(row.state), row) };
 }
 
 /** Reads one family through the given relations; null when the report is not visible to this reader. */
@@ -156,6 +181,7 @@ export async function readReportFamily(relations: FamilyRelations, hadithId: str
       text_ar: text(telling.text_ar),
       matn_ar: text(telling.matn_ar),
       sanad: text(telling.sanad),
+      english: toTellingEnglish(telling.english),
       correspondence: telling.is_focal === true ? null : toCorrespondence(telling.correspondence),
       chain,
     };

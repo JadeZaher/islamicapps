@@ -27,6 +27,25 @@ export interface DataCheckReport {
 /** Verified-link resolutions since 0006 (src/db/AGENTS.md §Verified link). A name match is never one. */
 const RENDERING_RESOLUTIONS = `('source_index', 'human_verified', 'derived_relation_verified')`;
 const NAME_BASES = `('name_exact', 'name_spelling_fold', 'name_kunya_only')`;
+/** Labels, never contests (owner 2026-11-21): kunya-only names, an unqualified shared Imam kunya, placeholder targets. */
+const NON_CONTESTING = `('name_kunya_only', 'imam_kunya_candidate')`;
+/**
+ * Person key of every narrator, for comparing two claims (src/db/AGENTS.md §External identity): its lexicon link
+ * candidate, else (Riwayat) the link of its one hadith-kg crosswalk id, else that hadith-kg narrator, else itself.
+ * Mirrors `PersonKeys.key` in datasets/hadith-data/pg_export/external_identity.py.
+ */
+const PERSON_KEYS = `person_keys as materialized (
+  select n.id, coalesce(l.rawi_narrator_id, kl.rawi_narrator_id, kg.kg_id, n.id) as person
+  from narrators n
+  left join lateral (select min(x.rawi_narrator_id) as rawi_narrator_id from narrator_link_candidates x
+                     where x.external_narrator_id = n.id and x.retired_at is null) l on true
+  left join lateral (select 'narrator:hadith-kg:' || min(e.external_id) as kg_id from narrator_external_ids e
+                     where e.narrator_id = n.id and e.namespace = 'kg' and e.retired_at is null and n.authority = 'riwayat'
+                     having count(distinct e.external_id) = 1
+                        and exists (select 1 from narrators k where k.id = 'narrator:hadith-kg:' || min(e.external_id))) kg on true
+  left join lateral (select min(x.rawi_narrator_id) as rawi_narrator_id from narrator_link_candidates x
+                     where x.external_narrator_id = kg.kg_id and x.retired_at is null) kl on true
+  where n.retired_at is null)`;
 /** grading-recovery's NON_RULING_CLASSES keys (whitespace removed, Persian ya and kaf folded); the projection excludes them. */
 const NON_RULING_TERMS = `('لميخرجه', 'لميذكره', 'لميذكرعندهشيء', 'لميذكرالطريق', 'لميحقق', 'لاواسطة', 'سكتعنه', 'كالسابق', 'كالسابقأيضا', 'مثلالسندالسابق', 'بالسندالسابق')`;
 
@@ -143,10 +162,12 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where c.retired_at is null and (m.id is null or n.id is null or m.hadith_id <> c.hadith_id)`,
   );
   await check(
-    'no candidate targets a placeholder row except name_kunya_only, which targets only kunya-only rows',
+    'no candidate targets a placeholder except the labelled kinds: name_kunya_only on kunya-only lexicon rows, an unconfirmed external claim on its own placeholder record',
     `select count(*)::int as value from chain_mention_candidates c join narrators n on n.id = c.narrator_id
      where c.retired_at is null
-       and ((c.basis <> 'name_kunya_only' and n.placeholder_reason is not null)
+       and ((n.placeholder_reason is not null
+             and not (c.basis = 'name_kunya_only' and n.placeholder_reason = 'kunya_only_name')
+             and not (c.basis::text in ('source_hadith_kg', 'source_riwayat') and n.authority::text in ('hadith_kg', 'riwayat')))
          or (c.basis = 'name_kunya_only' and n.placeholder_reason is distinct from 'kunya_only_name'))`,
   );
   await check(
@@ -155,19 +176,82 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where c.retired_at is null and c.basis in ${NAME_BASES} and h.tradition_id <> 'tradition:sunni'`,
   );
   await check(
-    'a verified narrator_id has a confirming source-index candidate or a reviewer decision',
+    'an automatic (machine-reviewed) narrator_id rests on the evidence its extraction_method names',
     `select count(*)::int as value from chain_mentions m
      where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
-       and not (m.resolution = 'source_index' and exists (
-         select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
-           and c.narrator_id = m.narrator_id and c.basis = 'source_index_confirmed_by_text'))`,
+       and not (m.resolution = 'source_index' and (
+         (m.extraction_method in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
+                                  'imam_kunya_convention')
+          and exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
+                        and c.narrator_id = m.narrator_id and c.basis::text = m.extraction_method))
+         or (m.extraction_method = 'source_riwayat_confirmed_by_text'
+             and exists (select 1 from chain_mention_candidates c
+                         left join narrator_source_profiles p on p.narrator_id = c.narrator_id and p.retired_at is null
+                         where c.mention_id = m.id and c.retired_at is null and c.narrator_id = m.narrator_id
+                           and c.basis::text = 'source_riwayat_confirmed_by_text'
+                           and c.source_assertion_origin <> 'riwayat_automatic_linking' and p.label_reason is null))
+         or (m.extraction_method = 'two_sources_agree'
+             and exists (select 1 from chain_mention_candidates k where k.mention_id = m.id and k.retired_at is null
+                           and k.narrator_id = m.narrator_id and k.basis in ('source_index', 'source_index_confirmed_by_text'))
+             and exists (select 1 from chain_mention_candidates g
+                         join narrator_link_candidates x on x.external_narrator_id = g.narrator_id and x.retired_at is null
+                         where g.mention_id = m.id and g.retired_at is null and x.rawi_narrator_id = m.narrator_id
+                           and g.basis::text in ('source_hadith_kg', 'source_hadith_kg_confirmed_by_text')))))`,
   );
   await check(
-    'an automatic (machine-reviewed) link is uncontested: no live non-kunya candidate of that mention names someone else',
+    'an automatic (machine-reviewed) link is uncontested: no two contesting candidates of the mention name different people of one authority',
+    `with ${PERSON_KEYS},
+     contested as (
+       select distinct c.mention_id
+       from chain_mention_candidates c
+       join narrators n on n.id = c.narrator_id and n.placeholder_reason is null
+       join person_keys k on k.id = c.narrator_id
+       where c.retired_at is null and c.basis::text not in ${NON_CONTESTING}
+       group by c.mention_id, split_part(k.person, ':', 2) having count(distinct k.person) > 1)
+     select count(*)::int as value from chain_mentions m join contested x on x.mention_id = m.id
+     where m.retired_at is null and m.narrator_id is not null and m.decision_id is null`,
+  );
+  await check(
+    'the machine-reviewed tier never rests on a Riwayat automatic link',
     `select count(*)::int as value from chain_mentions m
      where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
-       and exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
-                     and c.narrator_id <> m.narrator_id and c.basis <> 'name_kunya_only')`,
+       and m.extraction_method = 'source_riwayat_confirmed_by_text'
+       and not exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
+                         and c.narrator_id = m.narrator_id and c.source_assertion_origin <> 'riwayat_automatic_linking')`,
+  );
+  await check(
+    'an Imam-kunya candidate or resolution exists only in an Imami chain',
+    `select (select count(*) from chain_mention_candidates c join hadiths h on h.id = c.hadith_id
+             where c.retired_at is null and c.basis::text in ('imam_kunya_convention', 'imam_kunya_candidate')
+               and h.tradition_id <> 'tradition:imami')
+          + (select count(*) from chain_mentions m join hadiths h on h.id = m.hadith_id
+             where m.retired_at is null and m.extraction_method = 'imam_kunya_convention'
+               and h.tradition_id <> 'tradition:imami')
+          + (select count(*) from chain_mention_candidates c join narrators n on n.id = c.narrator_id
+             where c.retired_at is null and ((c.basis::text like 'imam_kunya_%') <> (n.authority::text = 'imam_register')))
+          as value`,
+  );
+  await check(
+    'external-authority narrators carry their source: one live profile naming that source, and no profile on a lexicon row',
+    `select (select count(*) from narrators n
+             left join narrator_source_profiles p on p.narrator_id = n.id and p.retired_at is null
+             where n.retired_at is null and n.authority::text in ('hadith_kg', 'riwayat', 'imam_register')
+               and (p.narrator_id is null or p.source <> n.authority::text or nullif(trim(p.licence), '') is null))
+          + (select count(*) from narrator_source_profiles p join narrators n on n.id = p.narrator_id
+             where p.retired_at is null and n.authority::text not in ('hadith_kg', 'riwayat', 'imam_register'))
+          + (select count(*) from chain_mention_candidates c join narrators n on n.id = c.narrator_id
+             where c.retired_at is null and c.source_ref is not null
+               and n.authority::text <> case when c.basis::text like 'source_hadith_kg%' then 'hadith_kg' else 'riwayat' end)
+          as value`,
+  );
+  await check(
+    "Latin names: the provider's English only on Imami Thaqalayn reports; an identity name names a live narrator",
+    `select count(*)::int as value from chain_mentions m join hadiths h on h.id = m.hadith_id
+     left join narrators n on n.id = m.name_latin_narrator_id and n.retired_at is null
+     where m.retired_at is null
+       and ((m.name_latin_basis = 'provider_english'
+             and (h.tradition_id <> 'tradition:imami' or m.hadith_id not like 'hadith:thaqalayn:%'))
+         or (m.name_latin_basis = 'identity_name' and n.id is null))`,
   );
   await check(
     'live decisions have a reviewer and time; no derived_relation decision has the coarse scope',
@@ -319,6 +403,19 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
       `select h.tradition_id, c.basis, count(*)::int as candidates
        from chain_mention_candidates c join hadiths h on h.id = c.hadith_id
        where c.retired_at is null group by 1, 2 order by 1, 2`,
+    ),
+    standing_identity: await sql.unsafe(
+      `select h.tradition_id, m.extraction_method, count(*)::int as mentions
+       from chain_mentions m join hadiths h on h.id = m.hadith_id
+       where m.retired_at is null and m.narrator_id is not null group by 1, 2 order by 1, 2`,
+    ),
+    latin_names: await sql.unsafe(
+      `select h.tradition_id, coalesce(m.name_latin_basis::text, 'none') as basis, count(*)::int as mentions
+       from chain_mentions m join hadiths h on h.id = m.hadith_id
+       where m.retired_at is null group by 1, 2 order by 1, 2`,
+    ),
+    narrators_by_authority: await sql.unsafe(
+      `select authority, count(*)::int as narrators from narrators where retired_at is null group by 1 order by 1`,
     ),
     transmissions: await scalar(sql, 'select count(*)::int as value from narrator_transmissions'),
     report_correspondences: await sql.unsafe(

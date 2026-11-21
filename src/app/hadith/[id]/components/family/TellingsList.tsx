@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { ArabicText } from '@/components/ArabicText';
+import { ReportEnglish } from '@/components/archive/ReportEnglish';
 import { BilingualTitle } from '@/components/NarratorName';
 import { TraditionMark as TraditionModule } from '@/components/marks';
 import type { FamilyTelling, HadithTraditionCode } from '@/db/queries/contracts';
@@ -83,6 +84,13 @@ function TellingRow({ telling, mode, reviewHrefBase, focalId, clampLines }: {
           >
             {text}
           </ArabicText>
+          <ReportEnglish
+            text={telling.english?.text}
+            attribution={telling.english?.attribution}
+            size="body"
+            clamped={clampLines && !expanded}
+            className="mt-2"
+          />
           <div className={styles.meta}>
             <span>{isMatn ? 'Report text, chain omitted' : 'Text as in the source, chain included'}</span>
             {clampLines && (

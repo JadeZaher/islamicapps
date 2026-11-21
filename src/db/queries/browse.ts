@@ -2,6 +2,7 @@
 import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import { bookHeading, idNamespace, reportNumber, reportReference, type IdNamespace, type ReferenceFields } from '@/lib/citation/reference';
+import { englishLabel, englishReference, type SourceReference } from '@/lib/sources/report-credit';
 import { text } from './mappers';
 import { clampPage, HADITH_TRADITION_CODES, oneRow, paginated, rows, type HadithTraditionCode, type PageRequest, type Paginated } from './sql-helpers';
 import { hadithRelationsFor, type ReadVisibility } from './visibility';
@@ -105,6 +106,23 @@ export interface ReportListItem {
   chapterName: string | null;
   arabicExcerpt: string | null;
   englishExcerpt: string | null;
+  /** The English excerpt's label and credited source (src/lib/sources/report-credit.ts); null without English. */
+  englishLabel: string | null;
+  englishSource: EnglishSourceRef | null;
+}
+
+/** The short reference of a list row's English: source code and the detail line (translator or model). */
+export interface EnglishSourceRef {
+  code: SourceReference['code'];
+  detail: string | null;
+}
+
+/** Label and credit of a list row's English, worded exactly as on the report page. */
+function listEnglish(item: Row): Pick<ReportListItem, 'englishLabel' | 'englishSource'> {
+  if (!text(item.text_en) || !text(item.english_state)) return { englishLabel: null, englishSource: null };
+  const english = { state: text(item.english_state), translator: text(item.translator), model: text(item.english_model) };
+  const reference = englishReference({ sourceSlug: String(item.source_slug ?? ''), sourceWorkId: String(item.source_work_id ?? ''), english });
+  return { englishLabel: englishLabel(english), englishSource: reference ? { code: reference.code, detail: reference.detail } : null };
 }
 
 export interface ReportNeighbour {
@@ -350,14 +368,18 @@ export async function listReportsInOrder(scope: ReportScope, request: PageReques
         : sql`null::json`} as chapter,
       coalesce((
         select json_agg(json_build_object(${REFERENCE_JSON}, 'chapter_name', c.name,
-                                          'text_ar', coalesce(h.matn_ar, h.text_ar), 'text_en', tr.text)
+                                          'text_ar', coalesce(h.matn_ar, h.text_ar), 'text_en', tr.text,
+                                          'english_state', tr.state, 'translator', tr.translator, 'english_model', tr.model,
+                                          'source_slug', hs.slug, 'source_work_id', hc.source_work_id)
                         order by p.ord, p.id collate "C")
         from page p
         join ${relations.hadiths} h on h.id = p.id
+        join collections hc on hc.id = h.collection_id
+        join sources hs on hs.id = hc.source_id
         left join books b on b.id = h.book_id
         left join chapters c on c.id = h.chapter_id
         left join lateral (
-          select x.text from ${relations.translations} x
+          select x.text, x.state, x.translator, x.model from ${relations.translations} x
           where x.hadith_id = h.id and x.language = 'en' and ${relations.liveTranslation}
           limit 1
         ) tr on true
@@ -371,6 +393,7 @@ export async function listReportsInOrder(scope: ReportScope, request: PageReques
       chapterName: text(item.chapter_name),
       arabicExcerpt: excerpt(item.text_ar),
       englishExcerpt: excerpt(item.text_en),
+      ...listEnglish(item),
     };
   });
   return {

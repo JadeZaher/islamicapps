@@ -3,8 +3,15 @@
  * and name linking to the source record). Each renders a block `<p>`, so place it beside, never inside, a paragraph.
  */
 import { SourceCredit } from '@/components/archive/SourceCredit';
-import type { IdentityBasis } from '@/db/queries/contracts';
-import { sourceCodeForHadithId, sourceForGrading, sourceForIdentityBasis, type SourceCode } from '@/lib/sources/registry';
+import type { ChainGraph, IdentityBasis } from '@/db/queries/contracts';
+import {
+  sourceCodeForHadithId,
+  sourceForGrading,
+  sourceForIdentityBasis,
+  sourceForLatinName,
+  sourcesForIdentityClaim,
+  type SourceCode,
+} from '@/lib/sources/registry';
 
 /** The text source of a report (telling, or the chain extracted from its text). */
 export function TextCredit({ hadithId, role = 'Text', className }: { hadithId: string; role?: string; className?: string }) {
@@ -21,6 +28,32 @@ export function IdentityCredit({ bases, className }: { bases: IdentityBasis[]; c
         <SourceCredit key={code} code={code} role="Identity" className={className} />
       ))}
     </>
+  );
+}
+
+/**
+ * Every source a chain list draws on for names and identities, each once, next to the chain (reconciled/README.md §e):
+ * role "Identity" for identity claims, "Latin name" for the Latin forms. The rows carry the inline codes.
+ */
+export function ChainSourceCredits({ chain }: { chain: ChainGraph | null }) {
+  const identity = new Set<SourceCode>();
+  const latin = new Set<SourceCode>();
+  for (const node of chain?.nodes ?? []) {
+    for (const candidate of node.candidates) {
+      for (const code of sourcesForIdentityClaim(candidate.basis, candidate.origin, chain?.tradition ?? null)) identity.add(code);
+    }
+    if (node.name_latin_basis) latin.add(sourceForLatinName(node.name_latin_basis, node.name_latin_narrator_id));
+  }
+  if (identity.size === 0 && latin.size === 0) return null;
+  return (
+    <div className="mt-4 space-y-0.5" data-chain-credits>
+      {[...identity].sort().map((code) => (
+        <SourceCredit key={`identity-${code}`} code={code} role="Identity" className="!text-xs !leading-4" />
+      ))}
+      {[...latin].sort().map((code) => (
+        <SourceCredit key={`latin-${code}`} code={code} role="Latin name" className="!text-xs !leading-4" />
+      ))}
+    </div>
   );
 }
 

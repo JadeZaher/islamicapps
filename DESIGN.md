@@ -225,8 +225,10 @@ paragraph.
 
 ### Report reading column (`hadith/[id]/client-page.tsx`)
 
-In order: `TEXT` label, Arabic text (22/44), the English (18/28) labelled as an unreviewed translation or the line
-"No English translation recorded for this report.", then the source short reference. Then the isnad, assessments,
+In order: `TEXT` label, Arabic text (22/44), the English (18/28) under its label from `englishLabel` ("Source-provided
+English, not reviewed here") with its `englishReference` credit, or the one muted line "No English available yet"
+(`archive/ReportEnglish.tsx`, the one component for every surface that shows a report's English), then the source short
+reference. Then the isnad, assessments,
 variants and references, each opened by a 1px ink rule and a 12px uppercase label. The facts margin holds a definition
 list (tradition, work, number, book, attribution, tellings, address in mono) and the one secondary action
 ("Copy citation"). Under 1024px the facts follow the text.
@@ -237,13 +239,22 @@ list (tradition, work, number, book, attribution, tellings, address in mono) and
   (The graph runs the other way, from the attribution down; each says which way it runs.)
 - Each chain has a heading ("Chain 2 of 2", 20px) and a count ("5 names, 5 identified").
 - Each position is a three-part row: the position number (12px muted), a rail (12px column with a 1px faint vertical
-  line and the position's node mark), and the body. In the body, the Arabic surface is at 18/32. The identity (14px)
-  sits beside it from 640px and below it on smaller screens: the narrator name as a row link, the record's Arabic name
-  in `<bdi>`, then one basis line per candidate.
+  line and the position's node mark), and the body. The body's first cell is the name as written: the Arabic surface
+  at 18/32 at the end (right), its Latin form at 14px in the Latin face at the start (left), on one line when they fit,
+  and under them one 12px muted line: the name-basis mark, how the Latin form was obtained, and the source code
+  (`SourceCodeLink`). No Latin form means none of the rules applied: the Arabic stands alone, never a guess. The identity
+  (14px) sits beside it from 640px and below it on smaller screens: a standing identity first under its own line
+  ("machine-reviewed: two sources agree"), then the record name as a row link with the record's Arabic name in `<bdi>`,
+  other records of the same person as "Same person in hadith-kg: …", and one basis line per candidate, each ending in
+  its source codes.
+- The chain's sources are credited once below the list with the full `SourceCredit` ("Identity: HKG …", "Latin name:
+  THQ …"); each row carries only the codes.
 - An unidentified mention shows an outline node and "Not identified" in muted text. It is never a link.
 - A narrator through whom several chains of this report pass shows the shared node and "in N chains of this report".
-- Where sources disagree, every candidate is listed with its own basis line, under "Sources differ. Both identities
-  are shown; neither is preferred." Kunya-only candidates are a note, never a disagreement.
+- Where sources disagree, every candidate is listed with its own basis line, under "Sources differ on who this is".
+  Only records of one registry known to name different people disagree; records in different registries with no link
+  between them are listed without that line. Kunya-only candidates and an undecided shared Imam kunya are a note, never a
+  disagreement.
 - Rows are divided by hairlines; no boxes. *Shown in:* `#isnad`.
 
 ### Identity basis labels (`BasisMark`, basis wording)
@@ -255,13 +266,29 @@ firms up:
 | Basis | Mark | Wording |
 | --- | --- | --- |
 | `reviewer_decision` | filled disc | verified by a reviewer |
-| `source_index_confirmed_by_text` | ring with a centre dot | machine-reviewed: matches the source's index and the text |
-| `source_index` | ring | source index |
+| `source_index_confirmed_by_text`, `source_hadith_kg_confirmed_by_text`, `source_riwayat_confirmed_by_text` (tier basis), `imam_kunya_convention` | ring with a centre dot | six-books source index / hadith-kg index / the annotation's origin, "matches the text"; the Imam's conventional kunya with the honorific |
+| `source_index`, `source_hadith_kg`, `source_riwayat`, and a Riwayat automatic link or label record even when confirmed | ring | six-books source index / hadith-kg index / "Thaqalayn's annotation via Riwayat", "Riwayat's automatic link, not counted" |
 | `name_exact`, `name_spelling_fold` | dashed ring | matched by name |
-| `name_kunya_only` | short bar (off the scale) | matched by kunya only |
+| `name_kunya_only`, `imam_kunya_candidate` | short bar (off the scale) | matched by kunya only; a kunya several Imams share, not decided |
 
-Kunya-only is a bar rather than a circle because, by owner decision, it is a label and not a rung on the scale.
-Timeline datum bases (`basisLabel`) stay text-only.
+The standing identity's own line uses the ring with a centre dot and says what made it machine-reviewed (`STANDING_BASIS_LABEL`:
+"the source's index and the text agree", "two sources agree", "hadith-kg's index and the text agree", "the annotation
+and the text agree", "the Imam's kunya in Imami usage"). Kunya-only is a bar rather than a circle because, by owner
+decision, it is a label and not a rung on the scale. Timeline datum bases (`basisLabel`) stay text-only. Wording and
+marks live in one file, `marks/BasisMark.tsx`.
+
+### Latin names (`NameBasisMark`, `NAME_LATIN_BASIS_LABEL`)
+
+A 10px square of horizontal rules beside the Latin form, from the most to the least source-given:
+
+| Basis | Mark | Wording | Source code |
+| --- | --- | --- | --- |
+| `provider_english` | two full rules | the source's English | `THQ` |
+| `identity_name` | a full rule over a short one | name of the identified record | `MSD` (lexicon) or `SWI` (Imam register) |
+| `transliteration_vocalized` | one full rule | transliterated from the vowelled text | `SWI` |
+| `transliteration_table` | one dashed rule | transliterated from common name parts | `SWI` |
+
+The Latin form never stands in for the identity: it renders the name as written.
 
 ### Tradition marks (`TraditionMark`, replaces `TraditionBadge` styling)
 
@@ -398,7 +425,8 @@ Where lanes from several traditions share the axis, the lane's line uses `TRADIT
 | Export | What it draws |
 | --- | --- |
 | `TraditionMark`, `TraditionLine`, `TRADITION_DASH`, `HADITH_TRADITIONS` | tradition modules and line samples |
-| `BasisMark`, `IDENTITY_BASIS_LABEL` | identity basis scale |
+| `BasisMark`, `IDENTITY_BASIS_LABEL`, `STANDING_BASIS_LABEL`, `candidateBasisLabel` | identity basis scale and its wording |
+| `NameBasisMark`, `NAME_LATIN_BASIS_LABEL` | how a chain name's Latin form was obtained |
 | `NarratorNode`, `NarratorNodeShape`, `NARRATOR_NODE_LABEL` | graph nodes, standalone or inside a larger SVG |
 | `ChainConnector` | vertical rail segment: continuous, gap, tradition dash, 2px emphasis |
 | `ArrowIcon`, `SearchIcon`, `ExternalIcon`, `CopyIcon`, `CheckIcon`, `CloseIcon`, `ChevronIcon`, `MenuIcon` | interface icons |
@@ -459,6 +487,14 @@ marks (`TraditionBadge`, tellings, all-chains, timeline group labels, filter chi
 
 ## Change log
 
+- **2026-11-21 (names, identities and English pass):** The isnad list row shows the Latin form beside the Arabic (Arabic
+  at the end, Latin at the start, one muted basis line with `NameBasisMark`); the identity cell groups records of one
+  person, leads with the standing identity's own line, and ends each basis line in inline source codes, with the chain's
+  full credits once below the list (`ChainSourceCredits`, `SourceCodeLink`). New bases join the basis scale (table above).
+  One English block (`archive/ReportEnglish.tsx`) on the report page, the family view and each telling, and a one-line
+  label with its source code under each excerpt in report lists; "No English available yet" replaces silence. Narrator
+  pages gain "Record in …" (an external source's or the Imam register's record, with a 2px ink start rule notice when the
+  id names a label) and "Named in chains" (paged). No colour token changed.
 - **2026-11-21 (application pass):** Applied the system to the whole app. Tokens imported in `globals.css` with token
   utilities, shadcn aliases and legacy palette aliases (§Tokens); radii 0, no shadows, blurs or animations; Inter and
   JetBrains Mono through `next/font` (`--font-*-face` on `<html>`, token stacks read them first); the forced `dark`

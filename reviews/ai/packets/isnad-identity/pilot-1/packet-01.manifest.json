@@ -1,0 +1,104 @@
+{
+  "packet_id": "isnad-identity/pilot-1/packet-01",
+  "do_not_show_to_reviewer": true,
+  "items": [
+    {
+      "item_id": "I1",
+      "claim_id": "I1.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:14707:0001:0000|narrator:rawi:30490",
+      "content_sha256": "6f6519c7e425153f6e1e8bc2ea6aaca5c996e676801fde6e73c39fffd79d8cac",
+      "stratum": "ai_reviewed_uncontested",
+      "pipeline_view": "bases=source_index_confirmed_by_text; resolution=source_index; standing=true"
+    },
+    {
+      "item_id": "I2",
+      "claim_id": "I2.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:29504:0000:0001|narrator:rawi:30002",
+      "content_sha256": "52a2a1685702aa95dd46fdf985247259e52e30add91b5f7b68b7ba9d78336fb7",
+      "stratum": "gold",
+      "pipeline_view": "bases=source_index_confirmed_by_text; resolution=source_index; standing=true",
+      "known_answer": {
+        "outcome": "contradicts",
+        "source": "diagnostics/source-identity/README.md, example 4 (a transmitter inside the chain, not the compiler)"
+      }
+    },
+    {
+      "item_id": "I3",
+      "claim_id": "I3.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:27436:0000:0004|narrator:rawi:10898",
+      "content_sha256": "24bca0e539899719c01e2b82b7789f08744041cb16c25d23879a99b3cbed602d",
+      "stratum": "contested",
+      "pipeline_view": "bases=source_index_confirmed_by_text; resolution=unresolved; standing=false"
+    },
+    {
+      "item_id": "I3",
+      "claim_id": "I3.C2",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:27436:0000:0004|narrator:rawi:38131",
+      "content_sha256": "5e76b52bc199238051b89cb18ae6e6c8c92ae74e07e7de796452c43c2c4dd0b8",
+      "stratum": "contested",
+      "pipeline_view": "bases=name_exact; resolution=unresolved; standing=false"
+    },
+    {
+      "item_id": "I4",
+      "claim_id": "I4.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:pure-canon:pc_53664:0000:0000|narrator:rawi:38385",
+      "content_sha256": "45d325f178483d766aeab6aacb9f12d8a28ca8e76e4e410116dc4358b5b770ea",
+      "stratum": "name_match_only",
+      "pipeline_view": "bases=name_spelling_fold; resolution=unresolved; standing=false"
+    },
+    {
+      "item_id": "I5",
+      "claim_id": "I5.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:pure-canon:pc_62445:0000:0001|narrator:rawi:11073",
+      "content_sha256": "1c63765fd97d371cc17de1a9f7e1539be8a887fb5fba193ab4cf7df2e8a867ef",
+      "stratum": "name_match_only",
+      "pipeline_view": "bases=name_spelling_fold; resolution=unresolved; standing=false"
+    },
+    {
+      "item_id": "I6",
+      "claim_id": "I6.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:19122:0001:0001|narrator:rawi:20031",
+      "content_sha256": "c85b6d5449f2cd0ed53e52ac8e7dbf324905a45a5589c7d22bd777cc2813f8fe",
+      "stratum": "gold",
+      "pipeline_view": "bases=source_index_confirmed_by_text; resolution=source_index; standing=true",
+      "known_answer": {
+        "outcome": "supports",
+        "source": "docs/review/README.md worked example (Taqrib entry 7557; Musaddad from Yahya from Ubayd Allah)"
+      }
+    },
+    {
+      "item_id": "I7",
+      "claim_id": "I7.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:583:0000:0004|narrator:rawi:34",
+      "content_sha256": "74455bd4e6ca68be4b20a478b36eb911995bcf3bbb9c30c31e53aee1ef000cb1",
+      "stratum": "contested",
+      "pipeline_view": "bases=source_index; resolution=unresolved; standing=false"
+    },
+    {
+      "item_id": "I7",
+      "claim_id": "I7.C2",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:k6:583:0000:0004|narrator:rawi:4221",
+      "content_sha256": "13089e8082f3ef185c7220c6d6ec76b110b6063603c442411a9dbe50c59f5478",
+      "stratum": "contested",
+      "pipeline_view": "bases=name_spelling_fold; resolution=unresolved; standing=false"
+    },
+    {
+      "item_id": "I8",
+      "claim_id": "I8.C1",
+      "claim_kind": "identity",
+      "claim_key": "identity|mention:pure-canon:pc_33400:0000:0000|narrator:rawi:465",
+      "content_sha256": "df2853dd446d2b30d7c1edad768ecc38b0d68c54a5171bbe0df4b347584ed315",
+      "stratum": "name_match_only",
+      "pipeline_view": "bases=name_spelling_fold; resolution=unresolved; standing=false"
+    }
+  ]
+}

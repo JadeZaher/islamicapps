@@ -1,0 +1,351 @@
+{
+  "claims_passing": 84271,
+  "claims_total": 84271,
+  "problem_samples": [],
+  "problems": {},
+  "records_passing_by_field_group": {
+    "book": {
+      "pass": 69291
+    },
+    "chapter": {
+      "pass": 34886
+    },
+    "edition": {
+      "pass": 7803
+    },
+    "external": {
+      "pass": 117527
+    },
+    "hadith_in_chapter": {
+      "pass": 33190
+    },
+    "number": {
+      "pass": 124045
+    },
+    "section": {
+      "pass": 47119
+    },
+    "source_order": {
+      "pass": 99283
+    },
+    "volume": {
+      "pass": 34925
+    }
+  },
+  "records_passing_by_source": {
+    "HKG": {
+      "pass": 66512
+    },
+    "NMC": {
+      "pass": 108763
+    },
+    "OITI": {
+      "pass": 11303
+    },
+    "RWY": {
+      "pass": 51015
+    },
+    "SUN": {
+      "pass": 103221
+    },
+    "THQ": {
+      "pass": 227255
+    }
+  },
+  "records_passing_by_work": {
+    "ibadi:musnad-rabi": {
+      "pass": 8150,
+      "withdrawn_group": 2
+    },
+    "imami:al-amali-mufid": {
+      "pass": 2685
+    },
+    "imami:al-amali-saduq": {
+      "pass": 7836
+    },
+    "imami:al-kafi": {
+      "pass": 110290
+    },
+    "imami:al-khisal": {
+      "pass": 9506
+    },
+    "imami:al-tawhid-saduq": {
+      "pass": 4213
+    },
+    "imami:fadail-al-shia": {
+      "pass": 299
+    },
+    "imami:kamal-al-din": {
+      "pass": 4262
+    },
+    "imami:kamil-al-ziyarat": {
+      "pass": 5928
+    },
+    "imami:kitab-al-duafa": {
+      "pass": 1582
+    },
+    "imami:kitab-al-ghayba-numani": {
+      "pass": 3539
+    },
+    "imami:kitab-al-ghayba-tusi": {
+      "pass": 5253
+    },
+    "imami:kitab-al-mumin": {
+      "pass": 1423
+    },
+    "imami:kitab-al-zuhd": {
+      "pass": 2302
+    },
+    "imami:maani-al-akhbar": {
+      "pass": 6113
+    },
+    "imami:man-la-yahduruhu-al-faqih": {
+      "pass": 47050
+    },
+    "imami:mujam-al-ahadith-al-mutabara": {
+      "pass": 4278
+    },
+    "imami:nahj-al-balagha": {
+      "pass": 13562
+    },
+    "imami:risalat-al-huquq": {
+      "pass": 294
+    },
+    "imami:sahifat-al-imam-ali-al-rida": {
+      "pass": 210
+    },
+    "imami:sifat-al-shia": {
+      "pass": 451
+    },
+    "imami:thawab-al-amal": {
+      "pass": 8081
+    },
+    "imami:uyun-akhbar-al-rida": {
+      "pass": 6892
+    },
+    "sunni:abudawud": {
+      "pass": 26866
+    },
+    "sunni:ahmad": {
+      "pass": 113545
+    },
+    "sunni:bukhari": {
+      "pass": 38367
+    },
+    "sunni:darimi": {
+      "pass": 9245
+    },
+    "sunni:ibnmajah": {
+      "pass": 23376
+    },
+    "sunni:muslim": {
+      "pass": 35496
+    },
+    "sunni:muwatta": {
+      "pass": 6699
+    },
+    "sunni:nasai": {
+      "pass": 33139
+    },
+    "sunni:shafii": {
+      "pass": 2728
+    },
+    "sunni:tirmidhi": {
+      "pass": 20113
+    },
+    "zaydi:musnad-zayd": {
+      "pass": 4296,
+      "withdrawn_group": 14
+    }
+  },
+  "registry_codes_used": {
+    "HKG": {
+      "licence": "CC BY 4.0",
+      "name": "hadith-kg (“al-Jami — Hadith Knowledge Graph”) by emadjumaah"
+    },
+    "NMC": {
+      "licence": "Permission (owner, 2026-11-21)",
+      "name": "NabiMuhammad.com, Hadith Pure Canon Authentica"
+    },
+    "OITI": {
+      "licence": "CC BY-NC-SA 4.0",
+      "name": "OpenITI: a Machine-Readable Corpus of Islamicate Texts"
+    },
+    "RWY": {
+      "licence": "CC0 1.0 (embedded texts under their own licences)",
+      "name": "Riwāyāt: A Corpus of Sunni and Shīʿī Hadith Transmission (Abdullah Ansar)"
+    },
+    "SUN": {
+      "licence": "Permission (owner, 2026-11-21)",
+      "name": "sunnah.com (via Kaggle “fahd09/hadith-dataset”)"
+    },
+    "THQ": {
+      "licence": "CC BY 4.0",
+      "name": "Thaqalayn (Stichting Thaqalayn)"
+    }
+  },
+  "rows_with_a_withdrawn_group": 16,
+  "source_files": {
+    "k6": {
+      "file": "datasets/archive/datasets.7z:datasets/hadith-data/all_hadiths_clean.csv",
+      "sha256": "a6800edb54d45a6e6c5228cf0342c0c72d90eca62a857bcbb5c61684e550db15"
+    },
+    "kg": {
+      "file": "datasets/sources/external/hadith-kg/hadith-kg.db",
+      "sha256": "d528084321e715006712e0e2461809a3afc9408065a1d1af90238c8b723815a6"
+    },
+    "pc": {
+      "file": "datasets/hadith-data/archive/sheikahmad-pure-canon/pure_canon.jsonl",
+      "sha256": "0cb5ec01959b326c895a6063574955997067e8646c103863285403c3ba6550ac"
+    },
+    "rabi": {
+      "file": "datasets/hadith-data/openiti-sources/rabi/jamic_sahih_ibadiyya.txt",
+      "sha256": "074e0b137e7056feda4a6786d0ee272fa5bbb342e58589f8083303b470548b08"
+    },
+    "riwayat": {
+      "file": "datasets/sources/external/riwayat-corpus/hadith_master.db",
+      "sha256": "278e674ee72ac04886059b14fe6f8e52e70797ac6c65cba08409bafc2d61133b"
+    },
+    "thq:1": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/1.json",
+      "sha256": "e4ab315a28b5c50948d104888c7340974ec716739cb65762210c5f44634c046b"
+    },
+    "thq:10": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/10.json",
+      "sha256": "4c7612554efe31dcaa84062e7fdb00bcdba12b7682d50a6223319d659d060cae"
+    },
+    "thq:11": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/11.json",
+      "sha256": "9e7a22e03dc7950736b0bc82c0f7b36e8fbc83293ad4fbb5b07e7122ce780d6e"
+    },
+    "thq:12": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/12.json",
+      "sha256": "e8db9b4bfa6cc1101a6db14e492033c522ddd1dfeae0d7c62e07c84e5e2f60d3"
+    },
+    "thq:13": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/13.json",
+      "sha256": "5f6751eba8d404d52646029d64bd7d36f3c86b3e0f9a227c52006cdefbafa131"
+    },
+    "thq:14": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/14.json",
+      "sha256": "1b347102bf47a57404c03b34343ba6946736a39636f260d21cb1b557ba378424"
+    },
+    "thq:17": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/17.json",
+      "sha256": "a362f786053b95023b9d53fb1fbd0e1a54274098b818b69210cc3ad9186da182"
+    },
+    "thq:2": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/2.json",
+      "sha256": "8a0dc401fbd870d82c57279bee2a884c057f4460c26be91d76143722876af24d"
+    },
+    "thq:22": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/22.json",
+      "sha256": "5c35a7c464892a3438b80e8ae8bf199dd6cc119c7409fdcc1158295bc3680937"
+    },
+    "thq:23": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/23.json",
+      "sha256": "e4167ae0e740cf3eb9bf20a1a1f37e9381c23f17b6e866842d62bc2da10981de"
+    },
+    "thq:24": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/24.json",
+      "sha256": "9ccbb656fd944a856e2dd4d382b45ae5aad88949d4d7e8e992c80487396a117c"
+    },
+    "thq:25": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/25.json",
+      "sha256": "f50f5f6325eb166897f2c32a1971c45b50fc2dbf0c4d3a9859ac8d2ca35d8992"
+    },
+    "thq:26": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/26.json",
+      "sha256": "6bc90aa167eaba163563e5afada399a05716221e591227304040c5da3e592978"
+    },
+    "thq:27": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/27.json",
+      "sha256": "ecdfd3d2637c26edff966288a45119d79810af1dbe4d103b112327a7903ab402"
+    },
+    "thq:28": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/28.json",
+      "sha256": "89ab0c0b9e1d167a8d9f08223266289e2a9376bcb42664ce321b3317358477f2"
+    },
+    "thq:29": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/29.json",
+      "sha256": "e153939d4e6c5fc7195c1952661912506a400fd25e320422eb14b734f2e7916f"
+    },
+    "thq:3": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/3.json",
+      "sha256": "bceb53dd81476c37eea23ea5d7c90d8111b4a07da6a0ee4fd156aaf925170ccf"
+    },
+    "thq:30": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/30.json",
+      "sha256": "79f1e7d89aa5d1ab9214b89dbd4547706bd2f7dfb2d35ad1aaf524ca5a681477"
+    },
+    "thq:31": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/31.json",
+      "sha256": "b8dbf4e13e751c7504b0c5d53a00398106e6ad1a186a1db8610ddb858dab2638"
+    },
+    "thq:32": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/32.json",
+      "sha256": "6375002ccd48cea1f2ca09f48b4b072e825fd72d2ac816e33c0c9d787d133325"
+    },
+    "thq:33": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/33.json",
+      "sha256": "bbf95353abd3ae9684371ab2e76f0b38efa1b0d0a630d5b1ba91008d637df23c"
+    },
+    "thq:34": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/34.json",
+      "sha256": "9651316b345b2ef7b0cf5ddf418a66c0619d1f5c7508cf0abc97951e49532012"
+    },
+    "thq:35": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/35.json",
+      "sha256": "0753e1e83bf61dc38cc2277725599e2a600fa2e986203e0985d25f34d7f2aa5f"
+    },
+    "thq:36": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/36.json",
+      "sha256": "77fb11824d963f561d9a0de36f06f7cac3984c077be757de8e81984db77a0266"
+    },
+    "thq:37": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/37.json",
+      "sha256": "45d72e649808331de4085167a05645a24a0bda0caeb9ec750ce6bd4cbc23c872"
+    },
+    "thq:38": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/38.json",
+      "sha256": "485536f9f7f0d0726a04fd912282b82abea503780866709f235c8f187c0f00bb"
+    },
+    "thq:39": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/39.json",
+      "sha256": "087874c5be757f3b5f15931a1cb3693a832c93ff1ba396bd0caf66e8b1c86cc7"
+    },
+    "thq:4": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/4.json",
+      "sha256": "ced78b8e2cfafe362c0deef7eb4c8c7f611b0cf2c9b549d3910c299d758dbd9f"
+    },
+    "thq:5": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/5.json",
+      "sha256": "a4ae0624cc486b06e1c88d5a19ba479d96b0b1e1cbb8e4861887aefb1c0b00c7"
+    },
+    "thq:6": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/6.json",
+      "sha256": "a4df6a38659f9343d4ca9968c9484cb89cc322df9339ade024436dedaae35e1a"
+    },
+    "thq:7": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/7.json",
+      "sha256": "557d4c51e9d7bbc8340240d7ba9e78b29b9e819c3cc2bb1d4ce64a5d221bbe60"
+    },
+    "thq:8": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/8.json",
+      "sha256": "78f886cbc6713aa93920d51873e18678c8f7286eb20c489b9508d05c184e2386"
+    },
+    "thq:9": {
+      "file": "datasets/hadith-data/shia-hadith/v2_books/9.json",
+      "sha256": "8fd7ca5898b2474507f69038bb40ccc428fa847162a82e9d3a791fc3a9b0f836"
+    },
+    "xlsx": {
+      "file": "datasets/hadith-data/sheikahmad/Hadith-Pure-Canon-Authentica.xlsx",
+      "sha256": "2189b0a511d78d1ef05ad3a4bb3c9ca16fccfbdfe415ed910af66ed8aa26cca0"
+    },
+    "zayd": {
+      "file": "datasets/hadith-data/openiti-sources/zayd/musnad_zaydiyya_052.mARkdown",
+      "sha256": "d5aa2db230c7add9ac37d938b5d5103d214ab111bcb66c62899c5d5919ae0235"
+    }
+  },
+  "standard": "every emitted reference needs source_code (registry), licence (registry), source_file, source_sha256 (a hash of an input file), source_record_id, source_field; external claims also source_version and claim_by=external_dataset; derived values name their rule"
+}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { ArabicText } from '@/components/ArabicText';
+import { ReportEnglish } from '@/components/archive/ReportEnglish';
 import type { ReportFamily } from '@/db/queries/contracts';
 import { hadithPath } from '@/lib/hadith-address';
 import { AllChains } from './AllChains';
@@ -56,6 +57,11 @@ export function FamilyView({ family, mode, container: Container = 'main', timeli
           <ArabicText as="p" variant="reading" className="max-w-[var(--measure-reading)] whitespace-pre-line text-ink">{text}</ArabicText>
           <p className={styles.meta}>{isMatn ? 'Report text, chain omitted' : 'Text as in the source, chain included'}</p>
           <TextCredit hadithId={focal.hadith_id} className="mt-2" />
+          <ReportEnglish
+            text={focal.english?.text}
+            attribution={focal.english?.attribution}
+            className="mt-6 max-w-[var(--measure-reading)]"
+          />
         </section>
       )}
 

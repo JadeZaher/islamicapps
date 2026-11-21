@@ -32,9 +32,16 @@ carried the chain); this guard is the second line.
 - **All chains** reuse `components/IsnadChain.tsx` (not forked) with a `chainLabel` so each list has a unique accessible
   name. They are the diagram's accessible equivalent; the diagram canvas is `aria-hidden` and says so in its caption,
   with a link to the lists.
-- **Identity tiers (owner 2026-11-21).** `IsnadChain` labels the automatic top tier "machine-reviewed: matches the
-  source's index and the text"; "verified by a reviewer" is reserved for a reviewer's decision. A kunya-only match
-  beside another identity is a secondary note ("Also … · matched by kunya only"), never "Sources differ".
+- **Identity tiers (owner 2026-11-21).** `IsnadChain` leads a standing identity with what made it machine-reviewed
+  (`STANDING_BASIS_LABEL`: the source's index and the text, two sources agree, hadith-kg, the annotation via Riwayat, the
+  Imam's kunya); "verified by a reviewer" is reserved for a reviewer's decision. Candidates group by person key
+  (`src/db/queries/identity-groups.ts`): records linked to one another show as one person ("Same person in hadith-kg"),
+  "Sources differ" only when one registry's records are known to name different people. Kunya-only matches and an
+  undecided shared Imam kunya are notes, never a disagreement. Riwayat's automatic link is labelled "not counted".
+- **Latin names.** Each row shows `name_latin` beside the Arabic with its basis and source code (DESIGN.md §Latin names).
+- **English.** The report text, the family view's report and every telling show their public English through
+  `components/archive/ReportEnglish.tsx`; `correspondence.ts` reads each telling's English from `public_translations`.
+- **Merge rule.** The combined diagram merges a standing identity only within one tradition (`mergeKey(node, tradition)`).
 
 ### Chain timeline
 
@@ -66,7 +73,9 @@ most) and the request visibility. It renders nothing on a failed read.
 registry `src/lib/sources/registry.ts`): `TextCredit` beside every telling, the report's own text and each chain
 ("Chain as written"), from `sourceCodeForHadithId`; `IdentityCredit` under every identity claim in `IsnadChain`, one
 per distinct source among its bases (`sourceForIdentityBasis`: K6I for the source index, MSD for name and kunya
-matches, SWI for a reviewer); `GradingCredit` under each tradition's grades in `Assessments`. `SourceCredit` renders a
+matches, HKG and RWY for the external datasets, plus THQ or HKG when Riwayat's id comes from their annotation
+(`sourcesForIdentityClaim`), SWI for a reviewer or the Imam register); `ChainSourceCredits` lists each source of a
+chain's identities and Latin names once; `GradingCredit` under each tradition's grades in `Assessments`. `SourceCredit` renders a
 block `<p>`: place it beside a paragraph, never inside one. `switches-http.test.ts` asserts a Text credit on the
 report and chains routes.
 

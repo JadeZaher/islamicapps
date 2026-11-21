@@ -21,7 +21,7 @@ interface SourceCreditProps {
 export function SourceCredit({ code, role, detail, external, className }: SourceCreditProps) {
   const record = sourceByCode(code);
   return (
-    <p data-source-ref={code} className={`type-small text-ink-muted ${className ?? ''}`}>
+    <p data-source-ref={code} className={`type-small text-ink-muted [overflow-wrap:anywhere] ${className ?? ''}`}>
       {role && <span className="text-ink">{`${role}: `}</span>}
       <Link href={sourceRecordHref(code)} className="archive-link text-ink-muted">
         <span className="archive-code">{code}</span> {record.name}
@@ -44,6 +44,25 @@ export function SourceCredit({ code, role, detail, external, className }: Source
         </>
       )}
     </p>
+  );
+}
+
+/**
+ * The inline form of the same reference: the source code alone, linking to its record (name as its accessible label).
+ * For a line that credits one item among many (a chain name); the chain's full `SourceCredit` lines sit beside it.
+ */
+export function SourceCodeLink({ code, className }: { code: SourceCode; className?: string }) {
+  const record = sourceByCode(code);
+  return (
+    <Link
+      href={sourceRecordHref(code)}
+      data-source-ref={code}
+      aria-label={`Source: ${record.name}`}
+      title={record.name}
+      className={`archive-link archive-code text-ink-muted ${className ?? ''}`}
+    >
+      {code}
+    </Link>
   );
 }
 

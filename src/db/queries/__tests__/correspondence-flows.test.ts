@@ -182,7 +182,7 @@ flow('graph: a narrator with a standing identity in several chains is one node; 
   // أبيه ("his father") is written in two chains with no identity: two nodes, never merged on the text.
   const abihi = family.tellings.flatMap((telling) => telling.chain.nodes).filter((node) => !node.is_link && node.surface_ar.replace(/[إأآ]/g, 'ا') === 'ابيه');
   assert.ok(new Set(abihi.map((node) => node.chain_id)).size >= 2);
-  const keys = new Set(abihi.map(mergeKey));
+  const keys = new Set(abihi.map((node) => mergeKey(node)));
   assert.equal(keys.size, abihi.length);
   for (const key of keys) assert.ok(graph.nodes.some((node) => node.key === key && node.kind === 'mention'));
 

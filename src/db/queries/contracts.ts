@@ -91,7 +91,19 @@ export type IdentityBasis =
   | 'source_index'
   | 'name_exact'
   | 'name_spelling_fold'
-  | 'name_kunya_only';
+  | 'name_kunya_only'
+  | 'source_hadith_kg_confirmed_by_text'
+  | 'source_hadith_kg'
+  | 'source_riwayat_confirmed_by_text'
+  | 'source_riwayat'
+  | 'imam_kunya_convention'
+  | 'imam_kunya_candidate';
+
+/** Narrator record authority: the lexicon, an external dataset's own record, or the Imam register (0010). */
+export type NarratorAuthority = 'rawi' | 'imami_rijal' | 'hadith_kg' | 'riwayat' | 'imam_register';
+
+/** How a chain name's Latin form was obtained (never an identification; src/db/AGENTS.md §Latin names). */
+export type NameLatinBasis = 'provider_english' | 'identity_name' | 'transliteration_vocalized' | 'transliteration_table';
 
 /** One identity a source or matcher gives a mention; several may disagree and all are shown. */
 export interface ChainMentionCandidate {
@@ -99,6 +111,18 @@ export interface ChainMentionCandidate {
   name_ar: string | null;
   name_en: string | null;
   basis: IdentityBasis;
+  /** External claims: the report it was read from, and who asserted the id (Riwayat's origin or `dataset_index`). */
+  source_ref?: string | null;
+  origin?: string | null;
+  /** Can carry the machine-reviewed tier by itself (not Riwayat's automatic linker, not a label-like record). */
+  tier_basis?: boolean;
+  authority?: NarratorAuthority;
+  /** The target record's placeholder reason: a label, never a contest. */
+  placeholder?: string | null;
+  /** The target is a label-like external record (the source's id names a label as written, not a person). */
+  label_reason?: string | null;
+  /** Comparison key across registries (lexicon link candidates); records with one key name one person. */
+  person_key?: string;
 }
 
 /** `differ`: the candidates name more than one narrator. */
@@ -123,6 +147,12 @@ export interface ChainNode {
   /** Every candidate with its basis, strongest basis first; verified or not. */
   candidates: ChainMentionCandidate[];
   identity: MentionIdentity;
+  /** The name as written in Latin letters and how it was obtained; null when no source or rule gives one. */
+  name_latin?: string | null;
+  name_latin_basis?: NameLatinBasis | null;
+  name_latin_narrator_id?: string | null;
+  /** What set the standing identity (e.g. `two_sources_agree`, `imam_kunya_convention`); null when none. */
+  standing_basis?: string | null;
 }
 
 export interface ChainEdge {
@@ -220,6 +250,8 @@ export interface NarratorDetail {
   name: string;
   name_english: string;
   name_arabic: string;
+  /** Which registry the record belongs to: the lexicon, an external dataset, or the Imam register. */
+  authority: NarratorAuthority;
   verdicts: NarratorVerdict[];
   /** Published bio on public pages; any live bio in reviewer mode. */
   bio: NarratorBio | null;
@@ -405,8 +437,16 @@ export interface FamilyTelling {
   text_ar: string | null;
   matn_ar: string | null;
   sanad: string | null;
+  /** Public English of this telling, labelled and credited like the report page; null when none is public. */
+  english: TellingEnglish | null;
   correspondence: TellingCorrespondence | null;
   chain: ChainGraph;
+}
+
+/** A telling's English and its attribution (through src/lib/sources/report-credit.ts). */
+export interface TellingEnglish {
+  text: string;
+  attribution: EnglishAttribution;
 }
 
 /** A report and every telling the archive links to it, capped; `capped` says some were left out. */

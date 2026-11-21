@@ -29,6 +29,13 @@ for _path in (HADITH_DATA_DIR, DATASETS_DIR, CORRESPONDENCE_JOB_DIR, GRADING_REC
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+import external_identity as xid  # noqa: E402
+from imam_kunya import ImamKunyaRegister, CONVENTIONS_PATH  # noqa: E402
+from mention_text import PlainText, locate_mentions  # noqa: E402
+from provider_english import ProviderEnglish  # noqa: E402
+from transliteration import latin_name  # noqa: E402
 from neo4j_export.contract import (  # noqa: E402
     deterministic_json_bytes,
     graph_content_hash,
@@ -36,7 +43,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.21.3"
+PROJECTION_VERSION = "2026.11.21.4"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -77,6 +84,11 @@ NAME_BASIS_BY_TIER = {"tier0": "name_exact", "tier1": "name_spelling_fold", "tie
 # Owner decision (c): automatic name matches against the (Sunni-centred) lexicon only on Sunni reports.
 NAME_MATCH_TRADITIONS = frozenset({"Sunni"})
 K6_CONFIRMED_BASIS = "source_index_corroborated_by_text"   # the K6 sidecar's report-level basis label
+IMAMI_ENGLISH_LEXICON = DIAGNOSTICS_DIR / "chain-reconciliation" / "output" / "imami_surface_lexicon.jsonl.gz"
+# Honorific symbols an English translation writes as one character (ﷺ, ﷻ, ﷽ and the small marks ؐ-ؓ): not Arabic text.
+HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
+ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
+MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
 INT4_MAX = 2**31 - 1
@@ -287,6 +299,14 @@ def verified_narrator(candidates: Sequence[tuple[str, str]]) -> str | None:
         return None
     contesting = {narrator for narrator, basis in candidates if basis not in NON_CONTESTING_BASES}
     return next(iter(confirmed)) if contesting == confirmed else None
+
+
+def english_quality(status: str, text: str) -> str:
+    """The bundle's quality status, except that an English text whose only Arabic-script characters are honorific
+    symbols (ﷺ) is complete: the symbol is the translator's typography, not Arabic left in the English."""
+    if status == "arabic_leakage" and not ARABIC_SCRIPT.search(HONORIFIC_SYMBOLS.sub("", text)):
+        return "complete"
+    return status
 
 
 def candidate_agreement(narrator_ids: Iterable[str]) -> str:
@@ -749,6 +769,7 @@ def project(args: argparse.Namespace) -> dict:
         alias_rows[row["id"]] = row
     hadiths = []
     hadith_info: dict[str, dict] = {}
+    hadith_text: dict[str, str] = {}
     arabic_mismatches = 0
     provenance_mismatches = 0
     isolator = matn_isolator()
@@ -782,6 +803,7 @@ def project(args: argparse.Namespace) -> dict:
             matn_counts[f"rejected_by_work:{collection['source_work_id']}"] += 1
         elif matn_ar is not None:
             matn_counts["stored"] += 1
+        hadith_text[hadith_id] = text_ar
         hadith_info[hadith_id] = {
             "record_id": row["record_id"], "tradition_id": tradition_id, "source": row["source"],
             "source_work_id": collection["source_work_id"], "arabic_sha256": row["arabic_sha256"],
@@ -821,6 +843,7 @@ def project(args: argparse.Namespace) -> dict:
     translation_target = bundle.one_to_one("relationships/translation_of.csv")
     translations = []
     state_counts: Counter = Counter()
+    quality_counts: Counter = Counter()
     for row in bundle.rows("nodes/translations.csv"):
         hadith_id = translation_target[row["id"]]
         info = hadith_info[hadith_id]
@@ -833,9 +856,12 @@ def project(args: argparse.Namespace) -> dict:
             raise ProjectionError(f"{row['id']}: review_state {row['review_state']!r} has no translation_state")
         state_counts[f"{row['review_state']}->{state}"] += 1
         text = row["text"].lstrip()
+        quality = english_quality(row["status"], text)
+        if quality != row["status"]:
+            quality_counts[f"{row['status']}->{quality}:{tradition_names[info['tradition_id']]}"] += 1
         translations.append([
             row["id"], hadith_id, row["language"], text,
-            blank_to_none(unified[info["record_id"]]["matn_en"]), state, row["status"],
+            blank_to_none(unified[info["record_id"]]["matn_en"]), state, quality,
             blank_to_none(row["review_state"]), blank_to_none(row["source"]), blank_to_none(row["model"]), None,
             blank_to_none(row["provenance_source"]), blank_to_none(row["source_record_id"]), row["arabic_sha256"],
         ])
@@ -844,6 +870,7 @@ def project(args: argparse.Namespace) -> dict:
         "model", "translator", "provenance_source", "source_record_id", "arabic_sha256",
     ], translations)
     counts["translation_states"] = dict(sorted(state_counts.items()))
+    counts["translation_quality_reclassified"] = dict(sorted(quality_counts.items()))
 
     candidate_rows = []
     for record_id, source_row in unified.items():
@@ -865,15 +892,54 @@ def project(args: argparse.Namespace) -> dict:
     placeholders: dict[str, str] = exact_index.placeholders
     narrators = []
     narrator_ids: set[str] = set()
+    narrator_english: dict[str, str] = {}
     for row in bundle.rows("nodes/narrators.csv"):
         name = row["name"]
         name_ar = blank_to_none(resolver_module._extract_arabic_name_raw(name))
         narrator_ids.add(row["id"])
+        name_en = english_name(name)
+        # The lexicon's own Latin rendering: its English field, else the Latin run before the Arabic (as the page shows
+        # it, `splitLatinArabic`). Used only as a chain name's Latin form, credited to the lexicon.
+        lexicon_latin = name_en or blank_to_none(re.split(r"[\u0600-\u06ff]", name, maxsplit=1)[0].strip(" (-,"))
+        if lexicon_latin and re.search(r"[A-Za-z]", lexicon_latin):
+            narrator_english[row["id"]] = lexicon_latin
         narrators.append([row["id"], "rawi", row["scholar_indx"], int(row["scholar_indx"]), name, name_ar,
-                          english_name(name), arabic_norm(name_ar) if name_ar else None,
-                          placeholders.get(row["scholar_indx"])])
+                          name_en, arabic_norm(name_ar) if name_ar else None,
+                          placeholders.get(row["scholar_indx"]), None, None])
+    lexicon_ids = set(narrator_ids)
+    # The Imam register (imam_kunya_conventions.json) and the external narrators some claim or link names.
+    imam_register = ImamKunyaRegister.load()
+    imam_profiles = []
+    for imam in imam_register.data["imams"]:
+        narrator_ids.add(imam["id"])
+        narrator_english[imam["id"]] = imam["name_latin"]
+        narrators.append([imam["id"], "imam_register", str(imam["ordinal"]), None, imam["name_ar"], imam["name_ar"],
+                          imam["name_latin"], arabic_norm(imam["name_ar"]), None, imam["name_latin"], "identity_name"])
+        imam_profiles.append([imam["id"], "imam_register", json.dumps(
+            {"ordinal": imam["ordinal"], "known_as": imam["known_as"],
+             "kunyas": [entry["kunya"] for entry in imam_register.data["kunyas"] if imam["ordinal"] in entry["shared_by"]]},
+            ensure_ascii=False, sort_keys=True), xid.LICENCE["imam_register"], None,
+            "Shura wa Istehsan register, for the owner to review", "source_unverified"])
+    external = xid.ExternalSources(args.reconciled)
+    for row in external.narrator_rows(arabic_norm):
+        narrator_ids.add(row[0])
+        narrators.append(row)
     canonical.write("narrators", ["id", "authority", "authority_key", "scholar_indx", "name", "name_ar", "name_en",
-                                  "name_ar_normalized", "placeholder_reason"], narrators)
+                                  "name_ar_normalized", "placeholder_reason", "name_latin", "name_latin_basis"], narrators)
+    external_profiles = external.profile_rows()
+    canonical.write("narrator_source_profiles", ["narrator_id", "source", "assertions", "licence", "label_reason",
+                                                 "asserted_by", "review_state"], imam_profiles + external_profiles)
+    canonical.write("narrator_external_ids", ["id", "narrator_id", "namespace", "external_id", "asserted_by"],
+                    external.external_id_rows())
+    link_rows, link_dropped = external.link_rows(lexicon_ids, placeholders)
+    canonical.write("narrator_link_candidates", ["id", "external_narrator_id", "rawi_narrator_id", "basis", "evidence",
+                                                 "review_state"], link_rows)
+    person_keys = external.person_keys(lexicon_ids, placeholders)
+    narrator_placeholder = {row[0]: row[8] for row in narrators if row[8]}
+    counts["narrators_by_authority"] = dict(sorted(Counter(row[1] for row in narrators).items()))
+    counts["external_label_like"] = dict(sorted(Counter(
+        f"{row[1]}:{row[4].split(':')[0]}" for row in external_profiles if row[4]).items()))
+    counts["narrator_link_candidates_dropped"] = dict(sorted(link_dropped.items()))
     counts["narrator_placeholders"] = dict(sorted(Counter(placeholders.values()).items()))
     biography_subject = bundle.one_to_one("relationships/biography_of.csv")
     profiles = []
@@ -982,10 +1048,13 @@ def project(args: argparse.Namespace) -> dict:
             name_cache[surface] = match
         return name_cache[surface]
 
+    provider_english = ProviderEnglish(args.imami_english_lexicon)
     chains = []
     mentions = []
     identity_rows = []
     identity: dict[str, Counter] = defaultdict(Counter)
+    latin_counts: Counter = Counter()
+    external_counts: Counter = Counter()
     empty_normalized = 0
     for hadith_id in sorted(branches_by_hadith):
         branches = sorted(branches_by_hadith[hadith_id], key=lambda branch: branch["branch"])
@@ -995,10 +1064,14 @@ def project(args: argparse.Namespace) -> dict:
         work = owner["source_work_id"]
         tradition = tradition_names[owner["tradition_id"]]
         source = source_alignment.get(hadith_id)
+        report_text = PlainText(hadith_text[hadith_id])
+        # Thaqalayn's English sanad lexicon covers its own Imami works only.
+        provider_text = tradition == "Imami" and hadith_id.startswith("hadith:thaqalayn:")
         for branch in branches:
             rows = branch["mentions"]
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
                            branch["extraction_method"], None, branch["sanad_confidence"]])
+            spans = locate_mentions(report_text, [surface_ar for _, surface_ar, _ in rows])
             for position, (mention_id, surface_ar, normalized) in enumerate(rows):
                 # A surface such as a bare conjunction 'و' normalizes to '': keep '' (known empty), never NULL.
                 surface = Verbatim(normalized)
@@ -1008,7 +1081,7 @@ def project(args: argparse.Namespace) -> dict:
                     empty_normalized += 1
                 coarse, fine = review_unit_ids(surface, teacher, student, work)
 
-                found: list[tuple[str, str, str, int | None]] = []   # narrator_id, basis, detail, source position
+                found: list[xid.Candidate] = []
                 if tradition in NAME_MATCH_TRADITIONS:
                     match = name_match(surface_ar)
                     if match:
@@ -1018,7 +1091,8 @@ def project(args: argparse.Namespace) -> dict:
                         elif placeholders.get(scholar) and basis != "name_kunya_only":
                             raise ProjectionError(f"{mention_id}: {basis} targets placeholder rawi {scholar}")
                         else:
-                            found.append((f"narrator:rawi:{scholar}", basis, detail, None))
+                            found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail,
+                                                       placeholder=placeholders.get(scholar)))
                 if source is not None:
                     row, alignment = source
                     hit = alignment.get((branch["branch"], position))
@@ -1033,37 +1107,81 @@ def project(args: argparse.Namespace) -> dict:
                             identity["dropped"][f"{basis}:placeholder:{placeholders[scholar]}"] += 1
                         else:
                             detail = row["agreement_class"] + (":shared_trunk" if shared_trunk else "")
-                            found.append((f"narrator:rawi:{scholar}", basis, detail, source_position))
+                            found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail, source_position))
 
-                for narrator_id, basis, detail, source_position in found:
-                    identity_rows.append([candidate_id(mention_id, basis, narrator_id), mention_id, hadith_id,
-                                       narrator_id, basis, detail, source_position])
-                    identity["candidates_by_basis"][f"{tradition}:{basis}"] += 1
-                pairs = [(narrator_id, basis) for narrator_id, basis, _, _ in found]
-                agreement = candidate_agreement(narrator_id for narrator_id, _ in pairs)
+                # External source claims (hadith-kg, Riwayat) at this mention, bound to its surface and Arabic.
+                found.extend(external.candidates_for(mention_id, hadith_id, surface_ar, owner["arabic_sha256"],
+                                                     external_counts))
+                # The Imams' conventional kunyas, with the honorific marker after the name in the text.
+                span = spans[position]
+                marker = report_text.honorific_after(*span) if span else False
+                imam = imam_register.match(surface_ar, tradition, marker)
+                if imam:
+                    identity["imam_kunya"][f"{imam.basis}:{imam.detail}"] += 1
+                    for imam_id in imam.imam_ids:
+                        found.append(xid.Candidate(imam_id, imam.basis, imam.detail))
+
+                for candidate in found:
+                    identity_rows.append([candidate_id(mention_id, candidate.basis, candidate.narrator_id), mention_id,
+                                          hadith_id, candidate.narrator_id, candidate.basis, candidate.detail,
+                                          candidate.source_position, candidate.source_ref, candidate.origin])
+                    identity["candidates_by_basis"][f"{tradition}:{candidate.basis}"] += 1
+                agreement = candidate_agreement(candidate.narrator_id for candidate in found)
                 identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
-                distinct = len({narrator_id for narrator_id, _ in pairs})
-                identity["mentions_by_candidate_narrators"][f"{tradition}:{min(distinct, 2)}{'+' if distinct >= 2 else ''}"] += 1
-                verified = verified_narrator(pairs)
-                if verified is None and any(basis in VERIFIED_BASES for _, basis in pairs):
-                    identity["confirmed_but_contested"][tradition] += 1
-                narrator_id, resolved_as, resolution_basis, confidence, method = (
-                    (verified, *VERIFIED_RESOLUTION) if verified else UNRESOLVED)
-                identity["verified_links"][tradition] += 1 if verified else 0
+                standing = xid.standing_identity(found, person_keys)
+                if standing is None and any(c.basis in xid.CONFIRMED_SOURCE_BASES for c in found):
+                    identity["confirmed_but_contested_or_not_counted"][tradition] += 1
+                if standing:
+                    narrator_id, method = standing
+                    resolved_as, resolution_basis, confidence = "source_index", "source_index", 1.0
+                    identity["standing_by_method"][f"{tradition}:{method}"] += 1
+                else:
+                    narrator_id, resolved_as, resolution_basis, confidence, method = UNRESOLVED
+                identity["mentions"][tradition] += 1
+
+                # The name in Latin letters (AGENTS.md §Latin names): the provider's English, then an identity's
+                # English name, then a transliteration of the name as written; else none (Arabic alone).
+                latin: tuple[str, str, str | None] | None = None
+                if provider_text:
+                    hit = provider_english.lookup(resolver_module.narrator_fold_normalize(surface_ar))
+                    if hit:
+                        latin = (hit[0], "provider_english", None)
+                if latin is None:
+                    named = narrator_id
+                    if named is None:
+                        people = {c.narrator_id for c in found
+                                  if c.basis not in xid.NON_CONTESTING_BASES and not c.placeholder}
+                        named = next(iter(people)) if len(people) == 1 else None
+                    if named and named in narrator_english:
+                        latin = (narrator_english[named], "identity_name", named)
+                if latin is None:
+                    written = report_text.original_span(*span) if span else surface_ar
+                    reading = latin_name(written)
+                    if reading:
+                        latin = (reading[0], reading[1], None)
+                latin_counts[f"{tradition}:{latin[1] if latin else 'none'}"] += 1
                 mentions.append([
                     mention_id, branch["id"], hadith_id, position, surface_ar, surface, teacher, student, coarse, fine,
                     "person" if narrator_id else "unclassified", resolved_as, resolution_basis, narrator_id,
-                    confidence, method,
+                    confidence, method, latin[0] if latin else None, latin[1] if latin else None,
+                    latin[2] if latin else None,
                 ])
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
                                "sanad_confidence"], chains)
     canonical.write("chain_mentions", [
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",
-        "resolution_basis", "narrator_id", "confidence", "extraction_method",
+        "resolution_basis", "narrator_id", "confidence", "extraction_method", "name_latin", "name_latin_basis",
+        "name_latin_narrator_id",
     ], mentions)
     canonical.write("chain_mention_candidates", ["id", "mention_id", "hadith_id", "narrator_id", "basis", "detail",
-                                                 "source_position"], identity_rows)
+                                                 "source_position", "source_ref", "source_assertion_origin"],
+                    identity_rows)
+    unused_claims = set(external.claims_by_mention) - {row[0] for row in mentions}
+    if unused_claims:
+        raise ProjectionError(f"{len(unused_claims)} external claims name a mention the projection does not have")
+    counts["latin_names"] = dict(sorted(latin_counts.items()))
+    counts["external_claims"] = dict(sorted(external_counts.items()))
     counts["mentions_with_empty_normalized_surface"] = empty_normalized
     counts["k6_source_index"] = dict(sorted(source_counts.items()))
     counts["identity_candidates"] = {key: dict(sorted(value.items())) for key, value in sorted(identity.items())}
@@ -1160,6 +1278,11 @@ def project(args: argparse.Namespace) -> dict:
             "extractor_sha256": sha256_file(HADITH_DATA_DIR / "extract_isnad_unified.py"),
             "non_ruling_rule_sha256": sha256_file(GRADING_RECOVERY_DIR / "build_hadith_assessment_rows.py"),
             "report_correspondence": {"path": display_path(args.correspondence), **correspondence_inputs},
+            "external_identity_sidecars": {f"reconciled/{name}": digest for name, digest in sorted(external.hashes.items())},
+            "imam_kunya_conventions_sha256": sha256_file(CONVENTIONS_PATH),
+            "imami_english_lexicon": {"path": display_path(args.imami_english_lexicon),
+                                      "sha256": sha256_file(args.imami_english_lexicon)},
+            "name_modules_sha256": {name: sha256_file(HERE / name) for name in MODULE_FILES},
         },
         "release": {
             "release_class": "release" if source_release_state == "release" else "non_release",
@@ -1207,6 +1330,8 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="reconciled sidecar directory (K6 source index, Pure Canon chains, no-chain flags)")
     parser.add_argument("--correspondence", type=Path, default=CORRESPONDENCE_JOB_DIR / "output",
                         help="report-correspondence output (pairs, cluster members, summary.json)")
+    parser.add_argument("--imami-english-lexicon", type=Path, default=IMAMI_ENGLISH_LEXICON,
+                        help="Thaqalayn English-sanad surface lexicon (diagnostics/chain-reconciliation)")
     return parser
 
 

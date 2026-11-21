@@ -3,32 +3,63 @@ import { ArabicText } from '@/components/ArabicText';
 import type { ReportListItem } from '@/db/queries/browse';
 import { hadithPath } from '@/lib/hadith-address';
 import { ArrowMark } from './Marks';
+import { ListEnglishLabel, NO_ENGLISH } from './ReportEnglish';
+import { SourceCredit } from './SourceCredit';
 
-/** Reports in source order: reference, Arabic opening (right-aligned), English opening when shown. */
+/**
+ * Reports in source order: reference, Arabic opening (right-aligned), English opening with its label and source code.
+ * Without English: one "No English available yet" line for the list when no row has any, else one per row. The sources
+ * of the English shown are credited once below the list.
+ */
 export function ReportList({ items }: { items: ReportListItem[] }) {
+  const withEnglish = items.filter((item) => item.englishExcerpt);
+  const noneHaveEnglish = items.length > 0 && withEnglish.length === 0;
+  const englishSources = new Map<string, NonNullable<ReportListItem['englishSource']>>();
+  for (const item of withEnglish) {
+    if (item.englishSource) englishSources.set(`${item.englishSource.code}|${item.englishSource.detail ?? ''}`, item.englishSource);
+  }
   return (
-    <ol className="archive-rule">
-      {items.map((item) => (
-        <li key={item.id} className="border-b border-rule">
-          <Link
-            href={hadithPath(item.id)}
-            className="group grid gap-2 py-4 no-underline transition-colors duration-[var(--motion-fast)] hover:bg-sunken sm:grid-cols-[10rem_1fr] sm:gap-6"
-          >
-            <span className="type-small font-semibold tabular-nums text-ink underline decoration-rule decoration-1 underline-offset-[0.2em] group-hover:decoration-accent">{item.reference}</span>
-            <span className="min-w-0">
-              {item.arabicExcerpt && (
-                <ArabicText as="span" variant="inline" className="block text-ink">
-                  {item.arabicExcerpt}
-                </ArabicText>
-              )}
-              {item.englishExcerpt && (
-                <span className="mt-1 block type-small text-ink-muted">{item.englishExcerpt}</span>
-              )}
-            </span>
-          </Link>
-        </li>
+    <>
+      {noneHaveEnglish && (
+        <p className="mb-2 type-small text-ink-muted" data-english="none">
+          {NO_ENGLISH}
+        </p>
+      )}
+      <ol className="archive-rule">
+        {items.map((item) => (
+          <li key={item.id} className="border-b border-rule">
+            <Link
+              href={hadithPath(item.id)}
+              className="group grid gap-2 py-4 no-underline transition-colors duration-[var(--motion-fast)] hover:bg-sunken sm:grid-cols-[10rem_1fr] sm:gap-6"
+            >
+              <span className="type-small font-semibold tabular-nums text-ink underline decoration-rule decoration-1 underline-offset-[0.2em] group-hover:decoration-accent">{item.reference}</span>
+              <span className="min-w-0">
+                {item.arabicExcerpt && (
+                  <ArabicText as="span" variant="inline" className="block text-ink">
+                    {item.arabicExcerpt}
+                  </ArabicText>
+                )}
+                {item.englishExcerpt ? (
+                  <>
+                    <span lang="en" className="mt-1 block type-small text-ink-muted">{item.englishExcerpt}</span>
+                    {item.englishLabel && <ListEnglishLabel label={item.englishLabel} code={item.englishSource?.code ?? null} />}
+                  </>
+                ) : (
+                  !noneHaveEnglish && (
+                    <span className="mt-1 block text-xs leading-4 text-ink-muted" data-english="none">
+                      {NO_ENGLISH}
+                    </span>
+                  )
+                )}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+      {[...englishSources.entries()].map(([key, source]) => (
+        <SourceCredit key={key} code={source.code} role="English" detail={source.detail} className="mt-2" />
       ))}
-    </ol>
+    </>
   );
 }
 

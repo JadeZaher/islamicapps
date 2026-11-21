@@ -44,6 +44,7 @@ export function SiteFooter() {
           <Link href="/glossary" className="archive-link text-ink-muted">
             Glossary
           </Link>
+          <Link href="/method" className="archive-link text-ink-muted">Method</Link>
         </div>
       </div>
     </footer>

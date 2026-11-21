@@ -1,6 +1,6 @@
 /** Chain graph for one hadith or a family of hadiths, mention-keyed (sections 8 and 9.4). Public reads use the public
- * views `public_chain_links` and `public_chain_mention_candidates`; reviewer reads pass REVIEW_CHAIN_RELATIONS.
- * See src/db/AGENTS.md §Identity candidates. */
+ * views `public_chain_links` and `public_chain_mention_candidates_v2`; reviewer reads pass REVIEW_CHAIN_RELATIONS.
+ * See src/db/AGENTS.md §Identity candidates and §External identity. */
 import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import type {
@@ -10,34 +10,15 @@ import type {
   ChainNode,
   HadithTraditionCode,
   IdentityBasis,
-  MentionIdentity,
+  NameLatinBasis,
+  NarratorAuthority,
 } from './contracts';
+import { BASIS_ORDER, mentionIdentity } from './identity-groups';
 import { text } from './mappers';
 import { oneRow } from './sql-helpers';
 import { hadithRelationsFor, isCuratorVisibility, PUBLIC_VISIBILITY, type ReadVisibility } from './visibility';
 
-/** Strongest basis first: the order candidates are listed and labelled in. */
-const BASIS_ORDER: IdentityBasis[] = [
-  'reviewer_decision',
-  'source_index_confirmed_by_text',
-  'source_index',
-  'name_exact',
-  'name_spelling_fold',
-  'name_kunya_only',
-];
-
-/** A kunya-only match is a label beside other candidates, never a contest (owner decision 2026-11-21). */
-const NON_CONTESTING_BASES: ReadonlySet<IdentityBasis> = new Set(['name_kunya_only']);
-
-/**
- * `agreed` when every contesting candidate names one narrator, `differ` when they name several. Kunya-only
- * candidates are ignored here: they are shown as a secondary labelled note, never as "sources differ".
- */
-export function mentionIdentity(candidates: ChainMentionCandidate[]): MentionIdentity {
-  const contesting = candidates.filter((candidate) => !NON_CONTESTING_BASES.has(candidate.basis));
-  const narrators = new Set((contesting.length > 0 ? contesting : candidates).map((candidate) => candidate.narrator_id));
-  return narrators.size === 0 ? 'unidentified' : narrators.size === 1 ? 'agreed' : 'differ';
-}
+export { mentionIdentity } from './identity-groups';
 
 function toCandidates(value: unknown): ChainMentionCandidate[] {
   const rows = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
@@ -47,6 +28,13 @@ function toCandidates(value: unknown): ChainMentionCandidate[] {
       name_ar: text(row.name_ar),
       name_en: text(row.name_en),
       basis: String(row.basis) as IdentityBasis,
+      source_ref: text(row.source_ref),
+      origin: text(row.origin),
+      tier_basis: row.tier_basis === true,
+      authority: String(row.authority) as NarratorAuthority,
+      placeholder: text(row.placeholder),
+      label_reason: text(row.label_reason),
+      person_key: text(row.person_key) ?? String(row.narrator_id),
     }))
     .sort(
       (left, right) =>
@@ -58,14 +46,30 @@ function toCandidates(value: unknown): ChainMentionCandidate[] {
 export interface ChainRelations {
   /** Columns of `public_chain_links`. */
   links: SQL;
-  /** Columns of `public_chain_mention_candidates`. */
+  /** Columns of `public_chain_mention_candidates_v2`. */
   candidates: SQL;
 }
 
 export const PUBLIC_CHAIN_RELATIONS: ChainRelations = {
   links: sql`public_chain_links`,
-  candidates: sql`public_chain_mention_candidates`,
+  candidates: sql`public_chain_mention_candidates_v2`,
 };
+
+/**
+ * Person key of narrator alias `n` (src/db/AGENTS.md §External identity): its lexicon link candidate, else for a Riwayat
+ * record its one hadith-kg crosswalk id (that record's link, else that record), else itself. Same rule as the load
+ * invariant (`PERSON_KEYS` in src/db/load/verify-data.ts) and the projection. Compares records; never merges them.
+ */
+export const PERSON_KEY_SQL = sql`coalesce(
+  (select min(x.rawi_narrator_id) from narrator_link_candidates x where x.external_narrator_id = n.id and x.retired_at is null),
+  (select coalesce((select min(y.rawi_narrator_id) from narrator_link_candidates y
+                    where y.external_narrator_id = 'narrator:hadith-kg:' || min(e.external_id) and y.retired_at is null),
+                   'narrator:hadith-kg:' || min(e.external_id))
+   from narrator_external_ids e
+   where e.narrator_id = n.id and e.namespace = 'kg' and e.retired_at is null and n.authority::text = 'riwayat'
+   having count(distinct e.external_id) = 1
+      and exists (select 1 from narrators k where k.id = 'narrator:hadith-kg:' || min(e.external_id))),
+  n.id)`;
 
 /**
  * Reviewer mode: the same two relations over every live report, whatever its publication state. The standing-identity
@@ -75,7 +79,9 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
   links: sql`(
     select m.id, m.chain_id, m.hadith_id, c.branch, m.position, m.surface_ar, m.link_kind, m.resolution,
            (link.id is not null) as is_link, link.id as narrator_id,
-           case when link.id is not null then m.confidence end as confidence
+           case when link.id is not null then m.confidence end as confidence,
+           m.name_latin, m.name_latin_basis, m.name_latin_narrator_id,
+           case when link.id is not null then m.extraction_method end as standing_basis
     from chain_mentions m
     join chains c on c.id = m.chain_id and c.retired_at is null
     join hadiths h on h.id = m.hadith_id and h.retired_at is null
@@ -83,12 +89,19 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
                             and m.resolution in ('source_index', 'human_verified', 'derived_relation_verified')
     where m.retired_at is null)`,
   candidates: sql`(
-    select c.mention_id, c.hadith_id, c.narrator_id, c.basis, c.detail
+    select c.mention_id, c.hadith_id, c.narrator_id, c.basis, c.detail, c.source_ref, c.source_assertion_origin,
+           (c.basis::text in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
+                              'source_riwayat_confirmed_by_text', 'imam_kunya_convention')
+            and n.placeholder_reason is null
+            and coalesce(c.source_assertion_origin, '') <> 'riwayat_automatic_linking'
+            and not exists (select 1 from narrator_source_profiles p
+                            where p.narrator_id = n.id and p.retired_at is null and p.label_reason is not null)) as tier_basis
     from chain_mention_candidates c
     join narrators n on n.id = c.narrator_id and n.retired_at is null
     where c.retired_at is null
     union all
-    select m.id, m.hadith_id, d.target_narrator_id, 'reviewer_decision'::mention_candidate_basis, d.decision_kind::text
+    select m.id, m.hadith_id, d.target_narrator_id, 'reviewer_decision'::mention_candidate_basis, d.decision_kind::text,
+           null, null, true
     from chain_mentions m
     join narrator_surface_decisions d on d.id = m.decision_id and d.retired_at is null and d.target_narrator_id is not null
     join narrators n on n.id = d.target_narrator_id and n.retired_at is null
@@ -110,17 +123,24 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
     with candidates as (
       select c.mention_id,
              json_agg(json_build_object('narrator_id', c.narrator_id, 'name_ar', n.name_ar,
-                                        'name_en', coalesce(n.name_en, n.name), 'basis', c.basis)) as items
+                                        'name_en', coalesce(n.name_en, n.name_latin, n.name), 'basis', c.basis,
+                                        'source_ref', c.source_ref, 'origin', c.source_assertion_origin,
+                                        'tier_basis', c.tier_basis, 'authority', n.authority,
+                                        'placeholder', n.placeholder_reason, 'label_reason', p.label_reason,
+                                        'person_key', ${PERSON_KEY_SQL})) as items
       from ${relations.candidates} c
       join narrators n on n.id = c.narrator_id
+      left join narrator_source_profiles p on p.narrator_id = n.id and p.retired_at is null
       where c.hadith_id = any (${hadithIds})
       group by c.mention_id
     )
     select json_agg(json_build_object(
              'node_id', l.id, 'hadith_id', l.hadith_id, 'chain_id', l.chain_id, 'branch', l.branch,
              'position', l.position, 'surface_ar', l.surface_ar, 'narrator_id', l.narrator_id, 'name_ar', n.name_ar,
-             'name_en', coalesce(n.name_en, n.name), 'resolution', l.resolution, 'link_kind', l.link_kind,
-             'is_link', l.is_link, 'candidates', coalesce(k.items, '[]'::json))
+             'name_en', coalesce(n.name_en, n.name_latin, n.name), 'resolution', l.resolution, 'link_kind', l.link_kind,
+             'is_link', l.is_link, 'candidates', coalesce(k.items, '[]'::json),
+             'name_latin', l.name_latin, 'name_latin_basis', l.name_latin_basis,
+             'name_latin_narrator_id', l.name_latin_narrator_id, 'standing_basis', l.standing_basis)
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
@@ -147,6 +167,10 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     verdict: node.is_link ? verdict : null,
     candidates,
     identity: mentionIdentity(candidates),
+    name_latin: text(node.name_latin),
+    name_latin_basis: (text(node.name_latin_basis) as NameLatinBasis | null) ?? null,
+    name_latin_narrator_id: text(node.name_latin_narrator_id),
+    standing_basis: node.is_link ? text(node.standing_basis) : null,
   };
 }
 

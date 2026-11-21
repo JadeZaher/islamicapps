@@ -1,0 +1,68 @@
+{
+  "algorithm": "maximal exact letter-skeleton match, k-gram seeds at report word starts; two Tanzil editions",
+  "artifact": "hadith_quran_citations",
+  "code_sha256": {
+    "build_quran_citations.py": "37f1a92019b3f7728eb8847dc7a60e4bbe6318cb7e0a774b227d31e18933aa27",
+    "quran_logic.py": "03f49ca4028f732e882b0cf67758b2cfd95649754993b190ea5a976bf8c8a3af"
+  },
+  "command": "python -B datasets/hadith-data/quran/build_quran_citations.py",
+  "inputs_sha256": {
+    "datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz": "feeeb38dae008bed993fab7ccdf6fc7399e985296d5a0c36b59534327e003a17",
+    "datasets/sources/external/quran-tanzil/quran-simple-clean.txt": "228df2a717671aeb9d2ff573002bd28d6b3f973f4bc7153554e3a81663d67610",
+    "datasets/sources/external/quran-tanzil/quran-uthmani.txt": "bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8"
+  },
+  "licence": "Qur'an text and verse boundaries: Tanzil Quran Text (Simple Clean and Uthmani, version 1.1), (C) 2007-2026 Tanzil Project, Creative Commons Attribution 3.0, https://tanzil.net/ ; the text is reproduced unmodified in quran_verses.jsonl.gz and the quran_text fields. Spans, cues and classes are this project's, unreviewed.",
+  "outputs": {
+    "citations": {
+      "file": "hadith_quran_citations.jsonl.gz",
+      "rows": 11080,
+      "sha256": "a224fe61126783540319e30e14d461542bf73fbb203e3e5eb35ed342ff5b2f3c"
+    },
+    "phrases": {
+      "file": "hadith_quran_phrases.jsonl.gz",
+      "rows": 16262,
+      "sha256": "fa72bdf6c94e4435f22456d87bce06b26d5e540afbad6e8d3e02a043d81d1ec7"
+    },
+    "verses": {
+      "file": "quran_verses.jsonl.gz",
+      "rows": 6236,
+      "sha256": "a9f208e97f9b1c6db1d47e5d38157bbd6ac4b4ebc13b1c97b5853086a0d368f4"
+    }
+  },
+  "parameters": {
+    "common_phrase_max_words": 6,
+    "common_phrase_reports": 15,
+    "cued_high_words": 5,
+    "cued_low_words": 3,
+    "min_span_letters": 10,
+    "seed_letters": 10,
+    "uncued_high_words": 15,
+    "uncued_low_words": 5,
+    "uncued_medium_words": 10
+  },
+  "quran_editions": {
+    "simple-clean": {
+      "file": "datasets/sources/external/quran-tanzil/quran-simple-clean.txt",
+      "file_sha256": "228df2a717671aeb9d2ff573002bd28d6b3f973f4bc7153554e3a81663d67610",
+      "text_type": "Simple Clean",
+      "version": "1.1"
+    },
+    "uthmani": {
+      "file": "datasets/sources/external/quran-tanzil/quran-uthmani.txt",
+      "file_sha256": "bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8",
+      "text_type": "Uthmani",
+      "version": "1.1"
+    }
+  },
+  "reports": {
+    "total": 99283,
+    "with_text": 99275
+  },
+  "spans_by_kind": {
+    "citation": 11080,
+    "common_phrase": 6775,
+    "formula": 2742,
+    "short_phrase": 6745
+  },
+  "status": "sidecar_unreviewed_not_a_release_input"
+}

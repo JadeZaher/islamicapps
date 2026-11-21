@@ -160,7 +160,8 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
 
   const row = await oneRow<{ detail: Record<string, unknown> }>(sql`
     select json_build_object(
-      'id', n.id, 'name', n.name, 'name_en', n.name_en, 'name_ar', n.name_ar,
+      'id', n.id, 'name', n.name, 'name_en', coalesce(n.name_en, n.name_latin), 'name_ar', n.name_ar,
+      'authority', n.authority,
       'verdicts', ${verdictsJson(sql`n.id`, mode)},
       'bio', (select row_to_json(b) from narrator_bios b where b.narrator_id = n.id and ${bioGate(mode)}),
       'lexicon', ${
@@ -219,6 +220,7 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
   return {
     id: String(detail.id),
     ...narratorNames(detail),
+    authority: String(detail.authority) as NarratorDetail['authority'],
     verdicts: mapVerdicts(detail.verdicts),
     bio: mapNarratorBio(detail.bio),
     lexicon: lexicon ? mapLexicon(String(detail.id), lexicon, mode) : null,
@@ -267,7 +269,7 @@ export async function getNarratorNetwork(narratorId: string): Promise<NarratorNe
   const peers = (direction: 'teacher' | 'student'): SQL => {
     const [self, peer] = direction === 'teacher' ? [sql`nt.student_id`, sql`nt.teacher_id`] : [sql`nt.teacher_id`, sql`nt.student_id`];
     return sql`coalesce((
-      select json_agg(json_build_object('id', p.id, 'name', p.name, 'name_en', p.name_en, 'name_ar', p.name_ar,
+      select json_agg(json_build_object('id', p.id, 'name', p.name, 'name_en', coalesce(p.name_en, p.name_latin), 'name_ar', p.name_ar,
                                         'hadith_count', x.hadith_count, 'temporal_plausibility', x.temporal_plausibility)
                       order by x.hadith_count desc, p.id)
       from (select ${peer} as peer_id, nt.hadith_count, nt.temporal_plausibility

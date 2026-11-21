@@ -1,0 +1,105 @@
+{
+ "command": "python -B datasets/hadith-data/rijal/build_rijal_layer.py",
+ "inputs_sha256": {
+  "datasets/sources/external/openiti-0852IbnHajar.TaqribTahdhib/0852IbnHajarCasqalani.TaqribTahdhib.JK000121-ara1.completed": "178d493bd150032bc64a81ed4397d7e4a828209ee690deed283c1e63cada4637",
+  "datasets/sources/external/openiti-0742Mizzi.TahdhibKamal/0742Mizzi.TahdhibKamal.Shamela0003722-ara1.mARkdown": "f4f26e71dd9c0c70ef09285fc0b4de8abe3fe586c0eddba19985155df175f58f",
+  "datasets/sources/external/openiti-0450Najashi.Rijal/0450Najashi.Rijal.Shia002931-ara1.mARkdown": "a34bc95dbf6afef2b860bfd99e6a47fd16e3d16d2879ab145d30bf0abb5941e6",
+  "datasets/sources/external/openiti-0460ShaykhTusi.Rijal/0460ShaykhTusi.Rijal.Shia002935-ara1.mARkdown": "955b2b7114a5e2d96f11d23b0638c4ab2c9ec3a57ab13119d97cf7c2e128f678",
+  "datasets/sources/external/openiti-0460ShaykhTusi.Fihrist/0460ShaykhTusi.Fihrist.Shia002934-ara1.mARkdown": "1c4975a18ca0bae40d4c062edad05eef5a8c2c243951dcc2a9bf785415db88df",
+  "datasets/sources/external/openiti-0460ShaykhTusi.IkhtiyarMacrifatRijal/0460ShaykhTusi.IkhtiyarMacrifatRijal.Shia002932VolsBK1-ara1.mARkdown": "788e8c530c1c48f76c6df0b6b0cca4ecec5ad27a1c64aa5fa9a0069ae94f3787",
+  "datasets/narrator-data/all_rawis.csv": "d87c3af64d48b3cd585294ab5f6381536a51ff95a72a6707a7426ea483bf6c11",
+  "datasets/sources/external/riwayat-corpus/hadith_master.db": "278e674ee72ac04886059b14fe6f8e52e70797ac6c65cba08409bafc2d61133b",
+  "datasets/hadith-data/rijal/inputs/imami_chain_mentions.tsv.gz": "f6c89576c69ddb73b65d5ac227ceba446b8d16f5223da7b4e04066aa2d968f16",
+  "datasets/hadith-data/rijal/rijal_extract.py": "d0580d1ba003a1d70cbc47579adda818c4056ffb6a38fc993ec06797a370ceb7",
+  "datasets/hadith-data/rijal/build_rijal_layer.py": "4b5239af86172d6997c55930200d08721860b8dd3b5ae6e4d52e8daae912689c",
+  "datasets/hadith-data/diagnostics/biography-verification/rijal_parsing.py": "74da7a1aeedc6e66aad43ebf15b685cae912dc2362bb7998d21602beb4965ae0",
+  "datasets/hadith-data/diagnostics/biography-verification/rijal_sources.py": "f1320f20dc23ecdab93859fbf69205f99148a59d4b1a1baee3d50ae0e1346941",
+  "datasets/hadith-data/diagnostics/biography-verification/verify_lexicon_against_rijal.py": "ec6f3ccb8e981f314907986e6620fda6a40b7d48d6cc720e48984902427f2bc6",
+  "datasets/hadith-data/reconciled/external_source_logic.py": "5fbab5c6d36b442a0cb9b03ddd42d14513c8ae918998f0e926ccbdbd9796506e",
+  "datasets/hadith-data/regen_unified_csvs.py": "310fbf58885b53700a17698c1ffcd3231f24a55ba7ea8e8c1c08b64864e78147"
+ },
+ "outputs": {
+  "biography_availability.jsonl.gz": {
+   "rows": 50498,
+   "sha256": "c440a21278598b82c4b04f756b88a49deee93249a97d53ac92c854362daec515"
+  },
+  "gazetteer_proposed.json": {
+   "rows": 63,
+   "sha256": "f510e1421021ec0679c99a7b372f75d6b665e0a82f1e878e051a8f5dfb910b7b"
+  },
+  "imami_chain_names.jsonl.gz": {
+   "rows": 19142,
+   "sha256": "fbcb00a0e002890ddc1803745964a5fd9fd2d66c86a4eca7f967afc6db8486c2"
+  },
+  "narrator_assessment_candidates.jsonl.gz": {
+   "rows": 5748,
+   "sha256": "ca0bca79e6995581bcf498e1051bdd42d270035d67355806559fcf1dc88ac002"
+  },
+  "narrator_event_candidates.jsonl.gz": {
+   "rows": 634,
+   "sha256": "5dff336769aa97e995f52883082ce774f7809a5b4a6e78166ecbe9d3fd984147"
+  },
+  "review_worksheet_150.csv": {
+   "rows": 150,
+   "sha256": "e57825babbaff6b53674009467860ae537684ea5eb296ca9fccb1d79ce3eb1ac"
+  },
+  "rijal_entries_ibn_hajar_taqrib.jsonl.gz": {
+   "rows": 8828,
+   "sha256": "8c574b2927f9b2902c23fa4f4957bc27958faf286437cc05a44c3cc6a2cfca2a"
+  },
+  "rijal_entries_kashshi_ikhtiyar.jsonl.gz": {
+   "rows": 428,
+   "sha256": "6553ad4043fd76e4c1aadf7786d92ed148e743c2ec81a5dceb5ee028abc8dc64"
+  },
+  "rijal_entries_mizzi_tahdhib_kamal.jsonl.gz": {
+   "rows": 8643,
+   "sha256": "18fdd538c89679182462a278ea47724af5d7187bb19fdbfcdd5c8366d74b2ada"
+  },
+  "rijal_entries_najashi_rijal.jsonl.gz": {
+   "rows": 1269,
+   "sha256": "a569624140502ad74cff31780d4ef9e643117e386c549d038ccf7b502af40904"
+  },
+  "rijal_entries_tusi_fihrist.jsonl.gz": {
+   "rows": 910,
+   "sha256": "5d6094b770dbd8819feb1ccef15590d2bc5e9a614b1f32e87bb3c958c5489122"
+  },
+  "rijal_entries_tusi_rijal.jsonl.gz": {
+   "rows": 6429,
+   "sha256": "6196f419106d850f7fca4ec8b61e5d56bd06b82cc0521c840f0233e6e7c21591"
+  },
+  "rijal_entry_statements.jsonl.gz": {
+   "rows": 21788,
+   "sha256": "12dbf1a7a93599a6c5378152c2cd4b16f85814bb771b73baa802dfb4a773757c"
+  },
+  "rijal_links_imami_chain_names.jsonl.gz": {
+   "rows": 8601,
+   "sha256": "84e322810fc7c3582b0cf3677efd4f902a09f8781ad221afb15d104fbb7f8174"
+  },
+  "rijal_links_lexicon.jsonl.gz": {
+   "rows": 11841,
+   "sha256": "4ce68abdda69b2b150b3bec3e289ef6a29d23e34535860cd706b228eccc01894"
+  },
+  "rijal_links_riwayat.jsonl.gz": {
+   "rows": 8959,
+   "sha256": "29c2794c9a3e8eda3b4f7d9ea2518df99bb24425d879f01442ef905c5d7e9960"
+  },
+  "rijal_perspective_cells.jsonl.gz": {
+   "rows": 213883,
+   "sha256": "b9002c90a3d71c813a519971d0a42561f0f25872d4f7eef9b757c22a86740e3a"
+  },
+  "rijal_timeline_facts.jsonl.gz": {
+   "rows": 16022,
+   "sha256": "6f5fbd82474e105416f72955758a5bdf4ecda20345448e6136a87c6868af51c5"
+  },
+  "rijal_works.json": {
+   "rows": 6,
+   "sha256": "cbe93b118e92ed23e16be1dcea2be24a093b7cbc9aad3aa7d02a81a2cc9ed1c8"
+  },
+  "sample_60_for_judgement.csv": {
+   "rows": 60,
+   "sha256": "0316f72a6fd65ccea734ffb3368fcae5f42e9e0179c00558d6a6ce48a7853686"
+  }
+ },
+ "licence": "CC BY-NC-SA 4.0 (derived from OpenITI texts); Riwayat labels CC0; chain names are the project's own extraction",
+ "status": "candidate_only_unreviewed"
+}

@@ -5,13 +5,14 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
   unique,
 } from 'drizzle-orm/pg-core';
 import { pipelineBookkeeping, pipelineBookkeepingForeignKeys, restrictForeignKey } from './columns';
-import { evidenceReviewStateEnum, narratorAuthorityEnum, narratorPlaceholderReasonEnum } from './enums';
+import { evidenceReviewStateEnum, nameLatinBasisEnum, narratorAuthorityEnum, narratorPlaceholderReasonEnum } from './enums';
 
 /** Narrator identity only: no verdict, grade or reliability column, ever (G-1). */
 export const narrators = pgTable(
@@ -28,11 +29,15 @@ export const narrators = pgTable(
     nameEnFolded: text('name_en_folded'),
     /** Set when the lexicon row cannot name one person; never an automatic match target except kunya-only. */
     placeholderReason: narratorPlaceholderReasonEnum('placeholder_reason'),
+    /** The name in Latin letters for a record that has no English name (external and register rows; 0010). */
+    nameLatin: text('name_latin'),
+    nameLatinBasis: nameLatinBasisEnum('name_latin_basis'),
     ...pipelineBookkeeping(),
   },
   (table) => [
     unique('narrators_scholar_indx_key').on(table.scholarIndx),
     unique('narrators_authority_authority_key_key').on(table.authority, table.authorityKey),
+    check('narrators_name_latin_check', sql`(${table.nameLatin} is null) = (${table.nameLatinBasis} is null)`),
     check('narrators_rawi_scholar_indx_check', sql`${table.authority} <> 'rawi' or ${table.scholarIndx} is not null`),
     index('narrators_name_ar_normalized_trgm_idx').using('gin', table.nameArNormalized.op('gin_trgm_ops')),
     index('narrators_name_en_folded_trgm_idx').using('gin', table.nameEnFolded.op('gin_trgm_ops')),
@@ -114,5 +119,74 @@ export const narratorTeachers = pgTable(
     restrictForeignKey('narrator_teachers_teacher_id_fk', table.teacherId, narrators.id),
     index('narrator_teachers_teacher_id_idx').on(table.teacherId),
     ...pipelineBookkeepingForeignKeys('narrator_teachers', table),
+  ],
+);
+
+/**
+ * What an external dataset (or the Imam register) records about one of its narrators, verbatim, under its licence.
+ * Pipeline-owned; never a verdict (G-1): hadith-kg's rank wording stays inside `assertions` and is not displayed as one.
+ * `label_reason` is set when the source's id names a label as written in chains rather than an established person.
+ * See src/db/AGENTS.md §External identity.
+ */
+export const narratorSourceProfiles = pgTable(
+  'narrator_source_profiles',
+  {
+    narratorId: text('narrator_id').primaryKey(),
+    source: text('source').notNull(),
+    assertions: jsonb('assertions').notNull(),
+    licence: text('licence').notNull(),
+    labelReason: text('label_reason'),
+    assertedBy: text('asserted_by').notNull(),
+    reviewState: text('review_state').notNull().default('source_unverified'),
+    ...pipelineBookkeeping(),
+  },
+  (table) => [
+    restrictForeignKey('narrator_source_profiles_narrator_id_fk', table.narratorId, narrators.id),
+    check('narrator_source_profiles_source_check', sql`${table.source} in ('hadith_kg', 'riwayat', 'imam_register')`),
+    check('narrator_source_profiles_review_state_check', sql`${table.reviewState} = 'source_unverified'`),
+    ...pipelineBookkeepingForeignKeys('narrator_source_profiles', table),
+  ],
+);
+
+/** Other datasets' ids an external narrator record carries (Riwayat's crosswalk: Thaqalayn, hadith-kg, Itqan, ...). */
+export const narratorExternalIds = pgTable(
+  'narrator_external_ids',
+  {
+    id: text('id').primaryKey(),
+    narratorId: text('narrator_id').notNull(),
+    namespace: text('namespace').notNull(),
+    externalId: text('external_id').notNull(),
+    assertedBy: text('asserted_by').notNull(),
+    ...pipelineBookkeeping(),
+  },
+  (table) => [
+    restrictForeignKey('narrator_external_ids_narrator_id_fk', table.narratorId, narrators.id),
+    index('narrator_external_ids_narrator_id_idx').on(table.narratorId),
+    ...pipelineBookkeepingForeignKeys('narrator_external_ids', table),
+  ],
+);
+
+/**
+ * A machine-proposed link between an external narrator and a lexicon row, with its evidence. A candidate only: it is
+ * shown as one, used to compare two claims at a mention, and never merges narrators (a reviewer would; G-5).
+ */
+export const narratorLinkCandidates = pgTable(
+  'narrator_link_candidates',
+  {
+    id: text('id').primaryKey(),
+    externalNarratorId: text('external_narrator_id').notNull(),
+    rawiNarratorId: text('rawi_narrator_id').notNull(),
+    basis: text('basis').notNull(),
+    evidence: jsonb('evidence').notNull(),
+    reviewState: text('review_state').notNull(),
+    ...pipelineBookkeeping(),
+  },
+  (table) => [
+    restrictForeignKey('narrator_link_candidates_external_narrator_id_fk', table.externalNarratorId, narrators.id),
+    restrictForeignKey('narrator_link_candidates_rawi_narrator_id_fk', table.rawiNarratorId, narrators.id),
+    check('narrator_link_candidates_review_state_check', sql`${table.reviewState} = 'unreviewed'`),
+    index('narrator_link_candidates_external_narrator_id_idx').on(table.externalNarratorId),
+    index('narrator_link_candidates_rawi_narrator_id_idx').on(table.rawiNarratorId),
+    ...pipelineBookkeepingForeignKeys('narrator_link_candidates', table),
   ],
 );

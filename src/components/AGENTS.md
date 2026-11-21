@@ -21,7 +21,12 @@ Display rules every public screen follows, and why. Standard: `C:/Users/atooz/.g
 - Narrator verdicts (`reliability_consensus`) are shown only on the narrator page, with the note that their
   tradition and critic are not yet recorded (an open owner question in `conductor/RUNBOOK.md`). They are not
   repeated in lists or on chain rows.
-- A chain position with `is_link === false` is an unidentified mention: its surface is plain text, never a link.
+- A chain position's surface is plain text; its identities link. Every record a source names for it links to that
+  record's narrator page (standing identity and candidates alike, each with its basis); a name with no candidate is
+  plain text with "Not yet identified".
+- A Latin form beside a chain name renders the name as written (`chain_mentions.name_latin`) and says how it was
+  obtained; it is never presented as an identification. English text of a report always goes through
+  `archive/ReportEnglish.tsx` (label, text, credit, or "No English available yet").
 - Unknown is written "Unknown"; empty sections are hidden, except where absence itself is the information
   (life dates, generation, "No assessment recorded" for a tradition).
 

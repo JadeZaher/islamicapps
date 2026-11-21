@@ -209,7 +209,13 @@ with a verse reference; not re-located: 264 absent from our (partial) text, 106 
 
 Gains, the three-way agreement and the Imami sample are in `diagnostics/source-identity/README.md`.
 
-### Load proposal (not implemented; the schema and loader belong to the data-platform lane)
+### Load proposal (implemented 2026-11-21 in migrations 0010-0011 and projection `2026.11.21.4`, except d)
+
+As built: `src/db/AGENTS.md` §External identity and `pg_export/AGENTS.md` §External identity. Owner decisions taken
+since: the tier is "machine-reviewed", never verified; K6 and hadith-kg agreeing count under "two sources agree"; the
+Imams' conventional kunyas in Imami chains count (`pg_export/imam_kunya_conventions.json`); Riwayat's automatic links
+are shown and excluded; label-like Riwayat records stand as candidates only. The Imams are register rows
+(`narrator:imam:<n>`), not Riwayat's kunya labels.
 
 **a. Candidate bases.** Add four values to `mention_candidate_basis`: `source_hadith_kg`,
 `source_hadith_kg_confirmed_by_text`, `source_riwayat`, `source_riwayat_confirmed_by_text`. One

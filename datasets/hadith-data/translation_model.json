@@ -56,5 +56,489 @@
     "candidate_only": true,
     "review_status": "machine_unreviewed",
     "canonical_without_review": false
+  },
+  "prompt_terminology": {
+    "version": "hy-mt2-terminology-en-prompt-v2",
+    "status": "adopted_2026-11-21_for_gap_fill_run_2",
+    "decision_note": "Added 2026-11-21 by the gap-fill translation lane; it changes the pin's prompt, not its model. Adopted after a paired 60-row pilot (diagnostics/translation-run-2/README.md): honorific wording in one parenthetical form 137 vs 56 times, 'ʿ' scheme 64 vs 0, 'God' 1 vs 4, name spellings unified; meaning errors no worse in a 36-pair reading. Known cost: occasional macron/dot transliteration (guarded and retried with the base prompt) and a 'the Messenger' vocative regression (fixed by the vocative entries). The base prompt above stays the fallback for sources with no matching term and for guard failures. Revert by deleting this block.",
+    "format": "model card Terminology template, user turn only, no system prompt. The reference lines are the entries whose Arabic occurs in the source (diacritics, tatweel and alef variants ignored; longest match wins; at most max_terms_per_request, in order of appearance). A source with no match is sent with the default prompt.",
+    "max_terms_per_request": 14,
+    "template": "Reference the following translations:\n{terminology_lines}\n\nTranslate the following text into English. Note that you must ONLY output the translated result without any additional explanation:\n\n{source_text}",
+    "line_template": "{ar} translates to {en}",
+    "transliteration": "Names and terms follow the archive's glossary scheme (src/lib/glossary/terms.ts, TRANSLITERATION_NOTE): no long-vowel or dot marks; ʿ for ʿayn, ʾ for hamza; the article as al-.",
+    "terms": [
+      {
+        "ar": "صلى الله عليه وآله وسلم",
+        "en": "(peace and blessings be upon him and his family)",
+        "group": "honorific"
+      },
+      {
+        "ar": "صلى الله عليه وسلم",
+        "en": "(peace and blessings be upon him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "عليه السلام",
+        "en": "(peace be upon him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "عليها السلام",
+        "en": "(peace be upon her)",
+        "group": "honorific"
+      },
+      {
+        "ar": "عليهم السلام",
+        "en": "(peace be upon them)",
+        "group": "honorific"
+      },
+      {
+        "ar": "عليهما السلام",
+        "en": "(peace be upon them both)",
+        "group": "honorific"
+      },
+      {
+        "ar": "رضي الله عنه",
+        "en": "(may Allah be pleased with him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "رضي الله عنها",
+        "en": "(may Allah be pleased with her)",
+        "group": "honorific"
+      },
+      {
+        "ar": "رضي الله عنهم",
+        "en": "(may Allah be pleased with them)",
+        "group": "honorific"
+      },
+      {
+        "ar": "رضي الله عنهما",
+        "en": "(may Allah be pleased with them both)",
+        "group": "honorific"
+      },
+      {
+        "ar": "رحمه الله",
+        "en": "(may Allah have mercy on him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "رسول الله",
+        "en": "the Messenger of Allah",
+        "group": "title"
+      },
+      {
+        "ar": "النبي",
+        "en": "the Prophet",
+        "group": "title"
+      },
+      {
+        "ar": "النبيء",
+        "en": "the Prophet",
+        "group": "title"
+      },
+      {
+        "ar": "أمير المؤمنين",
+        "en": "the Commander of the Faithful",
+        "group": "title"
+      },
+      {
+        "ar": "الله",
+        "en": "Allah",
+        "group": "title"
+      },
+      {
+        "ar": "حدثنا",
+        "en": "narrated to us",
+        "group": "isnad"
+      },
+      {
+        "ar": "حدثني",
+        "en": "narrated to me",
+        "group": "isnad"
+      },
+      {
+        "ar": "أخبرنا",
+        "en": "informed us",
+        "group": "isnad"
+      },
+      {
+        "ar": "أخبرني",
+        "en": "informed me",
+        "group": "isnad"
+      },
+      {
+        "ar": "أنبأنا",
+        "en": "reported to us",
+        "group": "isnad"
+      },
+      {
+        "ar": "سمعت",
+        "en": "I heard",
+        "group": "isnad"
+      },
+      {
+        "ar": "بن",
+        "en": "ibn",
+        "group": "isnad"
+      },
+      {
+        "ar": "أبو هريرة",
+        "en": "Abu Hurayra",
+        "group": "name"
+      },
+      {
+        "ar": "أبي هريرة",
+        "en": "Abu Hurayra",
+        "group": "name"
+      },
+      {
+        "ar": "عائشة",
+        "en": "ʿAʾisha",
+        "group": "name"
+      },
+      {
+        "ar": "ابن عباس",
+        "en": "Ibn ʿAbbas",
+        "group": "name"
+      },
+      {
+        "ar": "عبد الله بن عباس",
+        "en": "ʿAbd Allah ibn ʿAbbas",
+        "group": "name"
+      },
+      {
+        "ar": "ابن عمر",
+        "en": "Ibn ʿUmar",
+        "group": "name"
+      },
+      {
+        "ar": "عبد الله بن عمر",
+        "en": "ʿAbd Allah ibn ʿUmar",
+        "group": "name"
+      },
+      {
+        "ar": "عبد الله بن مسعود",
+        "en": "ʿAbd Allah ibn Masʿud",
+        "group": "name"
+      },
+      {
+        "ar": "ابن مسعود",
+        "en": "Ibn Masʿud",
+        "group": "name"
+      },
+      {
+        "ar": "أنس بن مالك",
+        "en": "Anas ibn Malik",
+        "group": "name"
+      },
+      {
+        "ar": "جابر بن عبد الله",
+        "en": "Jabir ibn ʿAbd Allah",
+        "group": "name"
+      },
+      {
+        "ar": "أبي سعيد الخدري",
+        "en": "Abu Saʿid al-Khudri",
+        "group": "name"
+      },
+      {
+        "ar": "أبو سعيد الخدري",
+        "en": "Abu Saʿid al-Khudri",
+        "group": "name"
+      },
+      {
+        "ar": "عمر بن الخطاب",
+        "en": "ʿUmar ibn al-Khattab",
+        "group": "name"
+      },
+      {
+        "ar": "أبو بكر",
+        "en": "Abu Bakr",
+        "group": "name"
+      },
+      {
+        "ar": "عثمان بن عفان",
+        "en": "ʿUthman ibn ʿAffan",
+        "group": "name"
+      },
+      {
+        "ar": "علي بن أبي طالب",
+        "en": "ʿAli ibn Abi Talib",
+        "group": "name"
+      },
+      {
+        "ar": "معاذ بن جبل",
+        "en": "Muʿadh ibn Jabal",
+        "group": "name"
+      },
+      {
+        "ar": "أبو موسى الأشعري",
+        "en": "Abu Musa al-Ashʿari",
+        "group": "name"
+      },
+      {
+        "ar": "أم سلمة",
+        "en": "Umm Salama",
+        "group": "name"
+      },
+      {
+        "ar": "فاطمة",
+        "en": "Fatima",
+        "group": "name"
+      },
+      {
+        "ar": "الحسين",
+        "en": "al-Husayn",
+        "group": "name"
+      },
+      {
+        "ar": "الزهري",
+        "en": "al-Zuhri",
+        "group": "name"
+      },
+      {
+        "ar": "سفيان",
+        "en": "Sufyan",
+        "group": "name"
+      },
+      {
+        "ar": "محمد بن إسحاق",
+        "en": "Muhammad ibn Ishaq",
+        "group": "name"
+      },
+      {
+        "ar": "أبو عبد الله",
+        "en": "Abu ʿAbd Allah",
+        "group": "name"
+      },
+      {
+        "ar": "أبي عبد الله",
+        "en": "Abu ʿAbd Allah",
+        "group": "name"
+      },
+      {
+        "ar": "أبو جعفر",
+        "en": "Abu Jaʿfar",
+        "group": "name"
+      },
+      {
+        "ar": "أبي جعفر",
+        "en": "Abu Jaʿfar",
+        "group": "name"
+      },
+      {
+        "ar": "أبو الحسن",
+        "en": "Abu al-Hasan",
+        "group": "name"
+      },
+      {
+        "ar": "أبي الحسن",
+        "en": "Abu al-Hasan",
+        "group": "name"
+      },
+      {
+        "ar": "جعفر بن محمد",
+        "en": "Jaʿfar ibn Muhammad",
+        "group": "name"
+      },
+      {
+        "ar": "زيد بن علي",
+        "en": "Zayd ibn ʿAli",
+        "group": "name"
+      },
+      {
+        "ar": "علي بن الحسين",
+        "en": "ʿAli ibn al-Husayn",
+        "group": "name"
+      },
+      {
+        "ar": "الحسين بن علي",
+        "en": "al-Husayn ibn ʿAli",
+        "group": "name"
+      },
+      {
+        "ar": "الحسن بن علي",
+        "en": "al-Hasan ibn ʿAli",
+        "group": "name"
+      },
+      {
+        "ar": "محمد بن علي",
+        "en": "Muhammad ibn ʿAli",
+        "group": "name"
+      },
+      {
+        "ar": "أبو عبيدة",
+        "en": "Abu ʿUbayda",
+        "group": "name"
+      },
+      {
+        "ar": "جابر بن زيد",
+        "en": "Jabir ibn Zayd",
+        "group": "name"
+      },
+      {
+        "ar": "الربيع بن حبيب",
+        "en": "al-Rabiʿ ibn Habib",
+        "group": "name"
+      },
+      {
+        "ar": "الصلاة",
+        "en": "prayer",
+        "group": "term"
+      },
+      {
+        "ar": "الزكاة",
+        "en": "zakat",
+        "group": "term"
+      },
+      {
+        "ar": "الصيام",
+        "en": "fasting",
+        "group": "term"
+      },
+      {
+        "ar": "الحج",
+        "en": "Hajj",
+        "group": "term"
+      },
+      {
+        "ar": "العمرة",
+        "en": "ʿumra",
+        "group": "term"
+      },
+      {
+        "ar": "الجنة",
+        "en": "Paradise",
+        "group": "term"
+      },
+      {
+        "ar": "الإيمان",
+        "en": "faith",
+        "group": "term"
+      },
+      {
+        "ar": "الإسلام",
+        "en": "Islam",
+        "group": "term"
+      },
+      {
+        "ar": "المؤمن",
+        "en": "the believer",
+        "group": "term"
+      },
+      {
+        "ar": "المسلم",
+        "en": "the Muslim",
+        "group": "term"
+      },
+      {
+        "ar": "القرآن",
+        "en": "the Qurʾan",
+        "group": "term"
+      },
+      {
+        "ar": "الوضوء",
+        "en": "ablution",
+        "group": "term"
+      },
+      {
+        "ar": "الغسل",
+        "en": "the ritual bath",
+        "group": "term"
+      },
+      {
+        "ar": "الجنابة",
+        "en": "major ritual impurity",
+        "group": "term"
+      },
+      {
+        "ar": "الطلاق",
+        "en": "divorce",
+        "group": "term"
+      },
+      {
+        "ar": "الجهاد",
+        "en": "jihad",
+        "group": "term"
+      },
+      {
+        "ar": "الدية",
+        "en": "blood money",
+        "group": "term"
+      },
+      {
+        "ar": "الحدود",
+        "en": "the prescribed punishments",
+        "group": "term"
+      },
+      {
+        "ar": "ليلة القدر",
+        "en": "the Night of Power",
+        "group": "term"
+      },
+      {
+        "ar": "يوم القيامة",
+        "en": "the Day of Resurrection",
+        "group": "term"
+      },
+      {
+        "ar": "السجود",
+        "en": "prostration",
+        "group": "term"
+      },
+      {
+        "ar": "الركوع",
+        "en": "bowing",
+        "group": "term"
+      },
+      {
+        "ar": "يا رسول الله",
+        "en": "O Messenger of Allah",
+        "group": "title"
+      },
+      {
+        "ar": "صلى الله عليه وآله",
+        "en": "(peace and blessings be upon him and his family)",
+        "group": "honorific"
+      },
+      {
+        "ar": "(ع م)",
+        "en": "(peace be upon him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "يا أمير المؤمنين",
+        "en": "O Commander of the Faithful",
+        "group": "title"
+      },
+      {
+        "ar": "يا أبا عبد الله",
+        "en": "O Abu ʿAbd Allah",
+        "group": "name"
+      },
+      {
+        "ar": "\" ع م \"",
+        "en": "(peace be upon him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "\" ص \"",
+        "en": "(peace and blessings be upon him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "(ص)",
+        "en": "(peace and blessings be upon him)",
+        "group": "honorific"
+      },
+      {
+        "ar": "(ع)",
+        "en": "(peace be upon him)",
+        "group": "honorific"
+      }
+    ],
+    "revision": "2026-11-21 revision 2 after the 60-row pilot: vocative entries added (the plain 'the Messenger of Allah' entry produced 'O the Messenger of Allah' in 7 outputs); Imami honorific without wa-sallam; the Zaydi '(ع م)' siglum (rendered as in the base run: its expansion is not verified). Revision 3 (during the run, applied by a redo pass to the affected Zaydi rows): the quoted sigla ' ع م ' and ' ص ' and the bracketed (ص) (ع), which the model rendered inconsistently ('may Allah be pleased with him' for ع م). Their expansions follow the base run's reading and are unverified.",
+    "guards": "Beyond screen-v2: terminology_echo (the reference list repeated) and diacritic_transliteration (any combining mark) reject the output; the row is retried once with the base prompt."
   }
 }

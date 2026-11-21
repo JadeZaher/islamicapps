@@ -26,6 +26,10 @@ export const PIPELINE_TABLES: PipelineTableSpec[] = [
   { name: 'traditions', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'sources', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'narrators', key: ['id'], loaderDerived: ['name_en_folded'], derivedFromStaging: [] },
+  // External narrators' own records, crosswalk ids and lexicon link candidates (0010; src/db/AGENTS.md §External identity).
+  { name: 'narrator_source_profiles', key: ['narrator_id'], loaderDerived: [], derivedFromStaging: [] },
+  { name: 'narrator_external_ids', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
+  { name: 'narrator_link_candidates', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'bibliographic_works', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'editions', key: ['id'], loaderDerived: [], derivedFromStaging: [] },
   { name: 'citations', key: ['id'], loaderDerived: [], derivedFromStaging: [] },

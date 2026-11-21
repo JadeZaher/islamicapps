@@ -1,0 +1,136 @@
+{
+ "hadith_kg": {
+  "chain_label_by_weakest_rank": {
+   "1": {
+    "0": 1,
+    "2": 2
+   },
+   "10": {
+    "0": 239,
+    "1": 617,
+    "2": 678,
+    "3": 33913,
+    "4": 123,
+    "5": 66
+   },
+   "11": {
+    "0": 108,
+    "1": 351,
+    "2": 389,
+    "3": 121,
+    "4": 15624,
+    "5": 40
+   },
+   "12": {
+    "0": 5006,
+    "1": 5117,
+    "2": 44621,
+    "3": 6257,
+    "4": 2906,
+    "5": 7491
+   },
+   "2": {
+    "0": 14586,
+    "1": 402,
+    "2": 223,
+    "3": 14,
+    "4": 7,
+    "5": 1
+   },
+   "3": {
+    "0": 120972,
+    "1": 7256,
+    "2": 3025,
+    "3": 241,
+    "4": 103,
+    "5": 28
+   },
+   "4": {
+    "0": 5409,
+    "1": 88283,
+    "2": 3853,
+    "3": 356,
+    "4": 192,
+    "5": 90
+   },
+   "5": {
+    "0": 1079,
+    "1": 36554,
+    "2": 1270,
+    "3": 138,
+    "4": 55,
+    "5": 26
+   },
+   "6": {
+    "0": 1147,
+    "1": 41506,
+    "2": 2383,
+    "3": 194,
+    "4": 95,
+    "5": 58
+   },
+   "7": {
+    "0": 1413,
+    "1": 3675,
+    "2": 38978,
+    "3": 216,
+    "4": 131,
+    "5": 62
+   },
+   "8": {
+    "0": 1037,
+    "1": 2598,
+    "2": 65280,
+    "3": 363,
+    "4": 191,
+    "5": 81
+   },
+   "9": {
+    "0": 70,
+    "1": 134,
+    "2": 9493,
+    "3": 47,
+    "4": 30,
+    "5": 9
+   }
+  },
+  "excluded_fields": {
+   "hadiths.matn / hadiths.matn_no": "hukm label per report, coded 0-8 on hadithdb's own scale; no grader is named",
+   "meaning_groups.matn_no / tarafs.matn": "overall hukm per meaning group, computed across chains",
+   "rawis.rank / rawis.rank_no": "one rank wording per narrator with no critic named (Taqrib-like wording, unattributed)",
+   "sanads.hukum": "templated sentence assembled from narrator rank wording ('إسناد ضعيف فيه X وهو ضعيف الحديث'); no grader named",
+   "sanads.matn / sanads.matn_no": "hukm label per chain; equals a function of the chain's weakest narrator rank (max_rank) and continuity",
+   "sanads.max_rank": "weakest narrator's rank number in the chain, computed by the source"
+  },
+  "hadith_rows_with_hukm_label": 715790,
+  "how_told_apart": "A grading is kept only when the dataset names who said it. hadith-kg's report and chain labels name no grader; every hukum sentence is built from one of a few frames around narrator rank wording; and the chain label is determined by the weakest narrator rank (contingency table chain_label_by_weakest_rank), i.e. computed.",
+  "sanad_rows": 577024,
+  "sanads_hukum_in_templated_frames": 577024,
+  "sanads_hukum_naming_a_scholar_or_verb_of_grading": 0
+ },
+ "riwayat": {
+  "columns_that_look_like_grading": {},
+  "conclusion": "No report grading and no critic statement is stored. Narrator fields (tradition, madhhab, tabaqa, death_year) and identification confidences are the corpus's own labels or model outputs, not verdicts; nothing is taken from Riwayat.",
+  "tables": [
+   "chain_mention",
+   "claude_label_hadith",
+   "claude_label_mention",
+   "dup_group",
+   "gold_replaced_mention",
+   "hadith",
+   "hadith_flag",
+   "isnad_node",
+   "narrator",
+   "narrator_edge",
+   "narrator_edge_seed",
+   "narrator_flag",
+   "narrator_merge",
+   "narrator_name",
+   "narrator_source_id",
+   "purged_name_form",
+   "reference_chain",
+   "removed_mention",
+   "surgery_log"
+  ]
+ }
+}

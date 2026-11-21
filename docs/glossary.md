@@ -15,7 +15,7 @@ Definitions of the terms used in the Shura wa Istehsan app, its documentation an
 - [Report grading](#section-report-grading) (16)
 - [Works and genres](#section-works) (10)
 - [Comparative study and history](#section-comparative) (13)
-- [Archive terms](#section-archive) (48)
+- [Archive terms](#section-archive) (54)
 - [Needs the owner’s review](#owner-review)
 - [Enum values without an entry](#enum-values-without-an-entry)
 
@@ -1016,9 +1016,66 @@ The reason the archive gives for connecting a name in a chain to a particular na
 
 A machine check found that the source’s own narrator index names this person at this position and that the name written in the Arabic agrees with it.
 
-- **In this archive:** The archive’s top automatic tier, shown as “machine-reviewed”, never as verified: a sample found about one in twenty of these wrong where two people share a name. It stands only when no other match names someone else (a kunya-only match does not count against it). Teacher-to-student links built from it are machine-reviewed too. Only a reviewer’s decision is called verified.
-- **Related:** [Basis](#basis), [Source index](#source-index), [Identity decision](#identity-decision)
-- **Data values:** `mention_candidate_basis.source_index_confirmed_by_text`
+- **In this archive:** The archive’s top automatic tier, shown as “machine-reviewed”, never as verified: a sample found about one in twenty of these wrong where two people share a name. It rests on one of: the six-books source index, hadith-kg’s index, or Thaqalayn’s annotation carried by the Riwayat corpus, each confirmed by the Arabic; two independent sources agreeing; or an Imam’s conventional kunya in an Imami chain. Riwayat’s own automatic links never count. It stands only when no other source names someone else (a kunya-only match does not count against it). Teacher-to-student links built from it are machine-reviewed too. Only a reviewer’s decision is called verified.
+- **Related:** [Basis](#basis), [Source index](#source-index), [Two sources agree](#two-sources-agree), [Imam’s conventional kunya](#imam-kunya), [Identity decision](#identity-decision)
+- **Data values:** `mention_candidate_basis.source_index_confirmed_by_text`, `mention_candidate_basis.source_hadith_kg_confirmed_by_text`, `mention_candidate_basis.source_riwayat_confirmed_by_text`
+
+<a id="two-sources-agree"></a>
+
+### Two sources agree
+
+Two independent compilations name the same person at the same place in the chain: the six-books source index and hadith-kg.
+
+- **In this archive:** Counts toward the machine-reviewed tier under its own label (owner, 2026-11-21). The two records are taken as one person only through a machine-proposed link between them, which is shown as a candidate. The Riwayat corpus’s ids for Sunni chains are hadith-kg’s own, so Riwayat agreeing with hadith-kg is not a second source.
+- **Related:** [Machine-reviewed](#confirmed-by-source-and-text), [External source record](#external-source-record)
+
+<a id="imam-kunya"></a>
+
+### Imam’s conventional kunya (e.g. Abu ʿAbd Allah (ʿa) for al-Sadiq)
+
+In Imami chains the Imams are often named by kunya alone, followed by the honorific: Abu ʿAbd Allah (ʿa) is Jaʿfar al-Sadiq, Abu Ibrahim (ʿa) is Musa al-Kazim.
+
+- **In this archive:** In an Imami chain, a kunya with the honorific identifies the Imam and counts toward the machine-reviewed tier (owner, 2026-11-21). A kunya several Imams share (Abu Jaʿfar, Abu al-Hasan, Abu Muhammad) is decided only when a word after it names one Imam (al-Rida, al-Thani); otherwise every Imam who shares it is shown as an undecided candidate. The rule is a reviewable file, never applied outside Imami chains.
+- **Related:** [kunya](#kunya), [Matched by kunya only](#matched-by-kunya-only), [Machine-reviewed](#confirmed-by-source-and-text)
+- **Data values:** `mention_candidate_basis.imam_kunya_convention`, `mention_candidate_basis.imam_kunya_candidate`, `narrator_authority.imam_register`
+
+<a id="external-source-record"></a>
+
+### External source record
+
+A narrator as another open dataset describes it, under that dataset’s own id: hadith-kg (narrator ids for the Sunni and some Ibadi and Zaydi chains) or the Riwayat corpus (Sunni and Shiʿi chains).
+
+- **In this archive:** Such a record has its own narrator page, credited to its dataset, listing what the dataset records (never its grading words) and every chain it is named in. Its claims at a chain position are shown with their source: an id confirmed by the Arabic, or only aligned. A record is never merged with a lexicon entry automatically; a proposed link is shown as a candidate.
+- **Related:** [Source index](#source-index), [Label id](#label-id), [Riwayat automatic link](#riwayat-automatic-link), [Two sources agree](#two-sources-agree)
+- **Data values:** `narrator_authority.hadith_kg`, `narrator_authority.riwayat`, `mention_candidate_basis.source_hadith_kg`, `mention_candidate_basis.source_riwayat`
+
+<a id="riwayat-automatic-link"></a>
+
+### Riwayat automatic link
+
+An identification the Riwayat corpus made with its own matching software, rather than taking it from Thaqalayn’s or hadith-kg’s annotation.
+
+- **In this archive:** Shown, labelled as such, and never counted toward the machine-reviewed tier: a sample read one in eight wrong, against none of 52 taken from Thaqalayn’s annotation.
+- **Related:** [External source record](#external-source-record), [Machine-reviewed](#confirmed-by-source-and-text)
+
+<a id="label-id"></a>
+
+### Label id
+
+A source id that names a name as it is written in chains rather than an established person: a name several men share, one word, a kunya alone, or a group.
+
+- **In this archive:** Its narrator page says so plainly, and its claims never carry the machine-reviewed tier, because matching the text cannot tell which man a shared label means.
+- **Related:** [External source record](#external-source-record), [mushtarak](#mushtarak), [Kunya-only and single-name mentions](#single-name-mention)
+
+<a id="latin-name"></a>
+
+### Name in Latin letters
+
+Every name in a chain is shown with a Latin form beside the Arabic, so a reader without Arabic can follow the chain. It renders the name as written; it does not say who the person is.
+
+- **In this archive:** Taken, in order, from the source’s own English for that name (Thaqalayn’s English chains), the English name of the record the name is identified with, a transliteration of the vowelled Arabic, or a transliteration assembled only from common name parts whose reading is fixed. Where none applies the name is shown in Arabic alone rather than guessed. Each form shows how it was obtained and its source.
+- **Related:** [Mention](#mention), [Not yet identified](#not-yet-identified), [External source record](#external-source-record)
+- **Data values:** `name_latin_basis.provider_english`, `name_latin_basis.identity_name`, `name_latin_basis.transliteration_vocalized`, `name_latin_basis.transliteration_table`
 
 <a id="source-index"></a>
 
@@ -1097,9 +1154,9 @@ A link that names a group rather than a person, such as “a number of our compa
 
 A narrator-lexicon entry that cannot name one person, because it is only a single word, only a kunya, has no Arabic name, or is marked as an unidentified shaykh.
 
-- **In this archive:** Placeholder entries are never used as match targets; they remain for review.
-- **Related:** [Kunya-only and single-name mentions](#single-name-mention), [Matched by name](#matched-by-name)
-- **Data values:** `narrator_placeholder_reason.unidentified_shaykh_marker`, `narrator_placeholder_reason.no_arabic_name`, `narrator_placeholder_reason.bare_single_token_name`, `narrator_placeholder_reason.kunya_only_name`
+- **In this archive:** Placeholder entries are never used as match targets; they remain for review. An external source’s record of the same kind (a kunya alone, a relation, a group, or a hadith-kg stub) is shown when the source names it, as a label that never contests another identity.
+- **Related:** [Kunya-only and single-name mentions](#single-name-mention), [Matched by name](#matched-by-name), [Label id](#label-id)
+- **Data values:** `narrator_placeholder_reason.unidentified_shaykh_marker`, `narrator_placeholder_reason.no_arabic_name`, `narrator_placeholder_reason.bare_single_token_name`, `narrator_placeholder_reason.kunya_only_name`, `narrator_placeholder_reason.relational_name`, `narrator_placeholder_reason.collective_or_anonymous_name`, `narrator_placeholder_reason.hadith_kg_stub_narrator`
 
 <a id="review-unit"></a>
 

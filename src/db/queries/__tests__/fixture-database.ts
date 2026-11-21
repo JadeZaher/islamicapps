@@ -433,6 +433,20 @@ export async function prepareFixtureDatabase(schema = process.env.QUERY_FIXTURE_
   };
 }
 
+/**
+ * A fresh fixture schema with the migration stream applied and no rows, for suites that load their own real rows
+ * (identity-flows.test.ts). Points DATABASE_URL at it; refuses production like `prepareFixtureDatabase`.
+ */
+export async function prepareEmptySchema(schema: string): Promise<{ schema: string; url: string; sql: Sql; close: () => Promise<void> }> {
+  const url = fixtureUrl(schema);
+  const sql = postgres(url, { ...connectionOptions(url, 1), onnotice: () => {} });
+  await sql.unsafe(`drop schema if exists ${schema} cascade`);
+  await sql.unsafe(`create schema ${schema}`);
+  for (const statement of migrationStatements(schema)) await sql.unsafe(statement);
+  process.env.DATABASE_URL = url;
+  return { schema, url, sql, close: () => sql.end({ timeout: 5 }) };
+}
+
 /** sha256 of a string, hex; mirrors the Arabic round-trip binding. */
 export function sha256(text: string): string {
   return createHash('sha256').update(text, 'utf8').digest('hex');

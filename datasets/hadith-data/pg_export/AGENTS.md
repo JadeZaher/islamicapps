@@ -12,7 +12,12 @@ python datasets/hadith-data/pg_export/export_postgres.py --bundle <bundle> \
   --catalog <dir>/catalog.json --output <new dir> [--reconciled datasets/hadith-data/reconciled]
   [--correspondence datasets/hadith-data/diagnostics/report-correspondence/output]
 python -I datasets/hadith-data/pg_export/test_export_postgres.py
+python -I datasets/hadith-data/pg_export/test_transliteration.py      # transliteration and mention spans
+python -I datasets/hadith-data/pg_export/test_identity_rules.py       # provider English, Imam kunyas, the tier
 ```
+
+Since projection `2026.11.21.4` the catalog must come from a database migrated to `0011`
+(`npx tsx src/db/load/dump-catalog.ts <out.json> --database production --confirm-production`; read-only).
 
 ## Refusals
 
@@ -74,6 +79,9 @@ or `grade_value`; non-contiguous mention positions.
   is split into work, volume and page.
 - **Translations.** Bundle `review_state` `source_provided` and `source_status_unknown` both map to `state =
   source_provided`; the raw value stays in `review_state_raw`. Leading whitespace is trimmed from English only.
+  `english_quality`: the bundle's `arabic_leakage` becomes `complete` when the only Arabic-script characters are the
+  honorific symbols ﷺ ﷻ ﷽ and ؐ-ؓ (10,650 Sunni, 9 Imami in `2026.11.21.4`); real Arabic stays held. The rule belongs
+  in `regen_unified_csvs.translation_issue` too (not changed here: the resolver's hash binds the K6 sidecar).
 - **Candidates.** `machine_unreviewed` English goes to `candidates/translation_candidates.csv` (`machine_unreviewed`
   when a model is named, else `unknown_provenance`). The table is not migrated yet, so the loader does not read it.
 - **Review units** are SHA-256 over `\x1f`-joined parts, NULL context as `''`: coarse (surface, teacher, work), fine
@@ -89,3 +97,47 @@ or `grade_value`; non-contiguous mention positions.
 - **Tests.** `test_export_postgres.py` covers the pure rules, the sidecar rules on real sidecar rows, and real
   mentions read back from the projection under `development/pg-load-2026-11-21/projection-candidates` (`PG_PROJECTION`
   overrides; skipped when absent).
+
+## External identity (projection `2026.11.21.4`; `src/db/AGENTS.md` §External identity)
+
+`external_identity.py` reads the reconciled sidecars (`reconciled/README.md` §External sources), each file checked against
+its build manifest, and refuses a claim whose mention, surface or report Arabic differs from the projection's. Rows:
+
+- **narrators**: every hadith-kg or Riwayat record a claim or link names (`narrator:hadith-kg:<id>`,
+  `narrator:riwayat:<N id>`), name as the dataset writes it, its transliteration (`name_latin`), placeholder reason
+  (stubs: `hadith_kg_stub_narrator`); the twelve Imams from `imam_kunya_conventions.json` (`narrator:imam:<n>`).
+- **narrator_source_profiles** (`dataset_assertions` verbatim; `label_reason` from `riwayat_label_reason`: placeholder,
+  a name held by two or more ids each with at least 3 mentions and a tenth of the name's total, Riwayat's merge or junk
+  flag, a bare `ابن X`), **narrator_external_ids** (Riwayat's crosswalk), **narrator_link_candidates** (the sidecar's lexicon
+  links whose lexicon row is loaded and not a placeholder; one link per external record or the build refuses).
+- **chain_mention_candidates**: one per claim (`candidate_id`), `source_position` the external list index, `source_ref`
+  `hadith-kg:hadith:<id>` / `riwayat:<H id>`, `source_assertion_origin` `dataset_index` or Riwayat's origin.
+
+**The tier** (`standing_identity`, table-tested in `test_identity_rules.py`). Evidence, strongest first: K6
+`source_index_confirmed_by_text`; `two_sources_agree` (a K6 claim and a hadith-kg claim whose person keys meet: K6 and
+hadith-kg are independent compilations; Riwayat's Sunni ids are hadith-kg's own and never a second source);
+`source_hadith_kg_confirmed_by_text`; `source_riwayat_confirmed_by_text` when its origin is an annotation (never
+`riwayat_automatic_linking`) and the record is not label-like; `imam_kunya_convention`. The mention must be uncontested
+(`contests`): no two contesting candidates name different person keys within one registry. Person keys
+(`PersonKeys.key`): a record's lexicon link, else a Riwayat record's single hadith-kg crosswalk id (and that record's
+link), else itself. The same rule is the load invariant and the chain read (`PERSON_KEY_SQL`).
+
+**Imam kunyas** (`imam_kunya.py`, data `imam_kunya_conventions.json`, owner-reviewable). Imami reports only; the surface
+is exactly a listed kunya, optionally followed by one listed qualifier, with the honorific marker at the end of the
+surface or right after the name in the report text (`mention_text.PlainText.honorific_after`). Unshared kunya or a
+qualifier naming one Imam: `imam_kunya_convention`; a shared kunya with no qualifier: `imam_kunya_candidate` for each Imam
+who shares it (a label, never a contest); other words after the kunya: nothing.
+
+## Latin names (`transliteration.py`, `mention_text.py`, `provider_english.py`)
+
+Per mention, first that applies: (a) `provider_english`, Imami Thaqalayn reports only: the dominant English form of the
+name's folded key in `diagnostics/chain-reconciliation/output/imami_surface_lexicon.jsonl.gz` (hash-bound), spelling
+variants pooled, at least half the pairings, a name and not a clause, and it must render the Arabic (first consonant, and
+the last Arabic word heard after the first English word): this refuses alignments shifted by one name (بكر بن عبد الله بن
+حبيب paired with "Tamim ibn Buhlool"); (b) `identity_name`: the English of the standing identity, or of the one person every
+contesting candidate names (the lexicon's Latin run, as the page shows it, or the Imam register's name); (c) a
+transliteration of the name as written in the glossary's scheme (`TRANSLITERATION_NOTE`): from the vowel marks of the
+mention's own span in the report text (`locate_mentions`; the stored surface has no marks), a word without full marks
+read from the curated table; or (d) the table alone when every word is in it. Otherwise none: Arabic alone. The table
+leaves out spellings with two customary readings (معمر, عبيدة, حصين, حجر, حبان, سلام, عقيل) and non-name words.
+`counts.latin_names` gives coverage by tradition and basis.

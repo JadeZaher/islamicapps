@@ -1,0 +1,91 @@
+{
+  "proposal_for": "datasets/hadith-data/model_registry.json (entries) and docs/models.md (regenerate with render_model_docs.py)",
+  "status": "proposed 2026-11-21; not yet applied: the registry belongs to the data lane",
+  "kind_added": "ai_review_specialist",
+  "rule": "One entry per (specialist, model). An entry exists only once a run has produced records; until then it is listed here as planned. Prompt versions and hashes come from reviews/ai/specialists.json, never typed by hand.",
+  "entries": [
+    {
+      "id": "claude-opus-5-5-isnad-identity-review",
+      "model_id": "claude-opus-5-5",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent launched by an orchestrator with only the system prompt and the packet path",
+      "kind": "ai_review_specialist",
+      "specialist": "isnad-identity",
+      "prompt": "reviews/ai/prompts/isnad-identity.md",
+      "work": "Reviews identity claims for names in chains against a packet of evidence (chain as written, candidates in neutral order, rijal passages). Never sees the pipeline's basis or scores.",
+      "inputs": ["reviews/ai/packets/isnad-identity/<batch>/packet-NN.json"],
+      "outputs": [{ "path": "reviews/ai/records/isnad-identity/<batch>.jsonl", "unit": "one record per candidate claim" }],
+      "output_status": "ai_review (never a reviewer decision; never 'verified')",
+      "planned_first_batch": "pilot-1 (33 mentions, 46 candidate claims, 5 with recorded answers)"
+    },
+    {
+      "id": "claude-fable-5-2-isnad-identity-review-hard",
+      "model_id": "claude-fable-5-2",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent, as above",
+      "kind": "ai_review_specialist",
+      "specialist": "isnad-identity",
+      "prompt": "reviews/ai/prompts/isnad-identity.md",
+      "work": "The hard slice only: contested mentions, the Imams' kunya mapping, and items where the Opus review and the rule disagree.",
+      "outputs": [{ "path": "reviews/ai/records/isnad-identity/<batch>.jsonl", "unit": "one record per candidate claim" }],
+      "output_status": "ai_review"
+    },
+    {
+      "id": "claude-opus-5-5-correspondence-review",
+      "model_id": "claude-opus-5-5",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent, as above",
+      "kind": "ai_review_specialist",
+      "specialist": "correspondence",
+      "prompt": "reviews/ai/prompts/correspondence.md",
+      "work": "Reads two report texts (labelled A and B in a neutral order, no scores) and says whether they are tellings of one report, a shared passage, a shared formula or verse, the same ruling from another speaker, or unrelated.",
+      "outputs": [{ "path": "reviews/ai/records/correspondence/<batch>.jsonl", "unit": "one record per pair" }],
+      "output_status": "ai_review",
+      "planned_first_batch": "pilot-1 (33 pairs, 5 with recorded readings)"
+    },
+    {
+      "id": "claude-opus-5-5-translation-review",
+      "model_id": "claude-opus-5-5",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent, as above",
+      "kind": "ai_review_specialist",
+      "specialist": "translation",
+      "prompt": "reviews/ai/prompts/translation.md",
+      "work": "Lists meaning errors in English against its Arabic. Must not review the output of tencent/hy-mt2-30b-a3b with tencent/hy-mt2-30b-a3b, nor gemini candidates with gemini.",
+      "output_status": "ai_review"
+    },
+    {
+      "id": "claude-opus-5-5-grading-attribution-review",
+      "model_id": "claude-opus-5-5",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent, as above",
+      "kind": "ai_review_specialist",
+      "specialist": "grading-attribution",
+      "prompt": "reviews/ai/prompts/grading-attribution.md",
+      "work": "Checks that a cited passage states this ruling by this scholar about this report or narrator.",
+      "output_status": "ai_review"
+    },
+    {
+      "id": "claude-fable-5-2-history-claim-review",
+      "model_id": "claude-fable-5-2",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent, as above",
+      "kind": "ai_review_specialist",
+      "specialist": "history-claim",
+      "prompt": "reviews/ai/prompts/history-claim.md",
+      "work": "Checks that a cited chronicle passage states the claimed date, place or event (92 items in all).",
+      "output_status": "ai_review"
+    },
+    {
+      "id": "claude-opus-5-5-rijal-link-review",
+      "model_id": "claude-opus-5-5",
+      "model_id_status": "namespaced_specific",
+      "runtime": "Claude Code subagent, as above",
+      "kind": "ai_review_specialist",
+      "specialist": "rijal-link",
+      "prompt": "reviews/ai/prompts/rijal-link.md",
+      "work": "Checks that a rijal entry is about this narrator, against other entries with the same headword.",
+      "output_status": "ai_review"
+    }
+  ]
+}

@@ -26,6 +26,10 @@ export function openLoaderClient(databaseUrl: string, schema?: string) {
     onnotice: () => {},
     connection: {
       application_name: 'islamicapps-db-load',
+      // No parallel query in the load session: each parallel hash join takes a dynamic shared-memory segment, and the
+      // Railway container's /dev/shm is too small for the load's joins (src/db/load/AGENTS.md §Decisions, 2026-11-21).
+      max_parallel_workers_per_gather: '0',
+      max_parallel_maintenance_workers: '0',
       ...(schema ? { search_path: `${schema}, public` } : {}),
     },
   });

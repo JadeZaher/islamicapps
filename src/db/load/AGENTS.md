@@ -47,6 +47,14 @@ Track: `conductor/tracks/bundle-to-postgres-loader_20261121/`. Producer: `datase
   ran 12 minutes without finishing (the development database's first load had taken 5.6 minutes in total); it was
   cancelled, rolled back (version marked `failed`, zero rows, lock released) and rerun with this step.
 - **Disk budget (§2.8)** runs only when `LOAD_VOLUME_BYTES` is set: the volume size is not visible from SQL.
+- **No parallel query in the load session** (added 2026-11-21, `connection.ts`). The first load of projection
+  `2026.11.21.4` into production failed after the merge with `could not resize shared memory segment ... No space left on
+  device`: a parallel hash join takes a dynamic shared-memory segment in `/dev/shm`, which the Railway container keeps
+  small. The transaction rolled back (version marked `failed`, nothing changed, lock released); the loader now sets
+  `max_parallel_workers_per_gather = 0` and `max_parallel_maintenance_workers = 0` for its own session only.
+- **External identity** (0010): `narrator_source_profiles`, `narrator_external_ids` and `narrator_link_candidates` merge
+  right after `narrators`. Six checks guard the owner's rules (`src/db/AGENTS.md` §External identity); `reported` adds
+  `standing_identity` (mentions per tradition and evidence), `latin_names` and `narrators_by_authority`.
 - **No curation dump before the load (§4.3 step 2).** No `pg_dump` 18 on the operator machine; the development
   database has no curation rows. Required before any load into a database with curation data.
 - **Orphan-FK check is generic**: every single-column FK declared in `public`, anti-joined in the session's schema,

@@ -1,0 +1,197 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "isnad-identity",
+  "prompt_version": "1.0.0",
+  "packet_id": "isnad-identity/pilot-1/packet-04",
+  "verdicts": [
+    {
+      "claim_id": "I1.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The target is the bare kunya أبو اليمان, and P1 (about C1) states that this person is widely known by exactly that kunya, so the kunya is tied to him by a cited rijal passage.",
+        "The narrator's teacher in this chain is شعيب, and P1 says most of his hadith is from Shuʿayb, so the chain context fits.",
+        "Nothing in the packet points to another person called Abu al-Yaman."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا أبو اليمان، قال أخبرنا شعيب" },
+        { "passage_id": "P1", "quote": "أبو اليمان الحمصي مشهور بكنيته" },
+        { "passage_id": "P1", "quote": "يقال إن أكثر حديثه عن شعيب مناولة" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The candidate's recorded death year (211) does not match P1, which gives مات سنة اثنتين وعشرين, read in context as 222. This is a data discrepancy in the record, not a reason to doubt the identification. A passage showing a second Abu al-Yaman who also narrated from a Shuʿayb would change this answer.",
+      "proposals": [
+        { "kind": "note", "text": "Check the recorded death year for C1: the record says 211, but the cited Taqrib entry (P1) says (2)22." }
+      ]
+    },
+    {
+      "claim_id": "I2.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The target is the kunya أبي عبد الله with the honorific عليه السلام. Neither candidate's recorded names in the packet include the kunya Abu ʿAbd Allah.",
+        "Both candidates are put forward by the same source (the archive's convention table), but the packet does not include the text of that convention, so nothing in the packet fixes the kunya to either Imam.",
+        "No death years, generations or rijal passages are given, so the chain (علي بن مهزيار ← ابن أبي عمير ← هشام) cannot be checked against either candidate's period."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن هشام، عن أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Outside knowledge, not relied on: in Imami chains, 'Abu ʿAbd Allah ʿalayhi al-salam' is conventionally Jaʿfar al-Sadiq, and a Hisham who narrates to Ibn Abi ʿUmayr is usually a companion of al-Sadiq, which would favour C1 and rule out C2 on period. A packet that included the convention text, or the dates of Ibn Abi ʿUmayr and Hisham, would very likely settle this in favour of C1.",
+      "proposals": [
+        { "kind": "note", "text": "Include the convention-table entry for the kunya Abu ʿAbd Allah, plus dates or rijal passages for the neighbouring narrators (هشام, ابن أبي عمير), so the kunya can be judged on evidence in the packet." }
+      ]
+    },
+    {
+      "claim_id": "I2.C2",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The packet does not show that al-Husayn ibn ʿAli bears the kunya Abu ʿAbd Allah, and it gives no convention text, dates or passages.",
+        "The packet gives no period information to test whether هشام could have narrated from this candidate."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن هشام، عن أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Outside knowledge, not relied on: although al-Husayn also bore the kunya Abu ʿAbd Allah, a chain running ʿAli b. Mahziyar ← Ibn Abi ʿUmayr ← Hisham is generally far too late for al-Husayn (d. 61). Dates for the neighbouring narrators would probably turn this into 'contradicts'.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I3.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The written name حماد ابن سلمة is consistent with C1's recorded name حماد بن سلمة (full ism and father's name).",
+        "The packet's report text contains only the matn and not the isnad, so the chain's names cannot be quoted or checked against the stored text. No rijal passage gives C1's teachers (قتادة) or students (عفان)."
+      ],
+      "evidence": [],
+      "uncertainty": "medium",
+      "uncertainty_note": "On the name alone this looks like a match, and nothing in the packet points to another Hammad b. Salama. A rijal passage linking C1 to Qatada or ʿAffan, or a stored report text that includes the isnad, would raise this to 'supports'. Outside knowledge, not relied on: Hammad b. Salama al-Basri (d. 167) is a well-known student of Qatada and teacher of ʿAffan.",
+      "proposals": [
+        { "kind": "note", "text": "The stored text_ar for Musnad Ahmad no. 108 is only the matn, while the chain is stored separately. The stored text should be checked so the chain can be verified against the report text." }
+      ]
+    },
+    {
+      "claim_id": "I4.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The written name أحمد بن صالح (ism and father's name only) is consistent with C1's recorded name أحمد بن صالح المصري, but it is equally consistent with C2's name.",
+        "The packet has no rijal passage giving C1's teachers or students, so the teacher in this chain (ابن وهب) cannot be checked against C1. The death year 248 alone does not tell the two candidates apart."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "حدثنا أحمد بن صالح، حدثنا ابن وهب" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: Ahmad b. Salih al-Misri (d. 248) is a well-known Egyptian student of Ibn Wahb and a teacher of Abu Dawud, which would strongly favour C1. A rijal passage saying so would settle it.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I4.C2",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "C2's recorded name أحمد بن صالح matches the written name, but no death year, generation, place or passage is recorded, so the chain context cannot be checked.",
+        "The packet holds nothing that either supports or rules out this candidate as the student of ابن وهب."
+      ],
+      "evidence": [],
+      "uncertainty": "high",
+      "uncertainty_note": "C2's English name ('bin Anbs'h', possibly a garbled grandfather's name) may be another record of the same person as C1, or of a different Ahmad b. Salih. The packet cannot say which.",
+      "proposals": [
+        { "kind": "note", "text": "Check whether C2 (Muslim Scholars Database 'Ahmed bin Salah bin Anbs'h') is a duplicate record of C1 rather than a separate person, before treating this as a two-way ambiguity." }
+      ]
+    },
+    {
+      "claim_id": "I5.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written name ابن أبي أوفى is a nasab-form name (son of Abu Awfa). The report shows that the narrator's own father brought his alms to the Prophet, who prayed for آل أبي أوفى. So the narrator is a son of Abu Awfa who lived in the Prophet's time, which fits C1 عبد الله بن أبي أوفى.",
+        "The difference in spelling (أوفي in the record, أوفى in the report) is only the final alif maqsura and does not change the name.",
+        "The recorded death year (87) fits a Companion at the end of the chain, and nothing in the packet points to another son of Abu Awfa."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن عمرو بن مرة، عن ابن أبي أوفى" },
+        { "passage_id": "report", "quote": "فأتاه أبي بصدقته فقال" },
+        { "passage_id": "report", "quote": "اللهم صل على آل أبي أوفى" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The packet has no rijal passage. A passage showing another son of Abu Awfa who narrated to ʿAmr b. Murra would lower confidence.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I6.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The target is a bare ism, عبد الرحمن, which is shared by many narrators. C1's recorded name عبد الرحمن بن مهدي is consistent with it but is not confirmed by it.",
+        "The packet gives no rijal passage about C1, so neither his student here (عمرو بن علي) nor his teacher (أبو عوانة) can be checked. The death year 198 is not ruled out but does not decide the question."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "قال حدثنا عبد الرحمن، قال حدثنا أبو عوانة" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: ʿAmr b. ʿAli al-Fallas often narrates from ʿAbd al-Rahman b. Mahdi by bare ism, and Ibn Mahdi narrates from Abu ʿAwana. A rijal passage listing these links would make this 'supports'.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I6.C2",
+      "outcome": "contradicts",
+      "reasons": [
+        "C2's record marks him with رضي الله عنه and names him 'bin Sakran bin ʿAmr', which identifies a Companion. In this chain the target is four transmitters below the Companion أبي رزين لقيط بن عامر, who speaks directly to the Prophet. So the target narrates from Abu ʿAwana, who narrates through Yaʿla and Wakiʿ back to that Companion. A Companion cannot stand in that position.",
+        "P1, which the packet links to C2, describes a different person: عبد الرحمن مولى قيس بصري, from the eighth generation (الثامنة). His relationship (a client of Qays) and nisba (Basran) do not fit 'bin Sakran bin ʿAmr' with a death place in Persia, so P1 does not support C2 either."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "قال حدثنا عبد الرحمن، قال حدثنا أبو عوانة" },
+        { "passage_id": "report", "quote": "عن عمه أبي رزين، لقيط بن عامر العقيلي قال قلت يا رسول الله" },
+        { "passage_id": "P1", "quote": "عبد الرحمن مولى قيس بصري مجهول من الثامنة" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "This verdict depends on C2's record (the honorific and the nasab) identifying a Companion. If that record is wrong and C2 is really a later narrator, the period objection would fall away, though the bare ism would still be undecided.",
+      "proposals": [
+        { "kind": "note", "text": "P1 (Taqrib entry 4053, ʿAbd al-Rahman mawla Qays) appears to be linked to C2 by mistake: its relationship and nisba do not match C2's recorded name 'bin Sakran bin ʿAmr'. Review this passage-to-person link." }
+      ]
+    },
+    {
+      "claim_id": "I7.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The target is the kunya أبي عبد الله with عليه السلام, reached through an unnamed link (بعض أصحابنا رفعه). Neither candidate's recorded names include this kunya, and the packet does not include the convention text.",
+        "No dates or passages are given, and the unnamed link removes any teacher-to-student check against the candidate."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن بعض أصحابنا رفعه إلى أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Outside knowledge, not relied on: the Imami convention reads this kunya as Jaʿfar al-Sadiq. The convention text in the packet would likely settle it for C1.",
+      "proposals": [
+        { "kind": "chain_cut", "text": "The report names two narrators at the second position, عن محمد بن يحيى، وأحمد بن إدريس جميعا, but the chain records only أحمد بن إدريس at position 1. The parallel narrator محمد بن يحيى has been dropped." }
+      ]
+    },
+    {
+      "claim_id": "I7.C2",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The packet does not show that al-Husayn ibn ʿAli is meant by this kunya in this chain, and it gives no convention text, dates or passages.",
+        "Because of the unnamed link (بعض أصحابنا), the period cannot be checked from the packet."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن بعض أصحابنا رفعه إلى أبي عبد الله عليه السلام" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Outside knowledge, not relied on: the convention would normally exclude al-Husayn for a bare 'Abu ʿAbd Allah ʿalayhi al-salam' in a chain like this.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I8.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written name سهل ابن حماد matches C1's recorded name سهل بن حماد, and P1 (about C1) gives the same name.",
+        "P1's death date (208) agrees with C1's recorded death year, and P1 places him in the ninth generation, which fits a direct teacher of the compiler.",
+        "Nothing in the packet points to another Sahl b. Hammad."
+      ],
+      "evidence": [
+        { "passage_id": "P1", "quote": "سهل بن حماد أبو عتاب" },
+        { "passage_id": "P1", "quote": "مات سنة ثمان ومائتين" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "P1 does not mention his teacher شعبة, and the stored report text is only the matn (no isnad), so the teacher-student link cannot be checked in the packet. A passage naming Shuʿba as his teacher would make this low uncertainty.",
+      "proposals": [
+        { "kind": "note", "text": "The stored text_ar for Sunan al-Darimi no. 279 has no isnad, so the chain cannot be checked against the report text." }
+      ]
+    }
+  ]
+}

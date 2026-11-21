@@ -17,6 +17,8 @@ these modules but never `drizzle-orm`, `postgres`, `@/db/client` or `@/db/schema
 | `correspondence-decisions.ts` | `decideCorrespondence`: confirm / reject / uncertain, retire-and-supersede, audit row |
 | `family-graph.ts` | Pure, client-safe: the combined transmission graph (merge rule, layered layout, compact mode) and the summary counts |
 | `narrator.ts`, `assessment.ts` | Narrator list/search/detail/network/typeahead; verdict and grade fragments |
+| `narrator-sources.ts` | An external record or the Imam register's record, link candidates, and the paged chain positions naming a narrator |
+| `identity-groups.ts` | Pure, client-safe: candidates grouped by person key, `mentionIdentity`, basis order |
 | `history.ts`, `location.ts`, `commentary.ts`, `comparative.ts` | Reads and curated writes per area |
 | `curation.ts` | Section 9.3 writes: bio and verdict status, rights, surface decisions, absences, network refresh |
 | `write.ts` | `curationWrite` envelope and `audit` |
@@ -53,14 +55,28 @@ these modules but never `drizzle-orm`, `postgres`, `@/db/client` or `@/db/schema
 - **Publication gates:** commentary `published` needs a live reviewed citation (no owner commentary policy is
   recorded, question 10); parallel `published` needs its hadith in `public_hadiths`, and a new manual parallel
   starts `published` only when that holds; bio/verdict `published` need the citation (and a tradition).
-- **Chain nodes** are keyed by mention ID. Every node carries its surface as written and all its identity
-  candidates from `public_chain_mention_candidates`, strongest basis first, plus `identity` (`unidentified`,
-  `agreed`, `differ`); narrator name and verdict on the node itself are filled only on a standing identity (machine-reviewed or verified by a reviewer)
-  (`src/db/AGENTS.md` §Identity candidates). `getChainGraph` also returns the tradition and source work. No
-  chain-health score is computed (no computed grade).
+- **Chain nodes** are keyed by mention ID. Every node carries its surface as written, its Latin form and basis
+  (`name_latin`, `name_latin_basis`, `name_latin_narrator_id`), what set a standing identity (`standing_basis`), and all
+  its identity candidates from `public_chain_mention_candidates_v2` (every basis, with `source_ref`, `origin`, `tier_basis`,
+  the record's authority, placeholder and label reason, and a person key from `PERSON_KEY_SQL`), plus `identity`
+  (`unidentified`, `agreed`, `differ`: differ only when one registry's records are known to name different people;
+  `identity-groups.ts`). Narrator name and verdict on the node itself are filled only on a standing identity
+  (machine-reviewed or verified by a reviewer) (`src/db/AGENTS.md` §External identity). No chain-health score is
+  computed (no computed grade).
+
+## Narrator sources (`narrator-sources.ts`)
+
+`getNarratorSourceRecord` reads `narrator_source_profiles` with the record's crosswalk ids and lexicon link candidates;
+verdict-like dataset fields (hadith-kg `rank`, tadlis and ikhtilat flags, Riwayat `madhhab`) are dropped in the mapper and
+never reach a page. `getNarratorAppearances` pages every public chain position naming the narrator as a standing identity
+or a candidate (25 a page, count capped), in source order; it reads only public views. `getExternalLinkCandidates` lists,
+on a lexicon narrator's page, the external records a link candidate proposes as the same person. Teachers and students
+stay `getNarratorNetwork` (`narrator_transmissions`), which now includes machine-reviewed external and Imam identities.
 
 ## Report families
 
+- **English.** Each telling carries its public English (`public_translations`, or live rows in reviewer mode) with
+  `englishAttribution` from `hadith.ts`, so the family view labels and credits it exactly like the report page.
 - **One round trip.** `familyStatement` ranks the corresponding reports (reviewer-confirmed first, then same wording,
   variant, partial, then Jaccard, then id in byte order), caps them at `FAMILY_CAP` = 60 (the largest star cluster
   holds 61) and returns the tellings and every chain node with its candidates as JSON. `capped` and

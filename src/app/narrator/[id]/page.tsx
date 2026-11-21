@@ -7,10 +7,13 @@ import { getNarratorTimeline } from '@/db/queries/timeline';
 import { requestVisibility } from '@/lib/auth/visibility';
 import { NarratorTimeline } from '@/components/timeline/NarratorTimeline';
 import { getNarratorNetwork } from '@/db/queries/narrator';
+import { getExternalLinkCandidates, getNarratorAppearances, getNarratorSourceRecord } from '@/db/queries/narrator-sources';
 import type { Metadata } from 'next';
 import { loadNarrator } from './data';
 import { NarratorName } from '@/components/NarratorName';
 import { LexiconRecord } from './components/LexiconRecord';
+import { NarratorChains } from './components/NarratorChains';
+import { ExternalCandidates, SourceRecord } from './components/SourceRecord';
 import { notFound } from 'next/navigation';
 import NarratorClientPage, { type NarratorClientPageProps } from './client-page';
 
@@ -18,6 +21,7 @@ interface PageProps {
     params: Promise<{
         id: string;
     }>;
+    searchParams: Promise<{ page?: string }>;
 }
 
 /**
@@ -58,20 +62,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: narrator.name_english || narrator.name_arabic || 'Narrator' };
 }
 
-export default async function NarratorPage({ params }: PageProps) {
+export default async function NarratorPage({ params, searchParams }: PageProps) {
     const rawId = (await params).id;
     const id = decodeURIComponent(rawId);
+    const page = Number((await searchParams).page ?? '1') || 1;
 
     const narrator = await loadNarrator(rawId);
     if (!narrator) notFound();
 
     // Secondary sections degrade independently: one failing query must not blank the page.
-    const [network, commentaryRows, timelineResult, connections] = await Promise.allSettled([
+    const [network, commentaryRows, timelineResult, connections, sourceRecordResult, appearancesResult, externalResult] = await Promise.allSettled([
         getNarratorNetwork(id),
         getPublishedCommentariesForNarrator(id),
         // Curator visibility (private preview) shows the labelled lexicon and seed data; public shows only cited data.
         requestVisibility().then((visibility) => getNarratorTimeline(id, visibility)),
         getTraditionConnectionsForNarrator(id),
+        getNarratorSourceRecord(id),
+        getNarratorAppearances(id, { page }),
+        narrator.authority === 'rawi' ? getExternalLinkCandidates(id) : Promise.resolve([]),
     ]);
     const settled = <T,>(result: PromiseSettledResult<T>): T | undefined => {
         if (result.status === 'fulfilled') return result.value;
@@ -92,7 +100,19 @@ export default async function NarratorPage({ params }: PageProps) {
                 </h1>
             </header>
 
+            {(() => {
+                const record = settled(sourceRecordResult);
+                return record ? <SourceRecord record={record} /> : null;
+            })()}
+
             {narrator.lexicon && <LexiconRecord lexicon={narrator.lexicon} />}
+
+            <ExternalCandidates links={settled(externalResult) ?? []} />
+
+            {(() => {
+                const appearances = settled(appearancesResult);
+                return appearances ? <NarratorChains narratorId={id} appearances={appearances} /> : null;
+            })()}
 
             <NarratorClientPage
                 narratorDetails={toNarratorDetails(narrator)}

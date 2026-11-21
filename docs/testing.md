@@ -16,6 +16,9 @@ npx tsc --noEmit
 # 2. Query-layer flows on the fixture schema (real rows from the 2026-11-21 bundle)
 npx tsx --conditions=react-server src/db/queries/__tests__/flows.test.ts
 npx tsx --conditions=react-server src/db/queries/__tests__/browse-flows.test.ts
+#    External identity, Latin names and English (real rows of projection 2026.11.21.4, schema identity_fixture); its
+#    last flow drives the chains, report and narrator routes over `next start` on port 3919, so run it after step 5
+npx tsx --conditions=react-server src/db/queries/__tests__/identity-flows.test.ts
 
 # 3. Glossary integrity
 npx tsx src/lib/glossary/__tests__/glossary.test.ts
@@ -36,6 +39,8 @@ npx tsx --conditions=react-server src/db/queries/__tests__/switches-http.test.ts
 # 8. Python suites (standard library unittest; -I keeps the interpreter isolated). Discovery does not descend into
 #    folders without __init__.py, so each folder is named (test counts as of 2026-11-21).
 python -I datasets/hadith-data/pg_export/test_export_postgres.py
+python -I datasets/hadith-data/pg_export/test_transliteration.py      # Latin names: vowelled, table, refusals, spans
+python -I datasets/hadith-data/pg_export/test_identity_rules.py       # provider English, Imam kunyas, the tier
 python -I -m unittest discover -s datasets/hadith-data/__tests__ -p "test_*.py"                        # 182
 python -m pytest -q datasets/hadith-data/__tests__/fixtures/__tests__                                  # 36; these import pytest, which -I hides
 python -I -m unittest discover -s datasets/hadith-data/diagnostics -p "test_*.py"                      # 10

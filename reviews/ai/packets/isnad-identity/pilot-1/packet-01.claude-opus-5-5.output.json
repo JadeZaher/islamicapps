@@ -1,0 +1,171 @@
+{
+  "format": "shura-specialist-output/1",
+  "specialist_id": "isnad-identity",
+  "prompt_version": "1.0.0",
+  "packet_id": "isnad-identity/pilot-1/packet-01",
+  "verdicts": [
+    {
+      "claim_id": "I1.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written name محمد بن رمح matches the ism and nasab of the candidate's recorded name محمد بن رمح بن المهاجر, and the linked rijal passage opens with the same name.",
+        "The passage records death in (2)42, matching the candidate's recorded death year 242.",
+        "The passage's siglum م marks him as a narrator in Muslim's collection, and this report is from Sahih Muslim; nothing in the packet points to another person of this name."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "وحدثني محمد بن رمح، أخبرنا الليث" },
+        { "passage_id": "P1", "quote": "محمد بن رمح بن المهاجر التجيبي مولاهم المصري" },
+        { "passage_id": "P1", "quote": "مات سنة اثنتين وأربعين م ق" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The passage does not name his teachers, so the link to الليث is not confirmed directly from the packet. A passage showing a second محمد بن رمح in Muslim's collection would change this.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I2.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The chain gives only the kunya أبو داود, which is weak evidence on its own; the candidate's recorded nisba السجستاني does not appear in the chain.",
+        "No rijal passage is supplied, and the packet gives no dates or teacher/student information that ties the candidate to his student محمد بن موسى الحرشي or his teacher همام.",
+        "The chain places this narrator three links from علي (via همام, قتادة, خلاس), while the candidate's recorded death year is 275; that looks hard to fit, but the packet gives no dates for the other narrators to establish it."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "قال حدثنا أبو داود، قال حدثنا همام" }
+      ],
+      "uncertainty": "high",
+      "uncertainty_note": "Outside knowledge, not relied on: Abu Dawud al-Sijistani (d. 275) is the compiler of the Sunan and is not known to transmit from Hammam (d. c. 164); the Abu Dawud who transmits from Hammam and is a teacher of al-Nasa'i's teachers is usually Abu Dawud al-Tayalisi (Sulayman b. Dawud, d. 203/204). A rijal passage giving Hammam's dates or the candidate's teachers would likely turn this into contradicts.",
+      "proposals": [
+        { "kind": "other_person", "text": "Consider Abu Dawud al-Tayalisi (Sulayman b. Dawud) as a candidate for this position; this proposal rests on outside knowledge and should be checked against a rijal passage on Hammam's students or on al-Tayalisi." }
+      ]
+    },
+    {
+      "claim_id": "I3.C1",
+      "outcome": "contested",
+      "reasons": [
+        "The written name جعفر بن محمد matches the candidate's recorded ism and nasab (جعفر بن محمد بن علي), and the chain has him narrating from أبيه.",
+        "C2 carries the same written name جعفر بن محمد and is equally consistent with the chain; no rijal passage or teacher/student data in the packet distinguishes the two."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن ابن الهاد، عن جعفر بن محمد، عن أبيه، عن جابر بن عبد الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "C2's record has no death year or further nasab and may be a duplicate record of the same person rather than a distinct narrator. Outside knowledge, not relied on: the pattern جعفر بن محمد عن أبيه عن جابر is the well-known chain of Ja'far al-Sadiq from his father Muhammad al-Baqir. A passage on either record would settle it.",
+      "proposals": [
+        { "kind": "note", "text": "C1 and C2 may be the same person recorded in two datasets; consider reconciling the records rather than treating them as rival identifications." }
+      ]
+    },
+    {
+      "claim_id": "I3.C2",
+      "outcome": "contested",
+      "reasons": [
+        "The candidate's recorded name جعفر بن محمد matches the written name exactly.",
+        "C1 matches equally and adds more nasab; the packet has no passage, dates or teacher/student information for C2 that would decide between them."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن ابن الهاد، عن جعفر بن محمد، عن أبيه، عن جابر بن عبد الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "If C2 is a separate person from C1, nothing in the packet supports him over C1 beyond the bare name; if it is a duplicate record of C1, the two verdicts collapse into one.",
+      "proposals": [
+        { "kind": "note", "text": "Possible duplicate of C1 across datasets (death year NA, nasab truncated)." }
+      ]
+    },
+    {
+      "claim_id": "I4.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The written name علي ابن إسحاق matches the candidate's recorded name علي بن إسحاق, but no rijal passage is supplied and the packet records only a death year.",
+        "The stored report text contains only the matn and not the chain, so the name cannot be checked against the report text itself.",
+        "Nothing in the packet connects the candidate to his teacher عبد الله بن المبارك."
+      ],
+      "evidence": [],
+      "uncertainty": "medium",
+      "uncertainty_note": "The name and a recorded death year of 237 are consistent with a teacher of the compiler, but that is not established by the packet. A passage naming Ibn al-Mubarak among his teachers, or the stored chain text, would allow supports.",
+      "proposals": [
+        { "kind": "note", "text": "The stored text_ar for Musnad Ahmad no. 175 lacks the isnad; the chain positions cannot be verified against the report text." }
+      ]
+    },
+    {
+      "claim_id": "I5.C1",
+      "outcome": "supports",
+      "reasons": [
+        "The written name سعيد ابن أبي عروبة matches the candidate's recorded name and the linked passage's headword; the father's kunya أبي عروبة is distinctive.",
+        "The passage gives death in (1)56 or (1)57, consistent with the candidate's recorded death year 157.",
+        "Nothing in the packet points to another person of this name."
+      ],
+      "evidence": [
+        { "passage_id": "P1", "quote": "سعيد بن أبي عروبة مهران اليشكري مولاهم أبو النضر البصري" },
+        { "passage_id": "P1", "quote": "مات سنة ست وقيل سبع وخمسين" }
+      ],
+      "uncertainty": "low",
+      "uncertainty_note": "The stored report text has only the matn, not the chain, so the chain positions cannot be checked against it; the passage does not name his student إسماعيل or teacher عبد الله الداناج.",
+      "proposals": [
+        { "kind": "note", "text": "The stored text_ar for Musnad Ahmad no. 63 lacks the isnad." }
+      ]
+    },
+    {
+      "claim_id": "I6.C1",
+      "outcome": "insufficient_evidence",
+      "reasons": [
+        "The chain gives the bare ism يحيى, which fits many narrators.",
+        "No rijal passage is supplied, and the packet has no teacher or student information linking the candidate to مسدد or to عبيد الله."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "قالا حدثنا يحيى، عن عبيد الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "Outside knowledge, not relied on: Musaddad and Ahmad b. Hanbal from Yahya from Ubayd Allah (al-Umari) is a familiar route for Yahya b. Sa'id al-Qattan. A passage listing Musaddad as his student or Ubayd Allah as his teacher would allow supports.",
+      "proposals": []
+    },
+    {
+      "claim_id": "I7.C1",
+      "outcome": "contested",
+      "reasons": [
+        "The written name جابر بن عبد الله matches the candidate's recorded ism and nasab, and the honorific in the record fits a narrator at the end of the chain who reports an event involving the Prophet.",
+        "C2 carries the same name and honorific and is equally consistent; no passage in the packet distinguishes them."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن أبي سلمة، عن جابر بن عبد الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "C2 may be a duplicate record of the same Companion. Outside knowledge, not relied on: the C1 record's death place 'Baghdad' looks doubtful for Jabir b. Abd Allah al-Ansari, usually said to have died in Medina; this may be a data error in the source record.",
+      "proposals": [
+        { "kind": "note", "text": "C1 and C2 may be the same person recorded in two datasets; also check C1's recorded death place." }
+      ]
+    },
+    {
+      "claim_id": "I7.C2",
+      "outcome": "contested",
+      "reasons": [
+        "The candidate's recorded name جابر بن عبد الله matches the written name exactly.",
+        "C1 matches equally with fuller nasab and nisba; the packet gives nothing that decides between them."
+      ],
+      "evidence": [
+        { "passage_id": "report", "quote": "عن أبي سلمة، عن جابر بن عبد الله" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "If C2 is the same person as C1, the contest disappears.",
+      "proposals": [
+        { "kind": "note", "text": "Possible duplicate of C1 across datasets (death year NA)." }
+      ]
+    },
+    {
+      "claim_id": "I8.C1",
+      "outcome": "contradicts",
+      "reasons": [
+        "The candidate's record marks him with the Companion honorific (رضي الله عنه) and gives his name as 'Abdur Rahman bin Sakran, yet the chain places this narrator four links below عائشة (via حماد ابن سلمة, عبد الله ابن شداد, أبي عذرة); a Companion cannot sit at this position.",
+        "The linked passage P1 describes a different profile: a client of Qays from Basra in the eighth generation, not a Companion and not named bin Sakran, so the record and its passage do not agree.",
+        "The bare ism عبد الرحمن gives no positive evidence for this candidate."
+      ],
+      "evidence": [
+        { "passage_id": "P1", "quote": "عبد الرحمن مولى قيس بصري مجهول من الثامنة" }
+      ],
+      "uncertainty": "medium",
+      "uncertainty_note": "The stored report text lacks the isnad, so the chain is taken from the packet's chain list only. Outside knowledge, not relied on: in Musnad Ahmad a bare عبد الرحمن narrating from Hammad b. Salama is commonly Abd al-Rahman b. Mahdi, a direct teacher of Ahmad.",
+      "proposals": [
+        { "kind": "other_person", "text": "Consider Abd al-Rahman b. Mahdi as a candidate for this position (outside knowledge; to be checked against a rijal passage listing Hammad b. Salama among his teachers)." },
+        { "kind": "note", "text": "The C1 record ('bin Sakran', Companion honorific, death place Persia) and its linked passage P1 (mawla of Qays, Basran, eighth generation) appear to describe different people; the passage link should be reviewed." }
+      ]
+    }
+  ]
+}
