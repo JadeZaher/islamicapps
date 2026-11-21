@@ -15,10 +15,12 @@
     "test:regen": "tsx src/scripts/__tests__/regen-isnad-graph.test.ts",
     "db:seed-history": "tsx src/scripts/seed-historical-data.ts",
     "db:find-parallels": "tsx src/scripts/find-parallels.ts",
-    "db:ingest-parallels": "tsx src/scripts/ingest-approved-parallels.ts",
     "db:link-sanads": "tsx src/scripts/link-sanad-chains.ts",
     "db:ingest-er": "tsx src/scripts/ingest-er-approved.ts",
-    "build:credits": "tsx src/scripts/build-credits.ts"
+    "build:credits": "tsx src/scripts/build-credits.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:verify": "tsx src/db/verify.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
@@ -29,21 +31,25 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.4",
     "lucide-react": "^0.561.0",
     "neo4j-driver": "^6.0.1",
     "next": "16.0.10",
     "openai": "^6.32.0",
+    "postgres": "^4.1.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-force-graph-2d": "^1.29.0",
     "react-markdown": "^10.1.0",
-    "tailwind-merge": "^3.4.0"
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "tailwindcss": "^4",
