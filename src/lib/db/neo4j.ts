@@ -92,7 +92,8 @@ export async function runQuery<T = Record<string, unknown>>(
     const driver = getDriver();
     const session: Session = driver.session();
     try {
-        const result = await session.run(query, params);
+        // executeRead retries transient failures (ServiceUnavailable, ECONNRESET) with the driver's backoff.
+        const result = await session.executeRead((tx) => tx.run(query, params));
         return result.records.map((record) => JSON.parse(JSON.stringify(toPlainValue(record.toObject()))) as T);
     } finally {
         await session.close();

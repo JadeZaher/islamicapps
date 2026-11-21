@@ -77,6 +77,26 @@ interface Neo4jEntity {
   properties: Record<string, unknown>;
 }
 
+/** Row shape for queries that `RETURN <alias>` of a single node or relationship. */
+type EntityRow<Alias extends string> = Record<Alias, Neo4jEntity>;
+
+interface ChainNodeRow {
+  chainId: unknown;
+  chainIndex: unknown;
+  position: unknown;
+  n: Neo4jEntity;
+}
+
+interface ChainEdgeRow {
+  chainId: unknown;
+  chainIndex: unknown;
+  sourcePosition: unknown;
+  targetPosition: unknown;
+  n1: Neo4jEntity;
+  r: Neo4jEntity;
+  n2: Neo4jEntity;
+}
+
 export interface HadithDetails extends Record<string, unknown> {
   id: string;
   title?: string | null;
@@ -241,7 +261,7 @@ export async function getAllNarrators(
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (n:Narrator) WHERE n.is_prophet IS NULL OR n.is_prophet = false RETURN count(n) as total`),
-    runQuery(`
+    runQuery<EntityRow<'n'>>(`
       MATCH (n:Narrator)
       WHERE n.is_prophet IS NULL OR n.is_prophet = false
       RETURN n
@@ -263,7 +283,7 @@ export async function getHadithById(id: string) {
   // intermediary. Chains attach directly via (h)-[:HAS_CHAIN]->(:Chain).
   // We still optional-match MatnVariation so any legacy v1 nodes that survived
   // a partial migration won't break the page.
-  const result = await runQuery(`
+  const result = await runQuery<EntityRow<'h'> & { legacy_variations: Array<Neo4jEntity | null> }>(`
     MATCH (h:Hadith {id: $id})
     OPTIONAL MATCH (h)-[:HAS_VARIATION]->(m:MatnVariation)
     RETURN h, collect(DISTINCT m) as legacy_variations
@@ -272,7 +292,7 @@ export async function getHadithById(id: string) {
   if (result.length === 0) return null;
 
   const props = result[0].h.properties as Record<string, unknown>;
-  const legacyVariations = (result[0].legacy_variations as Array<{ properties: Record<string, unknown> } | null>) ?? [];
+  const legacyVariations = result[0].legacy_variations ?? [];
 
   // Backward-compatible aliases so existing UI bindings keep rendering.
   // v2 schema is authoritative; the v1 names are mirrored for the read layer only.
@@ -326,14 +346,14 @@ export async function getAllHadiths(
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (h:Hadith) RETURN count(h) as total`),
-    runQuery(`
+    runQuery<EntityRow<'h'>>(`
       MATCH (h:Hadith)
       RETURN h
       ORDER BY h.source, toInteger(h.hadith_no)
       SKIP $skip LIMIT $limit
     `, { skip, limit }),
   ]);
-  return paginate(result.map((r) => r.h.properties), countResult[0]?.total ?? 0, page, pageSize);
+  return paginate(result.map((r) => r.h.properties as HadithDetails), countResult[0]?.total ?? 0, page, pageSize);
 }
 
 // --- GRAPH QUERIES ---
@@ -351,13 +371,13 @@ export async function getFullChainGraph(hadithId: string) {
   // isnad renders in the wrong sequence on the page.
   const params = { hadithId };
   const [directNodes, directEdges] = await Promise.all([
-    runQuery<{ n: Neo4jEntity }>(`
+    runQuery<ChainNodeRow>(`
       MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i:INCLUDES]->(n:Narrator)
       RETURN DISTINCT coalesce(c.id, c.pipeline_key, toString(id(c))) AS chainId,
              c.chain_index AS chainIndex, i.position AS position, n
       ORDER BY coalesce(c.chain_index, 0), chainId, position, n.id
     `, params),
-    runQuery(`
+    runQuery<ChainEdgeRow>(`
       MATCH (h:Hadith {id: $hadithId})-[:HAS_CHAIN]->(c:Chain)-[i1:INCLUDES]->(n1:Narrator)
       MATCH (n1)-[r:NARRATED_FROM]->(n2:Narrator)
       MATCH (c)-[i2:INCLUDES]->(n2)
@@ -375,7 +395,7 @@ export async function getFullChainGraph(hadithId: string) {
 
   if (directNodes.length === 0) {
     schema = 'legacy';
-    nodeRows = await runQuery(`
+    nodeRows = await runQuery<ChainNodeRow>(`
       MATCH (h:Hadith {id: $hadithId})-[:HAS_VARIATION]->(:MatnVariation)
             -[:TRANSMITTED_VIA]->(c:Chain)-[i:INCLUDES]->(n:Narrator)
       RETURN DISTINCT coalesce(c.id, c.pipeline_key, toString(id(c))) AS chainId,
@@ -387,7 +407,7 @@ export async function getFullChainGraph(hadithId: string) {
 
   return {
     nodes: nodeRows.map((row) => ({
-      ...row.n.properties,
+      ...(row.n.properties as { id: string }),
       chain_id: String(row.chainId),
       chain_index: typeof row.chainIndex === 'number' ? row.chainIndex : null,
       position: typeof row.position === 'number' ? row.position : null,
@@ -395,8 +415,8 @@ export async function getFullChainGraph(hadithId: string) {
       chain_schema: schema,
     })),
     edges: edgeRows.map((row) => ({
-      source: row.n1.properties.id,
-      target: row.n2.properties.id,
+      source: row.n1.properties.id as string,
+      target: row.n2.properties.id as string,
       type: schema === 'v2' ? 'NARRATED_FROM' : 'HEARD_FROM',
       chain_id: String(row.chainId),
       chain_index: typeof row.chainIndex === 'number' ? row.chainIndex : null,
@@ -454,8 +474,8 @@ export async function searchNarrators(searchTerm: string = '', filters?: {
     LIMIT 50
   `;
 
-  const result = await runQuery(query, params);
-  return result.map((r) => r.n.properties);
+  const result = await runQuery<EntityRow<'n'>>(query, params);
+  return result.map((r) => r.n.properties as NarratorDetails);
 }
 
 // ============ HISTORICAL EVENTS ============
@@ -545,7 +565,7 @@ export async function getAllHistoricalEvents(filters?: {
 
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (e:HistoricalEvent)${whereClause} RETURN count(e) as total`, params),
-    runQuery(`MATCH (e:HistoricalEvent)${whereClause} RETURN e ORDER BY coalesce(e.start_year_hijri, e.year_hijri) SKIP $skip LIMIT $limit`, params),
+    runQuery<EntityRow<'e'>>(`MATCH (e:HistoricalEvent)${whereClause} RETURN e ORDER BY coalesce(e.start_year_hijri, e.year_hijri) SKIP $skip LIMIT $limit`, params),
   ]);
   return paginate(result.map((r) => r.e.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
@@ -583,7 +603,7 @@ export async function updateHistoricalEvent(eventId: string, data: Partial<Histo
  * reviewed events with a source plus locator or stable URL may reach readers.
  */
 export async function getHistoricalEventsForNarrator(narratorId: string) {
-  const result = await runQuery(`
+  const result = await runQuery<EntityRow<'e'>>(`
     MATCH (n:Narrator {id: $narratorId})
     WITH n,
          coalesce(n.birth_date_hijri, n.birth_year_hijri) AS birthYear,
@@ -606,7 +626,7 @@ export async function getHistoricalEventsForNarrator(narratorId: string) {
     RETURN DISTINCT e, eventStart AS sortYear
     ORDER BY sortYear
   `, { narratorId });
-  return result.map((r) => r.e.properties);
+  return result.map((r) => r.e.properties as HistoricalEvent);
 }
 
 /**
@@ -631,7 +651,7 @@ export async function getTimelineForNarrator(narratorId: string) {
   const narrator = await getNarratorById(narratorId);
   const contextualEvents = await getHistoricalEventsForNarrator(narratorId);
 
-  const involvedEvents = await runQuery(`
+  const involvedEvents = await runQuery<EntityRow<'e'> & { role: unknown }>(`
     MATCH (n:Narrator {id: $narratorId})-[r:INVOLVED_IN]->(e:HistoricalEvent)
     WHERE e.publication_ready = true
       AND e.verification_status IN ['human_verified', 'source_verified']
@@ -716,7 +736,7 @@ export async function getAllCommentaries(pagination?: PaginationParams): Promise
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (c:Commentary) RETURN count(c) as total`),
-    runQuery(`
+    runQuery<EntityRow<'c'> & { h: Neo4jEntity | null; n: Neo4jEntity | null }>(`
       MATCH (c:Commentary)
       OPTIONAL MATCH (c)-[:COMMENTS_ON]->(h:Hadith)
       OPTIONAL MATCH (c)-[:DISCUSSES]->(n:Narrator)
@@ -739,7 +759,7 @@ export async function getAllCommentaries(pagination?: PaginationParams): Promise
  * Get all commentaries for a hadith
  */
 export async function getCommentariesForHadith(hadithId: string) {
-  const result = await runQuery(`
+  const result = await runQuery<EntityRow<'c'>>(`
     MATCH (c:Commentary)-[:COMMENTS_ON]->(h:Hadith {id: $hadithId})
     RETURN c
     ORDER BY c.created_at DESC
@@ -751,7 +771,7 @@ export async function getCommentariesForHadith(hadithId: string) {
  * Get all commentaries for a narrator
  */
 export async function getCommentariesForNarrator(narratorId: string) {
-  const result = await runQuery(`
+  const result = await runQuery<EntityRow<'c'>>(`
     MATCH (c:Commentary)-[:DISCUSSES]->(n:Narrator {id: $narratorId})
     RETURN c
     ORDER BY c.created_at DESC
@@ -808,7 +828,7 @@ export async function getAllLocations(pagination?: PaginationParams): Promise<Pa
   const { skip, limit, page, pageSize } = toSkipLimit(pagination);
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (l:Location) RETURN count(l) as total`),
-    runQuery(`MATCH (l:Location) RETURN l ORDER BY l.name SKIP $skip LIMIT $limit`, { skip, limit }),
+    runQuery<EntityRow<'l'>>(`MATCH (l:Location) RETURN l ORDER BY l.name SKIP $skip LIMIT $limit`, { skip, limit }),
   ]);
   return paginate(result.map((r) => r.l.properties), countResult[0]?.total ?? 0, page, pageSize);
 }
@@ -912,12 +932,12 @@ export async function getEnhancedNarratorDetails(
  * v2: direction = student -[:NARRATED_FROM]-> teacher.
  */
 export async function getNarratorNetwork(narratorId: string, depth: number = 2) {
-  const teachers = await runQuery(`
+  const teachers = await runQuery<EntityRow<'teacher'>>(`
     MATCH (n:Narrator {id: $narratorId})-[:NARRATED_FROM]->(teacher:Narrator)
     RETURN DISTINCT teacher
   `, { narratorId });
 
-  const students = await runQuery(`
+  const students = await runQuery<EntityRow<'student'>>(`
     MATCH (student:Narrator)-[:NARRATED_FROM]->(n:Narrator {id: $narratorId})
     RETURN DISTINCT student
   `, { narratorId });
@@ -975,7 +995,7 @@ export async function searchHadiths(
 
   const [countResult, result] = await Promise.all([
     runQuery<{ total: number }>(`MATCH (h:Hadith)${whereClause} RETURN count(h) as total`, params),
-    runQuery(`MATCH (h:Hadith)${whereClause} RETURN h ORDER BY h.source, toInteger(h.hadith_no) SKIP $skip LIMIT $limit`, params),
+    runQuery<EntityRow<'h'>>(`MATCH (h:Hadith)${whereClause} RETURN h ORDER BY h.source, toInteger(h.hadith_no) SKIP $skip LIMIT $limit`, params),
   ]);
 
   const hadiths = result.map((r) => {
@@ -1075,7 +1095,13 @@ export async function exportHadiths(config: ExportConfig): Promise<Record<string
     ORDER BY h.source, toInteger(h.hadith_no)
     LIMIT ${EXPORT_LIMIT}`;
 
-  const hadiths = await runQuery(cypher, params);
+  const hadiths = await runQuery<
+    EntityRow<'h'> & {
+      narrators?: Array<{ name_english?: string; reliability?: string }>;
+      commentaries?: Array<{ author?: string; source_work?: string; text?: string }>;
+      schools?: Array<string | null>;
+    }
+  >(cypher, params);
 
   const rows: Record<string, string>[] = [];
 
@@ -1101,12 +1127,12 @@ export async function exportHadiths(config: ExportConfig): Promise<Record<string
     }
 
     if (includeNarrators && r.narrators) {
-      row['narrators'] = r.narrators.map((n: any) => n.name_english).filter(Boolean).join('; ');
-      row['narrator_reliability'] = r.narrators.map((n: any) => `${n.name_english}:${n.reliability || 'unknown'}`).filter((s: string) => !s.startsWith('undefined')).join('; ');
+      row['narrators'] = r.narrators.map((n) => n.name_english).filter(Boolean).join('; ');
+      row['narrator_reliability'] = r.narrators.map((n) => `${n.name_english}:${n.reliability || 'unknown'}`).filter((s: string) => !s.startsWith('undefined')).join('; ');
     }
 
     if (includeCommentaries && r.commentaries) {
-      row['commentaries'] = r.commentaries.map((c: any) => `[${c.author} - ${c.source_work}] ${c.text}`).filter((s: string) => !s.startsWith('[undefined')).join(' | ');
+      row['commentaries'] = r.commentaries.map((c) => `[${c.author} - ${c.source_work}] ${c.text}`).filter((s: string) => !s.startsWith('[undefined')).join(' | ');
     }
 
     // v2: variations are synthesized from hadith's own matn fields

@@ -19,6 +19,12 @@ export interface PaginatedResult<T> {
 
 export const DEFAULT_PAGE_SIZE = 25;
 
+/** Parse a `?page=` search param into a positive integer (NaN, 0, negatives and junk become 1). */
+export function parsePageParam(value: string | undefined): number {
+    const parsed = Math.floor(Number(value));
+    return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
+}
+
 /** Convert page/pageSize to Neo4j SKIP/LIMIT values (as Neo4j integers). */
 export function toSkipLimit(params?: PaginationParams) {
     const page = Math.max(1, params?.page ?? 1);

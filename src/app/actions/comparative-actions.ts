@@ -64,8 +64,9 @@ export interface MotifTagData {
     description?: string;
 }
 
-interface Neo4jEntity {
-    properties: Record<string, unknown>;
+/** Node/relationship wrapper; `P` narrows `properties` to the domain shape the query returns. */
+interface Neo4jEntity<P = Record<string, unknown>> {
+    properties: P;
 }
 
 export interface ReligiousTradition extends ReligiousTraditionData {
@@ -130,7 +131,7 @@ export async function createReligiousTradition(data: ReligiousTraditionData): Pr
 
 export async function getAllTraditions(): Promise<ReligiousTradition[]> {
     const result = await runQuery<{
-        t: Neo4jEntity;
+        t: Neo4jEntity<ReligiousTradition>;
         source_count: number;
         narrator_count: number;
     }>(`
@@ -212,7 +213,7 @@ export async function getAllSourceTexts(filters?: { tradition_name?: string }): 
         params.tradition_name = filters.tradition_name;
     }
     query += ` RETURN s, t ORDER BY s.tradition_name, s.title`;
-    const result = await runQuery<{ s: Neo4jEntity; t?: Neo4jEntity }>(query, params);
+    const result = await runQuery<{ s: Neo4jEntity<SourceText>; t?: Neo4jEntity<ReligiousTradition> }>(query, params);
     return result.map((r) => ({
         ...r.s.properties,
         tradition: r.t?.properties || null,
