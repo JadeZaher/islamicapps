@@ -1,16 +1,17 @@
 export const dynamic = 'force-dynamic';
 
-import { getAllTraditions, getAllSourceTexts, getAllParallels, getAllMotifTags } from '@/app/actions/comparative-actions';
-import { getAllNarrators } from '@/app/actions/graph-actions';
+import { listMotifTags, listReligiousTraditions, listSourceTexts } from '@/db/queries/comparative';
+import { listParallelsForReview } from '@/db/queries/comparative-review';
+import { listNarratorsForReview } from '@/db/queries/narrator-review';
 import { ComparativeManagerClient } from './client';
 
 export default async function ComparativeAdminPage() {
     const [traditions, sourceTexts, parallelsResult, motifTags, narratorsResult] = await Promise.all([
-        getAllTraditions(),
-        getAllSourceTexts(),
-        getAllParallels({ pageSize: 50 }),
-        getAllMotifTags(),
-        getAllNarrators({ pageSize: 100 }),
+        listReligiousTraditions(),
+        listSourceTexts(),
+        listParallelsForReview({ pageSize: 50 }),
+        listMotifTags(),
+        listNarratorsForReview('', {}, { pageSize: 100 }),
     ]);
 
     return (

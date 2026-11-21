@@ -8,7 +8,15 @@ type StyleEntry = { bg: string; text: string; border: string; label: string };
 // ─── Known tradition styles (keyed by UPPERCASE name) ───────────────────────
 // Organized by cultural/geographic cluster for visual grouping.
 // Any tradition not listed falls through to dynamicStyle().
+const ISLAMIC_TRADITION_STYLE = { bg: 'bg-slate-800/60', text: 'text-slate-300', border: 'border-slate-700' };
+
 const TRADITION_STYLES: Record<string, StyleEntry> = {
+    // The four hadith traditions share one neutral style: none is the default, none borrows a grade colour.
+    SUNNI: { ...ISLAMIC_TRADITION_STYLE, label: 'Sunni' },
+    IMAMI: { ...ISLAMIC_TRADITION_STYLE, label: 'Imami' },
+    ZAYDI: { ...ISLAMIC_TRADITION_STYLE, label: 'Zaydi' },
+    IBADI: { ...ISLAMIC_TRADITION_STYLE, label: 'Ibadi' },
+
     // Abrahamic & Near Eastern
     JUDAISM: { bg: 'bg-amber-500/20', text: 'text-amber-300', border: 'border-amber-500/30', label: 'Judaism' },
     CHRISTIANITY: { bg: 'bg-sky-500/20', text: 'text-sky-300', border: 'border-sky-500/30', label: 'Christianity' },
@@ -98,7 +106,7 @@ const PARALLEL_TYPE_STYLES: Record<string, StyleEntry> = {
 const ISRA_STATUS_STYLES: Record<string, StyleEntry> = {
     MUWAFIQ: { bg: 'bg-green-500/20', text: 'text-green-300', border: 'border-green-500/30', label: 'Muwafiq (Consistent)' },
     MUKHALIF: { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/30', label: 'Mukhalif (Contrary)' },
-    MASKUT_ANHU: { bg: 'bg-gray-500/20', text: 'text-gray-300', border: 'border-gray-500/30', label: 'Maskut Anhu (Unknown)' },
+    MASKUT_ANHU: { bg: 'bg-gray-500/20', text: 'text-gray-300', border: 'border-gray-500/30', label: 'Maskut Anhu (neither affirmed nor denied)' },
     NONE: { bg: 'bg-slate-700/40', text: 'text-slate-400', border: 'border-slate-600/30', label: 'Not Classified' },
 };
 

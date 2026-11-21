@@ -58,8 +58,8 @@ const MOTIF_CATEGORY_COLORS: Record<string, string> = {
 };
 
 /** True when the record is flagged as machine-proposed (provenance field) or explicitly unreviewed. */
-export function isMachineProposed(parallel: { provenance?: string | null; reviewed?: boolean | null }): boolean {
-    return parallel.provenance === 'machine' || parallel.reviewed === false;
+export function isMachineProposed(parallel: { provenance?: string | null; reviewed?: boolean | null; origin?: string | null }): boolean {
+    return parallel.provenance === 'machine' || parallel.origin === 'ai_research' || parallel.reviewed === false;
 }
 
 export function MachineProposedBadge() {

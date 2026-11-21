@@ -2,10 +2,9 @@ export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getAllNarrators, searchNarrators } from '@/app/actions/graph-actions';
-import { ArabicText } from '@/components/ArabicText';
-import { ConsensusBadge } from '@/components/ConsensusBadge';
+import { listNarrators } from '@/db/queries/narrator';
 import { EmptyState } from '@/components/EmptyState';
+import { NarratorName } from '@/components/NarratorName';
 import { PageLinks } from '@/components/PageLinks';
 import { Button } from '@/components/ui/button';
 
@@ -20,15 +19,9 @@ export default async function NarratorIndexPage({ searchParams }: PageProps) {
   const page = Math.max(1, Number(params.page) || 1);
   const q = params.q?.trim() ?? '';
 
-  // searchNarrators is capped at 50 rows and unpaginated; browsing uses the paginated list.
-  const result = q
-    ? await searchNarrators(q).then((items) => ({
-        items,
-        total: items.length,
-        page: 1,
-        totalPages: 1,
-      }))
-    : await getAllNarrators({ page });
+  // Browse and search share one paginated query with a capped count (section 7.3).
+  const result = await listNarrators(q, {}, { page });
+  const count = `${result.total.toLocaleString()}${result.totalCapped ? '+' : ''}`;
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10 text-slate-100">
@@ -50,8 +43,8 @@ export default async function NarratorIndexPage({ searchParams }: PageProps) {
 
       <p className="mt-6 text-sm text-slate-400" aria-live="polite">
         {q
-          ? `${result.total.toLocaleString()} ${result.total === 1 ? 'match' : 'matches'}${result.total >= 50 ? ' (first 50 shown)' : ''}`
-          : `${result.total.toLocaleString()} narrators`}
+          ? `${count} ${result.total === 1 && !result.totalCapped ? 'match' : 'matches'}`
+          : `${count} narrators`}
       </p>
 
       {result.items.length === 0 ? (
@@ -68,26 +61,21 @@ export default async function NarratorIndexPage({ searchParams }: PageProps) {
           }
         />
       ) : (
-        <ul className="mt-3 divide-y divide-slate-800 border-y border-slate-800">
+        <ul className="-mx-3 mt-3 divide-y divide-slate-800 border-y border-slate-800">
           {result.items.map((narrator) => {
             const id = String(narrator.id);
-            const verdict = (narrator.reliability_consensus as string | undefined) ?? null;
-            const nameArabic = narrator.name_arabic as string | undefined;
             return (
               <li key={id}>
                 <Link
                   href={`/narrator/${encodeURIComponent(id)}`}
-                  className="flex items-center justify-between gap-4 px-2 py-3 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
+                  className="block px-3 py-3 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-100">
-                      {(narrator.name_english as string | undefined) || nameArabic}
-                    </p>
-                    {narrator.name_english && nameArabic && (
-                      <ArabicText className="block truncate text-lg text-slate-400">{nameArabic}</ArabicText>
-                    )}
-                  </div>
-                  <ConsensusBadge verdict={verdict} />
+                  <NarratorName
+                    english={narrator.name_english as string | undefined}
+                    arabic={narrator.name_arabic as string | undefined}
+                    latinClassName="font-medium text-slate-100"
+                    arabicClassName="text-lg leading-relaxed text-slate-400"
+                  />
                 </Link>
               </li>
             );

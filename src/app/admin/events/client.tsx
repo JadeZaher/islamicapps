@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createHistoricalEvent, deleteHistoricalEvent, updateHistoricalEvent } from '@/app/actions/graph-actions';
+import { createHistoricalEvent, deleteHistoricalEvent, updateHistoricalEvent } from '@/app/actions/curation/history';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit2 } from 'lucide-react';
 import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
+import { describeActionError } from '@/app/admin/_components/actionError';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -26,15 +27,23 @@ interface EventsManagerClientProps {
     pagination: PaginationInfo;
 }
 
+/** Canonical `event_category` codes; the action accepts these (and legacy title case). */
 const EVENT_CATEGORIES = [
-    'Political',
-    'Religious',
-    'Military',
-    'Scientific',
-    'Cultural',
-    'Economic',
-    'Social',
+    { value: 'PROPHETIC_ERA', label: 'Prophetic era' },
+    { value: 'RASHIDUN', label: 'Rashidun' },
+    { value: 'UMAYYAD', label: 'Umayyad' },
+    { value: 'ABBASID', label: 'Abbasid' },
+    { value: 'SCHOLARLY', label: 'Scholarly' },
+    { value: 'MILITARY', label: 'Military' },
+    { value: 'POLITICAL', label: 'Political' },
+    { value: 'SOCIAL', label: 'Social' },
+    { value: 'RELIGIOUS', label: 'Religious' },
+    { value: 'SCIENTIFIC', label: 'Scientific' },
+    { value: 'CULTURAL', label: 'Cultural' },
+    { value: 'ECONOMIC', label: 'Economic' },
 ];
+
+const categoryLabel = (code: string): string => EVENT_CATEGORIES.find((c) => c.value === code)?.label ?? code;
 
 export function EventsManagerClient({ events, pagination }: EventsManagerClientProps) {
     const router = useRouter();
@@ -65,12 +74,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         setIsSaving(true);
         setFormError(null);
         try {
-            const submitData = {
-                ...formData,
-                year_hijri: formData.year_hijri ? parseInt(formData.year_hijri as string) : undefined,
-                year_gregorian: formData.year_gregorian ? parseInt(formData.year_gregorian as string) : undefined,
-            };
-            await createHistoricalEvent(submitData as any);
+            await createHistoricalEvent(formData);
             setFormData({
                 title: '',
                 title_arabic: '',
@@ -84,8 +88,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             setIsCreating(false);
             router.refresh();
         } catch (error) {
-            console.error('Error creating event:', error);
-            setFormError('Could not create the event. Check the fields and try again.');
+            setFormError(describeActionError(error, 'Could not create the event. Check the fields and try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -97,12 +100,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
         setIsSaving(true);
         setFormError(null);
         try {
-            const submitData = {
-                ...formData,
-                year_hijri: formData.year_hijri ? parseInt(formData.year_hijri as string) : undefined,
-                year_gregorian: formData.year_gregorian ? parseInt(formData.year_gregorian as string) : undefined,
-            };
-            await updateHistoricalEvent(editingId, submitData as any);
+            await updateHistoricalEvent(editingId, formData);
             setFormData({
                 title: '',
                 title_arabic: '',
@@ -116,8 +114,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             setEditingId(null);
             router.refresh();
         } catch (error) {
-            console.error('Error updating event:', error);
-            setFormError('Could not update the event. Check the fields and try again.');
+            setFormError(describeActionError(error, 'Could not update the event. Check the fields and try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -134,8 +131,8 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             title: event.title || '',
             title_arabic: event.title_arabic || '',
             description: event.description || '',
-            year_hijri: event.year_hijri || '',
-            year_gregorian: event.year_gregorian || '',
+            year_hijri: event.year_hijri == null ? '' : String(event.year_hijri),
+            year_gregorian: event.year_gregorian == null ? '' : String(event.year_gregorian),
             category: event.category || '',
             significance: event.significance || '',
             location_name: event.location_name || '',
@@ -146,13 +143,13 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
 
     const getCategoryBadgeColor = (category: string): string => {
         const colors: Record<string, string> = {
-            Political: 'bg-red-500/20 text-red-400 border-red-500/30',
-            Religious: 'bg-green-500/20 text-green-400 border-green-500/30',
-            Military: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-            Scientific: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-            Cultural: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
-            Economic: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-            Social: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+            POLITICAL: 'bg-red-500/20 text-red-400 border-red-500/30',
+            RELIGIOUS: 'bg-green-500/20 text-green-400 border-green-500/30',
+            MILITARY: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+            SCIENTIFIC: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+            CULTURAL: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+            ECONOMIC: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+            SOCIAL: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
         };
         return colors[category] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     };
@@ -192,7 +189,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                         label: 'Category',
                         options: [
                             { label: 'All Categories', value: '' },
-                            ...EVENT_CATEGORIES.map((cat) => ({ label: cat, value: cat })),
+                            ...EVENT_CATEGORIES,
                         ],
                     },
                 ]}
@@ -269,8 +266,8 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                 >
                                     <option value="">Select Category</option>
                                     {EVENT_CATEGORIES.map((cat) => (
-                                        <option key={cat} value={cat}>
-                                            {cat}
+                                        <option key={cat.value} value={cat.value}>
+                                            {cat.label}
                                         </option>
                                     ))}
                                 </select>
@@ -356,7 +353,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
             <div className="space-y-6">
                 {(Object.entries(groupedEvents) as [string, any[]][]).map(([category, categoryEvents]) => (
                     <div key={category}>
-                        <h2 className="text-xl font-semibold text-white mb-3">{category}</h2>
+                        <h2 className="text-xl font-semibold text-white mb-3">{categoryLabel(category)}</h2>
                         <div className="space-y-3">
                             {categoryEvents.map((event) => (
                                 <Card key={event.id} className="bg-slate-900 border-slate-700 p-6">
@@ -364,26 +361,28 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <h3 className="text-lg font-semibold text-white">{event.title}</h3>
-                                                <Badge className={getCategoryBadgeColor(event.category)}>
-                                                    {event.category}
-                                                </Badge>
+                                                {event.category && (
+                                                    <Badge className={getCategoryBadgeColor(event.category)}>
+                                                        {categoryLabel(event.category)}
+                                                    </Badge>
+                                                )}
                                             </div>
                                             {event.title_arabic && (
                                                 <p className="text-sm text-slate-400 mb-2 font-arabic" lang="ar" dir="rtl">{event.title_arabic}</p>
                                             )}
                                             <p className="text-sm text-slate-300 mb-3">{event.description}</p>
                                             <div className="flex flex-wrap gap-2 text-xs text-slate-400">
-                                                {event.year_gregorian && (
-                                                    <span>📅 {event.year_gregorian} CE</span>
+                                                {event.year_gregorian != null && (
+                                                    <span>{event.year_gregorian} CE</span>
                                                 )}
-                                                {event.year_hijri && (
-                                                    <span>☪️ {event.year_hijri} AH</span>
+                                                {event.year_hijri != null && (
+                                                    <span>{event.year_hijri} AH</span>
                                                 )}
                                                 {event.location_name && (
-                                                    <span>📍 {event.location_name}</span>
+                                                    <span>{event.location_name}</span>
                                                 )}
                                                 {event.significance && (
-                                                    <span>⭐ {event.significance}</span>
+                                                    <span>Significance: {event.significance}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -400,7 +399,7 @@ export function EventsManagerClient({ events, pagination }: EventsManagerClientP
                                             </Button>
                                             <ConfirmDelete
                                                 itemName="event"
-                                                consequence={`Delete "${event.title}"? This removes the event permanently and cannot be undone.`}
+                                                consequence={`Retire "${event.title}"? It is hidden from every page. Nothing is erased and an audit record is kept.`}
                                                 onConfirm={() => handleDelete(event.id)}
                                             />
                                         </div>

@@ -1,0 +1,323 @@
+/** Read contracts the query layer returns (section 9.4). Types only, safe to import from client components. */
+import type { HadithTraditionCode, Paginated } from './sql-helpers';
+
+export type { HadithTraditionCode, Paginated };
+
+/** One grade attributed to a grader within a tradition. `collection_label` rows never appear. */
+export interface HadithAssessment {
+  tradition: HadithTraditionCode;
+  kind: 'cited_ruling' | 'compiler_criterion' | 'compiler_statement';
+  grade_raw: string;
+  grade_canonical: string | null;
+  grader: string | null;
+  citation_raw: string | null;
+}
+
+/** One group per tradition; an empty `assessments` list means "no assessment recorded". */
+export interface HadithAssessmentGroup {
+  tradition: HadithTraditionCode;
+  assessments: HadithAssessment[];
+}
+
+/** A hadith in a list or search result; aliases mirror the keys the UI reads (rule 3). */
+export interface HadithListItem {
+  id: string;
+  record_id: string;
+  title: string | null;
+  primary_topic: string | null;
+  chapter: string | null;
+  chapter_no: string | null;
+  category: string | null;
+  volume: string | null;
+  hadith_no: string | null;
+  source: string;
+  source_display_label: string | null;
+  collection_id: string;
+  tradition: HadithTraditionCode;
+  text_ar: string | null;
+  text_arabic: string | null;
+  matn_ar: string | null;
+  text_en: string | null;
+  text_english: string | null;
+  /** Reviewer mode only: the state of the English shown; public lists only ever show reviewed English. */
+  english_state: string | null;
+  source_text_status: string;
+  chain_status: string;
+  grading_status: string;
+}
+
+export interface HadithVariation {
+  id: string;
+  text_arabic: string | null;
+  text_english: string | null;
+  source: 'hadith_node';
+}
+
+export interface EnglishAttribution {
+  state: string;
+  source: string | null;
+  translator: string | null;
+}
+
+/** Hadith detail; `assessments` replaces display_grade / auto_calculated_grade / transmission_type. */
+export interface HadithDetail extends HadithListItem {
+  sanad: string | null;
+  isnad_arabic: string | null;
+  chain_text_arabic: string | null;
+  sanad_confidence: string | null;
+  matn_en: string | null;
+  narration_level: string | null;
+  chain_type: string | null;
+  school: string | null;
+  attributed_to: string | null;
+  url: string | null;
+  page_ref: string | null;
+  arabic_sha256: string;
+  english_attribution: EnglishAttribution | null;
+  variations: HadithVariation[];
+  assessments: HadithAssessmentGroup[];
+}
+
+/** A chain position, keyed by mention ID (section 9.4). Narrator fields are set only when `is_link`. */
+export interface ChainNode {
+  node_id: string;
+  chain_id: string;
+  branch: number;
+  position: number;
+  surface_ar: string;
+  narrator_id: string | null;
+  name_ar: string | null;
+  name_en: string | null;
+  resolution: string;
+  link_kind: string;
+  is_link: boolean;
+  /** Published verdict in the hadith's tradition, or null. */
+  verdict: string | null;
+}
+
+export interface ChainEdge {
+  source: string;
+  target: string;
+  chain_id: string;
+}
+
+export interface ChainGraph {
+  hadith_id: string;
+  tradition: HadithTraditionCode | null;
+  chain_schema: 'v2';
+  nodes: ChainNode[];
+  edges: ChainEdge[];
+}
+
+/** A narrator verdict, tradition-scoped; public pages see `published` only. */
+export interface NarratorVerdict {
+  id: string;
+  tradition: HadithTraditionCode | null;
+  verdict: string;
+  kind: string;
+  status: string;
+  critic: string | null;
+  quote_ar: string | null;
+  quote_en: string | null;
+}
+
+export interface NarratorListItem {
+  id: string;
+  name: string;
+  name_english: string;
+  name_arabic: string;
+  tabaqah: string | null;
+  geographic_region: string | null;
+  verdicts: NarratorVerdict[];
+}
+
+export interface NarratorBio {
+  status: string;
+  is_prophet: boolean;
+  tabaqah: string | null;
+  name_english_clean: string | null;
+  name_arabic_clean: string | null;
+  kunya: string | null;
+  nasab: string | null;
+  nisba: string | null;
+  geographic_region: string | null;
+  death_year_hijri: number | null;
+  death_year_gregorian: number | null;
+  bio_summary: string | null;
+}
+
+/** What the rawi lexicon says; a lexicon claim, never shown on public pages by default (Q4). */
+export interface NarratorLexicon {
+  review_state: string;
+  birth_year_hijri: number | null;
+  death_year_hijri: number | null;
+  birth_year_gregorian: number | null;
+  death_year_gregorian: number | null;
+  geographic_region: string | null;
+  bio: string | null;
+}
+
+export interface NarratorHadithSummary {
+  id: string;
+  title: string | null;
+  primary_topic: string | null;
+  source: string;
+  hadith_no: string | null;
+  tradition: HadithTraditionCode;
+  assessments: HadithAssessmentGroup[];
+}
+
+export interface NarratorLocation {
+  id: string;
+  name: string;
+  name_arabic: string | null;
+  relation: 'born' | 'died' | 'resided';
+}
+
+export interface NarratorDetail {
+  id: string;
+  name: string;
+  name_english: string;
+  name_arabic: string;
+  verdicts: NarratorVerdict[];
+  /** Published bio on public pages; any live bio in reviewer mode. */
+  bio: NarratorBio | null;
+  /** Null on public pages (Q4); present in reviewer mode. */
+  lexicon: NarratorLexicon | null;
+  hadiths: Paginated<NarratorHadithSummary>;
+  locations: NarratorLocation[];
+}
+
+export interface NetworkPeer {
+  id: string;
+  name_english: string;
+  name_arabic: string;
+  relationship: 'teacher' | 'student';
+  hadith_count: number;
+  temporal_plausibility: string;
+}
+
+export interface NarratorNetwork {
+  teachers: NetworkPeer[];
+  students: NetworkPeer[];
+  teacher_total: number;
+  student_total: number;
+  attribution_disclaimer: string | null;
+  network_refreshed_at: string | null;
+}
+
+export interface HistoricalEventRecord {
+  id: string;
+  title: string;
+  title_arabic: string | null;
+  description: string | null;
+  significance: string | null;
+  start_year_hijri: number | null;
+  end_year_hijri: number | null;
+  start_year_gregorian: number | null;
+  end_year_gregorian: number | null;
+  /** Legacy aliases of the start years. */
+  year_hijri: number | null;
+  year_gregorian: number | null;
+  category: string | null;
+  location_name: string | null;
+  verification_status: string;
+  publication_ready: boolean;
+  citation_source: string | null;
+  citation_locator: string | null;
+  citation_url: string | null;
+  citation_retrieved_at: string | null;
+}
+
+export interface LocationRecord {
+  id: string;
+  name: string;
+  name_arabic: string | null;
+  modern_country: string | null;
+  region: string | null;
+  description: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  verification_status: string;
+}
+
+export interface CommentaryRecord {
+  id: string;
+  type: string | null;
+  text: string;
+  text_arabic: string | null;
+  author: string | null;
+  source_work: string | null;
+  reference: string | null;
+  citation_id: string | null;
+  status: string;
+  created_at: string | null;
+  created_by: string;
+  hadith: { id: string; title: string | null; source: string; hadith_no: string | null } | null;
+  narrator: { id: string; name_english: string; name_arabic: string } | null;
+}
+
+export interface ReligiousTraditionRecord {
+  id: string;
+  name: string;
+  name_arabic: string | null;
+  description: string | null;
+  geographic_origin: string | null;
+  geographic_heartlands: string[];
+  source_count: number;
+  narrator_count: number;
+}
+
+export interface SourceTextRecord {
+  id: string;
+  title: string;
+  title_original: string | null;
+  author: string | null;
+  approximate_date_ce: string | null;
+  description: string | null;
+  canonical_reference: string | null;
+  religious_tradition_id: string;
+  tradition_name: string;
+  tradition: { id: string; name: string } | null;
+}
+
+export interface MotifTagRecord {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+}
+
+export interface ParallelRecord {
+  id: string;
+  parallel_type: string;
+  isra_iliyyat_status: string;
+  confidence_level: string;
+  hadith_excerpt_en: string | null;
+  source_text_original: string | null;
+  source_text_en: string | null;
+  scholarly_analysis: string | null;
+  origin: string;
+  status: string;
+  created_at: string | null;
+  hadith: { id: string; title: string | null; primary_topic: string | null; chapter: string | null; category: string | null };
+  source_text: { id: string; title: string; canonical_reference: string | null; tradition_name: string };
+  tradition: { id: string; name: string };
+  motif_tags: MotifTagRecord[];
+}
+
+export interface ComparativeStat {
+  tradition: string;
+  type: string;
+  count: number;
+}
+
+export interface TraditionConnections {
+  traditions: Array<{ id: string; name: string; name_arabic: string | null; description: string | null }>;
+  hadiths_with_parallels: Array<{
+    hadith: { id: string; title: string | null };
+    parallel: { id: string; parallel_type: string; isra_iliyyat_status: string };
+    tradition: { id: string; name: string };
+    source_text: { title: string; canonical_reference: string | null };
+  }>;
+}

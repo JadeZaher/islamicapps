@@ -58,6 +58,17 @@ lead reviewing, verifying and committing at each join.
   runtime from `~/.pi/agent/models.json`, output as unreviewed candidates.
 - The Open Scholarly Contribution System plan is in scope: six planned tables
   (design section 5.15).
+- Cross-tradition presentation (2026-11-21): every chain shows the tradition
+  and source it comes from. The same report may appear in several traditions;
+  those copies are linked at the level of the report so a reader can see that
+  a hadith is carried by more than one tradition, while each sanad stays
+  separate. Narrator identities are not merged across traditions
+  automatically.
+- OpenITI rijal texts under CC BY-NC-SA are acceptable. Material derived from
+  them carries that licence: non-commercial, share-alike, with attribution.
+- Kunya-only lexicon entries: automatic matching is allowed only as a labelled,
+  lower-confidence match (shown with a marker, excluded from verified
+  transmissions). This reading of the owner's answer is to be confirmed.
 - Code is committed to the branch at each join. Nothing is pushed or deployed
   without the owner asking.
 

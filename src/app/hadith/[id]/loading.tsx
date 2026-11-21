@@ -1,16 +1,23 @@
+/** Mirrors the reading column of client-page.tsx so nothing shifts when the hadith arrives. */
 export default function HadithLoading() {
     return (
-        <div className="min-h-screen bg-slate-950" role="status" aria-busy="true" aria-label="Loading hadith">
-            <div className="border-b border-slate-800/60 px-6 py-4">
-                <div className="max-w-7xl mx-auto h-8 w-64 rounded bg-slate-800/60 animate-pulse" />
-            </div>
-            <div className="max-w-2xl mx-auto px-4 py-8 space-y-3">
-                <div className="h-20 rounded-lg bg-slate-900/60 animate-pulse" />
-                <div className="h-16 rounded-md bg-slate-900/40 animate-pulse" />
-                <div className="h-16 rounded-md bg-slate-900/40 animate-pulse" />
-                <div className="h-16 rounded-md bg-slate-900/40 animate-pulse" />
-            </div>
+        <main className="mx-auto max-w-3xl animate-pulse px-6 pt-10" role="status" aria-busy="true">
             <span className="sr-only">Loading hadith</span>
-        </div>
+            <div className="border-b border-slate-800 pb-6">
+                <div className="h-5 w-16 rounded bg-slate-800" />
+                <div className="mt-4 h-8 w-56 rounded bg-slate-800" />
+                <div className="mt-3 h-5 w-72 rounded bg-slate-900" />
+            </div>
+            <div className="space-y-3 border-b border-slate-800 py-8">
+                {[0, 1, 2, 3].map((row) => (
+                    <div key={row} className="h-7 rounded bg-slate-900" />
+                ))}
+            </div>
+            <div className="space-y-3 py-8">
+                {[0, 1, 2].map((row) => (
+                    <div key={row} className="h-8 rounded bg-slate-900" />
+                ))}
+            </div>
+        </main>
     );
 }

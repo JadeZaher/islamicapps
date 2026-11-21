@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { searchParallels } from '@/app/actions/comparative-actions';
+import { searchParallels } from '@/app/actions/read/comparative';
 import { CrossCulturalParallelCard } from '@/components/CrossCulturalParallelCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ const ISRA_STATUSES = [
     { value: '', label: 'All Statuses' },
     { value: 'MUWAFIQ', label: 'Muwafiq (Consistent)' },
     { value: 'MUKHALIF', label: 'Mukhalif (Contrary)' },
-    { value: 'MASKUT_ANHU', label: 'Maskut Anhu (Unknown)' },
+    { value: 'MASKUT_ANHU', label: 'Maskut Anhu (neither affirmed nor denied)' },
     { value: 'NONE', label: 'Not Classified' },
 ];
 
@@ -97,19 +97,22 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
         count: stats.filter((s: any) => s.tradition === t.name).reduce((a: number, b: any) => a + Number(b.count), 0),
     }));
 
+    // Stats carry true counts; initialParallels is one page of results.
+    const totalParallels = stats.reduce((sum: number, row: any) => sum + Number(row.count), 0);
+
     return (
-        <div className="min-h-screen bg-slate-950 py-12 px-4">
-            <div className="max-w-7xl mx-auto">
+        <main className="px-6 py-10 text-slate-100">
+            <div className="mx-auto max-w-6xl">
                 {/* Header */}
-                <div className="mb-10">
-                    <h1 className="text-4xl font-bold text-white">Comparative Religious Studies</h1>
+                <div className="mb-8">
+                    <h1 className="text-3xl font-semibold">Comparative studies</h1>
                 </div>
 
                 {/* Overview stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <Card className="bg-white/5 border-white/10 p-4">
-                        <p className="text-2xl font-bold text-white">{initialParallels.length}</p>
-                        <p className="text-sm text-slate-400">Total Parallels</p>
+                        <p className="text-2xl font-bold text-white">{totalParallels.toLocaleString()}</p>
+                        <p className="text-sm text-slate-400">Parallels recorded</p>
                     </Card>
                     {statsByTradition.slice(0, 3).map(({ tradition, count }) => (
                         <Card key={tradition.id} className="bg-white/5 border-white/10 p-4">
@@ -188,9 +191,9 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                     </section>
                 ) : (
                     /* Parallel Browse View */
-                    <div className="flex gap-6">
+                    <div className="flex flex-col gap-6 md:flex-row">
                         {/* Filter sidebar */}
-                        <div className="w-56 shrink-0 space-y-5">
+                        <div className="space-y-5 md:w-56 md:shrink-0">
                             <Card className="bg-white/5 border-white/10 p-4">
                                 <h3 className="text-sm font-semibold text-white mb-3">Tradition</h3>
                                 <div className="space-y-1.5">
@@ -282,6 +285,6 @@ export function ComparativeClient({ initialParallels, traditions, stats }: Props
                     </div>
                 )}
             </div>
-        </div>
+        </main>
     );
 }

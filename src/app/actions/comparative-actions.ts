@@ -1,8 +1,17 @@
 'use server';
+// RETIREMENT SWEEP: Neo4j-era actions, superseded by src/app/actions/{read,curation}/ (Postgres).
+// No page imports this file; remaining client imports are listed in conductor/tracks/query-port-and-action-switch_20261121/log.md.
+// Every mutating export is gated by requireCurator() (containment phase 3) until neo4j-retirement-sweep deletes it.
+import { requireCurator } from '@/lib/auth/require-curator';
 
 import { runQuery, runWrite, runTransaction } from '@/lib/db/neo4j';
 import { randomUUID } from 'crypto';
 import { type PaginationParams, type PaginatedResult, toSkipLimit, paginate } from '@/lib/pagination';
+
+/** Keeps only allowlisted keys, so no caller-supplied key is ever interpolated into Cypher (containment). */
+function allowedKeys<T extends object>(data: T, allowed: readonly string[]): Partial<T> {
+    return Object.fromEntries(Object.entries(data).filter(([key]) => allowed.includes(key))) as Partial<T>;
+}
 
 // ============ TYPES ============
 
@@ -109,6 +118,7 @@ export interface ComparativeStat {
 // ============ RELIGIOUS TRADITIONS ============
 
 export async function createReligiousTradition(data: ReligiousTraditionData): Promise<string> {
+    await requireCurator();
     const id = randomUUID();
     await runWrite(`
         CREATE (t:ReligiousTradition {
@@ -149,14 +159,16 @@ export async function getAllTraditions(): Promise<ReligiousTradition[]> {
 }
 
 export async function deleteTradition(traditionId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`MATCH (t:ReligiousTradition {id: $traditionId}) DETACH DELETE t`, { traditionId });
 }
 
 export async function updateTradition(traditionId: string, data: Partial<ReligiousTraditionData>): Promise<void> {
-    const updateData = {
+    await requireCurator();
+    const updateData = allowedKeys({
         ...data,
         geographic_heartlands: data.geographic_heartlands || undefined,
-    };
+    }, ['name', 'name_arabic', 'description', 'geographic_heartlands']);
     const setClause = Object.keys(updateData)
         .filter((k) => updateData[k as keyof typeof updateData] !== undefined)
         .map((k) => `t.${k} = $${k}`)
@@ -168,6 +180,7 @@ export async function updateTradition(traditionId: string, data: Partial<Religio
 // ============ SOURCE TEXTS ============
 
 export async function createSourceText(data: SourceTextData): Promise<string> {
+    await requireCurator();
     const id = randomUUID();
     await runWrite(`
         CREATE (s:SourceText {
@@ -195,6 +208,7 @@ export async function createSourceText(data: SourceTextData): Promise<string> {
 }
 
 export async function linkSourceTextToTradition(sourceTextId: string, traditionId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (s:SourceText {id: $sourceTextId})
         MATCH (t:ReligiousTradition {id: $traditionId})
@@ -221,18 +235,22 @@ export async function getAllSourceTexts(filters?: { tradition_name?: string }): 
 }
 
 export async function deleteSourceText(sourceTextId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`MATCH (s:SourceText {id: $sourceTextId}) DETACH DELETE s`, { sourceTextId });
 }
 
 export async function updateSourceText(sourceTextId: string, data: Partial<SourceTextData>): Promise<void> {
-    const setClause = Object.keys(data).map((k) => `s.${k} = $${k}`).join(', ');
+    await requireCurator();
+    const safe = allowedKeys(data, ['title', 'title_original', 'tradition_name', 'author', 'approximate_date_ce', 'canonical_reference', 'description']);
+    const setClause = Object.keys(safe).map((k) => `s.${k} = $${k}`).join(', ');
     if (!setClause) return;
-    await runWrite(`MATCH (s:SourceText {id: $sourceTextId}) SET ${setClause}`, { sourceTextId, ...data });
+    await runWrite(`MATCH (s:SourceText {id: $sourceTextId}) SET ${setClause}`, { sourceTextId, ...safe });
 }
 
 // ============ MOTIF TAGS ============
 
 export async function createMotifTag(data: MotifTagData): Promise<string> {
+    await requireCurator();
     const id = randomUUID();
     await runWrite(`
         CREATE (m:MotifTag {
@@ -264,10 +282,12 @@ export async function getAllMotifTags(category?: MotifCategory): Promise<MotifTa
 }
 
 export async function deleteMotifTag(tagId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`MATCH (m:MotifTag {id: $tagId}) DETACH DELETE m`, { tagId });
 }
 
 export async function tagHadith(hadithId: string, motifTagId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (h:Hadith {id: $hadithId})
         MATCH (m:MotifTag {id: $motifTagId})
@@ -276,6 +296,7 @@ export async function tagHadith(hadithId: string, motifTagId: string): Promise<v
 }
 
 export async function untagHadith(hadithId: string, motifTagId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (h:Hadith {id: $hadithId})-[r:TAGGED_WITH]->(m:MotifTag {id: $motifTagId})
         DELETE r
@@ -283,6 +304,7 @@ export async function untagHadith(hadithId: string, motifTagId: string): Promise
 }
 
 export async function tagParallel(parallelId: string, motifTagId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (p:CrossCulturalParallel {id: $parallelId})
         MATCH (m:MotifTag {id: $motifTagId})
@@ -293,6 +315,7 @@ export async function tagParallel(parallelId: string, motifTagId: string): Promi
 // ============ CROSS-CULTURAL PARALLELS ============
 
 export async function createCrossParallel(data: CrossCulturalParallelData): Promise<string> {
+    await requireCurator();
     const id = randomUUID();
 
     const queries: Array<{ query: string; params?: Record<string, unknown> }> = [
@@ -383,18 +406,22 @@ export async function getParallelsForHadith(hadithId: string): Promise<CrossCult
 }
 
 export async function deleteParallel(parallelId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`MATCH (p:CrossCulturalParallel {id: $parallelId}) DETACH DELETE p`, { parallelId });
 }
 
 export async function updateParallel(parallelId: string, data: Partial<Omit<CrossCulturalParallelData, 'hadith_id' | 'source_text_id' | 'tradition_id' | 'motif_tag_ids'>>): Promise<void> {
-    const setClause = Object.keys(data).map((k) => `p.${k} = $${k}`).join(', ');
+    await requireCurator();
+    const safe = allowedKeys(data, ['parallel_type', 'isra_iliyyat_status', 'confidence_level', 'hadith_excerpt_en', 'source_text_original', 'source_text_en', 'scholarly_analysis']);
+    const setClause = Object.keys(safe).map((k) => `p.${k} = $${k}`).join(', ');
     if (!setClause) return;
-    await runWrite(`MATCH (p:CrossCulturalParallel {id: $parallelId}) SET ${setClause}`, { parallelId, ...data });
+    await runWrite(`MATCH (p:CrossCulturalParallel {id: $parallelId}) SET ${setClause}`, { parallelId, ...safe });
 }
 
 // ============ NARRATOR ↔ TRADITION ============
 
 export async function linkNarratorToTradition(narratorId: string, traditionId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (n:Narrator {id: $narratorId})
         MATCH (t:ReligiousTradition {id: $traditionId})
@@ -403,6 +430,7 @@ export async function linkNarratorToTradition(narratorId: string, traditionId: s
 }
 
 export async function unlinkNarratorFromTradition(narratorId: string, traditionId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (n:Narrator {id: $narratorId})-[r:TRANSMITTER_OF_TRADITION]->(t:ReligiousTradition {id: $traditionId})
         DELETE r
@@ -442,6 +470,7 @@ export async function getTraditionConnectionsForNarrator(narratorId: string) {
 // ============ LOCATION ↔ TRADITION ============
 
 export async function linkLocationToTradition(locationId: string, traditionId: string): Promise<void> {
+    await requireCurator();
     await runWrite(`
         MATCH (l:Location {id: $locationId})
         MATCH (t:ReligiousTradition {id: $traditionId})

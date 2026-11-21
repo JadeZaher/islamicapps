@@ -1,14 +1,14 @@
 import Link from 'next/link';
 
+import { RouteMessage, primaryActionClass } from '@/components/RouteState';
+import { Button } from '@/components/ui/button';
+
 export default function HadithNotFound() {
-    return (
-        <main className="min-h-screen bg-slate-950 flex items-center justify-center p-8 text-white">
-            <div className="max-w-md w-full text-center space-y-5">
-                <h1 className="text-2xl font-bold">Hadith not found</h1>
-                <Link href="/" className="inline-block text-sm text-cyan-300 hover:text-cyan-200 underline-offset-4 hover:underline">
-                    Back to home
-                </Link>
-            </div>
-        </main>
-    );
+  return (
+    <RouteMessage title="Hadith not found" description="No hadith in the archive has this identifier.">
+      <Button asChild className={primaryActionClass}>
+        <Link href="/hadith">Browse hadith</Link>
+      </Button>
+    </RouteMessage>
+  );
 }

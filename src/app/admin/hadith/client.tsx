@@ -4,14 +4,15 @@ import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { exportHadiths, type ExportConfig } from '@/app/actions/graph-actions';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Download, X } from 'lucide-react';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 import { getSourceFilterOptions } from '@/lib/constants/sources';
-import { HADITH_TRADITION_OPTIONS, displayHadithTradition } from '@/lib/constants/traditions';
+import { HADITH_TRADITION_OPTIONS } from '@/lib/constants/traditions';
+import { ArabicText } from '@/components/ArabicText';
+import { TraditionBadge } from '@/components/TraditionBadge';
 
 interface PaginationInfo {
     page: number;
@@ -42,17 +43,6 @@ interface HadithManagerClientProps {
     hadiths: HadithListItem[];
     pagination: PaginationInfo;
 }
-
-const TRADITION_BADGE_CLASSES: Record<string, string> = {
-    Imami: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    'Shia Imami': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    Zaydi: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
-    'Shia Zaydi': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
-    Ibadi: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-};
-const DEFAULT_TRADITION_BADGE_CLASS = 'bg-teal-500/20 text-teal-400 border-teal-500/30';
-
-const traditionBadgeClass = (tradition: string) => TRADITION_BADGE_CLASSES[tradition] ?? DEFAULT_TRADITION_BADGE_CLASS;
 
 export function HadithManagerClient({ hadiths, pagination }: HadithManagerClientProps) {
     const [error, setError] = useState<string | null>(null);
@@ -267,9 +257,7 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="text-lg font-semibold text-white">{hadith.title}</h3>
                                         {hadith.tradition && (
-                                            <Badge className={traditionBadgeClass(hadith.tradition)}>
-                                                {displayHadithTradition(hadith.tradition)}
-                                            </Badge>
+                                            <TraditionBadge tradition={hadith.tradition} />
                                         )}
                                     </div>
                                     {referenceParts.length > 0 && (
@@ -283,20 +271,16 @@ export function HadithManagerClient({ hadiths, pagination }: HadithManagerClient
                                         </p>
                                     )}
                                     {matnAr && (
-                                        <p
-                                            dir="rtl"
-                                            lang="ar"
-                                            className="text-base text-slate-200 mt-3 line-clamp-2 leading-loose font-arabic"
-                                        >
+                                        <ArabicText as="p" className="mt-3 line-clamp-2 text-lg text-slate-200">
                                             {matnAr}
-                                        </p>
+                                        </ArabicText>
                                     )}
                                 </div>
 
                                 <div className="flex gap-2 shrink-0">
-                                    <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                    <Button asChild size="sm" variant="outline" className="border-slate-700 bg-transparent text-slate-200 hover:bg-slate-800">
                                         <Link href={`/hadith/${hadith.id}`} aria-label={`View details: ${hadith.title}`}>
-                                            View Details
+                                            Open
                                         </Link>
                                     </Button>
                                 </div>

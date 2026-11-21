@@ -3,8 +3,8 @@ export type HadithTradition = 'Sunni' | 'Imami' | 'Zaydi' | 'Ibadi';
 
 const TRADITION_DETAILS: Record<HadithTradition, { label: string; aliases: readonly string[] }> = {
   Sunni: { label: 'Sunni', aliases: ['Sunni'] },
-  Imami: { label: 'Twelver Shia · Imami', aliases: ['Imami', 'Shia Imami', 'Shia'] },
-  Zaydi: { label: 'Zaydi Shia · Zaydi', aliases: ['Zaydi', 'Shia Zaydi'] },
+  Imami: { label: 'Imami', aliases: ['Imami', 'Shia Imami', 'Shia'] },
+  Zaydi: { label: 'Zaydi', aliases: ['Zaydi', 'Shia Zaydi'] },
   Ibadi: { label: 'Ibadi', aliases: ['Ibadi'] },
 };
 

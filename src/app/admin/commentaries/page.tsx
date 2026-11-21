@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic';
 
-import { getAllCommentaries, getAllHadiths, getAllNarrators } from '@/app/actions/graph-actions';
+import { listCommentaries } from '@/db/queries/commentary-review';
+import { searchHadithsForReview } from '@/db/queries/hadith-review';
+import { listNarratorsForReview } from '@/db/queries/narrator-review';
 import { parsePageParam } from '@/lib/pagination';
 import { CommentariesManagerClient } from './client';
 
@@ -14,9 +16,9 @@ export default async function CommentariesManagerPage({ searchParams }: PageProp
     const type = params.type || '';
 
     const [commentariesResult, hadithsResult, narratorsResult] = await Promise.all([
-        getAllCommentaries({ page }),
-        getAllHadiths({ pageSize: 100 }),
-        getAllNarrators({ pageSize: 100 }),
+        listCommentaries({ page }, type || undefined),
+        searchHadithsForReview('', {}, { pageSize: 100 }),
+        listNarratorsForReview('', {}, { pageSize: 100 }),
     ]);
 
     return (

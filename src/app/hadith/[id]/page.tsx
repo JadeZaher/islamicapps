@@ -1,11 +1,13 @@
 export const dynamic = 'force-dynamic';
 
 import { notFound } from 'next/navigation';
-import { getHadithById, getFullChainGraph } from '@/app/actions/graph-actions';
-import { getParallelsForHadith } from '@/app/actions/comparative-actions';
 import type { Metadata } from 'next';
+import { getPublicParallelsForHadith } from '@/db/queries/comparative';
+import type { ChainGraph, HadithDetail } from '@/db/queries/contracts';
+import { getChainGraph } from '@/db/queries/isnad';
 import { HadithClientPage } from './client-page';
-import type { HadithNode, ParallelRecord } from './types';
+import { loadHadith } from './data';
+import type { GraphEdge, GraphNode, HadithNode, ParallelRecord } from './types';
 
 interface PageProps {
     params: Promise<{
@@ -13,61 +15,75 @@ interface PageProps {
     }>;
 }
 
+/** Adapts the section 9.4 detail contract to the client's HadithNode keys. No grade is defaulted. */
+function toHadithNode(hadith: HadithDetail): HadithNode {
+    return {
+        ...hadith,
+        display_grade: null,
+        auto_calculated_grade: null,
+        transmission_type: null,
+        hadith_id: hadith.record_id,
+        variations: hadith.variations,
+        assessments: hadith.assessments,
+    };
+}
+
+/**
+ * Adapts mention-keyed chain nodes to the client's GraphNode keys. Every position is kept, so the isnad reads
+ * as written; an unidentified position shows its surface and carries no narrator identity.
+ */
+function toGraph(graph: ChainGraph): { nodes: GraphNode[]; edges: GraphEdge[] } {
+    const clientId = new Map(graph.nodes.map((node) => [node.node_id, node.is_link && node.narrator_id ? node.narrator_id : node.node_id]));
+    const nodes: GraphNode[] = graph.nodes.map((node) => ({
+        ...node,
+        id: clientId.get(node.node_id)!,
+        name_arabic: node.is_link ? node.name_ar ?? node.surface_ar : node.surface_ar,
+        name_english: node.is_link ? node.name_en ?? undefined : undefined,
+        chain_id: node.chain_id,
+        chain_index: node.branch,
+        position: node.position,
+        chain_position: node.position,
+        chain_schema: 'v2',
+    }));
+    const edges: GraphEdge[] = graph.edges.map((edge) => ({
+        source: clientId.get(edge.source)!,
+        target: clientId.get(edge.target)!,
+        chain_id: edge.chain_id,
+        chain_schema: 'v2',
+    }));
+    return { nodes, edges };
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id } = await params;
-    const hadith = (await getHadithById(id).catch(() => null)) as HadithNode | null;
+    const hadith = await loadHadith(id).catch(() => null);
     if (!hadith) return { title: 'Hadith not found' };
     const reference = [hadith.source, hadith.hadith_no].filter(Boolean).join(' ');
     return { title: hadith.title?.trim() || reference || 'Hadith' };
 }
 
 export default async function HadithPage({ params }: PageProps) {
-    const { id } = await params;
+    const rawId = (await params).id;
+    const id = decodeURIComponent(rawId);
 
-    const [hadithRow, graphData, parallels] = await Promise.all([
-        getHadithById(id),
-        getFullChainGraph(id).catch((err) => {
-            console.error('Error fetching graph data:', err);
-            return { nodes: [], edges: [] };
+    const [hadith, graph, parallels] = await Promise.all([
+        loadHadith(rawId),
+        getChainGraph(id).catch((err) => {
+            console.error('Error fetching chain graph:', err);
+            return null;
         }),
-        getParallelsForHadith(id).catch(() => []),
+        getPublicParallelsForHadith(id).catch(() => []),
     ]);
 
-    if (!hadithRow) notFound();
-    const hadithData = hadithRow as unknown as HadithNode;
-
-    // Chain health = % of narrators graded THIQA; null (unknown) when no narrator carries a verdict.
-    const nodes = graphData.nodes || [];
-    const gradedNarrators = nodes.filter((n) => Boolean((n as { reliability?: string }).reliability));
-    const thiqaNarrators = gradedNarrators.filter((n) => (n as { reliability?: string }).reliability === 'THIQA').length;
-    const chainHealthScore: number | null = gradedNarrators.length > 0
-        ? Math.round((thiqaNarrators / nodes.length) * 100)
-        : null;
-
-    // Check if chain traces back to the Prophet (via Sahabi or Prophet node)
-    const hasSahabi = nodes.some((n) => (n as { tabaqah?: string }).tabaqah === 'SAHABA');
-    const hasProphet = nodes.some((n) => {
-        const x = n as { is_prophet?: boolean; tabaqah?: string };
-        return x.is_prophet === true || x.tabaqah === 'PROPHET';
-    });
-    const chainTextMentionsProphet = Boolean(
-        hadithData.chain_text_arabic?.includes('رسول الله') ||
-        hadithData.chain_text_arabic?.includes('النبي') ||
-        hadithData.isnad_arabic?.includes('رسول الله') ||
-        hadithData.isnad_arabic?.includes('النبي') ||
-        hadithData.sanad?.includes('رسول الله') ||
-        hadithData.sanad?.includes('النبي')
-    );
-    const tracesToProphet = hasProphet || hasSahabi || chainTextMentionsProphet;
+    if (!hadith) notFound();
+    const { nodes, edges } = graph ? toGraph(graph) : { nodes: [], edges: [] };
 
     return (
         <HadithClientPage
-            hadith={hadithData}
+            hadith={toHadithNode(hadith)}
             nodes={nodes}
-            edges={graphData.edges || []}
-            chainHealthScore={chainHealthScore}
-            parallels={parallels as ParallelRecord[]}
-            tracesToProphet={tracesToProphet}
+            edges={edges}
+            parallels={parallels as unknown as ParallelRecord[]}
         />
     );
 }

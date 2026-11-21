@@ -7,14 +7,15 @@ import {
     deleteTradition,
     createSourceText,
     deleteSourceText,
-    linkSourceTextToTradition,
     createCrossParallel,
     deleteParallel,
+    publishParallel,
     createMotifTag,
     deleteMotifTag,
     linkNarratorToTradition,
-} from '@/app/actions/comparative-actions';
-import { searchHadiths } from '@/app/actions/graph-actions';
+} from '@/app/actions/curation/comparative';
+import { searchHadithsForCuration } from '@/app/actions/curation/search';
+import { describeActionError } from '@/app/admin/_components/actionError';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,12 +24,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/components/TraditionBadge';
 import { isMachineProposed, MachineProposedBadge } from '@/components/CrossCulturalParallelCard';
-import { Plus, Trash2, BookOpen } from 'lucide-react';
+import { Plus, Archive, BookOpen } from 'lucide-react';
 
 const PARALLEL_TYPES = ['CONDEMNATION', 'CULTURAL_BLEED', 'SHARED_SOURCE', 'DIRECT_BORROWING', 'APOLOGETIC', 'DISPUTED'];
 const ISRA_STATUSES = ['MUWAFIQ', 'MUKHALIF', 'MASKUT_ANHU', 'NONE'];
 const CONFIDENCE_LEVELS = ['HIGH', 'MEDIUM', 'LOW'];
 const MOTIF_CATEGORIES = ['ESCHATOLOGY', 'CREATION', 'PROPHETIC_STORIES', 'LEGAL', 'WISDOM', 'PERSIAN_INFLUENCE', 'COSMOLOGY'];
+
+const STATUS_LABELS: Record<string, string> = { proposed: 'Proposed', verified: 'Verified', published: 'Published' };
+
+const hadithLabel = (hadith: { title?: string | null; source?: string; hadith_no?: string | null }): string =>
+    hadith.title || [hadith.source, hadith.hadith_no].filter(Boolean).join(' ') || 'Untitled hadith';
 
 const SELECT_CLASS = 'w-full mt-1 bg-slate-800 border border-slate-700 text-white rounded px-3 py-2 text-sm';
 const FIELD_CLASS = 'mt-1 bg-slate-800 border-slate-700 text-white';
@@ -58,8 +64,8 @@ function useActionRunner(onRefresh: () => void) {
             await task();
             onRefresh();
             return true;
-        } catch {
-            setError(failureMessage);
+        } catch (cause) {
+            setError(describeActionError(cause, failureMessage));
             return false;
         } finally {
             inFlight.current = false;
@@ -82,7 +88,7 @@ function ErrorBanner({ message, onDismiss }: { message: string | null; onDismiss
     );
 }
 
-/** Two-step delete: trash icon first, then explicit Delete / Cancel (replaces native confirm()). */
+/** Two-step retire (nothing is erased): archive icon first, then explicit Retire / Cancel. */
 function DeleteButton({ label, consequence, onConfirm, disabled, compact = false }: {
     label: string;
     consequence?: string;
@@ -105,7 +111,7 @@ function DeleteButton({ label, consequence, onConfirm, disabled, compact = false
                     ? 'h-6 w-6 p-0 border-0 text-red-400 hover:bg-red-500/10'
                     : 'border-red-600/30 text-red-400 hover:bg-red-500/10'}
             >
-                <Trash2 className={compact ? 'w-3 h-3' : 'w-4 h-4'} />
+                <Archive aria-hidden="true" className={compact ? 'w-3 h-3' : 'w-4 h-4'} />
             </Button>
         );
     }
@@ -122,7 +128,7 @@ function DeleteButton({ label, consequence, onConfirm, disabled, compact = false
                     onClick={() => { setConfirming(false); onConfirm(); }}
                     className="bg-red-600 hover:bg-red-700 text-white"
                 >
-                    Delete
+                    Retire
                 </Button>
                 <Button type="button" size="sm" variant="outline" onClick={() => setConfirming(false)} className="border-slate-600 text-slate-300">
                     Cancel
@@ -146,7 +152,7 @@ function TraditionManager({ traditions, narrators, onRefresh }: { traditions: an
         const created = await run(
             () => createReligiousTradition({
                 ...form,
-                geographic_heartlands: form.geographic_heartlands ? form.geographic_heartlands.split(',').map((s) => s.trim()) : [],
+                geographic_heartlands: form.geographic_heartlands.split(',').map((s) => s.trim()).filter(Boolean),
             }),
             "Couldn't create the tradition. Try again.",
         );
@@ -158,7 +164,7 @@ function TraditionManager({ traditions, narrators, onRefresh }: { traditions: an
 
     const handleDelete = (id: string) => {
         if (selectedTradition === id) setSelectedTradition(null);
-        return run(() => deleteTradition(id), "Couldn't delete the tradition. Try again.");
+        return run(() => deleteTradition(id), "Couldn't retire the tradition. Try again.");
     };
 
     const handleLinkNarrator = async () => {
@@ -241,8 +247,8 @@ function TraditionManager({ traditions, narrators, onRefresh }: { traditions: an
                                 </span>
                             </button>
                             <DeleteButton
-                                label={`Delete tradition ${t.name}`}
-                                consequence="Also removes all links."
+                                label={`Retire tradition ${t.name}`}
+                                consequence="Hidden, not erased. Refused while parallels or source texts still use it."
                                 disabled={pending}
                                 onConfirm={() => handleDelete(t.id)}
                             />
@@ -298,12 +304,7 @@ function SourceTextManager({ sourceTexts, traditions, onRefresh }: { sourceTexts
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const created = await run(async () => {
-            const id = await createSourceText(form);
-            if (form.tradition_id) {
-                await linkSourceTextToTradition(id, form.tradition_id);
-            }
-        }, "Couldn't create the source text. Try again.");
+        const created = await run(() => createSourceText(form), "Couldn't create the source text. Try again.");
         if (created) {
             setForm(EMPTY_SOURCE_FORM);
             setIsCreating(false);
@@ -398,9 +399,10 @@ function SourceTextManager({ sourceTexts, traditions, onRefresh }: { sourceTexts
                                 {s.description && <p className="text-sm text-slate-400 mt-2">{s.description}</p>}
                             </div>
                             <DeleteButton
-                                label={`Delete source text ${s.title}`}
+                                label={`Retire source text ${s.title}`}
+                                consequence="Hidden, not erased. Refused while parallels still cite it."
                                 disabled={pending}
-                                onConfirm={() => run(() => deleteSourceText(s.id), "Couldn't delete the source text. Try again.")}
+                                onConfirm={() => run(() => deleteSourceText(s.id), "Couldn't retire the source text. Try again.")}
                             />
                         </div>
                     </Card>
@@ -443,10 +445,10 @@ function ParallelManager({ parallels, traditions, sourceTexts, motifTags, onRefr
         if (term.length < 2) { setHadithResults([]); setSearching(false); return; }
         setSearching(true);
         try {
-            const results = await searchHadiths(term);
+            const results = await searchHadithsForCuration(term);
             if (ticket === latestSearch.current) setHadithResults(results.items);
-        } catch {
-            if (ticket === latestSearch.current) setSearchError("Couldn't search hadiths. Try again.");
+        } catch (cause) {
+            if (ticket === latestSearch.current) setSearchError(describeActionError(cause, "Couldn't search hadiths. Try again."));
         } finally {
             if (ticket === latestSearch.current) setSearching(false);
         }
@@ -458,9 +460,9 @@ function ParallelManager({ parallels, traditions, sourceTexts, motifTags, onRefr
             hadith_id: form.hadith_id,
             source_text_id: form.source_text_id,
             tradition_id: form.tradition_id,
-            parallel_type: form.parallel_type as any,
-            isra_iliyyat_status: form.isra_iliyyat_status as any,
-            confidence_level: form.confidence_level as any,
+            parallel_type: form.parallel_type,
+            isra_iliyyat_status: form.isra_iliyyat_status,
+            confidence_level: form.confidence_level,
             hadith_excerpt_en: form.hadith_excerpt_en,
             source_text_original: form.source_text_original,
             source_text_en: form.source_text_en,
@@ -518,9 +520,9 @@ function ParallelManager({ parallels, traditions, sourceTexts, motifTags, onRefr
                                 <div className="mt-1 space-y-1 max-h-40 overflow-y-auto">
                                     {hadithResults.map((h) => (
                                         <button key={h.id} type="button"
-                                            onClick={() => { setForm({ ...form, hadith_id: h.id, hadith_title: h.title }); setHadithResults([]); setHadithSearch(''); }}
+                                            onClick={() => { setForm({ ...form, hadith_id: h.id, hadith_title: hadithLabel(h) }); setHadithResults([]); setHadithSearch(''); }}
                                             className="w-full text-left p-2 bg-slate-800 hover:bg-slate-700 rounded text-sm text-slate-300">
-                                            {h.title}
+                                            {hadithLabel(h)}
                                         </button>
                                     ))}
                                 </div>
@@ -649,10 +651,19 @@ function ParallelManager({ parallels, traditions, sourceTexts, motifTags, onRefr
                                     <IsraIliyyatBadge status={p.isra_iliyyat_status} />
                                     {isMachineProposed(p) && <MachineProposedBadge />}
                                     <span className="text-xs text-slate-400">{p.confidence_level} confidence</span>
+                                    <span
+                                        className={`inline-block rounded border px-2 py-0.5 text-xs font-medium ${
+                                            p.status === 'published'
+                                                ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
+                                                : 'border-slate-600 bg-slate-800 text-slate-300'
+                                        }`}
+                                    >
+                                        {STATUS_LABELS[p.status] ?? p.status}
+                                    </span>
                                 </div>
                                 <p className="text-sm font-medium text-white">
                                     <BookOpen aria-hidden="true" className="inline w-3.5 h-3.5 mr-1 text-cyan-400" />
-                                    {p.hadith?.title}
+                                    {p.hadith ? hadithLabel(p.hadith) : ''}
                                 </p>
                                 <p className="text-xs text-slate-400 mt-0.5">
                                     ↔ {p.source_text?.title}{p.source_text?.canonical_reference ? ` · ${p.source_text.canonical_reference}` : ''}
@@ -661,11 +672,28 @@ function ParallelManager({ parallels, traditions, sourceTexts, motifTags, onRefr
                                     <p className="text-xs text-slate-400 mt-2 line-clamp-2">{p.scholarly_analysis}</p>
                                 )}
                             </div>
-                            <DeleteButton
-                                label={`Delete parallel ${p.hadith?.title ?? ''}`.trim()}
-                                disabled={pending}
-                                onConfirm={() => run(() => deleteParallel(p.id), "Couldn't delete the parallel. Try again.")}
-                            />
+                            <div className="flex items-start gap-2">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={pending}
+                                    onClick={() =>
+                                        p.status === 'published'
+                                            ? run(() => publishParallel(p.id, 'proposed'), "Couldn't unpublish the parallel.")
+                                            : run(() => publishParallel(p.id, 'published'), "Couldn't publish the parallel.")
+                                    }
+                                    className="border-slate-600 text-slate-300"
+                                >
+                                    {p.status === 'published' ? 'Unpublish' : 'Publish'}
+                                </Button>
+                                <DeleteButton
+                                    label={`Retire parallel ${p.hadith ? hadithLabel(p.hadith) : ''}`.trim()}
+                                    consequence="Hidden, not erased."
+                                    disabled={pending}
+                                    onConfirm={() => run(() => deleteParallel(p.id), "Couldn't retire the parallel. Try again.")}
+                                />
+                            </div>
                         </div>
                     </Card>
                 ))}
@@ -687,7 +715,7 @@ function MotifTagManager({ motifTags, onRefresh }: { motifTags: any[]; onRefresh
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const created = await run(() => createMotifTag(form as any), "Couldn't add the tag. Try again.");
+        const created = await run(() => createMotifTag(form), "Couldn't add the tag. Try again.");
         if (created) setForm({ name: '', category: '', description: '' });
     };
 
@@ -728,9 +756,9 @@ function MotifTagManager({ motifTags, onRefresh }: { motifTags: any[]; onRefresh
                                         <span className="text-sm text-slate-300">{tag.name}</span>
                                         <DeleteButton
                                             compact
-                                            label={`Delete tag ${tag.name}`}
+                                            label={`Retire tag ${tag.name}`}
                                             disabled={pending}
-                                            onConfirm={() => run(() => deleteMotifTag(tag.id), "Couldn't delete the tag. Try again.")}
+                                            onConfirm={() => run(() => deleteMotifTag(tag.id), "Couldn't retire the tag. Try again.")}
                                         />
                                     </div>
                                 ))}

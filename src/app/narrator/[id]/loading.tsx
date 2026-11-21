@@ -1,13 +1,15 @@
+/** Mirrors the narrator page column so nothing shifts when the record arrives. */
 export default function NarratorLoading() {
     return (
-        <main className="mx-auto max-w-6xl px-6 py-10" aria-busy="true" aria-live="polite">
+        <main className="mx-auto max-w-4xl animate-pulse px-6 pt-10" role="status" aria-busy="true">
             <span className="sr-only">Loading narrator</span>
-            <div className="h-9 w-72 animate-pulse rounded bg-white/10" />
-            <div className="mt-3 h-6 w-48 animate-pulse rounded bg-white/5" />
-            <div className="mt-10 h-10 w-full animate-pulse rounded bg-white/5" />
-            <div className="mt-8 grid gap-8 lg:grid-cols-3">
-                <div className="h-96 animate-pulse rounded-xl bg-white/5 lg:col-span-2" />
-                <div className="h-96 animate-pulse rounded-xl bg-white/5" />
+            <div className="h-9 w-72 rounded bg-slate-800" />
+            <div className="mt-3 h-9 w-56 rounded bg-slate-900" />
+            <div className="mt-8 h-9 w-full border-b border-slate-800" />
+            <div className="mt-8 space-y-3">
+                {[0, 1, 2, 3].map((row) => (
+                    <div key={row} className="h-5 rounded bg-slate-900" />
+                ))}
             </div>
         </main>
     );

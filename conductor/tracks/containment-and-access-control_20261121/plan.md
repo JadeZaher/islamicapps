@@ -18,23 +18,23 @@ Done when: no stray credentials remain in the service variables, recorded with d
 
 ## Phase 1 — Inventory
 
-- [ ] Write the mutation inventory with `file:line` for every writing action and route.
-- [ ] Reconcile design section 10 counts with it; list differences.
+- [x] Write the mutation inventory with `file:line` for every writing action and route.
+- [x] Reconcile design section 10 counts with it; list differences.
 
 Done when: the inventory is checked in and section 10 differences are listed.
 
 ## Phase 2 — Auth core
 
-- [ ] `src/lib/auth/session.ts` (Web Crypto HMAC cookie) and `require-curator.ts`.
-- [ ] Sign-in page and server action; throttling and rate limit in `src/proxy.ts`.
-- [ ] `src/lib/auth/AGENTS.md`: revocation procedure (section 10.1).
+- [x] `src/lib/auth/session.ts` (Web Crypto HMAC cookie) and `require-curator.ts`.
+- [x] Sign-in page and server action; throttling and rate limit in `src/proxy.ts`.
+- [x] `src/lib/auth/AGENTS.md`: revocation procedure (section 10.1).
 
 Done when: local flow tests show anonymous requests refused and a signed-in curator allowed.
 
 ## Phase 3 — Gate current writes
 
-- [ ] `requireCurator()` first in every inventoried action; zod input.
-- [ ] Allowlists in the three comparative update actions.
+- [x] `requireCurator()` first in every inventoried action; zod input.
+- [x] Allowlists in the three comparative update actions.
 
 Done when: every inventory row is marked gated.
 

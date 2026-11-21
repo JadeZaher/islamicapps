@@ -1,6 +1,6 @@
 # Uniform isnad extraction evaluation
 
-Fixtures: `datasets/hadith-data/__tests__/fixtures/all-tradition-isnad-gold-v1.jsonl` (32 provenance-backed records)
+Fixtures: `datasets\hadith-data\__tests__\fixtures\all-tradition-isnad-gold-v1.jsonl` (32 provenance-backed records)
 
 The canonical release gate requires overall branch-count accuracy >= 0.90, median branch Jaccard >= 0.90, median ordered edit similarity >= 0.90, and for every tradition branch-count accuracy and mean ordered similarity >= 0.80. Legacy candidates are comparison baselines only.
 

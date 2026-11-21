@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 
-import { getAllParallels, getAllTraditions, getComparativeStats } from '@/app/actions/comparative-actions';
+import { getComparativeStats, listPublicParallels, listReligiousTraditions } from '@/db/queries/comparative';
 import { ComparativeClient } from './client';
 
 export default async function ComparativePage() {
+    // Published parallels on public hadiths only (section 9.2).
     const [parallelsResult, traditions, stats] = await Promise.all([
-        getAllParallels({ pageSize: 50 }),
-        getAllTraditions(),
+        listPublicParallels({ pageSize: 50 }),
+        listReligiousTraditions(),
         getComparativeStats(),
     ]);
 

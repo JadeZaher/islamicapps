@@ -1,19 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { describeActionError } from './actionError';
 
 interface ConfirmDeleteProps {
     /** Singular noun used in labels, e.g. "event". */
     itemName: string;
     /** Consequence shown before the user confirms. */
     consequence: string;
-    /** Performs the deletion; throw to surface a failure. */
+    /** Retires the item; throw to surface a failure. */
     onConfirm: () => Promise<void>;
 }
 
-/** Two-step inline delete: trigger button, then a consequence message with Delete / Cancel. */
+/** Two-step inline retire (nothing is erased): trigger button, then a consequence message with Retire / Cancel. */
 export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDeleteProps) {
     const [isConfirming, setIsConfirming] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -37,8 +38,8 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
         try {
             await onConfirm();
             setIsConfirming(false);
-        } catch {
-            setErrorMessage(`Could not delete this ${itemName}. Try again.`);
+        } catch (error) {
+            setErrorMessage(describeActionError(error, `Could not retire this ${itemName}. Try again.`));
         } finally {
             setIsDeleting(false);
         }
@@ -51,10 +52,10 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
                 size="sm"
                 variant="outline"
                 onClick={() => setIsConfirming(true)}
-                aria-label={`Delete ${itemName}`}
+                aria-label={`Retire ${itemName}`}
                 className="border-red-600/30 text-red-400 hover:bg-red-500/10"
             >
-                <Trash2 className="w-4 h-4" aria-hidden="true" />
+                <Archive className="w-4 h-4" aria-hidden="true" />
             </Button>
         );
     }
@@ -62,7 +63,7 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
     return (
         <div
             role="alertdialog"
-            aria-label={`Confirm deleting ${itemName}`}
+            aria-label={`Confirm retiring ${itemName}`}
             onKeyDown={(event) => {
                 if (event.key === 'Escape' && !isDeleting) cancel();
             }}
@@ -89,7 +90,7 @@ export function ConfirmDelete({ itemName, consequence, onConfirm }: ConfirmDelet
                     disabled={isDeleting}
                     className="bg-red-600 text-white hover:bg-red-700"
                 >
-                    {isDeleting ? 'Deleting...' : `Delete ${itemName}`}
+                    {isDeleting ? 'Retiring...' : `Retire ${itemName}`}
                 </Button>
             </div>
         </div>

@@ -19,7 +19,9 @@
     "build:credits": "tsx src/scripts/build-credits.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:verify": "tsx src/db/verify.ts"
+    "db:verify": "tsx src/db/verify.ts",
+    "db:load": "tsx src/db/load/load-bundle.ts",
+    "auth:hash": "tsx src/lib/auth/hash-passphrase.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

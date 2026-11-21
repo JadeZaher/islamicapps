@@ -7,9 +7,14 @@ import { HistoricalTimeline, type HistoricalTimelineEvent } from '@/components/H
 import { CommentarySection } from '@/components/CommentarySection';
 import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/components/TraditionBadge';
 import { ConsensusBadge } from '@/components/ConsensusBadge';
+import { ArabicText } from '@/components/ArabicText';
+import { EmptyState } from '@/components/EmptyState';
+import { BilingualTitle, NarratorName } from '@/components/NarratorName';
+import type { NarratorVerdict } from '@/db/queries/contracts';
+import { VerdictsByTradition } from './components/VerdictsByTradition';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+/** Says whether a life date is backed by a reviewed citation; unreviewed dates stay visible but labelled. */
 function DateEvidence({
     sourceText,
     provenance,
@@ -19,20 +24,28 @@ function DateEvidence({
     provenance?: string;
     reviewStatus?: string;
 }) {
-    const reviewed = (
-        reviewStatus === 'human_verified' || reviewStatus === 'source_verified'
-    ) && Boolean(provenance);
+    const reviewed = (reviewStatus === 'human_verified' || reviewStatus === 'source_verified') && Boolean(provenance);
     return (
-        <p className="mt-1 text-xs text-white/50">
-            {reviewed ? 'Reviewed date provenance' : 'Legacy/unverified date evidence'}:{' '}
-            {provenance ? `Source/provenance: ${provenance}` : 'no structured source retained'}
-            {sourceText && ` · Source text: ${sourceText}`}
-            {!reviewed && ' — not a structured reviewed citation'}
+        <p className="text-xs text-slate-500">
+            {reviewed ? `Source: ${provenance}` : 'Unverified: no reviewed citation'}
+            {sourceText && <> · as written: <span dir="auto">{sourceText}</span></>}
         </p>
     );
 }
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+    return <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{children}</h2>;
+}
+
+function formatYear(hijri?: number, gregorian?: number): string | null {
+    if (hijri === undefined && gregorian === undefined) return null;
+    if (hijri === undefined) return `${gregorian} CE`;
+    return gregorian === undefined ? `${hijri} AH` : `${hijri} AH (${gregorian} CE)`;
+}
+
 export interface NarratorClientPageProps {
+    /** Published verdicts; shown grouped by tradition above the tabs. */
+    verdicts?: NarratorVerdict[];
     narratorDetails: {
         id: string;
         name_english: string;
@@ -126,11 +139,16 @@ export interface NarratorClientPageProps {
 const HADITH_QUERY_LIMIT = 100;
 
 const TAB_TRIGGER_CLASS =
-    'flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-1 pb-3 pt-1 text-sm font-medium text-white/60 shadow-none ' +
-    'hover:text-white data-[state=active]:border-cyan-400 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none';
+    'flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-1 pb-3 pt-1 text-sm font-medium text-slate-400 shadow-none ' +
+    'hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-emerald-400 data-[state=active]:border-emerald-400 data-[state=active]:bg-transparent data-[state=active]:text-slate-100 data-[state=active]:shadow-none';
 
+const LINK_ROW_CLASS =
+    '-mx-3 block rounded-md px-3 py-2.5 outline-none transition-colors hover:bg-slate-900 focus-visible:ring-2 focus-visible:ring-emerald-400';
+
+/** Narrator tabs. Every section renders only what the record holds; unknowns say "Unknown". See src/components/AGENTS.md §Narrator detail. */
 export default function NarratorClientPage({
     narratorDetails,
+    verdicts = [],
     narratorNetwork,
     commentaries = [],
     historicalEvents = [],
@@ -142,473 +160,262 @@ export default function NarratorClientPage({
     const students = narratorNetwork?.students ?? [];
     const hasNetwork = teachers.length > 0 || students.length > 0;
     const hasTimeline = historicalEvents.length > 0;
-    const hadithCount = narratorDetails.other_hadiths?.length ?? 0;
-    const hasHadiths = hadithCount > 0;
+    const otherHadiths = narratorDetails.other_hadiths ?? [];
     // The upstream query is LIMIT 100: a full page means "at least 100", not exactly 100.
-    const hadithCountLabel = hadithCount >= HADITH_QUERY_LIMIT ? `${HADITH_QUERY_LIMIT}+` : String(hadithCount);
+    const hadithCountLabel = otherHadiths.length >= HADITH_QUERY_LIMIT ? `${HADITH_QUERY_LIMIT}+` : String(otherHadiths.length);
+    const hasTraditions = Boolean(traditionConnections && traditionConnections.traditions.length > 0);
 
     // v2 rows carry death_date_*; v1 rows carry death_year_*. Unknown stays undefined.
     const deathYearHijri = narratorDetails.death_year_hijri ?? narratorDetails.death_date_hijri;
     const deathYearGregorian = narratorDetails.death_year_gregorian ?? narratorDetails.death_date_gregorian;
+    const born = formatYear(narratorDetails.birth_year_hijri, narratorDetails.birth_year_gregorian);
+    const died = formatYear(deathYearHijri, deathYearGregorian);
+
+    const summary = narratorDetails.bio_summary || narratorDetails.biographical_narrative || narratorDetails.bio;
+    const hasAssessment = !narratorDetails.is_prophet &&
+        Boolean(narratorDetails.reliability_consensus || narratorDetails.bio_tadil || narratorDetails.bio_jarh);
+    const hasOtherTabs = hasNetwork || otherHadiths.length > 0 || hasTimeline || commentaries.length > 0 || hasTraditions;
+    const isSparse = !summary && !hasAssessment && !hasNetwork && otherHadiths.length === 0;
 
     return (
+        <>
+        <VerdictsByTradition verdicts={verdicts} />
         <Tabs defaultValue="biography" className="w-full">
-            <div className="mb-8 overflow-x-auto border-b border-white/10 [scrollbar-width:none]">
+            {/* A tab bar with one tab is noise: show it only when there is somewhere else to go. */}
+            <div className={hasOtherTabs ? 'mb-8 overflow-x-auto border-b border-slate-800 [scrollbar-width:none]' : 'sr-only'}>
                 <TabsList className="h-auto w-max min-w-full justify-start gap-6 rounded-none bg-transparent p-0">
-                    <TabsTrigger value="biography" className={TAB_TRIGGER_CLASS}>
-                        Biography
-                    </TabsTrigger>
-                    {hasTimeline && (
-                        <TabsTrigger value="timeline" className={TAB_TRIGGER_CLASS}>
-                            Historical Timeline
-                        </TabsTrigger>
-                    )}
-                    {hasNetwork && (
-                        <TabsTrigger value="network" className={TAB_TRIGGER_CLASS}>
-                            Teachers and Students
-                        </TabsTrigger>
-                    )}
-                    {hasHadiths && (
-                        <TabsTrigger value="hadiths" className={TAB_TRIGGER_CLASS}>
-                            Hadiths
-                        </TabsTrigger>
-                    )}
-                    {commentaries.length > 0 && (
-                        <TabsTrigger value="commentaries" className={TAB_TRIGGER_CLASS}>
-                            Commentaries
-                        </TabsTrigger>
-                    )}
-                    {traditionConnections && traditionConnections.traditions.length > 0 && (
-                        <TabsTrigger value="traditions" className={TAB_TRIGGER_CLASS}>
-                            Tradition Connections ({traditionConnections.traditions.length})
-                        </TabsTrigger>
-                    )}
+                    <TabsTrigger value="biography" className={TAB_TRIGGER_CLASS}>Biography</TabsTrigger>
+                    {hasNetwork && <TabsTrigger value="network" className={TAB_TRIGGER_CLASS}>Teachers and students</TabsTrigger>}
+                    {otherHadiths.length > 0 && <TabsTrigger value="hadiths" className={TAB_TRIGGER_CLASS}>Hadith ({hadithCountLabel})</TabsTrigger>}
+                    {hasTimeline && <TabsTrigger value="timeline" className={TAB_TRIGGER_CLASS}>Historical events</TabsTrigger>}
+                    {commentaries.length > 0 && <TabsTrigger value="commentaries" className={TAB_TRIGGER_CLASS}>Commentary</TabsTrigger>}
+                    {hasTraditions && <TabsTrigger value="traditions" className={TAB_TRIGGER_CLASS}>Other traditions</TabsTrigger>}
                 </TabsList>
             </div>
 
-            {/* Biography Tab */}
-            <TabsContent value="biography">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Biography */}
-                    <div className="lg:col-span-2">
-                        <Card className="bg-white/5 border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-white">Biography</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                {/* ─── Phase-0 enriched bio_summary ─── */}
-                                {narratorDetails.bio_summary && (
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-cyan-300 mb-3">
-                                            Summary
-                                        </h3>
-                                        <p className="text-white/85 leading-relaxed whitespace-pre-line">
-                                            {narratorDetails.bio_summary}
-                                        </p>
-                                    </div>
+            <TabsContent value="biography" className="space-y-10">
+                {summary && (
+                    <section>
+                        <SectionHeading>Summary</SectionHeading>
+                        <p className="whitespace-pre-line leading-relaxed text-slate-200" dir="auto">{summary}</p>
+                        {!narratorDetails.bio_summary && narratorDetails.bio && narratorDetails.biographical_narrative &&
+                            narratorDetails.bio !== narratorDetails.biographical_narrative && (
+                            <p className="mt-4 whitespace-pre-line leading-relaxed text-slate-300" dir="auto">{narratorDetails.bio}</p>
+                        )}
+                    </section>
+                )}
+
+                {narratorDetails.is_prophet && (
+                    <p className="border-s-2 border-slate-700 ps-4 text-sm leading-relaxed text-slate-400">
+                        The Prophet is the source of the corpus and is not assessed within narrator criticism (jarḥ wa taʿdīl).
+                    </p>
+                )}
+
+                {hasAssessment && (
+                    <section>
+                        <SectionHeading>Jarḥ wa taʿdīl · assessments</SectionHeading>
+                        {(narratorDetails.reliability_consensus || narratorDetails.reliability_disagreement || narratorDetails.is_companion) && (
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <ConsensusBadge verdict={narratorDetails.reliability_consensus} />
+                                {narratorDetails.reliability_disagreement && (
+                                    <span className="rounded border border-slate-700 px-2 py-0.5 text-xs text-slate-300">critics disagree</span>
                                 )}
-
-                                {/* ─── Classical verdict: jarḥ wa taʿdīl ─── */}
-                                {narratorDetails.is_prophet ? (
-                                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-                                        <h3 className="text-base font-semibold text-amber-300 mb-2">
-                                            Not subject to jarḥ wa taʿdīl
-                                        </h3>
-                                        <p className="text-white/75 text-sm leading-relaxed">
-                                            As the source of the ḥadīth corpus, the Prophet ﷺ is not classified
-                                            within the classical narrator-criticism framework. Biographical fields
-                                            here document basic identity only.
-                                        </p>
-                                    </div>
-                                ) : (narratorDetails.reliability_consensus || narratorDetails.bio_tadil || narratorDetails.bio_jarh) && (
-                                    <div className="pt-2 border-t border-white/10">
-                                        <div className="flex items-baseline justify-between mb-3">
-                                            <h3 className="text-lg font-semibold text-cyan-300">
-                                                Classical Verdict — Jarḥ wa Taʿdīl
-                                            </h3>
-                                            <div className="flex items-center gap-2">
-                                                {narratorDetails.reliability_consensus && (
-                                                    <ConsensusBadge verdict={narratorDetails.reliability_consensus} />
-                                                )}
-                                                {narratorDetails.reliability_disagreement && (
-                                                    <span className="text-xs px-2 py-0.5 rounded bg-rose-500/15 text-rose-200 border border-rose-500/30">
-                                                        contested
-                                                    </span>
-                                                )}
-                                                {narratorDetails.is_companion && (
-                                                    <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-200 border border-emerald-500/30">
-                                                        ṣaḥābī
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {narratorDetails.is_companion && (
-                                            <p className="text-xs text-white/55 mb-3 italic">
-                                                Sunni rijāl literature does not subject Companions to individual taʿdīl/jarḥ
-                                                under the doctrine of <span className="not-italic">ʿadālat al-ṣaḥāba</span>.
-                                                Where critique exists in Imami or other traditions, it is noted below.
-                                            </p>
-                                        )}
-
-                                        {narratorDetails.bio_tadil && (
-                                            <div className="mb-4">
-                                                <h4 className="text-sm font-semibold text-emerald-300 mb-2 uppercase tracking-wide">
-                                                    Taʿdīl — testimonies of trust
-                                                </h4>
-                                                <p className="text-white/85 leading-loose" dir="auto">
-                                                    {narratorDetails.bio_tadil}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {narratorDetails.bio_jarh && (
-                                            <div className="mb-2">
-                                                <h4 className="text-sm font-semibold text-rose-300 mb-2 uppercase tracking-wide">
-                                                    Jarḥ — testimonies of criticism
-                                                </h4>
-                                                <p className="text-white/85 leading-loose" dir="auto">
-                                                    {narratorDetails.bio_jarh}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {narratorDetails.bio_provenance && (
-                                            <p className="text-xs text-white/40 mt-3 italic">
-                                                Provenance status: {narratorDetails.bio_provenance === 'manual_phase_0'
-                                                    ? 'uncited legacy manual seed; edition, volume, and page evidence is pending'
-                                                    : narratorDetails.bio_provenance}
-                                                {typeof narratorDetails.critic_quote_count === 'number' && narratorDetails.critic_quote_count > 0 && (
-                                                    ` · ${narratorDetails.critic_quote_count} critic${narratorDetails.critic_quote_count === 1 ? '' : 's'}`
-                                                )}
-                                            </p>
-                                        )}
-                                    </div>
+                                {narratorDetails.is_companion && (
+                                    <span className="rounded border border-slate-700 px-2 py-0.5 text-xs text-slate-300">ṣaḥābī</span>
                                 )}
-
-                                {/* Legacy fields (only render if no Phase-0 bio_summary already covered them) */}
-                                {narratorDetails.biographical_narrative && !narratorDetails.bio_summary && (
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-cyan-300 mb-3">
-                                            Biographical Narrative
-                                        </h3>
-                                        <p className="text-white/80 leading-relaxed">
-                                            {narratorDetails.biographical_narrative}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {narratorDetails.bio && !narratorDetails.bio_summary && (
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-cyan-300 mb-3">
-                                            Summary (legacy)
-                                        </h3>
-                                        <p className="text-white/80 leading-relaxed">
-                                            {narratorDetails.bio}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Geographic Information */}
-                                {narratorDetails.geographic_region && (
-                                    <div className="pt-4 border-t border-white/10">
-                                        <h3 className="text-lg font-semibold text-cyan-300 mb-3">
-                                            Geographic Information
-                                        </h3>
-                                        <p className="text-white/80">
-                                            <span className="font-semibold">Region:</span> {narratorDetails.geographic_region}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Life Dates */}
-                                <div className="pt-4 border-t border-white/10">
-                                    <h3 className="text-lg font-semibold text-cyan-300 mb-3">
-                                        Life Timeline
-                                    </h3>
-                                    <div className="space-y-2 text-white/80">
-                                        {(narratorDetails.birth_year_hijri !== undefined
-                                            || narratorDetails.birth_year_gregorian !== undefined) ? (
-                                            <div>
-                                                <p>
-                                                    <span className="font-semibold">Born:</span>
-                                                    {narratorDetails.birth_year_hijri !== undefined ? (
-                                                        <>
-                                                            {' '}{narratorDetails.birth_year_hijri} AH
-                                                            {narratorDetails.birth_year_gregorian !== undefined
-                                                                && ` (${narratorDetails.birth_year_gregorian} CE)`}
-                                                        </>
-                                                    ) : (
-                                                        <> {narratorDetails.birth_year_gregorian} CE</>
-                                                    )}
-                                                </p>
-                                                <DateEvidence
-                                                    sourceText={narratorDetails.birth_date_source_text}
-                                                    provenance={narratorDetails.birth_date_provenance}
-                                                    reviewStatus={narratorDetails.birth_date_review_status}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <p>
-                                                <span className="font-semibold">Born:</span>{' '}
-                                                <span className="text-white/50">unknown</span>
-                                            </p>
-                                        )}
-                                        {(deathYearHijri !== undefined || deathYearGregorian !== undefined) ? (
-                                            <div>
-                                                <p>
-                                                    <span className="font-semibold">Died:</span>
-                                                    {deathYearHijri !== undefined ? (
-                                                        <>
-                                                            {' '}{deathYearHijri} AH
-                                                            {deathYearGregorian !== undefined
-                                                                && ` (${deathYearGregorian} CE)`}
-                                                        </>
-                                                    ) : (
-                                                        <> {deathYearGregorian} CE</>
-                                                    )}
-                                                </p>
-                                                <DateEvidence
-                                                    sourceText={narratorDetails.death_date_source_text}
-                                                    provenance={narratorDetails.death_date_provenance}
-                                                    reviewStatus={narratorDetails.death_date_review_status}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <p>
-                                                <span className="font-semibold">Died:</span>{' '}
-                                                <span className="text-white/50">unknown</span>
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Generation Timeline */}
-                    <div>
-                        <Card className="bg-white/5 border-white/10">
-                            <CardContent className="pt-6">
-                                <TabaqahTimeline currentTabaqah={narratorDetails.tabaqah} />
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </TabsContent>
-
-            {/* Historical Timeline Tab */}
-            <TabsContent value="timeline">
-                <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                        <CardTitle className="text-white">Historical Timeline</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <HistoricalTimeline
-                            events={historicalEvents}
-                            narratorBirthYear={narratorDetails.birth_year_hijri}
-                            narratorDeathYear={deathYearHijri}
-                            onEventSelect={setSelectedEvent}
-                            selectedEventId={selectedEvent}
-                        />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-
-            {/* Teacher-Student Network Tab */}
-            <TabsContent value="network">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Teachers */}
-                    {teachers.length > 0 && (
-                        <Card className="bg-white/5 border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-white">Teachers</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {teachers.map((teacher) => (
-                                        <Link
-                                            key={teacher.id}
-                                            href={`/narrator/${teacher.id}`}
-                                            className="block p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50
-                                                rounded-lg transition-all group"
-                                        >
-                                            <h4 className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                                                {teacher.name_english}
-                                            </h4>
-                                            <p lang="ar" dir="rtl" className="text-sm text-cyan-200/80 font-arabic mt-1 text-start">
-                                                {teacher.name_arabic}
-                                            </p>
-                                            {teacher.relationship && (
-                                                <p className="text-xs text-white/60 mt-2">{teacher.relationship}</p>
-                                            )}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Students */}
-                    {students.length > 0 && (
-                        <Card className="bg-white/5 border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-white">Students</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {students.map((student) => (
-                                        <Link
-                                            key={student.id}
-                                            href={`/narrator/${student.id}`}
-                                            className="block p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50
-                                                rounded-lg transition-all group"
-                                        >
-                                            <h4 className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                                                {student.name_english}
-                                            </h4>
-                                            <p lang="ar" dir="rtl" className="text-sm text-cyan-200/80 font-arabic mt-1 text-start">
-                                                {student.name_arabic}
-                                            </p>
-                                            {student.relationship && (
-                                                <p className="text-xs text-white/60 mt-2">{student.relationship}</p>
-                                            )}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                </div>
-            </TabsContent>
-
-            {/* Hadiths Tab */}
-            <TabsContent value="hadiths">
-                <Card className="bg-white/5 border-white/10">
-                    <CardHeader>
-                        <CardTitle className="text-white">
-                            Hadiths Narrated
-                            {` (${hadithCountLabel})`}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {narratorDetails.other_hadiths && narratorDetails.other_hadiths.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {narratorDetails.other_hadiths.map((hadith) => (
-                                    <Link
-                                        key={hadith.id}
-                                        href={`/hadith/${hadith.id}`}
-                                        className="block p-6 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50
-                                            rounded-xl transition-all duration-300 group"
-                                    >
-                                        <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300 transition-colors mb-2">
-                                            {hadith.title}
-                                        </h3>
-                                        {hadith.primary_topic && (
-                                            <p className="text-sm text-white/60 mb-3">{hadith.primary_topic}</p>
-                                        )}
-                                        {hadith.display_grade && (
-                                            <div className="inline-block px-3 py-1 rounded-md bg-cyan-500/15 border border-cyan-500/25">
-                                                <span className="text-xs text-cyan-200">
-                                                    {hadith.display_grade}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </Link>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12">
-                                <p className="text-white/60">This narrator is not currently linked to any hadiths.</p>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                        {narratorDetails.reliability_consensus && (
+                            <p className="mb-4 text-xs text-slate-500">
+                                Hand-entered summary label. The tradition and critic it belongs to are not yet recorded.
+                            </p>
+                        )}
+                        {narratorDetails.is_companion && (
+                            <p className="mb-6 text-sm leading-relaxed text-slate-400">
+                                In Sunni rijāl literature Companions are not individually assessed (ʿadālat al-ṣaḥāba).
+                                Assessments from other traditions are listed where recorded.
+                            </p>
+                        )}
+                        {narratorDetails.bio_tadil && (
+                            <div className="mb-6">
+                                <h3 className="mb-2 text-sm font-medium text-slate-200">Taʿdīl · statements of trust</h3>
+                                <p className="whitespace-pre-line leading-loose text-slate-300" dir="auto">{narratorDetails.bio_tadil}</p>
+                            </div>
+                        )}
+                        {narratorDetails.bio_jarh && (
+                            <div className="mb-6">
+                                <h3 className="mb-2 text-sm font-medium text-slate-200">Jarḥ · statements of criticism</h3>
+                                <p className="whitespace-pre-line leading-loose text-slate-300" dir="auto">{narratorDetails.bio_jarh}</p>
+                            </div>
+                        )}
+                        {narratorDetails.bio_provenance && (
+                            <p className="text-xs text-slate-500">
+                                {narratorDetails.bio_provenance === 'manual_phase_0'
+                                    ? 'Uncited manual entry: edition, volume and page are pending.'
+                                    : `Provenance: ${narratorDetails.bio_provenance}`}
+                                {typeof narratorDetails.critic_quote_count === 'number' && narratorDetails.critic_quote_count > 0 &&
+                                    ` · ${narratorDetails.critic_quote_count} critic${narratorDetails.critic_quote_count === 1 ? '' : 's'} quoted`}
+                            </p>
+                        )}
+                    </section>
+                )}
+
+                <section>
+                    <SectionHeading>Life</SectionHeading>
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-sm">
+                        <dt className="text-slate-500">Born</dt>
+                        <dd className="text-slate-200">
+                            {born ?? <span className="text-slate-500">Unknown</span>}
+                            {born && (
+                                <DateEvidence
+                                    sourceText={narratorDetails.birth_date_source_text}
+                                    provenance={narratorDetails.birth_date_provenance}
+                                    reviewStatus={narratorDetails.birth_date_review_status}
+                                />
+                            )}
+                        </dd>
+                        <dt className="text-slate-500">Died</dt>
+                        <dd className="text-slate-200">
+                            {died ?? <span className="text-slate-500">Unknown</span>}
+                            {died && (
+                                <DateEvidence
+                                    sourceText={narratorDetails.death_date_source_text}
+                                    provenance={narratorDetails.death_date_provenance}
+                                    reviewStatus={narratorDetails.death_date_review_status}
+                                />
+                            )}
+                        </dd>
+                        <dt className="text-slate-500">Generation</dt>
+                        <dd className="text-slate-200">
+                            <TabaqahTimeline currentTabaqah={narratorDetails.tabaqah} />
+                        </dd>
+                        {narratorDetails.geographic_region && (
+                            <>
+                                <dt className="text-slate-500">Region</dt>
+                                <dd className="text-slate-200">{narratorDetails.geographic_region}</dd>
+                            </>
+                        )}
+                    </dl>
+                </section>
+
+                {isSparse && (
+                    <EmptyState
+                        title="Little is recorded about this narrator yet"
+                        description="No biography, assessments, teachers, students or hadith are linked to this record."
+                    />
+                )}
             </TabsContent>
 
-            {/* Commentaries Tab */}
-            <TabsContent value="commentaries">
-                <CommentarySection commentaries={commentaries} narratorId={narratorDetails.id} />
-            </TabsContent>
+            {hasTimeline && (
+                <TabsContent value="timeline">
+                    <HistoricalTimeline
+                        events={historicalEvents}
+                        narratorBirthYear={narratorDetails.birth_year_hijri}
+                        narratorDeathYear={deathYearHijri}
+                        onEventSelect={setSelectedEvent}
+                        selectedEventId={selectedEvent}
+                    />
+                </TabsContent>
+            )}
 
-            {/* Tradition Connections Tab */}
-            {traditionConnections && traditionConnections.traditions.length > 0 && (
-                <TabsContent value="traditions">
-                    <div className="space-y-6">
-                        {/* Traditions this narrator is linked to */}
-                        <Card className="bg-white/5 border-white/10">
-                            <CardHeader>
-                                <CardTitle className="text-white">Linked Religious Traditions</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex flex-wrap gap-4">
-                                    {traditionConnections.traditions.map((t) => (
-                                        <div key={t.id} className="p-4 bg-amber-900/20 border border-amber-500/20 rounded-lg min-w-48">
-                                            <TraditionBadge tradition={t.name} size="md" />
-                                            {t.name_arabic && (
-                                                <p lang="ar" dir="rtl" className="text-slate-400 font-arabic mt-1 text-sm text-start">{t.name_arabic}</p>
-                                            )}
-                                            {t.description && (
-                                                <p className="text-xs text-slate-400 mt-2 leading-relaxed">{t.description}</p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                                <p className="text-xs text-slate-400 mt-4">
-                                    This narrator has been identified as a transmitter of narratives from the above traditions,
-                                    either through conversion, scholarly contact, or regional cultural exchange.
-                                </p>
-                            </CardContent>
-                        </Card>
-
-                        {/* Hadiths with parallels via this narrator */}
-                        {traditionConnections.hadiths_with_parallels.length > 0 && (
-                            <Card className="bg-white/5 border-white/10">
-                                <CardHeader>
-                                    <CardTitle className="text-white">Hadiths with Cross-Cultural Parallels</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-slate-400 mb-4">
-                                        Hadiths in which this narrator appears in the chain that have documented cross-cultural parallels:
-                                    </p>
-                                    <div className="space-y-3">
-                                        {traditionConnections.hadiths_with_parallels.map((item, i) => (
-                                            <Link
-                                                key={i}
-                                                href={`/hadith/${item.hadith.id}`}
-                                                className="block p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 rounded-lg transition-all group"
-                                            >
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div className="flex-1">
-                                                        <h4 className="font-semibold text-white group-hover:text-amber-300 transition-colors mb-2">
-                                                            {item.hadith.title}
-                                                        </h4>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            <TraditionBadge tradition={item.tradition.name} />
-                                                            <ParallelTypeBadge type={item.parallel.parallel_type} />
-                                                            <IsraIliyyatBadge status={item.parallel.isra_iliyyat_status} />
-                                                        </div>
-                                                        <p className="text-xs text-slate-400 mt-1.5">
-                                                            ↔ {item.source_text.title}
-                                                            {item.source_text.canonical_reference && ` · ${item.source_text.canonical_reference}`}
-                                                        </p>
-                                                    </div>
-                                                    {item.hadith.display_grade && (
-                                                        <span className="text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded">
-                                                            {item.hadith.display_grade}
-                                                        </span>
-                                                    )}
-                                                </div>
+            {hasNetwork && (
+                <TabsContent value="network" className="grid grid-cols-1 gap-10 md:grid-cols-2">
+                    {[
+                        { title: 'Teachers', people: teachers },
+                        { title: 'Students', people: students },
+                    ].map(({ title, people }) => (
+                        <section key={title}>
+                            <SectionHeading>{title} ({people.length})</SectionHeading>
+                            {people.length === 0 ? (
+                                <p className="text-sm text-slate-500">None recorded.</p>
+                            ) : (
+                                <ul className="divide-y divide-slate-800/70">
+                                    {people.map((person) => (
+                                        <li key={person.id}>
+                                            <Link href={`/narrator/${encodeURIComponent(person.id)}`} className={LINK_ROW_CLASS}>
+                                                <NarratorName
+                                                    english={person.name_english}
+                                                    arabic={person.name_arabic}
+                                                    latinClassName="text-sm font-medium text-slate-100"
+                                                    arabicClassName="text-lg leading-relaxed text-slate-400"
+                                                />
                                             </Link>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    ))}
+                </TabsContent>
+            )}
+
+            {otherHadiths.length > 0 && (
+                <TabsContent value="hadiths">
+                    <ul className="divide-y divide-slate-800/70">
+                        {otherHadiths.map((hadith) => (
+                            <li key={hadith.id}>
+                                <Link href={`/hadith/${encodeURIComponent(hadith.id)}`} className={LINK_ROW_CLASS}>
+                                    <span className="block font-medium text-slate-100">
+                                        {hadith.title ? <BilingualTitle text={hadith.title} /> : 'Untitled hadith'}
+                                    </span>
+                                    {hadith.primary_topic && hadith.primary_topic !== hadith.title && (
+                                        <span className="mt-0.5 block text-sm text-slate-400">{hadith.primary_topic}</span>
+                                    )}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </TabsContent>
+            )}
+
+            {commentaries.length > 0 && (
+                <TabsContent value="commentaries">
+                    <CommentarySection commentaries={commentaries} narratorId={narratorDetails.id} />
+                </TabsContent>
+            )}
+
+            {hasTraditions && traditionConnections && (
+                <TabsContent value="traditions" className="space-y-10">
+                    <section>
+                        <SectionHeading>Linked traditions</SectionHeading>
+                        <ul className="space-y-4">
+                            {traditionConnections.traditions.map((tradition) => (
+                                <li key={tradition.id}>
+                                    <TraditionBadge tradition={tradition.name} size="md" />
+                                    {tradition.name_arabic && (
+                                        <ArabicText as="p" className="mt-1 text-slate-400">{tradition.name_arabic}</ArabicText>
+                                    )}
+                                    {tradition.description && <p className="mt-1 text-sm text-slate-400">{tradition.description}</p>}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                    {traditionConnections.hadiths_with_parallels.length > 0 && (
+                        <section>
+                            <SectionHeading>Hadith in these chains with recorded parallels</SectionHeading>
+                            <ul className="divide-y divide-slate-800/70">
+                                {traditionConnections.hadiths_with_parallels.map((item) => (
+                                    <li key={`${item.hadith.id}:${item.parallel.id}`}>
+                                        <Link href={`/hadith/${encodeURIComponent(item.hadith.id)}`} className={LINK_ROW_CLASS}>
+                                            <span className="block font-medium text-slate-100">{item.hadith.title}</span>
+                                            <span className="mt-2 flex flex-wrap gap-2">
+                                                <TraditionBadge tradition={item.tradition.name} />
+                                                <ParallelTypeBadge type={item.parallel.parallel_type} />
+                                                <IsraIliyyatBadge status={item.parallel.isra_iliyyat_status} />
+                                            </span>
+                                            <span className="mt-1.5 block text-xs text-slate-400">
+                                                {item.source_text.title}
+                                                {item.source_text.canonical_reference && ` · ${item.source_text.canonical_reference}`}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
                 </TabsContent>
             )}
         </Tabs>
+        </>
     );
 }

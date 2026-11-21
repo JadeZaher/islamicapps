@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { getAllLocations } from '@/app/actions/graph-actions';
+import { listLocations } from '@/db/queries/location';
 import { parsePageParam } from '@/lib/pagination';
 import { LocationsManagerClient } from './client';
 
@@ -13,7 +13,7 @@ export default async function LocationsManagerPage({ searchParams }: PageProps) 
     const page = parsePageParam(params.page);
     const q = params.q || '';
 
-    const result = await getAllLocations({ page });
+    const result = await listLocations(q, { page });
 
     return (
         <LocationsManagerClient

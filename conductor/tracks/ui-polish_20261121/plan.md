@@ -33,3 +33,15 @@ Done when: each lane's task list in 06-ui-audit section 8 is checked off.
 - [ ] Hand-check keyboard, loading, empty and error states on each lane's pages.
 
 Done when: the spec's acceptance checks pass.
+
+## Log
+
+- 2026-11-21, browser review (interface lane). Walked home, indexes, hadith and narrator detail,
+  comparative, 404 and route states at 1440 and 390 px against live Neo4j, then again after the data lane
+  switched the indexes to the (empty) Postgres development database. Fixed: Tailwind source scan crashing
+  dev on the OS-locked dataset file; one page background; Arabic joining and justification rules; hadith
+  page rebuilt as one reading column; isnad rail with unidentified mentions unlinked; computed score and
+  inferred marfūʿ no longer rendered; per-tradition assessments rendered; narrator page de-carded, verdict
+  attributed, empty tabaqah pill removed; shared `RouteError` / `RouteMessage`; neutral Islamic tradition
+  badges; comparative phone layout and page-size "total". Rationale: `src/components/AGENTS.md`.
+  Not checked live: admin lists (now behind curator sign-in). Phase 3 hand-check stays open for admin.

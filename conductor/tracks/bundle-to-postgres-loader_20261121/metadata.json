@@ -1,7 +1,7 @@
 {
   "id": "bundle-to-postgres-loader_20261121",
   "title": "Bundle to Postgres loader",
-  "status": "planned",
+  "status": "in_progress",
   "priority": "P0",
   "created": "2026-11-21",
   "design_steps": "5",
@@ -20,34 +20,27 @@
     "computed_at": "2026-11-21",
     "owns": [
       {
-        "path": "datasets/hadith-data/neo4j_export/export_postgres.py",
-        "status": "future"
-      },
-      {
-        "path": "datasets/hadith-data/__tests__/test_export_postgres*.py",
-        "status": "future",
-        "note": "test location hypothesis"
+        "path": "datasets/hadith-data/pg_export/**",
+        "status": "exists"
       },
       {
         "path": "src/db/load/**",
-        "status": "future"
+        "status": "exists"
       },
       {
-        "path": "src/db/ops/indexes-heavy.sql",
-        "status": "future"
+        "path": "package.json#scripts.db:load",
+        "status": "exists"
       },
       {
-        "path": "src/scripts/db/load-bundle.ts",
-        "status": "future"
-      },
-      {
-        "path": "src/scripts/db/verify.ts",
-        "status": "future"
+        "path": "datasets/hadith-data/development/pg-load-2026-11-21/**",
+        "status": "exists",
+        "note": "git-ignored outputs"
       }
     ],
     "tripwires": [
       "export_bundle.py and validate_bundle.py stay untouched (design 4.4).",
-      "The legacy chain_indx source_index stream ships behind a flag that defaults off until owner question 1 is answered."
+      "The legacy chain_indx source_index stream ships behind --legacy-source-index (owner approved Q1 on 2026-11-21); rendering still needs the view predicate change."
     ]
-  }
+  },
+  "updated": "2026-11-21"
 }

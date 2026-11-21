@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createLocation, deleteLocation, updateLocation } from '@/app/actions/graph-actions';
+import { createLocation, deleteLocation, updateLocation } from '@/app/actions/curation/location';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Edit2 } from 'lucide-react';
 import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
+import { describeActionError } from '@/app/admin/_components/actionError';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -51,12 +52,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
         setIsSaving(true);
         setFormError(null);
         try {
-            const submitData = {
-                ...formData,
-                latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-                longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-            };
-            await createLocation(submitData as any);
+            await createLocation(formData);
             setFormData({
                 name: '',
                 modern_country: '',
@@ -67,8 +63,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             setIsCreating(false);
             router.refresh();
         } catch (error) {
-            console.error('Error creating location:', error);
-            setFormError('Could not create the location. Check the fields and try again.');
+            setFormError(describeActionError(error, 'Could not create the location. Check the fields and try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -80,12 +75,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
         setIsSaving(true);
         setFormError(null);
         try {
-            const submitData = {
-                ...formData,
-                latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-                longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-            };
-            await updateLocation(editingId, submitData as any);
+            await updateLocation(editingId, formData);
             setFormData({
                 name: '',
                 modern_country: '',
@@ -96,8 +86,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             setEditingId(null);
             router.refresh();
         } catch (error) {
-            console.error('Error updating location:', error);
-            setFormError('Could not update the location. Check the fields and try again.');
+            setFormError(describeActionError(error, 'Could not update the location. Check the fields and try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -114,8 +103,8 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
             name: location.name || '',
             modern_country: location.modern_country || '',
             region: location.region || '',
-            latitude: location.latitude || '',
-            longitude: location.longitude || '',
+            latitude: location.latitude == null ? '' : String(location.latitude),
+            longitude: location.longitude == null ? '' : String(location.longitude),
         });
         setIsCreating(false);
         setFormError(null);
@@ -276,7 +265,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                             {location.region}
                                         </div>
                                     )}
-                                    {location.latitude && location.longitude && (
+                                    {location.latitude != null && location.longitude != null && (
                                         <div>
                                             <span className="text-slate-400">Coordinates: </span>
                                             {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
@@ -297,7 +286,7 @@ export function LocationsManagerClient({ locations, pagination, searchQuery = ''
                                 </Button>
                                 <ConfirmDelete
                                     itemName="location"
-                                    consequence={`Delete "${location.name}"? This removes the location permanently and cannot be undone.`}
+                                    consequence={`Retire "${location.name}"? It is hidden from every page. Nothing is erased and an audit record is kept. Refused while a live event refers to it.`}
                                     onConfirm={() => handleDelete(location.id)}
                                 />
                             </div>

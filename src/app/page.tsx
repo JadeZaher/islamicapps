@@ -26,7 +26,7 @@ export default function HomePage() {
             type="search"
             name="q"
             aria-label="Search hadith"
-            placeholder="Search hadith by chapter, topic or text"
+            placeholder="Chapter, topic or text"
             className="h-12 w-full rounded-lg border border-slate-700 bg-slate-900 pl-10 pr-3 text-base text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
           />
         </div>
@@ -41,21 +41,13 @@ export default function HomePage() {
           {TRADITION_LINKS.map((option) => (
             <li key={option.value}>
               <Link href={`/hadith?tradition=${encodeURIComponent(option.value)}`} className={`block ${linkClass}`}>
-                {option.label}
+                {option.value}
               </Link>
             </li>
           ))}
         </ul>
       </nav>
 
-      <nav aria-label="More" className="mt-6 flex gap-2">
-        <Link href="/narrator" className={`flex-1 text-center ${linkClass}`}>
-          Narrators
-        </Link>
-        <Link href="/comparative" className={`flex-1 text-center ${linkClass}`}>
-          Comparative studies
-        </Link>
-      </nav>
     </main>
   );
 }

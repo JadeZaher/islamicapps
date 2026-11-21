@@ -1,14 +1,14 @@
 import Link from 'next/link';
 
+import { RouteMessage, primaryActionClass } from '@/components/RouteState';
+import { Button } from '@/components/ui/button';
+
 export default function NarratorNotFound() {
-    return (
-        <main className="flex min-h-[60vh] items-center justify-center px-6">
-            <div className="max-w-md text-center">
-                <h1 className="text-2xl font-semibold text-white">Narrator not found</h1>
-                <Link href="/" className="mt-6 inline-block text-sm text-white/70 underline underline-offset-4 hover:text-white">
-                    Home
-                </Link>
-            </div>
-        </main>
-    );
+  return (
+    <RouteMessage title="Narrator not found" description="No narrator in the archive has this identifier.">
+      <Button asChild className={primaryActionClass}>
+        <Link href="/narrator">Browse narrators</Link>
+      </Button>
+    </RouteMessage>
+  );
 }

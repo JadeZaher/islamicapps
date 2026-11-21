@@ -1,0 +1,1 @@
+- 2026-11-21 interface lane: client switch to curation/read actions, retire wording and publish controls, per-tradition narrator verdicts, root loading.tsx removed (real 404s), sign-in on shared primitives.

@@ -11,8 +11,15 @@ const VERDICT_STYLES: Record<string, { label: string; className: string }> = {
   not_applicable: { label: 'ʿadālat al-ṣaḥāba', className: 'bg-cyan-500/15 text-cyan-200 border-cyan-500/30' },
 };
 
-/** Legacy v1 `reliability` codes mapped onto the consensus vocabulary. */
+/** Legacy v1 codes and the Postgres `narrator_verdict` enum values mapped onto the display vocabulary. */
 const LEGACY_VERDICT_KEYS: Record<string, string> = {
+  saduq: 'ṣadūq',
+  la_basa_bihi: 'lā_baʾsa_bihi',
+  mukhtalaf_fihi: 'mukhtalaf_fīhi',
+  daif: 'ḍaʿīf',
+  matruk: 'matrūk',
+  kadhab: 'kadhāb',
+  majhul: 'majhūl',
   THIQA: 'thiqa',
   SADUQ: 'ṣadūq',
   DAIF: 'ḍaʿīf',

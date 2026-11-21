@@ -45,19 +45,22 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <form action="/hadith" role="search" className="relative ml-auto w-full sm:w-64">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-500"
-          />
-          <input
-            type="search"
-            name="q"
-            aria-label="Search hadith"
-            placeholder="Search hadith"
-            className="h-8 w-full rounded-md border border-slate-700 bg-slate-900 pl-8 pr-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
-          />
-        </form>
+        {/* The home page is the search; a second box there would compete with it. */}
+        {pathname !== '/' && (
+          <form action="/hadith" role="search" className="relative ml-auto w-full sm:w-64">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-500"
+            />
+            <input
+              type="search"
+              name="q"
+              aria-label="Search hadith"
+              placeholder="Search hadith"
+              className="h-8 w-full rounded-md border border-slate-700 bg-slate-900 pl-8 pr-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+            />
+          </form>
+        )}
       </div>
     </header>
   );

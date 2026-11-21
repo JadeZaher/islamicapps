@@ -1,42 +1,34 @@
 export const dynamic = 'force-dynamic';
 
-import { getAllNarrators, searchNarrators } from '@/app/actions/graph-actions';
-import { DEFAULT_PAGE_SIZE, parsePageParam } from '@/lib/pagination';
+import { listNarratorsForReview } from '@/db/queries/narrator-review';
+import { parsePageParam } from '@/lib/pagination';
 import { NarratorsClient } from './client';
 
 interface PageProps {
-    searchParams: Promise<{ page?: string; q?: string; reliability?: string; tabaqah?: string }>;
+    searchParams: Promise<{ page?: string; q?: string; reliability?: string; verdict?: string; tradition?: string; tabaqah?: string }>;
 }
+
+/** Legacy v1 reliability codes in bookmarked URLs, mapped onto the verdict enum (rule 8). */
+const LEGACY_RELIABILITY: Record<string, string> = {
+    THIQA: 'thiqa',
+    SADUQ: 'saduq',
+    DAIF: 'daif',
+    MAJHUL: 'majhul',
+    KADHAB: 'kadhab',
+};
 
 export default async function NarratorsPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const requestedPage = parsePageParam(params.page);
+    const page = parsePageParam(params.page);
     const q = params.q || '';
-    const reliability = params.reliability || '';
-    const tabaqah = params.tabaqah || '';
+    const verdict = params.verdict || (params.reliability ? LEGACY_RELIABILITY[params.reliability.toUpperCase()] ?? params.reliability : '');
 
-    const hasFilters = q || reliability || tabaqah;
-
-    let result;
-    if (hasFilters) {
-        // searchNarrators returns every match, so paginate here instead of rendering them all.
-        const narrators = await searchNarrators(q, {
-            reliability: reliability || undefined,
-            tabaqah: tabaqah || undefined,
-        });
-        const pageSize = DEFAULT_PAGE_SIZE;
-        const totalPages = Math.max(1, Math.ceil(narrators.length / pageSize));
-        const page = Math.min(requestedPage, totalPages);
-        result = {
-            items: narrators.slice((page - 1) * pageSize, page * pageSize),
-            page,
-            totalPages,
-            total: narrators.length,
-            pageSize,
-        };
-    } else {
-        result = await getAllNarrators({ page: requestedPage });
-    }
+    // Reviewer mode: verdicts of every status; one paginated query with a real count (no fake pagination).
+    const result = await listNarratorsForReview(
+        q,
+        { verdict: verdict || undefined, tradition: params.tradition || undefined, tabaqah: params.tabaqah || undefined },
+        { page },
+    );
 
     return (
         <NarratorsClient

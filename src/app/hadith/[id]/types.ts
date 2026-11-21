@@ -1,12 +1,13 @@
 /**
  * Prop types for the HadithClientPage component.
  *
- * These types mirror the actual data shapes produced by:
- *   - getHadithById() -> HadithNode
- *   - getFullChainGraph() -> { nodes: GraphNode[], edges: GraphEdge[] }
- *   - getParallelsForHadith() -> ParallelRecord[]
- *   - chain health score calculation in page.tsx -> number
+ * Data now comes from the Postgres query layer (src/db/queries): getPublicHadith, getChainGraph,
+ * getPublicParallelsForHadith. page.tsx adapts those contracts to the legacy keys below; the section 9.4
+ * fields (`assessments`, the mention-keyed node fields) are carried alongside so the client can switch to them.
  */
+import type { ChainNode, HadithAssessmentGroup } from '@/db/queries/contracts';
+
+export type { ChainNode, HadithAssessmentGroup };
 
 export interface MatnVariation {
     source_book?: string;
@@ -69,10 +70,18 @@ export interface HadithNode {
     sanad_confidence?: string | null;
     /** v2: tradition (Sunni|Imami|Zaydi|Ibadi). */
     tradition?: string | null;
+    /**
+     * Section 9.4: grades per tradition, replacing display_grade / auto_calculated_grade / transmission_type
+     * (always null now). An empty group means "no assessment recorded" for that tradition.
+     */
+    assessments?: HadithAssessmentGroup[];
 }
 
-/** A node in the isnad graph returned by getFullChainGraph() */
-export interface GraphNode {
+/**
+ * A chain position. `id` is the narrator ID only when `is_link`; otherwise it is the mention ID (`node_id`) and
+ * `name_arabic` carries the surface as written, which must render without a narrator link (section 9.4).
+ */
+export interface GraphNode extends Omit<Partial<ChainNode>, 'position' | 'chain_id'> {
     id: string;
     label?: string;
     reliability?: string | null;
@@ -149,8 +158,4 @@ export interface HadithClientPageProps {
     nodes: GraphNode[];
     edges: GraphEdge[];
     parallels: ParallelRecord[];
-    /** Percentage (0-100) of THIQA narrators; null when no narrator verdicts exist. */
-    chainHealthScore: number | null;
-    /** Whether the chain traces back to the Prophet (via Sahabi or explicit mention). */
-    tracesToProphet: boolean;
 }

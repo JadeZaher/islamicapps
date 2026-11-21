@@ -1,19 +1,21 @@
+/** Mirrors the comparative page header and stats row so nothing shifts on load. */
 export default function ComparativeLoading() {
     return (
-        <div className="min-h-screen bg-slate-950 py-12 px-4" role="status" aria-busy="true" aria-label="Loading comparative studies">
-            <div className="max-w-7xl mx-auto animate-pulse">
-                <div className="h-9 w-80 rounded bg-white/10 mb-8" />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <main className="px-6 py-10" role="status" aria-busy="true">
+            <span className="sr-only">Loading comparative studies</span>
+            <div className="mx-auto max-w-6xl animate-pulse">
+                <div className="mb-8 h-9 w-64 rounded bg-slate-800" />
+                <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
                     {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className="h-20 rounded-lg bg-white/5" />
+                        <div key={i} className="h-20 rounded-lg bg-slate-900" />
                     ))}
                 </div>
                 <div className="space-y-4">
                     {[0, 1, 2].map((i) => (
-                        <div key={i} className="h-48 rounded-lg bg-white/5" />
+                        <div key={i} className="h-40 rounded-lg bg-slate-900" />
                     ))}
                 </div>
             </div>
-        </div>
+        </main>
     );
 }

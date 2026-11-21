@@ -1,4 +1,8 @@
 'use server';
+// RETIREMENT SWEEP: Neo4j-era actions, superseded by src/app/actions/{read,curation}/ (Postgres).
+// No page imports this file; remaining client imports are listed in conductor/tracks/query-port-and-action-switch_20261121/log.md.
+// Every mutating export is gated by requireCurator() (containment phase 3) until neo4j-retirement-sweep deletes it.
+import { requireCurator } from '@/lib/auth/require-curator';
 
 import { runQuery, runWrite, runTransaction } from '@/lib/db/neo4j';
 import { getTraditionFilterValues } from '@/lib/constants/traditions';
@@ -484,6 +488,7 @@ export async function searchNarrators(searchTerm: string = '', filters?: {
  * Create a historical event node
  */
 export async function createHistoricalEvent(data: HistoricalEventData): Promise<string> {
+  await requireCurator();
   const id = randomUUID();
   const startYearHijri = data.start_year_hijri ?? data.year_hijri ?? null;
   const startYearGregorian = data.start_year_gregorian ?? data.year_gregorian ?? null;
@@ -571,6 +576,7 @@ export async function getAllHistoricalEvents(filters?: {
 }
 
 export async function deleteHistoricalEvent(eventId: string): Promise<void> {
+  await requireCurator();
   await runWrite(`MATCH (e:HistoricalEvent {id: $eventId}) DETACH DELETE e`, { eventId });
 }
 
@@ -585,6 +591,7 @@ const HISTORICAL_EVENT_KEYS = [
 ] as const;
 
 export async function updateHistoricalEvent(eventId: string, data: Partial<HistoricalEventData>): Promise<void> {
+  await requireCurator();
   const normalized: Partial<HistoricalEventData> = { ...data };
   if (data.start_year_hijri !== undefined) normalized.year_hijri = data.start_year_hijri;
   else if (data.year_hijri !== undefined) normalized.start_year_hijri = data.year_hijri;
@@ -637,6 +644,7 @@ export async function linkNarratorToEvent(
   eventId: string,
   role?: string
 ): Promise<void> {
+  await requireCurator();
   await runWrite(`
     MATCH (n:Narrator {id: $narratorId})
     MATCH (e:HistoricalEvent {id: $eventId})
@@ -679,6 +687,7 @@ export async function getTimelineForNarrator(narratorId: string) {
  * Create a commentary linked to a hadith and/or narrator
  */
 export async function createCommentary(data: CommentaryData): Promise<string> {
+  await requireCurator();
   const id = randomUUID();
   const queries: Array<{ query: string; params?: Record<string, any> }> = [
     {
@@ -782,6 +791,7 @@ export async function getCommentariesForNarrator(narratorId: string) {
 const COMMENTARY_KEYS = ['source_work', 'author', 'text', 'text_arabic', 'type', 'reference'] as const;
 
 export async function updateCommentary(commentaryId: string, data: Partial<CommentaryData>): Promise<void> {
+  await requireCurator();
   const safe = safeKeys(data, COMMENTARY_KEYS);
   const setClause = buildSetClause('c', safe);
   if (!setClause) return;
@@ -789,6 +799,7 @@ export async function updateCommentary(commentaryId: string, data: Partial<Comme
 }
 
 export async function deleteCommentary(commentaryId: string): Promise<void> {
+  await requireCurator();
   await runWrite(`MATCH (c:Commentary {id: $commentaryId}) DETACH DELETE c`, { commentaryId });
 }
 
@@ -798,6 +809,7 @@ export async function deleteCommentary(commentaryId: string): Promise<void> {
  * Create a location node
  */
 export async function createLocation(data: LocationData): Promise<string> {
+  await requireCurator();
   const id = randomUUID();
   await runWrite(`
     CREATE (l:Location {
@@ -834,12 +846,14 @@ export async function getAllLocations(pagination?: PaginationParams): Promise<Pa
 }
 
 export async function deleteLocation(locationId: string): Promise<void> {
+  await requireCurator();
   await runWrite(`MATCH (l:Location {id: $locationId}) DETACH DELETE l`, { locationId });
 }
 
 const LOCATION_KEYS = ['name', 'name_arabic', 'modern_country', 'region', 'latitude', 'longitude', 'description'] as const;
 
 export async function updateLocation(locationId: string, data: Partial<LocationData>): Promise<void> {
+  await requireCurator();
   const safe = safeKeys(data, LOCATION_KEYS);
   const setClause = buildSetClause('l', safe);
   if (!setClause) return;
@@ -854,6 +868,7 @@ export async function linkNarratorToLocation(
   locationId: string,
   relType: 'BORN_IN' | 'DIED_IN' | 'RESIDED_IN'
 ): Promise<void> {
+  await requireCurator();
   const VALID_REL_TYPES = new Set(['BORN_IN', 'DIED_IN', 'RESIDED_IN']);
   if (!VALID_REL_TYPES.has(relType) || !/^[A-Z_]+$/.test(relType)) {
     throw new Error(`Invalid relationship type: ${relType}`);
@@ -1040,6 +1055,7 @@ const EXPORT_LIMIT = 10000;
  * Supports configurable fields and edge data (narrators, commentaries, schools, variations).
  */
 export async function exportHadiths(config: ExportConfig): Promise<Record<string, string>[]> {
+  await requireCurator();
   // Validate fields against allowlist
   const validFields = config.fields.filter((f) => ALLOWED_EXPORT_FIELDS.has(f));
 

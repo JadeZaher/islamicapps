@@ -2,9 +2,10 @@ export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getAllHadiths, searchHadiths, type HadithDetails } from '@/app/actions/graph-actions';
+import { searchPublicHadiths } from '@/db/queries/hadith';
 import { ArabicText } from '@/components/ArabicText';
 import { EmptyState } from '@/components/EmptyState';
+import { BilingualTitle } from '@/components/NarratorName';
 import { PageLinks } from '@/components/PageLinks';
 import { TraditionBadge } from '@/components/badges';
 import { Button } from '@/components/ui/button';
@@ -29,11 +30,9 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
   const q = params.q?.trim() ?? '';
   const tradition = params.tradition ?? '';
 
-  const result =
-    q || tradition
-      ? await searchHadiths(q, { tradition: tradition || undefined }, { page })
-      : await getAllHadiths({ page });
-  const hadiths = result.items as HadithDetails[];
+  // Public views only; an unknown tradition value gives an empty page, never an error.
+  const result = await searchPublicHadiths(q, { tradition: tradition || undefined }, { page });
+  const hadiths = result.items;
 
   const traditionHref = (value: string) => {
     const search = new URLSearchParams();
@@ -76,21 +75,22 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
                   : 'border-slate-700 text-slate-400 hover:text-slate-100'
               }`}
             >
-              {option.label}
+              {option.value || option.label}
             </Link>
           );
         })}
       </nav>
 
       <p className="mt-6 text-sm text-slate-400" aria-live="polite">
-        {result.total.toLocaleString()} {result.total === 1 ? 'hadith' : 'hadiths'}
+        {result.total.toLocaleString()}
+        {result.totalCapped ? '+' : ''} {result.total === 1 && !result.totalCapped ? 'hadith' : 'hadiths'}
       </p>
 
       {hadiths.length === 0 ? (
         <EmptyState
           className="mt-4"
-          title="No hadith found"
-          description="Try a different search or tradition."
+          title={q || tradition ? 'No hadith found' : 'No published hadith yet.'}
+          description={q || tradition ? 'Try a different search or tradition.' : undefined}
           action={
             (q || tradition) && (
               <Button asChild variant="outline" size="sm">
@@ -100,7 +100,7 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
           }
         />
       ) : (
-        <ul className="mt-3 divide-y divide-slate-800 border-y border-slate-800">
+        <ul className="-mx-3 mt-3 divide-y divide-slate-800 border-y border-slate-800">
           {hadiths.map((hadith) => {
             const english = excerpt((hadith.text_english as string | null) ?? null);
             const arabic = excerpt((hadith.text_arabic as string | null) ?? null);
@@ -111,13 +111,17 @@ export default async function HadithIndexPage({ searchParams }: PageProps) {
               <li key={hadith.id}>
                 <Link
                   href={`/hadith/${encodeURIComponent(hadith.id)}`}
-                  className="block px-2 py-4 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
+                  className="block px-3 py-4 outline-none transition-colors hover:bg-slate-900 focus-visible:bg-slate-900 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-400"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
                     <span>{reference || 'Hadith'}</span>
                     {hadith.tradition && <TraditionBadge tradition={hadith.tradition} />}
                   </div>
-                  {hadith.title && <p className="mt-1 font-medium text-slate-100">{hadith.title}</p>}
+                  {hadith.title && (
+                    <p className="mt-1 font-medium text-slate-100">
+                      <BilingualTitle text={String(hadith.title)} />
+                    </p>
+                  )}
                   {english ? (
                     <p className="mt-1 text-sm leading-relaxed text-slate-300">{english}</p>
                   ) : (

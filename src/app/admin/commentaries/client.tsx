@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import {
     createCommentary,
     deleteCommentary,
+    publishCommentary,
     updateCommentary,
-    searchHadiths,
-    searchNarrators,
-} from '@/app/actions/graph-actions';
+} from '@/app/actions/curation/commentary';
+import { searchHadithsForCuration } from '@/app/actions/curation/search';
+import { searchNarratorsTypeahead } from '@/app/actions/read/narrator';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit2 } from 'lucide-react';
 import { ConfirmDelete } from '@/app/admin/_components/ConfirmDelete';
+import { describeActionError } from '@/app/admin/_components/actionError';
 import { PaginationControls } from '@/components/PaginationControls';
 import { SearchFilterBar } from '@/components/SearchFilterBar';
 
@@ -35,6 +37,11 @@ interface CommentariesManagerClientProps {
     filterType?: string;
 }
 
+const STATUS_LABELS: Record<string, string> = { proposed: 'Proposed', verified: 'Verified', published: 'Published' };
+
+const hadithLabel = (hadith: { title?: string | null; source?: string; hadith_no?: string | null }): string =>
+    hadith.title || [hadith.source, hadith.hadith_no].filter(Boolean).join(' ') || 'Untitled hadith';
+
 const COMMENTARY_TYPES = ['Explanation', 'Critique', 'Translation', 'Historical Context', 'Legal Ruling'];
 
 export function CommentariesManagerClient({
@@ -45,9 +52,14 @@ export function CommentariesManagerClient({
     filterType = '',
 }: CommentariesManagerClientProps) {
     const router = useRouter();
-    const [commentaries, setCommentaries] = useState(
-        filterType ? initialCommentaries.filter((c) => c.type === filterType) : initialCommentaries
+    // Retired rows leave the list at once; everything else follows the server props after router.refresh().
+    const [retiredIds, setRetiredIds] = useState<Set<string>>(new Set());
+    const commentaries = initialCommentaries.filter(
+        (c) => !retiredIds.has(c.id) && (!filterType || c.type === filterType)
     );
+    const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+    const [publishingId, setPublishingId] = useState<string | null>(null);
+    const [linkedLabels, setLinkedLabels] = useState({ hadith: '', narrator: '' });
     const [isCreating, setIsCreating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -73,8 +85,13 @@ export function CommentariesManagerClient({
         const timer = setTimeout(async () => {
             if (hadithSearch.trim()) {
                 setIsSearching(true);
-                const results = await searchHadiths(hadithSearch);
-                setHadithResults(results.items);
+                try {
+                    const results = await searchHadithsForCuration(hadithSearch);
+                    setHadithResults(results.items);
+                } catch (error) {
+                    setHadithResults([]);
+                    setFormError(describeActionError(error, 'Hadith search failed. Try again.'));
+                }
                 setIsSearching(false);
             } else {
                 setHadithResults([]);
@@ -89,8 +106,12 @@ export function CommentariesManagerClient({
         const timer = setTimeout(async () => {
             if (narratorSearch.trim()) {
                 setIsSearching(true);
-                const results = await searchNarrators(narratorSearch);
-                setNarratorResults(results);
+                try {
+                    setNarratorResults(await searchNarratorsTypeahead(narratorSearch));
+                } catch (error) {
+                    setNarratorResults([]);
+                    setFormError(describeActionError(error, 'Narrator search failed. Try again.'));
+                }
                 setIsSearching(false);
             } else {
                 setNarratorResults([]);
@@ -105,7 +126,7 @@ export function CommentariesManagerClient({
         setIsSaving(true);
         setFormError(null);
         try {
-            await createCommentary(formData as any);
+            await createCommentary(formData);
             setFormData({
                 source_work: '',
                 author: '',
@@ -121,8 +142,7 @@ export function CommentariesManagerClient({
             setNarratorSearch('');
             router.refresh();
         } catch (error) {
-            console.error('Error creating commentary:', error);
-            setFormError('Could not create the commentary. Check the fields and try again.');
+            setFormError(describeActionError(error, 'Could not create the commentary. Check the fields and try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -134,7 +154,11 @@ export function CommentariesManagerClient({
         setIsSaving(true);
         setFormError(null);
         try {
-            await updateCommentary(editingId, formData as any);
+            // Links are fixed at creation: the update action takes content fields only.
+            const content: Partial<typeof formData> = { ...formData };
+            delete content.hadith_id;
+            delete content.narrator_id;
+            await updateCommentary(editingId, content);
             setFormData({
                 source_work: '',
                 author: '',
@@ -150,8 +174,7 @@ export function CommentariesManagerClient({
             setNarratorSearch('');
             router.refresh();
         } catch (error) {
-            console.error('Error updating commentary:', error);
-            setFormError('Could not update the commentary. Check the fields and try again.');
+            setFormError(describeActionError(error, 'Could not update the commentary. Check the fields and try again.'));
         } finally {
             setIsSaving(false);
         }
@@ -159,7 +182,26 @@ export function CommentariesManagerClient({
 
     const handleDelete = async (commentaryId: string) => {
         await deleteCommentary(commentaryId);
-        setCommentaries(commentaries.filter((c) => c.id !== commentaryId));
+        setRetiredIds((ids) => new Set(ids).add(commentaryId));
+    };
+
+    const handleTogglePublished = async (commentary: any) => {
+        const target = commentary.status === 'published' ? 'proposed' : 'published';
+        setPublishingId(commentary.id);
+        setRowErrors((errors) => {
+            const next = { ...errors };
+            delete next[commentary.id];
+            return next;
+        });
+        try {
+            await publishCommentary(commentary.id, target);
+            router.refresh();
+        } catch (error) {
+            const fallback = target === 'published' ? 'Could not publish this commentary.' : 'Could not unpublish this commentary.';
+            setRowErrors((errors) => ({ ...errors, [commentary.id]: describeActionError(error, fallback) }));
+        } finally {
+            setPublishingId(null);
+        }
     };
 
     const handleStartEdit = (commentary: any) => {
@@ -173,6 +215,10 @@ export function CommentariesManagerClient({
             reference: commentary.reference || '',
             hadith_id: commentary.hadith?.id || '',
             narrator_id: commentary.narrator?.id || '',
+        });
+        setLinkedLabels({
+            hadith: commentary.hadith ? hadithLabel(commentary.hadith) : '',
+            narrator: commentary.narrator?.name_english || '',
         });
         setIsCreating(false);
         setFormError(null);
@@ -198,6 +244,7 @@ export function CommentariesManagerClient({
                         setIsCreating(true);
                         setEditingId(null);
                         setFormError(null);
+                        setLinkedLabels({ hadith: '', narrator: '' });
                         setFormData({
                             source_work: '',
                             author: '',
@@ -324,36 +371,41 @@ export function CommentariesManagerClient({
                             <Label htmlFor="hadith-search" className="text-slate-300">
                                 Link to Hadith (Optional)
                             </Label>
-                            <Input
-                                id="hadith-search"
-                                value={hadithSearch}
-                                onChange={(e) => setHadithSearch(e.target.value)}
-                                placeholder="Search hadith by title or topic..."
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
-                            />
+                            {!editingId && (
+                                <Input
+                                    id="hadith-search"
+                                    value={hadithSearch}
+                                    onChange={(e) => setHadithSearch(e.target.value)}
+                                    placeholder="Search hadith by title or topic..."
+                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                />
+                            )}
 
                             {formData.hadith_id && (
                                 <div className="mt-2 p-2 bg-slate-800 rounded border border-slate-700">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-slate-300">
-                                            {
-                                                hadiths.find((h) => h.id === formData.hadith_id)?.title ||
-                                                'Hadith selected'
-                                            }
+                                            {linkedLabels.hadith ||
+                                                (() => {
+                                                    const found = hadiths.find((h) => h.id === formData.hadith_id);
+                                                    return found ? hadithLabel(found) : 'Hadith selected';
+                                                })()}
                                         </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, hadith_id: '' })}
-                                            aria-label="Remove linked hadith"
-                                            className="text-xs text-red-400 hover:text-red-300"
-                                        >
-                                            Remove
-                                        </button>
+                                        {!editingId && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, hadith_id: '' })}
+                                                aria-label="Remove linked hadith"
+                                                className="text-xs text-red-400 hover:text-red-300"
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
-                            {hadithSearch && (
+                            {!editingId && hadithSearch && (
                                 <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
                                     {hadithResults.map((hadith) => (
                                         <button
@@ -361,11 +413,12 @@ export function CommentariesManagerClient({
                                             type="button"
                                             onClick={() => {
                                                 setFormData({ ...formData, hadith_id: hadith.id });
+                                                setLinkedLabels((labels) => ({ ...labels, hadith: hadithLabel(hadith) }));
                                                 setHadithSearch('');
                                             }}
                                             className="w-full text-left p-2 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-sm text-slate-300"
                                         >
-                                            {hadith.title}
+                                            {hadithLabel(hadith)}
                                         </button>
                                     ))}
                                 </div>
@@ -377,36 +430,39 @@ export function CommentariesManagerClient({
                             <Label htmlFor="narrator-search" className="text-slate-300">
                                 Link to Narrator (Optional)
                             </Label>
-                            <Input
-                                id="narrator-search"
-                                value={narratorSearch}
-                                onChange={(e) => setNarratorSearch(e.target.value)}
-                                placeholder="Search narrator by name..."
-                                className="mt-2 bg-slate-800 border-slate-700 text-white"
-                            />
+                            {!editingId && (
+                                <Input
+                                    id="narrator-search"
+                                    value={narratorSearch}
+                                    onChange={(e) => setNarratorSearch(e.target.value)}
+                                    placeholder="Search narrator by name..."
+                                    className="mt-2 bg-slate-800 border-slate-700 text-white"
+                                />
+                            )}
 
                             {formData.narrator_id && (
                                 <div className="mt-2 p-2 bg-slate-800 rounded border border-slate-700">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-slate-300">
-                                            {
+                                            {linkedLabels.narrator ||
                                                 narrators.find((n) => n.id === formData.narrator_id)?.name_english ||
-                                                'Narrator selected'
-                                            }
+                                                'Narrator selected'}
                                         </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, narrator_id: '' })}
-                                            aria-label="Remove linked narrator"
-                                            className="text-xs text-red-400 hover:text-red-300"
-                                        >
-                                            Remove
-                                        </button>
+                                        {!editingId && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, narrator_id: '' })}
+                                                aria-label="Remove linked narrator"
+                                                className="text-xs text-red-400 hover:text-red-300"
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             )}
 
-                            {narratorSearch && (
+                            {!editingId && narratorSearch && (
                                 <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
                                     {narratorResults.map((narrator) => (
                                         <button
@@ -414,11 +470,13 @@ export function CommentariesManagerClient({
                                             type="button"
                                             onClick={() => {
                                                 setFormData({ ...formData, narrator_id: narrator.id });
+                                                setLinkedLabels((labels) => ({ ...labels, narrator: narrator.name_english }));
                                                 setNarratorSearch('');
                                             }}
                                             className="w-full text-left p-2 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 text-sm text-slate-300"
                                         >
-                                            {narrator.name_english} ({narrator.tabaqah})
+                                            {narrator.name_english}
+                                            {narrator.tabaqah ? ` (${narrator.tabaqah})` : ''}
                                         </button>
                                     ))}
                                 </div>
@@ -470,11 +528,22 @@ export function CommentariesManagerClient({
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                     <h3 className="text-lg font-semibold text-white">{commentary.source_work}</h3>
-                                    <Badge className={getTypeBadgeColor(commentary.type)}>
-                                        {commentary.type}
+                                    {commentary.type && (
+                                        <Badge className={getTypeBadgeColor(commentary.type)}>
+                                            {commentary.type}
+                                        </Badge>
+                                    )}
+                                    <Badge
+                                        className={
+                                            commentary.status === 'published'
+                                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                                : 'bg-slate-800 text-slate-300 border-slate-600'
+                                        }
+                                    >
+                                        {STATUS_LABELS[commentary.status] ?? commentary.status}
                                     </Badge>
                                 </div>
-                                <p className="text-sm text-slate-400 mb-3">By {commentary.author}</p>
+                                {commentary.author && <p className="text-sm text-slate-400 mb-3">By {commentary.author}</p>}
                                 <p className="text-sm text-slate-300 mb-3">{commentary.text}</p>
                                 {commentary.text_arabic && (
                                     <p className="text-sm text-slate-400 mb-3 font-arabic" lang="ar" dir="rtl">{commentary.text_arabic}</p>
@@ -482,23 +551,36 @@ export function CommentariesManagerClient({
                                 <div className="flex flex-wrap gap-3 text-xs text-slate-400">
                                     {commentary.hadith && (
                                         <span className="bg-blue-500/10 px-2 py-1 rounded">
-                                            📖 Hadith: {commentary.hadith.title}
+                                            Hadith: {hadithLabel(commentary.hadith)}
                                         </span>
                                     )}
                                     {commentary.narrator && (
                                         <span className="bg-green-500/10 px-2 py-1 rounded">
-                                            👤 Narrator: {commentary.narrator.name_english}
+                                            Narrator: {commentary.narrator.name_english}
                                         </span>
                                     )}
                                     {commentary.reference && (
                                         <span className="bg-slate-600/15 px-2 py-1 rounded">
-                                            📍 {commentary.reference}
+                                            {commentary.reference}
                                         </span>
                                     )}
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={publishingId === commentary.id}
+                                    onClick={() => handleTogglePublished(commentary)}
+                                    className="border-slate-600 text-slate-300"
+                                >
+                                    {publishingId === commentary.id
+                                        ? 'Saving...'
+                                        : commentary.status === 'published'
+                                          ? 'Unpublish'
+                                          : 'Publish'}
+                                </Button>
                                 <Button
                                     size="sm"
                                     variant="outline"
@@ -510,11 +592,16 @@ export function CommentariesManagerClient({
                                 </Button>
                                 <ConfirmDelete
                                     itemName="commentary"
-                                    consequence={`Delete the commentary from "${commentary.source_work}"? This removes it permanently and cannot be undone.`}
+                                    consequence={`Retire the commentary from "${commentary.source_work ?? 'this work'}"? It is hidden from every page. Nothing is erased and an audit record is kept.`}
                                     onConfirm={() => handleDelete(commentary.id)}
                                 />
                             </div>
                         </div>
+                        {rowErrors[commentary.id] && (
+                            <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                                {rowErrors[commentary.id]}
+                            </p>
+                        )}
                     </Card>
                 ))}
 
