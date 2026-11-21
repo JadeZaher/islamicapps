@@ -1,0 +1,28 @@
+{
+  "id": "evidence-and-biography-curation_20261121",
+  "title": "Evidence and biography curation",
+  "status": "planned",
+  "priority": "P2",
+  "created": "2026-11-21",
+  "design_steps": "data, after 3 and 7",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "data-gap-diagnostics_20261121",
+    "neo4j-curation-export_20261121",
+    "query-port-and-action-switch_20261121"
+  ],
+  "blocks": [],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      "datasets/hadith-data/evidence_curation.json",
+      "datasets/hadith-data/evidence_curation_manifest.json"
+    ],
+    "tripwires": [
+      "Never delete data files; back up before editing (project memory)."
+    ]
+  },
+  "depends_note": "Ranking by resolved-chain frequency improves once narrator-identity-resolution has decisions; it is not a hard dependency."
+}

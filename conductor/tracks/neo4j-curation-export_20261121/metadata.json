@@ -1,0 +1,37 @@
+{
+  "id": "neo4j-curation-export_20261121",
+  "title": "Neo4j curation export and seed ports",
+  "status": "planned",
+  "priority": "P0",
+  "created": "2026-11-21",
+  "design_steps": "7",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "bundle-to-postgres-loader_20261121"
+  ],
+  "blocks": [
+    "railway-cutover_20261121",
+    "evidence-and-biography-curation_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      {
+        "path": "src/scripts/db/export-neo4j-curation.ts",
+        "status": "future"
+      },
+      {
+        "path": "src/scripts/db/seed-*.ts",
+        "status": "future",
+        "note": "ports of seed-historical-data, seed-narrator-bios-phase0, seed-taxonomy (design 13.3)"
+      }
+    ],
+    "tripwires": [
+      "Read-only against production Neo4j. Run src/scripts/backup-db.ts first; it is archived only at step 10.",
+      "Treat curated Neo4j data as possibly tampered with (design 10.3): diff seeded rows against their seed definitions."
+    ]
+  },
+  "depends_note": "Re-keying to record_id and scholar_indx needs loaded hadiths and narrators. Design orders step 7 after step 6, but nothing in it needs the query port."
+}

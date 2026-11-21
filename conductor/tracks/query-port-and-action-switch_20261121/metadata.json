@@ -1,0 +1,63 @@
+{
+  "id": "query-port-and-action-switch_20261121",
+  "title": "Query port and action switch",
+  "status": "planned",
+  "priority": "P0",
+  "created": "2026-11-21",
+  "design_steps": "6",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "postgres-foundation_20261121",
+    "bundle-to-postgres-loader_20261121",
+    "containment-and-access-control_20261121",
+    "ui-polish_20261121"
+  ],
+  "blocks": [
+    "railway-cutover_20261121",
+    "narrator-identity-resolution_20261121",
+    "evidence-and-biography-curation_20261121",
+    "vectors-semantic-search_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      {
+        "path": "src/db/queries/**",
+        "status": "future"
+      },
+      "src/app/actions/**",
+      {
+        "path": "src/app/api/health/**",
+        "status": "future"
+      },
+      {
+        "path": "src/app/api/export/**",
+        "status": "future"
+      },
+      "src/app/api/comparative/**",
+      "src/lib/comparative/**",
+      "eslint.config.mjs",
+      "src/scripts/__tests__/**",
+      {
+        "path": "src/scripts/db/audit.ts",
+        "status": "future"
+      }
+    ],
+    "serialized_with": {
+      "ui-polish": [
+        "src/app/hadith/[id]/**",
+        "src/app/narrator/[id]/**",
+        "src/app/admin/narrators/**",
+        "src/app/admin/hadith/**",
+        "src/components/ReliabilityBadge.tsx"
+      ]
+    },
+    "tripwires": [
+      "The section 9.4 UI files belong to ui-polish lanes B, C and D; phase 6 starts only after those lanes close.",
+      "src/app/actions/** and src/app/api/comparative/** are owned by containment first; start after containment phase 3."
+    ]
+  },
+  "depends_note": "ui-polish only for phase 6 (UI co-changes). containment for requireCurator()."
+}

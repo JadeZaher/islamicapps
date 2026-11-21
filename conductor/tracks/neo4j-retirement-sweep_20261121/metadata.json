@@ -1,0 +1,46 @@
+{
+  "id": "neo4j-retirement-sweep_20261121",
+  "title": "Neo4j retirement sweep",
+  "status": "planned",
+  "priority": "P1",
+  "created": "2026-11-21",
+  "design_steps": "10",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "railway-cutover_20261121"
+  ],
+  "blocks": [],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      "src/lib/db/**",
+      "src/scripts/lib/regen/**",
+      "src/scripts/ops/**",
+      "src/scripts/init-db.ts",
+      "src/scripts/drain-db.ts",
+      "src/scripts/regen-isnad-graph.ts",
+      "src/scripts/link-sanad-chains.ts",
+      "src/scripts/remediate-legacy-scalar-assessment.ts",
+      "src/scripts/backup-db.ts",
+      "src/scripts/archive/**",
+      "CONTRIBUTING.md",
+      ".agent/rules/app-goal.md",
+      "conductor/product-guidelines.md",
+      "conductor/code_styleguides/typescript.md",
+      "datasets/hadith-data/neo4j_export/*.md"
+    ],
+    "shared_writes": [
+      {
+        "path": "package.json",
+        "owner": "join",
+        "reason": "remove neo4j-driver and the db:init, db:drain, db:regen, db:remediate-legacy-assessment, db:link-sanads scripts"
+      }
+    ],
+    "tripwires": [
+      "Delete means git mv into src/scripts/archive/ unless the owner says hard delete (design 13 policy).",
+      "Mine the Neo4j-flavoured tests for pure cases before archiving them (design 13.2)."
+    ]
+  }
+}

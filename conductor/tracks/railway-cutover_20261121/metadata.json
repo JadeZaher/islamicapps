@@ -1,0 +1,52 @@
+{
+  "id": "railway-cutover_20261121",
+  "title": "Railway cutover and observation",
+  "status": "planned",
+  "priority": "P0",
+  "created": "2026-11-21",
+  "design_steps": "8, 9",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "build-fix-and-deploy-config_20261121",
+    "containment-and-access-control_20261121",
+    "query-port-and-action-switch_20261121",
+    "neo4j-curation-export_20261121"
+  ],
+  "blocks": [
+    "neo4j-retirement-sweep_20261121",
+    "vectors-semantic-search_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      {
+        "path": "src/db/ops/railway-tuning.sql",
+        "status": "future"
+      },
+      {
+        "path": "src/scripts/db/approve-preview.ts",
+        "status": "future"
+      },
+      {
+        "path": "src/scripts/db/backup-curation.ts",
+        "status": "future"
+      },
+      {
+        "path": "src/scripts/db/export-decisions.ts",
+        "status": "future"
+      }
+    ],
+    "serialized_with": {
+      "build-fix-and-deploy-config": [
+        "Dockerfile",
+        "railway.json"
+      ]
+    },
+    "tripwires": [
+      "Removing the Neo4j service, volume or variables needs recorded owner approval.",
+      "Public Access on the Postgres service is on only for a load window."
+    ]
+  }
+}

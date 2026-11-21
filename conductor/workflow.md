@@ -1,3 +1,8 @@
+---
+type: workflow
+title: Workflow
+---
+
 # Workflow
 
 ## Development Methodology
@@ -26,12 +31,11 @@ Plan → Implement → Verify → (Fix if needed) → Done
 
 ## Code Quality Standards
 
-- TypeScript strict mode — no `any` unless interfacing with Neo4j driver results
-- All Neo4j queries must use parameterized inputs (never string interpolation with user data)
-- Server Actions must have `'use server'` directive
+- TypeScript strict mode — no `any`
+- SQL lives only in `src/db/queries/` and `src/db/load/`; user input reaches it only as bound parameters (Drizzle builders or postgres.js tagged templates), never by string interpolation. Rules: `docs/architecture/data-architecture.md` section 3.2
+- Server Actions must have `'use server'` directive; they validate input with zod and call one query function
 - Client components must have `'use client'` directive
-- Reuse existing patterns: see `graph-actions.ts` and `comparative-actions.ts` as reference implementations
-- Keep page components thin (fetch + pass data); put logic in action files or shared components
+- Keep page components thin (fetch + pass data); put data logic in `src/db/queries/` and UI logic in shared components
 
 ## Git & Commits
 
@@ -47,13 +51,13 @@ Plan → Implement → Verify → (Fix if needed) → Done
 
 ## Data Scripts
 
-- All data scripts live in `src/scripts/` (TypeScript, run via `tsx`)
+- All data scripts live in `src/scripts/` (TypeScript, run via `tsx`); database operator entry points live in `src/scripts/db/`
 - Dataset preprocessing lives in `datasets/` (Python)
 - Run scripts via `npm run` commands defined in `package.json`
-- New scripts should follow the pattern in `import-datasets.ts`
 
-## Neo4j Schema Changes
+## Database Schema Changes
 
-- All schema changes go in `src/lib/db/schema.ts`
-- Run `npm run db:init` to apply — safe to re-run (uses `IF NOT EXISTS`)
-- Document new node types and relationships in `conductor/tech-stack.md`
+- Edit the Drizzle schema in `src/db/schema/core/`, then generate a migration into `drizzle/core` with `drizzle-kit`; check it in
+- Migrations are expand-only: a rename or drop ships one release after no deployed code reads the old shape (design section 2.6)
+- Large index builds are not migrations; they go in `src/db/ops/indexes-heavy.sql`
+- Migrations are applied by the Railway pre-deploy command; record schema decisions in `docs/architecture/data-architecture.md`

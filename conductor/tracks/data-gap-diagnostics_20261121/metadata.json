@@ -1,0 +1,37 @@
+{
+  "id": "data-gap-diagnostics_20261121",
+  "title": "Data-gap diagnostics (jobs J1 to J9)",
+  "status": "in_progress",
+  "priority": "P1",
+  "created": "2026-11-21",
+  "design_steps": "3",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [],
+  "blocks": [
+    "narrator-identity-resolution_20261121",
+    "translation-recovery_20261121",
+    "grading-coverage_20261121",
+    "evidence-and-biography-curation_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      {
+        "path": "datasets/hadith-data/diagnostics/**",
+        "status": "future",
+        "note": "job outputs, and the job scripts if placed there (location not named by 07)"
+      },
+      {
+        "path": "datasets/narrator-data/imami-rijal/**",
+        "status": "future",
+        "note": "J4 fetch only"
+      }
+    ],
+    "tripwires": [
+      "Read-only on canonical CSV/GZIP, curation_* manifests and backlog, translation_overrides.jsonl, evidence_curation.json, all_rawis.csv and er-staging.jsonl.",
+      "No Railway or Neo4j access. No paid API calls."
+    ]
+  }
+}

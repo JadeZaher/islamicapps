@@ -1,0 +1,52 @@
+{
+  "id": "containment-and-access-control_20261121",
+  "title": "Containment and access control",
+  "status": "planned",
+  "priority": "P0",
+  "created": "2026-11-21",
+  "design_steps": "0.5, 1",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "build-fix-and-deploy-config_20261121"
+  ],
+  "blocks": [
+    "query-port-and-action-switch_20261121",
+    "railway-cutover_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      {
+        "path": "src/proxy.ts",
+        "status": "future"
+      },
+      {
+        "path": "src/lib/auth/**",
+        "status": "future"
+      },
+      {
+        "path": "src/app/admin/sign-in/**",
+        "status": "future",
+        "note": "path not named by the design; hypothesis"
+      },
+      {
+        "path": "src/app/actions/**",
+        "status": "existing",
+        "note": "adds requireCurator(), zod and allowlists to the current Neo4j actions; query-port owns this tree later"
+      },
+      "src/app/api/comparative/**",
+      {
+        "path": "docs/security/mutation-inventory.md",
+        "status": "future",
+        "note": "inventory location not named by the design; hypothesis"
+      }
+    ],
+    "tripwires": [
+      "Security headers and X-Robots-Tag go in src/proxy.ts, not next.config.ts (build-fix owns next.config.ts).",
+      "The 'Neo4j Connected' admin chrome is in src/app/admin/layout.tsx, owned by ui-polish lane D; do not edit it here."
+    ]
+  },
+  "depends_note": "Only the final done-when (verified on the production URL) needs build-fix. Phase 0 needs no build and should start immediately."
+}

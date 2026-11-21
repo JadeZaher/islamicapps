@@ -1,0 +1,54 @@
+{
+  "id": "build-fix-and-deploy-config_20261121",
+  "title": "Build fix and deploy config",
+  "status": "in_progress",
+  "priority": "P0",
+  "created": "2026-11-21",
+  "design_steps": "2",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [],
+  "blocks": [
+    "containment-and-access-control_20261121",
+    "railway-cutover_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      "Dockerfile",
+      ".dockerignore",
+      "railway.json",
+      "tsconfig.json",
+      {
+        "path": "tsconfig.scripts.json",
+        "status": "future"
+      },
+      "next.config.ts",
+      {
+        "path": "src/scripts/*.ts",
+        "status": "existing",
+        "note": "top-level scripts only, for the section 13.1 moves; NOT src/scripts/db/** or src/scripts/__tests__/**"
+      },
+      "src/scripts/ops/**",
+      "src/scripts/archive/**",
+      "src/lib/import/**"
+    ],
+    "shared_writes": [
+      {
+        "path": "package.json",
+        "owner": "join",
+        "reason": "build-fix removes the db:ingest-parallels script; postgres-foundation adds db:* scripts; ui-polish removes react-force-graph-2d. Edit only at the join, one owner at a time."
+      },
+      {
+        "path": "package-lock.json",
+        "owner": "join",
+        "reason": "follows package.json"
+      }
+    ],
+    "tripwires": [
+      "railway.json must not name `node migrate.mjs` or `/api/health` until those exist (postgres-foundation, query-port); otherwise every deploy fails pre-deploy or health check.",
+      "Do not archive src/scripts/backup-db.ts or anything in section 13.2: step 7 still runs backup-db.ts against production Neo4j."
+    ]
+  }
+}

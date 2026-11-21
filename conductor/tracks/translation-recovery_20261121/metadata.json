@@ -1,0 +1,20 @@
+{
+  "id": "translation-recovery_20261121",
+  "title": "Translation recovery",
+  "status": "planned",
+  "priority": "P1",
+  "created": "2026-11-21",
+  "design_steps": "data, after 3",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [
+    "data-gap-diagnostics_20261121"
+  ],
+  "blocks": [],
+  "partitions": {
+    "confidence": "none",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": []
+  },
+  "depends_note": "Reviewer-mode reads of translation_candidates need query-port; per-work English policy needs setCollectionRights."
+}

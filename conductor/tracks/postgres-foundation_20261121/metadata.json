@@ -1,0 +1,60 @@
+{
+  "id": "postgres-foundation_20261121",
+  "title": "Postgres foundation: Drizzle schema, client, migrations",
+  "status": "in_progress",
+  "priority": "P0",
+  "created": "2026-11-21",
+  "design_steps": "4",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [],
+  "blocks": [
+    "bundle-to-postgres-loader_20261121",
+    "query-port-and-action-switch_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      {
+        "path": "drizzle.config.ts",
+        "status": "future"
+      },
+      {
+        "path": "drizzle/**",
+        "status": "future"
+      },
+      {
+        "path": "src/db/schema/**",
+        "status": "future"
+      },
+      {
+        "path": "src/db/client.ts",
+        "status": "future"
+      },
+      {
+        "path": "src/db/migrate.ts",
+        "status": "future"
+      },
+      {
+        "path": "src/db/ops/roles.sql",
+        "status": "future"
+      },
+      {
+        "path": "src/db/AGENTS.md",
+        "status": "future"
+      }
+    ],
+    "shared_writes": [
+      {
+        "path": "package.json",
+        "owner": "join",
+        "reason": "dependencies already added in the working tree at af2f90b+; db:generate and db:migrate scripts still to add at the join"
+      }
+    ],
+    "tripwires": [
+      "The target database is the shared Railway database, not a disposable container: no DDL outside migrations, no drop schema.",
+      "Extensions already exist; schema_owner is not a superuser, so migrations use `create extension if not exists` and must not fail when they are present."
+    ]
+  }
+}

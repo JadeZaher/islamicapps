@@ -1,0 +1,158 @@
+{
+  "id": "ui-polish_20261121",
+  "title": "UI polish: five disjoint lanes",
+  "status": "in_progress",
+  "priority": "P1",
+  "created": "2026-11-21",
+  "design_steps": "alongside 4 to 6",
+  "design_doc": "docs/architecture/data-architecture.md",
+  "depends_on": [],
+  "blocks": [
+    "query-port-and-action-switch_20261121"
+  ],
+  "partitions": {
+    "confidence": "hypothesis",
+    "computed_at_commit": "af2f90b",
+    "computed_at": "2026-11-21",
+    "owns": [
+      "src/app/layout.tsx",
+      "src/app/globals.css",
+      "src/app/page.tsx",
+      "src/app/error.tsx",
+      "src/app/global-error.tsx",
+      "src/app/not-found.tsx",
+      "src/app/loading.tsx",
+      "src/components/ui/**",
+      "src/components/SiteHeader.tsx",
+      "src/components/ArabicText.tsx",
+      "src/components/EmptyState.tsx",
+      "src/components/ConfirmDialog.tsx",
+      "src/components/badges.tsx",
+      "src/components/ConsensusBadge.tsx",
+      "src/app/hadith/page.tsx",
+      "src/app/narrator/page.tsx",
+      "src/app/hadith/[id]/**",
+      "src/app/narrator/[id]/**",
+      "src/components/TabaqahTimeline.tsx",
+      "src/components/HistoricalTimeline.tsx",
+      "src/components/CommentarySection.tsx",
+      "src/components/ReliabilityBadge.tsx",
+      "src/components/NarratorCard.tsx",
+      "src/app/admin/layout.tsx",
+      "src/app/admin/page.tsx",
+      "src/app/admin/error.tsx",
+      "src/app/admin/loading.tsx",
+      "src/app/admin/_components/**",
+      "src/app/admin/hadith/**",
+      "src/app/admin/narrators/**",
+      "src/app/admin/events/**",
+      "src/app/admin/commentaries/**",
+      "src/app/admin/locations/**",
+      "src/components/SearchFilterBar.tsx",
+      "src/components/PaginationControls.tsx",
+      "src/lib/pagination.ts",
+      "src/app/comparative/**",
+      "src/app/admin/comparative/**",
+      "src/components/CrossCulturalParallelCard.tsx",
+      "src/components/TraditionBadge.tsx"
+    ],
+    "slices": [
+      {
+        "id": "lane-A",
+        "task": "Shell, tokens, shared primitives, public entry",
+        "owns": [
+          "src/app/layout.tsx",
+          "src/app/globals.css",
+          "src/app/page.tsx",
+          "src/app/error.tsx",
+          "src/app/global-error.tsx",
+          "src/app/not-found.tsx",
+          "src/app/loading.tsx",
+          "src/components/ui/**",
+          "src/components/SiteHeader.tsx",
+          "src/components/ArabicText.tsx",
+          "src/components/EmptyState.tsx",
+          "src/components/ConfirmDialog.tsx",
+          "src/components/badges.tsx",
+          "src/components/ConsensusBadge.tsx",
+          "src/app/hadith/page.tsx",
+          "src/app/narrator/page.tsx"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "lane-B",
+        "task": "Hadith detail",
+        "owns": [
+          "src/app/hadith/[id]/**"
+        ],
+        "depends_on": [
+          "lane-A"
+        ]
+      },
+      {
+        "id": "lane-C",
+        "task": "Narrator detail and timelines",
+        "owns": [
+          "src/app/narrator/[id]/**",
+          "src/components/TabaqahTimeline.tsx",
+          "src/components/HistoricalTimeline.tsx",
+          "src/components/CommentarySection.tsx",
+          "src/components/ReliabilityBadge.tsx",
+          "src/components/NarratorCard.tsx"
+        ],
+        "depends_on": [
+          "lane-A"
+        ]
+      },
+      {
+        "id": "lane-D",
+        "task": "Admin CRUD lists and list controls",
+        "owns": [
+          "src/app/admin/layout.tsx",
+          "src/app/admin/page.tsx",
+          "src/app/admin/error.tsx",
+          "src/app/admin/loading.tsx",
+          "src/app/admin/_components/**",
+          "src/app/admin/hadith/**",
+          "src/app/admin/narrators/**",
+          "src/app/admin/events/**",
+          "src/app/admin/commentaries/**",
+          "src/app/admin/locations/**",
+          "src/components/SearchFilterBar.tsx",
+          "src/components/PaginationControls.tsx",
+          "src/lib/pagination.ts"
+        ],
+        "depends_on": [
+          "lane-A"
+        ]
+      },
+      {
+        "id": "lane-E",
+        "task": "Comparative (public and admin)",
+        "owns": [
+          "src/app/comparative/**",
+          "src/app/admin/comparative/**",
+          "src/components/CrossCulturalParallelCard.tsx",
+          "src/components/TraditionBadge.tsx"
+        ],
+        "depends_on": [
+          "lane-A"
+        ]
+      }
+    ],
+    "shared_writes": [
+      {
+        "path": "package.json",
+        "owner": "join",
+        "reason": "lane A removes react-force-graph-2d"
+      }
+    ],
+    "tripwires": [
+      "No lane touches src/app/actions/**, src/lib/db/** or src/db/** (06-ui-audit section 8).",
+      "src/app/admin/_components/** is not assigned by 06-ui-audit; given to lane D here as a hypothesis.",
+      "Lanes B to E import lane A components read-only, against the signatures in 06-ui-audit section 8."
+    ]
+  },
+  "blocks_note": "Blocks only query-port phase 6 (the section 9.4 UI co-changes touch lane B, C and D files)."
+}

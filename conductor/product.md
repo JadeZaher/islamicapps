@@ -1,3 +1,8 @@
+---
+type: product-overview
+title: Product guide
+---
+
 # Product Guide
 
 ## Vision
@@ -25,8 +30,8 @@ Democratize access to Islamic scholarly resources by building a research-grade, 
 
 ## Key Features
 
-- **Isnad graph visualization** — interactive transmission chain graphs with narrator reliability overlays
-- **Dual grading system** — auto-calculated grade from chain analysis + scholar verdict override
+- **Isnad visualization** — each chain shown as written in Arabic, with verified narrator links and their published, tradition-scoped verdicts overlaid
+- **Cited, tradition-scoped grading** — each grade shown is a cited assessment within its own tradition; there is no single computed grade per hadith, and placeholders are never shown as grades
 - **Narrator profiles** — biography, tabaqah, geographic region, teacher-student network, historical timeline
 - **Comparative religious studies** — cross-cultural parallels with Jewish, Christian, and Zoroastrian sources (Isra'iliyyat classification: Muwafiq / Mukhalif / Maskut Anhu)
 - **Historical context** — events, locations, and narrator timelines
@@ -37,8 +42,8 @@ Democratize access to Islamic scholarly resources by building a research-grade, 
 
 | Layer | Access |
 |---|---|
-| Public read | All visualizations, hadith text, isnad graphs, comparative studies |
-| Gated contributions | Invite-only write access for data contributors |
+| Public read | Published rows only: hadith text from rights-cleared works, reviewed or policy-approved English, verified chain links, cited claims, published comparative studies (design section 11) |
+| Gated contributions | Writes by named, invite-only curators; every write is audited |
 | Open source | Full codebase MIT/open licensed for anyone to deploy |
 
 ## Success Metrics
