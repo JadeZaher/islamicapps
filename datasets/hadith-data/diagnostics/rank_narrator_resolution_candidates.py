@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import diagnostic_common as common  # noqa: E402
 from narrator_surface_logic import (  # noqa: E402
     parse_components, parse_father_indx, parse_generation, parse_indx_list,
-    registry_alias_segments, score_candidate,
+    score_candidate,
 )
 
 JOB = "narrator-resolution"
@@ -44,7 +44,7 @@ CONTEXT_SHARE = 0.8
 
 
 class RegistryIndex:
-    """Registry views (name + declared alias segments) with an inverted unit index and graph fields."""
+    """Registry name components with an inverted unit index and graph fields."""
 
     def __init__(self, regen) -> None:
         self.views: dict[str, list] = {}
@@ -67,8 +67,6 @@ class RegistryIndex:
                     skipped_without_arabic += 1
                     continue
                 views = [("name", parse_components(regen.narrator_normalize(arabic)))]
-                for segment in registry_alias_segments(name):
-                    views.append(("registry_declared_alias", parse_components(regen.narrator_normalize(segment))))
                 self.views[indx] = views
                 self.name_raw[indx] = name
                 self.teachers[indx] = parse_indx_list(row.get("teachers_inds"))
@@ -99,11 +97,8 @@ class RegistryIndex:
         scored = []
         for indx, _ in shortlist:
             best = None
-            alias_units = [c.units for kind, c in self.views[indx] if kind == "registry_declared_alias"]
             for kind, components in self.views[indx]:
-                score, evidence, conflicts = score_candidate(surface, components, None)
-                if kind == "registry_declared_alias" and surface.units == components.units:
-                    score, evidence, conflicts = 0.9, ["registry_declared_alias_segment_equal"], []
+                score, evidence, conflicts = score_candidate(surface, components)
                 if best is None or score > best[0]:
                     best = (score, evidence, conflicts, kind)
             score, evidence, conflicts, kind = best
@@ -112,7 +107,7 @@ class RegistryIndex:
             scored.append({
                 "scholar_indx": indx, "name_raw": self.name_raw[indx], "name_component_score": score,
                 "evidence": evidence, "conflicts": conflicts,
-                "channel": "registry_declared_alias" if kind == "registry_declared_alias" else "name_component",
+                "channel": "name_component",
             })
         scored.sort(key=lambda c: (-c["name_component_score"], int(c["scholar_indx"])))
         return scored[:limit]

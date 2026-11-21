@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-"""J2: dry run of the Tier-0 exact-match rules T0-b/c/d against the corpus (changes no resolver).
+"""J2: dry run of a name-invariant lookup against the corpus (changes no resolver).
 
-T0-b registry-declared alias segments, T0-c kunya-head case fold (ابي/ابا to ابو), T0-d trailing
-honorific strip. Reports surfaces newly matched, new ambiguity collisions, occurrences gained and
-rows newly complete (atomic). Every match is a RULE MATCH awaiting review, never an identity.
+Lookup order is unchanged exact-normalized match first, invariant key second, so no currently resolved surface can
+change. A key that maps to exactly one registry identity is an `invariant_match`; a key shared by several is
+`ambiguous` and never resolves. Each folding rule is measured alone and cumulatively. Everything is a PROPOSED
+policy change and unreviewed; no identity is asserted. Writes only under diagnostics/narrator-resolution/.
 
-Usage: python -B diagnostics/measure_tier0_resolver_delta.py
+Usage: python -B datasets/hadith-data/diagnostics/measure_tier0_resolver_delta.py
 """
 
 import csv
+import itertools
+import json
+import random
+import re
 import sys
 import time
 from collections import Counter, defaultdict
@@ -16,195 +21,249 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import diagnostic_common as common  # noqa: E402
-from narrator_surface_logic import (  # noqa: E402
-    fold_kunya_head, registry_alias_segments, strip_trailing_honorific,
-)
+from narrator_surface_logic import categorize_surface  # noqa: E402
+from name_invariant import INVARIANT_RULES, RULE_NAMES, compute_name_invariant, trace_name_invariant  # noqa: E402
 
 JOB = "narrator-resolution"
-VARIANTS = ("baseline", "t0b_alias_segments", "t0c_kunya_fold", "t0d_honorific_strip",
-            "t0b_t0c", "t0b_t0c_t0d")
+SPECIFIC_CATEGORIES = {"ism_nasab", "other_multi_token"}   # guard: not kunya-only, bare ism or bare nasab
+SAMPLE_SIZE = 100
+SAMPLE_SEED = 20261121
+LATIN = re.compile(r"[A-Za-z]")
+
+
+def variant_specs() -> list[tuple[str, frozenset, bool]]:
+    """(label, disabled rules, specificity guard): one rule alone, cumulative prefixes, guarded cumulative."""
+    specs = []
+    for rule in RULE_NAMES:
+        specs.append((f"only:{rule}", frozenset(set(RULE_NAMES) - {rule}), False))
+    for count in range(1, len(RULE_NAMES) + 1):
+        specs.append((f"cumulative_{count}:{RULE_NAMES[count - 1]}", frozenset(RULE_NAMES[count:]), False))
+    for count in range(1, len(RULE_NAMES) + 1):
+        specs.append((f"guarded_cumulative_{count}:{RULE_NAMES[count - 1]}", frozenset(RULE_NAMES[count:]), True))
+    return specs
 
 
 def main() -> None:
     started = time.time()
     regen = common.load_regen()
     extractor = common.load_extractor()
-    exact_index, blocked_index = regen.build_narrator_index(str(common.REGISTRY_PATH))
+    exact_index, _ = regen.build_narrator_index(str(common.REGISTRY_PATH))
+    base = regen.narrator_normalize
 
-    # Variant index = baseline entries + segment entries, uniqueness rule unchanged.
-    owners: dict[str, set] = defaultdict(set)
-    segment_origin: dict[str, list] = defaultdict(list)   # norm -> [(indx, segment_raw, name_raw)]
-    registry_name: dict[str, str] = {}
+    registry = []   # (indx, raw name, arabic name, base-normalized arabic name)
     with open(common.REGISTRY_PATH, encoding="utf-8", errors="replace", newline="") as handle:
-        for registry_row in csv.DictReader(handle):
-            indx = (registry_row.get("scholar_indx") or "").strip()
-            name = (registry_row.get("name") or "").strip()
-            if not indx or not name:
-                continue
-            registry_name[indx] = name
-            owners[regen.narrator_normalize(name)].add(indx)
-            arabic = regen._extract_arabic_name(name)
+        for row in csv.DictReader(handle):
+            indx, name = (row.get("scholar_indx") or "").strip(), (row.get("name") or "").strip()
+            arabic = regen._extract_arabic_name(name) if indx and name else ""
             if arabic:
-                owners[regen.narrator_normalize(arabic)].add(indx)
-                for segment in registry_alias_segments(name):
-                    seg_norm = strip_trailing_honorific(regen.narrator_normalize(segment))
-                    if seg_norm:
-                        owners[seg_norm].add(indx)
-                        segment_origin[seg_norm].append((indx, segment, name))
-    segment_index = {norm: next(iter(ids)) for norm, ids in owners.items() if len(ids) == 1}
+                registry.append((indx, name, arabic, base(arabic)))
+    registry_name = {r[0]: r[1] for r in registry}
 
-    segment_collisions = []
-    existing_made_ambiguous = []
-    for norm, origins in segment_origin.items():
-        ids = owners[norm]
-        if len(ids) >= 2:
-            entry = {"segment_normalized": norm, "scholar_indx_all": sorted(ids),
-                     "was_unique_exact_before": norm in exact_index}
-            (existing_made_ambiguous if norm in exact_index else segment_collisions).append(entry)
-
-    cache: dict[str, dict] = {}
-
-    def lookups(norm: str) -> dict:
-        hit = cache.get(norm)
-        if hit is not None:
-            return hit
-        folded = fold_kunya_head(norm)
-        stripped = strip_trailing_honorific(norm)
-        result = {"baseline": (exact_index.get(norm), "exact")}
-        result["t0b_alias_segments"] = (
-            (segment_index.get(norm), "t0b") if segment_index.get(norm) else (None, ""))
-        result["t0c_kunya_fold"] = (
-            (exact_index.get(norm), "exact") if exact_index.get(norm)
-            else (exact_index.get(folded), "t0c") if folded != norm and exact_index.get(folded) else (None, ""))
-        result["t0d_honorific_strip"] = (
-            (exact_index.get(norm), "exact") if exact_index.get(norm)
-            else (exact_index.get(stripped), "t0d") if stripped != norm and exact_index.get(stripped) else (None, ""))
-        # Combined variants try the exact surface first, then each rule in order, on the segment index.
-        for label, rules in (("t0b_t0c", ("c",)), ("t0b_t0c_t0d", ("c", "d", "cd"))):
-            found = (segment_index.get(norm), "t0b") if segment_index.get(norm) else (None, "")
-            if not found[0] and "c" in rules and folded != norm and segment_index.get(folded):
-                found = (segment_index[folded], "t0c")
-            if not found[0] and "d" in rules and stripped != norm and segment_index.get(stripped):
-                found = (segment_index[stripped], "t0d")
-            if not found[0] and "cd" in rules:
-                both = fold_kunya_head(stripped)
-                if both != norm and segment_index.get(both):
-                    found = (segment_index[both], "t0c+t0d")
-            result[label] = found
-        # No baseline fallback: a surface that becomes ambiguous under segments is a real loss.
-        result["_resolved"] = {label: bool(result[label][0]) for label in VARIANTS}
-        cache[norm] = result
-        return result
-
-    occurrence_by_norm: Counter = Counter()
-    tradition_by_norm: dict[str, Counter] = defaultdict(Counter)
-    metrics = Counter()
-    rows_complete = {label: Counter() for label in VARIANTS}
-    gained_occurrences = {label: 0 for label in VARIANTS}
-    lost_occurrences = {label: 0 for label in VARIANTS}
-    gained_single_token = {label: 0 for label in VARIANTS}
-
+    # Pass 1: corpus rows as tuples of distinct norms; counts and first raw example for unresolved norms.
+    norm_ids: dict[str, int] = {}
+    norms: list[str] = []
+    rows = []
+    occurrences, tradition_counts, raw_example = Counter(), defaultdict(Counter), {}
+    latin_surface_norms = set()
+    resolved_key_has_latin = 0
     for _, row in common.iter_corpus_rows():
-        tradition = common.clean(row.get("tradition")) or "<missing>"
+        tradition = common.clean(row["tradition"]) or "<missing>"
         try:
             branches = extractor.extract_isnad_branches(row.get("text_ar") or "")
         except extractor.IsnadExtractionLimitError:
             continue
         if not branches:
             continue
-        metrics["rows_with_extracted_chain"] += 1
-        complete = {label: True for label in VARIANTS}
+        ids = set()
         for branch in branches:
             for raw in branch:
-                norm = regen.narrator_normalize(raw)
-                found = lookups(norm)
-                baseline_hit = bool(found["baseline"][0])
-                if not baseline_hit:
-                    occurrence_by_norm[norm] += 1
-                    tradition_by_norm[norm][tradition] += 1
-                for label in VARIANTS:
-                    hit = found["_resolved"][label]
-                    if not hit:
-                        complete[label] = False
-                    if hit and not baseline_hit:
-                        gained_occurrences[label] += 1
-                        if " " not in norm:
-                            gained_single_token[label] += 1
-                    if baseline_hit and not hit:
-                        lost_occurrences[label] += 1
-        for label in VARIANTS:
-            if complete[label]:
-                rows_complete[label][tradition] += 1
-                rows_complete[label]["all"] += 1
+                norm = base(raw)
+                if LATIN.search(norm):
+                    latin_surface_norms.add(norm)
+                number = norm_ids.get(norm)
+                if number is None:
+                    number = norm_ids[norm] = len(norms)
+                    norms.append(norm)
+                ids.add(number)
+                if exact_index.get(norm):
+                    resolved_key_has_latin += bool(LATIN.search(norm))
+                else:
+                    occurrences[norm] += 1
+                    tradition_counts[norm][tradition] += 1
+                    raw_example.setdefault(norm, raw)
+        rows.append((tradition, tuple(ids)))
+    unresolved = [n for n in norms if not exact_index.get(n)]
+    baseline_resolved_mask = [1 if exact_index.get(n) else 0 for n in norms]
 
+    specs = variant_specs()
+    index_by_variant, collisions_by_variant = {}, {}
+    for label, disabled, _ in specs:
+        owners = defaultdict(set)
+        base_names = defaultdict(set)
+        for indx, _, _, arabic_norm in registry:
+            key = compute_name_invariant(arabic_norm, disabled)
+            if key:
+                owners[key].add(indx)
+                base_names[key].add(" ".join(arabic_norm.split()))
+        index_by_variant[label] = owners
+        # merge collisions: distinct identities AND distinct baseline names share one key (created by the rules)
+        collisions_by_variant[label] = {k: (sorted(ids), sorted(base_names[k])) for k, ids in owners.items()
+                                        if len(ids) >= 2 and len(base_names[k]) >= 2}
+
+    match_of: dict[str, dict] = {label: {} for label, _, _g in specs}      # norm -> indx for invariant_match
+    ambiguous_of: dict[str, set] = {label: set() for label, _, _g in specs}
+    for label, disabled, guarded in specs:
+        owners = index_by_variant[label]
+        for norm in unresolved:
+            if guarded and categorize_surface(norm) not in SPECIFIC_CATEGORIES:
+                continue
+            key = compute_name_invariant(norm, disabled)
+            found = owners.get(key) if key else None
+            if found and len(found) == 1:
+                match_of[label][norm] = next(iter(found))
+            elif found:
+                ambiguous_of[label].add(norm)
+
+    results = {}
+    baseline_complete = Counter()
+    complete = {label: Counter() for label, _, _g in specs}
+    masks = []
+    for position, norm in enumerate(norms):
+        bits = 0
+        for bit, (label, _, _g) in enumerate(specs):
+            if baseline_resolved_mask[position] or norm in match_of[label]:
+                bits |= 1 << bit
+        masks.append(bits)
+    all_bits = (1 << len(specs)) - 1
+    for tradition, ids in rows:
+        row_bits = all_bits
+        base_ok = True
+        for number in ids:
+            row_bits &= masks[number]
+            base_ok = base_ok and bool(baseline_resolved_mask[number])
+        if base_ok:
+            baseline_complete[tradition] += 1
+            baseline_complete["all"] += 1
+        for bit, (label, _, _g) in enumerate(specs):
+            if row_bits >> bit & 1:
+                complete[label][tradition] += 1
+                complete[label]["all"] += 1
+    losses = 0
+    for label, _, _g in specs:
+        losses += max(0, baseline_complete["all"] - complete[label]["all"])
+    # Occurrence-level loss check: every baseline-resolved norm keeps its exact id by construction; verify mask.
+    surface_losses = sum(1 for position in range(len(norms))
+                         if baseline_resolved_mask[position] and not (masks[position] == all_bits))
+
+    for label, _, _g in specs:
+        gained = sum(occurrences[n] for n in match_of[label])
+        by_tradition = Counter()
+        for n in match_of[label]:
+            by_tradition.update(tradition_counts[n])
+        top = sorted(match_of[label], key=lambda n: -occurrences[n])[:10]
+        collisions = collisions_by_variant[label]
+        results[label] = {
+            "surfaces_newly_matched": len(match_of[label]),
+            "ambiguous_surfaces": len(ambiguous_of[label]),
+            "unresolved_occurrences_gained": gained,
+            "occurrences_gained_by_tradition": dict(by_tradition),
+            "rows_fully_resolvable": complete[label]["all"],
+            "rows_newly_complete_vs_baseline": complete[label]["all"] - baseline_complete["all"],
+            "rows_fully_resolvable_by_tradition": {t: complete[label][t] for t in ("Sunni", "Imami", "Ibadi", "Zaydi")},
+            "registry_merge_collision_keys": len(collisions),
+            "top_matches": [{"surface_normalized": n, "registry_scholar_indx": match_of[label][n],
+                             "registry_name_raw": registry_name[match_of[label][n]], "occurrences": occurrences[n]}
+                            for n in top],
+        }
+
+    full_label = f"cumulative_{len(RULE_NAMES)}:{RULE_NAMES[-1]}"
+    full_disabled = frozenset()
+    pair_rule: dict[tuple, str] = {}
+    seen_pairs: set = set()
+    for count in range(1, len(RULE_NAMES) + 1):
+        label = f"cumulative_{count}:{RULE_NAMES[count - 1]}"
+        current = set()
+        for ids, _ in collisions_by_variant[label].values():
+            current |= set(itertools.combinations(ids, 2))
+        for pair in current - seen_pairs:
+            pair_rule[pair] = RULE_NAMES[count - 1]
+        seen_pairs |= current
+    collision_rows = []
+    for key, (ids, base_names) in collisions_by_variant[full_label].items():
+        rules = sorted({pair_rule[pair] for pair in itertools.combinations(ids, 2) if pair in pair_rule})
+        collision_rows.append({"invariant_key": key, "introduced_by_rules": rules, "scholar_indx": ids,
+                               "registry_names": [registry_name[i] for i in ids],
+                               "distinct_baseline_names": base_names, "status": "collision_unreviewed"})
     matches = []
-    for norm, count in occurrence_by_norm.items():
-        found = cache[norm]
-        rules = {}
-        for label in VARIANTS[1:]:
-            indx, rule = found[label]
-            if indx:
-                rules[label] = (indx, rule)
-        if not rules:
-            continue
-        for label, (indx, rule) in rules.items():
-            matches.append({
-                "surface_normalized": norm,
-                "variant": label,
-                "rule": rule,
-                "scholar_indx_candidate": indx,
-                "registry_name_raw": registry_name.get(indx, ""),
-                "registry_segment_origin": [o[1] for o in segment_origin.get(norm, []) if o[0] == indx][:3],
-                "occurrences_in_unresolved": count,
-                "by_tradition": dict(tradition_by_norm[norm]),
-                "status": "rule_match_unreviewed",
-            })
-    matches.sort(key=lambda m: (-m["occurrences_in_unresolved"], m["surface_normalized"], m["variant"]))
+    for norm, indx in sorted(match_of[full_label].items(), key=lambda kv: (-occurrences[kv[0]], kv[0])):
+        key, trace = trace_name_invariant(norm, full_disabled)
+        registry_row = next(r for r in registry if r[0] == indx)
+        registry_trace = trace_name_invariant(registry_row[3], full_disabled)[1]
+        matches.append({
+            "surface_as_written": raw_example[norm], "surface_normalized": norm, "invariant_key": key,
+            "scholar_indx_candidate": indx, "registry_name_raw": registry_row[1],
+            "registry_arabic_name": registry_row[2],
+            "rules_fired_on_surface": [t[0] for t in trace],
+            "rules_fired_on_registry_name": [t[0] for t in registry_trace],
+            "occurrences": occurrences[norm], "by_tradition": dict(tradition_counts[norm]),
+            "status": "invariant_match_unreviewed"})
+    sample = random.Random(SAMPLE_SEED).sample(matches, min(SAMPLE_SIZE, len(matches)))
+    sample.sort(key=lambda m: -m["occurrences"])
+    rule_sample_counts = Counter(r for m in matches for r in set(m["rules_fired_on_surface"] + m["rules_fired_on_registry_name"]))
 
-    surfaces_newly = {label: len({m["surface_normalized"] for m in matches if m["variant"] == label})
-                      for label in VARIANTS[1:]}
-    baseline_rows = rows_complete["baseline"]["all"]
+    category_tally = defaultdict(lambda: [0, 0])
+    for m in matches:
+        tally = category_tally[categorize_surface(m["surface_normalized"])]
+        tally[0] += 1
+        tally[1] += m["occurrences"]
+    honorific_surface_side = sum(1 for m in matches if "honorific_formula_strip" in m["rules_fired_on_surface"])
+    honorific_registry_only = sum(1 for m in matches if "honorific_formula_strip" in m["rules_fired_on_registry_name"]
+                                  and "honorific_formula_strip" not in m["rules_fired_on_surface"])
+    registry_with_honorific = sum(1 for r in registry if "رضي الله عن" in r[3] or "عليه السلام" in r[3])
+    out = common.output_directory(JOB)
+    match_count = common.write_jsonl(out, "name_invariant_matches.jsonl", matches)
+    sample_count = common.write_jsonl(out, "name_invariant_spotcheck_sample.jsonl", sample)
+    collision_count = common.write_jsonl(out, "name_invariant_registry_collisions.jsonl", collision_rows)
+    exact_latin_keys = sum(1 for k in exact_index if LATIN.search(k))
     delta = {
         "header": common.header_object(
             JOB, "python -B datasets/hadith-data/diagnostics/measure_tier0_resolver_delta.py",
             common.input_fingerprints(common.CORPUS_PATH, common.REGISTRY_PATH)),
-        "policy_note": ("Diagnostic dry run. No resolver or registry is changed. Every matched row is a "
-                        "rule match awaiting review; T0-b/c/d need an amendment to AGENTS.md before use."),
-        "rows_with_extracted_chain": metrics["rows_with_extracted_chain"],
-        "registry_alias_segments": {
-            "distinct_segment_surfaces": len(segment_origin),
-            "segments_unique_to_one_scholar": sum(1 for n in segment_origin if len(owners[n]) == 1),
-            "segments_colliding_among_segments_or_new_names": len(segment_collisions),
-            "segments_that_make_an_existing_unique_exact_surface_ambiguous": len(existing_made_ambiguous),
+        "policy_note": ("Proposed change to exact-normalization policy; unreviewed. Lookup order: unchanged exact match, "
+                        "then invariant key; a key with several identities is ambiguous and never resolves."),
+        "base_normalization_reused": "regen_unified_csvs.narrator_normalize (unmodified)",
+        "rules_in_order": list(RULE_NAMES),
+        "baseline": {"rows_fully_resolvable": baseline_complete["all"], "by_tradition": {
+            t: baseline_complete[t] for t in ("Sunni", "Imami", "Ibadi", "Zaydi")},
+            "distinct_unresolved_surfaces": len(unresolved), "unresolved_occurrences": sum(occurrences.values())},
+        "losses": {"baseline_complete_rows_lost_in_any_variant": losses,
+                   "baseline_resolved_surfaces_not_resolved_in_every_variant": surface_losses},
+        "per_rule_alone": {label.split(":", 1)[1]: results[label] for label, _, _g in specs if label.startswith("only:")},
+        "cumulative": {label: results[label] for label, _, _g in specs if label.startswith("cumulative_")},
+        "cumulative_with_specificity_guard": {
+            label: results[label] for label, _, _g in specs if label.startswith("guarded_")},
+        "specificity_guard": "match only surfaces categorized ism_nasab or other_multi_token (drops kunya-only, bare ism, bare nasab)",
+        "matches_by_surface_category": {c: {"surfaces": n, "occurrences": o} for c, (n, o) in category_tally.items()},
+        "honorific_rule_side": {"matches_where_it_fired_on_surface": honorific_surface_side,
+                                "matches_where_it_fired_only_on_registry_name": honorific_registry_only,
+                                "registry_arabic_names_containing_honorific_phrase": registry_with_honorific,
+                                "registry_arabic_names_total": len(registry)},
+        "registry_collisions_total_at_full_invariant": len([c for c in collision_rows]),
+        "colliding_identity_pairs_by_introducing_rule": dict(Counter(pair_rule.values())),
+        "matches_at_full_invariant": match_count,
+        "matches_by_rule_that_fired_either_side": dict(rule_sample_counts.most_common()),
+        "latin_check": {
+            "corpus_surfaces_are_arabic_only_source": True,
+            "distinct_surface_norms_containing_latin_letters": len(latin_surface_norms),
+            "baseline_resolved_occurrences_whose_exact_key_contains_latin": resolved_key_has_latin,
+            "registry_exact_keys_containing_latin": exact_latin_keys,
+            "conclusion": "Matching is Arabic-surface against registry; mixed Latin+Arabic full-name keys exist but no resolved surface uses one, so no Latin invariant was built.",
         },
-        "per_variant": {
-            label: {
-                "surfaces_newly_matched": surfaces_newly.get(label, 0),
-                "occurrences_gained": gained_occurrences[label],
-                "occurrences_gained_single_token_surfaces": gained_single_token[label],
-                "occurrences_lost_to_new_ambiguity": lost_occurrences[label],
-                "rows_fully_resolvable": rows_complete[label]["all"],
-                "rows_newly_complete_vs_baseline": rows_complete[label]["all"] - baseline_rows,
-                "rows_fully_resolvable_by_tradition": {
-                    t: rows_complete[label][t] for t in ("Sunni", "Imami", "Ibadi", "Zaydi")},
-            }
-            for label in VARIANTS
-        },
-        "top_newly_matched_surfaces": [
-            {k: m[k] for k in ("surface_normalized", "variant", "scholar_indx_candidate",
-                               "registry_name_raw", "occurrences_in_unresolved")}
-            for m in matches[:25]
-        ],
         "seconds": round(time.time() - started, 1),
     }
-    out = common.output_directory(JOB)
-    common.write_json(out, "tier0_delta.json", delta)
-    count = common.write_jsonl(out, "tier0_matches.jsonl", matches)
-    common.write_jsonl(out, "tier0_ambiguity_collisions.jsonl",
-                       [{"kind": "segment_vs_segment_or_new", **e} for e in segment_collisions]
-                       + [{"kind": "makes_existing_unique_exact_ambiguous", **e} for e in existing_made_ambiguous])
-    print({"matches": count, "segment_collisions": len(segment_collisions),
-           "existing_made_ambiguous": len(existing_made_ambiguous), "seconds": delta["seconds"]})
+    common.write_json(out, "name_invariant_delta.json", delta)
+    print(json.dumps({"matches": match_count, "sample": sample_count, "collisions": collision_count,
+                      "losses": losses, "surface_losses": surface_losses, "seconds": delta["seconds"]}))
 
 
 if __name__ == "__main__":

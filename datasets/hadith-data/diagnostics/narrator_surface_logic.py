@@ -131,8 +131,7 @@ def _contiguous(needle: list, haystack: list) -> bool:
     return size > 0 and any(haystack[i:i + size] == needle for i in range(len(haystack) - size + 1))
 
 
-def score_candidate(surface: NameComponents, registry: NameComponents,
-                    registry_alias_units: list | None = None) -> tuple[float, list, list]:
+def score_candidate(surface: NameComponents, registry: NameComponents) -> tuple[float, list, list]:
     """Return (score, evidence, conflicts). Absolute scale: matched weights minus conflict penalties.
 
     A candidate is never an identity: kunya/prefix/containment evidence only ranks reviewer attention.
@@ -141,8 +140,6 @@ def score_candidate(surface: NameComponents, registry: NameComponents,
     conflicts: list[str] = []
     if surface.units and surface.units == registry.units:
         return 1.0, ["exact_normalized_equal"], conflicts
-    if registry_alias_units and surface.units == registry_alias_units:
-        return 0.9, ["registry_declared_alias_segment_equal"], conflicts
 
     score = 0.0
     if surface.ism and registry.ism and surface.ism == registry.ism:
@@ -203,42 +200,3 @@ def parse_father_indx(parents: str) -> str | None:
     father_half = (parents or "").split("/")[0]
     match = re.search(r"\[(\d+)\]", father_half)
     return match.group(1) if match else None
-
-
-# --- Tier-0 lookup-side rules (diagnostic dry run only) -------------------------------------
-
-_SEGMENT_SPLIT = re.compile(r"\s+-\s+|،|/")
-_HONORIFIC_SUFFIX = re.compile(
-    r"\s+(?:رضي الله عنه(?:ا|ما|م|ن)?|عليه(?:ما|م)? السلام|عليها السلام|صلي الله عليه(?: واله)? وسلم|رحمه الله|ع|ص)$"
-)
-
-
-_NON_ARABIC_KEEP_SEPARATORS = re.compile(r"[^؀-ۿ\s/،-]")
-
-
-def registry_alias_segments(name_field: str) -> list[str]:
-    """T0-b: Arabic segments of a RAW registry name field split on ' - ', '،' and '/' (needs 2+).
-
-    Works on the raw field because regen._extract_arabic_name drops the ' - ' separator.
-    """
-    arabic_only = _NON_ARABIC_KEEP_SEPARATORS.sub(" ", name_field or "")
-    segments = []
-    for part in _SEGMENT_SPLIT.split(arabic_only):
-        part = " ".join(part.split())
-        if len(re.findall(r"[ء-ي]", part)) >= 3:
-            segments.append(part)
-    return segments if len(segments) >= 2 else []
-
-
-def fold_kunya_head(norm: str) -> str:
-    """T0-c: fold a leading ابي/ابا to ابو, only when at least one name token follows."""
-    tokens = norm.split()
-    if len(tokens) >= 2 and tokens[0] in ("ابي", "ابا"):
-        return " ".join(["ابو"] + tokens[1:])
-    return norm
-
-
-def strip_trailing_honorific(norm: str) -> str:
-    """T0-d: remove a trailing honorific formula (token-bounded), keeping at least one token."""
-    stripped = _HONORIFIC_SUFFIX.sub("", norm)
-    return stripped if stripped.split() else norm

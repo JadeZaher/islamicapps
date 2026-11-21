@@ -9,8 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from narrator_surface_logic import (  # noqa: E402
-    categorize_surface, fold_kunya_head, parse_components, parse_father_indx, parse_generation,
-    parse_indx_list, registry_alias_segments, score_candidate, strip_trailing_honorific,
+    categorize_surface, parse_components, parse_father_indx, parse_generation,
+    parse_indx_list, score_candidate,
 )
 
 
@@ -51,8 +51,8 @@ class ParseComponents(unittest.TestCase):
 
 
 class ScoreCandidate(unittest.TestCase):
-    def score(self, surface, registry_name, alias=None):
-        return score_candidate(parse_components(surface), parse_components(registry_name), alias)
+    def score(self, surface, registry_name):
+        return score_candidate(parse_components(surface), parse_components(registry_name))
 
     def test_ranking_table(self):
         table = [
@@ -72,35 +72,8 @@ class ScoreCandidate(unittest.TestCase):
                 if conflict:
                     self.assertIn(conflict, found_conflicts)
 
-    def test_declared_alias_outranks_partial_name(self):
-        alias_score, alias_evidence, _ = self.score("ابو هريرة", "عبد الرحمن بن صخر الدوسي", [])
-        self.assertEqual(alias_score, 0.0)
-        declared, evidence, _ = score_candidate(
-            parse_components("ابو هريرة"), parse_components("عبد الرحمن بن صخر الدوسي"),
-            parse_components("ابو هريرة").units)
-        self.assertEqual((declared, evidence), (0.9, ["registry_declared_alias_segment_equal"]))
 
-
-class RegistryNameHelpers(unittest.TestCase):
-    def test_alias_segments_from_real_registry_names(self):
-        table = [
-            ("Abu Hurairah ( أبو هريرة - عبد الرحمن بن صخر الدوسي  ( رضي الله عنه",
-             ["أبو هريرة", "عبد الرحمن بن صخر الدوسي رضي الله عنه"]),
-            ("Sulaiman al-A'mash الأعمش / سليمان بن مهران", ["الأعمش", "سليمان بن مهران"]),
-            ("Salman Farsi ( سلمان أبو عبد الله الفارسي ( رضي الله عنه", []),  # no separator: single segment
-        ]
-        for name, expected in table:
-            with self.subTest(name=name):
-                self.assertEqual(registry_alias_segments(name), expected)
-
-    def test_fold_and_honorific_rules(self):
-        self.assertEqual(fold_kunya_head("ابي هريرة"), "ابو هريرة")
-        self.assertEqual(fold_kunya_head("ابي"), "ابي")                 # bare 'my father' is excluded
-        self.assertEqual(fold_kunya_head("عمرو بن ابي"), "عمرو بن ابي")  # head fold only
-        self.assertEqual(strip_trailing_honorific("ابو بكر رضي الله عنه"), "ابو بكر")
-        self.assertEqual(strip_trailing_honorific("عمرو"), "عمرو")      # never deletes letters inside names
-        self.assertEqual(strip_trailing_honorific("ع"), "ع")            # never empties a surface
-
+class RegistryCellParsers(unittest.TestCase):
     def test_registry_cell_parsers(self):
         self.assertEqual(parse_indx_list("1, 2, 3, 135"), {"1", "2", "3", "135"})
         self.assertEqual(parse_indx_list("NA"), set())

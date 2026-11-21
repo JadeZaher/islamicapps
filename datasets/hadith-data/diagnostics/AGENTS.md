@@ -5,14 +5,15 @@ Standalone, standard-library Python jobs for the data-gap plan (`.omc/research/p
 ## Modules
 
 - `diagnostic_common.py`: paths, hashing, header object, output-path guard (writes cannot leave `diagnostics/`), corpus streaming, loaders for `regen_unified_csvs.py` and `extract_isnad_unified.py` (bytecode writing disabled so no `__pycache__` appears beside canonical modules).
-- `narrator_surface_logic.py`: pure logic (surface categories, name-component parsing, candidate scoring, Tier-0 lookup rules). Tested by `test_narrator_surface_logic.py` (`python -B -m unittest test_narrator_surface_logic` from this directory).
+- `narrator_surface_logic.py`: pure logic (surface categories, name-component parsing, candidate scoring). Tested by `test_narrator_surface_logic.py`.
+- `name_invariant.py`: ordered, individually switchable folding rules giving one key for spelling variants of the same Arabic name; reuses `regen.narrator_normalize` unmodified. Tested by `test_name_invariant.py`. Run both suites with `python -B -m unittest test_narrator_surface_logic test_name_invariant` from this directory.
 
 ## Job map
 
 | Job | Script | Output directory |
 | --- | --- | --- |
 | J1 | `build_narrator_surface_census.py` | `narrator-resolution/` |
-| J2 | `measure_tier0_resolver_delta.py` | `narrator-resolution/` |
+| J2 | `measure_tier0_resolver_delta.py` (name-invariant dry run) | `narrator-resolution/` |
 | J3 | `rank_narrator_resolution_candidates.py` | `narrator-resolution/` |
 | J4 | not built: needs network | |
 | J5 | `sample_extractor_noise.py` | `extractor-noise/` |
