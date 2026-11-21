@@ -179,8 +179,8 @@ in order; the first tier that has the key decides, a key shared by several schol
 and resolution stays atomic per row.
 
 0. **Exact normalization (unchanged).** `narrator_normalize`: Unicode compatibility, format controls, vocalization,
-   tatweel, alef and ya variants, then a unique exact registry key (`exact_index`, whose dict content is exactly the
-   historical tier-0 index). A tier-0 match is never replaced by a later tier.
+   tatweel, alef and ya variants, then a unique exact registry key (`exact_index`: the historical tier-0 index minus
+   every key a placeholder row holds, see below). A tier-0 match is never replaced by a later tier.
 1. **Spelling folds.** `narrator_fold_normalize` applies, in order: `persian_urdu_letter_variants` (ی ے to ي, ک to ك,
    ھ ہ ە to ه), `punctuation_and_whitespace` (every non-letter becomes a space), `nasab_connector_forms` (ابن to بن,
    ابنة to بنت; ابنه stays), `theophoric_compound_spacing` (عبدالله to عبد الله, ال-names only) and
@@ -198,6 +198,34 @@ The folds never strip the definite article and never drop a name component. Not 
 and prefix/containment matches are review candidates only and can never produce a completed narrator ID.
 `_extract_arabic_name(name, strip_formulas=False)` returns the historical extraction used for tier-0 keys.
 Callers must use `resolve_narrator`; a direct `exact_index.get(narrator_normalize(surface))` is tier 0 only.
+
+**Placeholder rows are never targets (adopted 2026-11-21; this deliberately changed tier-0 results).**
+`registry_placeholder_reason(name)` marks a registry row that cannot name one person:
+- `unidentified_shaykh_marker`: the label carries the lexicon's `Shykh` marker (`Sh'bh Shykh شعبة`; 446 rows, 436 of
+  them with no teacher or student link).
+- `no_arabic_name`: the formula-free Arabic name has no token.
+- `bare_single_token_name`: it has one token (`يحيى`, `جابر`).
+- `kunya_only_name`: it is a kunya alone (`أبو معاوية`).
+
+Every key such a row holds is removed from `exact_index` and recorded in `exact_ambiguous`. Tier-1/2 owner sets that
+contain it never resolve (`_sole_person`). A placeholder therefore still makes a shared key ambiguous; removing it
+never promotes another holder. Placeholders stay review candidates. The ids are listed in
+`exact_index.placeholders`; the measured effect and the excluded-row list are in
+`diagnostics/chain-reconciliation/output/resolver-fix/`.
+
+**An inner alternative keeps the whole name.** In `'English ( عبد الله (عبد رب) بن حق بن أوس ( grade'` the Arabic name
+is `عبد الله بن حق بن أوس`. The alternative is removed by `_arabic_block_without_alternatives`, and the name is not
+truncated at the inner `(`, which used to give every bare `عبد الله` to one man.
+
+### Reconciled sidecars
+
+`reconciled/` holds non-destructive, deterministic re-ETL sidecars keyed by `record_id`:
+- the original K6 narrator-id index with its agreement against the Arabic;
+- Pure Canon `chain` text with its canonical extraction;
+- `no_chain_in_source` flags for reports whose source has no isnad.
+
+They never write `chain_indx` or any canonical file and are not release inputs. A source id is the source's claim,
+and every row is unreviewed. See `reconciled/README.md`.
 
 ### Gold-set provenance and evaluation
 

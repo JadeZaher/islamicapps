@@ -1,0 +1,84 @@
+{
+  "artifact": "pure_canon_chain + no_chain_in_source",
+  "code_sha256": {
+    "datasets/hadith-data/diagnostics/chain-reconciliation/reconcile_common.py": "7cde52ce8e2ef403bc6d708020c0af10b68287da4876e8fef5d228e3538392cd",
+    "datasets/hadith-data/extract_isnad_unified.py": "56ea1ae0968d1cddfa4d0dcdd630e8145e897a1b82413cb3c271cf8023708212",
+    "datasets/hadith-data/reconciled/build_pure_canon_chain_sidecar.py": "b381613718f25cbe3beb0571407767967c5925f968b03c9ba29c2e036d8d4599",
+    "datasets/hadith-data/reconciled/sidecar_io.py": "e4564e31cc2e6f16d8e1640b179c1cfc5b771d71a3e424646a03df8dde9e9eb2",
+    "datasets/hadith-data/regen_unified_csvs.py": "72270927fc72c47f7469e7ef5b16726af629d4d2f11e44c2c8aaa02128366da5"
+  },
+  "command": "python -B datasets/hadith-data/reconciled/build_pure_canon_chain_sidecar.py",
+  "counts": {
+    "by_source_and_status": {
+      "Musnad Ahmad | chain_in_source": 23347,
+      "Musnad Ahmad | chain_in_source_no_narrator_extracted": 181,
+      "Musnad Ahmad | no_chain_in_source": 1,
+      "Musnad al-Shafi'i | no_chain_in_source": 2054,
+      "Muwatta' Malik | chain_in_source": 1831,
+      "Muwatta' Malik | chain_in_source_no_narrator_extracted": 23,
+      "Muwatta' Malik | no_chain_in_source": 1,
+      "Nahj al-Balāgha | no_chain_in_source": 2260,
+      "Sunan al-Darimi | chain_in_source": 2475,
+      "Sunan al-Darimi | chain_in_source_no_narrator_extracted": 2
+    },
+    "chain_rows": 27859,
+    "chain_rows_with_extracted_narrators": 27653,
+    "chain_surfaces_extracted": 132680,
+    "nahj_rows_whose_text_yields_false_narrators": 1129,
+    "no_chain_rows": 4316,
+    "pure_canon_rows_whose_matn_yields_false_narrators": 17521
+  },
+  "inputs_sha256": {
+    "datasets/hadith-data/archive/sheikahmad-pure-canon/pure_canon.jsonl": "0cb5ec01959b326c895a6063574955997067e8646c103863285403c3ba6550ac",
+    "datasets/hadith-data/shia-hadith/v2_books/1.json": "e4ab315a28b5c50948d104888c7340974ec716739cb65762210c5f44634c046b",
+    "datasets/hadith-data/shia-hadith/v2_books/10.json": "4c7612554efe31dcaa84062e7fdb00bcdba12b7682d50a6223319d659d060cae",
+    "datasets/hadith-data/shia-hadith/v2_books/11.json": "9e7a22e03dc7950736b0bc82c0f7b36e8fbc83293ad4fbb5b07e7122ce780d6e",
+    "datasets/hadith-data/shia-hadith/v2_books/12.json": "e8db9b4bfa6cc1101a6db14e492033c522ddd1dfeae0d7c62e07c84e5e2f60d3",
+    "datasets/hadith-data/shia-hadith/v2_books/13.json": "5f6751eba8d404d52646029d64bd7d36f3c86b3e0f9a227c52006cdefbafa131",
+    "datasets/hadith-data/shia-hadith/v2_books/14.json": "1b347102bf47a57404c03b34343ba6946736a39636f260d21cb1b557ba378424",
+    "datasets/hadith-data/shia-hadith/v2_books/17.json": "a362f786053b95023b9d53fb1fbd0e1a54274098b818b69210cc3ad9186da182",
+    "datasets/hadith-data/shia-hadith/v2_books/2.json": "8a0dc401fbd870d82c57279bee2a884c057f4460c26be91d76143722876af24d",
+    "datasets/hadith-data/shia-hadith/v2_books/22.json": "5c35a7c464892a3438b80e8ae8bf199dd6cc119c7409fdcc1158295bc3680937",
+    "datasets/hadith-data/shia-hadith/v2_books/23.json": "e4167ae0e740cf3eb9bf20a1a1f37e9381c23f17b6e866842d62bc2da10981de",
+    "datasets/hadith-data/shia-hadith/v2_books/24.json": "9ccbb656fd944a856e2dd4d382b45ae5aad88949d4d7e8e992c80487396a117c",
+    "datasets/hadith-data/shia-hadith/v2_books/25.json": "f50f5f6325eb166897f2c32a1971c45b50fc2dbf0c4d3a9859ac8d2ca35d8992",
+    "datasets/hadith-data/shia-hadith/v2_books/26.json": "6bc90aa167eaba163563e5afada399a05716221e591227304040c5da3e592978",
+    "datasets/hadith-data/shia-hadith/v2_books/27.json": "ecdfd3d2637c26edff966288a45119d79810af1dbe4d103b112327a7903ab402",
+    "datasets/hadith-data/shia-hadith/v2_books/28.json": "89ab0c0b9e1d167a8d9f08223266289e2a9376bcb42664ce321b3317358477f2",
+    "datasets/hadith-data/shia-hadith/v2_books/29.json": "e153939d4e6c5fc7195c1952661912506a400fd25e320422eb14b734f2e7916f",
+    "datasets/hadith-data/shia-hadith/v2_books/3.json": "bceb53dd81476c37eea23ea5d7c90d8111b4a07da6a0ee4fd156aaf925170ccf",
+    "datasets/hadith-data/shia-hadith/v2_books/30.json": "79f1e7d89aa5d1ab9214b89dbd4547706bd2f7dfb2d35ad1aaf524ca5a681477",
+    "datasets/hadith-data/shia-hadith/v2_books/31.json": "b8dbf4e13e751c7504b0c5d53a00398106e6ad1a186a1db8610ddb858dab2638",
+    "datasets/hadith-data/shia-hadith/v2_books/32.json": "6375002ccd48cea1f2ca09f48b4b072e825fd72d2ac816e33c0c9d787d133325",
+    "datasets/hadith-data/shia-hadith/v2_books/33.json": "bbf95353abd3ae9684371ab2e76f0b38efa1b0d0a630d5b1ba91008d637df23c",
+    "datasets/hadith-data/shia-hadith/v2_books/34.json": "9651316b345b2ef7b0cf5ddf418a66c0619d1f5c7508cf0abc97951e49532012",
+    "datasets/hadith-data/shia-hadith/v2_books/35.json": "0753e1e83bf61dc38cc2277725599e2a600fa2e986203e0985d25f34d7f2aa5f",
+    "datasets/hadith-data/shia-hadith/v2_books/36.json": "77fb11824d963f561d9a0de36f06f7cac3984c077be757de8e81984db77a0266",
+    "datasets/hadith-data/shia-hadith/v2_books/37.json": "45d72e649808331de4085167a05645a24a0bda0caeb9ec750ce6bd4cbc23c872",
+    "datasets/hadith-data/shia-hadith/v2_books/38.json": "485536f9f7f0d0726a04fd912282b82abea503780866709f235c8f187c0f00bb",
+    "datasets/hadith-data/shia-hadith/v2_books/39.json": "087874c5be757f3b5f15931a1cb3693a832c93ff1ba396bd0caf66e8b1c86cc7",
+    "datasets/hadith-data/shia-hadith/v2_books/4.json": "ced78b8e2cfafe362c0deef7eb4c8c7f611b0cf2c9b549d3910c299d758dbd9f",
+    "datasets/hadith-data/shia-hadith/v2_books/5.json": "a4ae0624cc486b06e1c88d5a19ba479d96b0b1e1cbb8e4861887aefb1c0b00c7",
+    "datasets/hadith-data/shia-hadith/v2_books/6.json": "a4df6a38659f9343d4ca9968c9484cb89cc322df9339ade024436dedaae35e1a",
+    "datasets/hadith-data/shia-hadith/v2_books/7.json": "557d4c51e9d7bbc8340240d7ba9e78b29b9e819c3cc2bb1d4ce64a5d221bbe60",
+    "datasets/hadith-data/shia-hadith/v2_books/8.json": "78f886cbc6713aa93920d51873e18678c8f7286eb20c489b9508d05c184e2386",
+    "datasets/hadith-data/shia-hadith/v2_books/9.json": "8fd7ca5898b2474507f69038bb40ccc428fa847162a82e9d3a791fc3a9b0f836",
+    "datasets/hadith-data/shia-hadith/v2_books/BookNames.json": "c1f2585db06b8745b12aead022d9a45a4cbf5c40ece217a0eeb34b67b1751759",
+    "datasets/narrator-data/all_rawis.csv": "d87c3af64d48b3cd585294ab5f6381536a51ff95a72a6707a7426ea483bf6c11"
+  },
+  "meaning": "Source-provided Pure Canon chain text (verbatim) with canonical extraction; reports whose source has no isnad, so any chain extracted from their text_ar is matn noise",
+  "not_carried": "Closing compiler statements (workbook column L) and edition header rows are already extracted by diagnostics/grading-recovery and diagnostics/provenance-recovery; not duplicated.",
+  "outputs": [
+    {
+      "file": "pure_canon_chain.jsonl.gz",
+      "rows": 27859,
+      "sha256": "5b335f0e81853c65ca05761ea188abf3772256a86897afbc8a3c43396371bb19"
+    },
+    {
+      "file": "no_chain_in_source.jsonl.gz",
+      "rows": 4316,
+      "sha256": "59b98699b696002998df43bcd5d0626d69a4aa46caf443d12ce8400f384c15c5"
+    }
+  ],
+  "status": "sidecar_unreviewed_not_a_release_input"
+}

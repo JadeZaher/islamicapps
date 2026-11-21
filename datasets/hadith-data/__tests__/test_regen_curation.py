@@ -373,7 +373,7 @@ class NarratorSpellingFoldTests(unittest.TestCase):
         ("8", "Aisha bint Qudama ( عائشة بنت قدامة )"),
         ("9", "Abd Allah bin Abbas ( عبد الله بن عباس )"),
         ("10", "Ibn Abi Layla ( ابن ابي ليلى )"),
-        ("11", "Abu al-Qasim ( أبو القاسم )"),
+        ("11", "Abu al-Qasim al-Baghawi ( أبو القاسم البغوي )"),
     )
 
     @classmethod
@@ -394,8 +394,8 @@ class NarratorSpellingFoldTests(unittest.TestCase):
         table = [
             ("عبد الله بن سراقة", "1"),            # blessing formula removed at the registry source
             ("عبدالله بن عباس", "9"),              # theophoric spacing
-            ("ابو القاسم", "11"),
-            ("ابوالقاسم", "11"),                   # joined kunya compound
+            ("ابو القاسم البغوي", "11"),
+            ("ابوالقاسم البغوي", "11"),            # joined kunya compound
             ("عائشة ابنة قدامة", "8"),             # ابنة to بنت
             ("عبد الله ابن عباس", "9"),            # ابن to بن
             ("( عبد الله بن عباس ،", "9"),                   # punctuation
@@ -425,9 +425,70 @@ class NarratorSpellingFoldTests(unittest.TestCase):
         self.assertIsNone(self.resolve("تبيع  بن   عامر"))        # only tier 1 sees it: two identities, ambiguous
 
     def test_tier_zero_entries_are_unchanged_and_formula_keys_are_gone_from_tier_one(self):
-        self.assertIn(regen.narrator_normalize("أبو سلمة"), self.exact)
+        self.assertIn(regen.narrator_normalize("أبي بن كعب"), self.exact)
+        # A kunya-only entry is a placeholder: its key is withheld and stays ambiguous.
+        self.assertNotIn(regen.narrator_normalize("أبو سلمة"), self.exact)
+        self.assertEqual(self.exact.placeholders.get("4"), "kunya_only_name")
         self.assertTrue(all(not regen._BLESSING_FORMULA.search(key) for key in self.exact.folded))
         self.assertEqual(self.exact.withheld_bare_names, ["2"])
+
+
+class NarratorPlaceholderAndNestedNameTests(unittest.TestCase):
+    """Placeholder registry rows never become automatic targets; a nested alternative keeps the whole name.
+
+    Fixture ids mirror the regression list (diagnostics/chain-reconciliation/output/resolver_conflicts.jsonl).
+    """
+
+    REGISTRY = (
+        ("20020", "Shu'bah bin al-Hajjaj شعبة بن الحجاج"),
+        ("29483", "Sh'bh Shykh شعبة"),
+        ("19163", "Yahya يحيى"),
+        ("19383", "Abu Mua'wiya أبو معاوية"),
+        ("131", "'Abdullah ('Abd Rabb) bin Haq ( عبد الله (عبد رب) بن حق بن أوس ( رضي الله عنه"),
+        ("141", "Lubaba(Sughra) bint al-Harith ( لبابة (الصغرى) بنت الحارث ( رضي الله عنها"),
+        ("500", "Ibrahim bin Yazid al-Nakha'i ( إبراهيم بن يزيد"),
+        ("29126", "Ibrahim bin Yazid Shykh إبراهيم بن يزيد"),
+        ("40018", "Shaykh ‘Abdul-Karim"),
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        with tempfile.TemporaryDirectory() as directory:
+            rawis = Path(directory) / "all_rawis.csv"
+            with rawis.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=("scholar_indx", "name"))
+                writer.writeheader()
+                for indx, name in cls.REGISTRY:
+                    writer.writerow({"scholar_indx": indx, "name": name})
+            cls.exact, cls.blocked = regen.build_narrator_index(str(rawis))
+
+    def resolve(self, surface):
+        return regen.resolve_narrator(surface, self.exact, self.blocked)
+
+    def test_placeholder_rule_names_every_excluded_entry_with_its_reason(self):
+        self.assertEqual(self.exact.placeholders, {
+            "29483": "unidentified_shaykh_marker", "29126": "unidentified_shaykh_marker",
+            "19163": "bare_single_token_name", "19383": "kunya_only_name", "40018": "no_arabic_name",
+        })
+
+    def test_placeholders_and_keys_they_share_never_resolve(self):
+        for surface in ("شعبة", "يحيى", "أبو معاوية", "ابي معاوية", "عبد الله", "لبابة",
+                        "إبراهيم بن يزيد"):    # shared with a placeholder: stays ambiguous, 500 is not promoted
+            with self.subTest(surface=surface):
+                self.assertIsNone(self.resolve(surface))
+        self.assertTrue(regen.narrator_resolution_candidates("شعبة", self.blocked))  # still a review candidate
+
+    def test_full_and_nested_names_resolve_to_the_whole_name(self):
+        self.assertEqual(self.resolve("شعبة بن الحجاج"), "20020")
+        self.assertEqual(self.resolve("عبد الله بن حق بن أوس"), "131")
+        self.assertEqual(self.resolve("لبابة بنت الحارث"), "141")
+        self.assertEqual(regen._extract_arabic_name_raw(self.REGISTRY[4][1]), "عبد الله بن حق بن أوس")
+
+    def test_a_chain_with_a_placeholder_surface_stays_atomic(self):
+        with self.assertRaises(regen.UnresolvedNarratorError):
+            regen._compute_chain_indx(
+                "حدثنا شعبة بن الحجاج عن شعبة قال قال رسول الله صلى الله عليه وسلم",
+                resolve_narrator=self.resolve)
 
 
 class ThaqalaynResolverContractTests(unittest.TestCase):

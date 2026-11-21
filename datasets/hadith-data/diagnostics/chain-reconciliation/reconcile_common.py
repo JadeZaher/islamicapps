@@ -163,11 +163,16 @@ class Canon:
         return registry
 
     def extract(self, text_ar: str):
-        """Extractor branches, or None when the typed branch limit is hit."""
+        """Non-empty extractor branches, or None when the typed branch limit is hit.
+
+        The extractor can return [[]] (a branch with no narrator); counting that as a chain makes a row
+        vacuously 'fully resolved' (427 rows on 2026-11-21), so empty branches are dropped here.
+        """
         try:
-            return self.extractor.extract_isnad_branches(text_ar or "")
+            branches = self.extractor.extract_isnad_branches(text_ar or "")
         except self.extractor.IsnadExtractionLimitError:
             return None
+        return [branch for branch in branches if branch]
 
 
 def _is_subsequence(short: list, long: list) -> bool:

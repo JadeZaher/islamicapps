@@ -225,3 +225,29 @@ All annotation fields are null. `extractor_output_reviewer_aid_not_gold` is labe
 | `output/resolver_conflicts.jsonl` | Strict resolver vs K6 conflicts (first 3,000) |
 | `output/local_asset_inventory.json` | Asset table: bytes, SHA-256, rows, columns, chain-field coverage |
 | `research/` | Raw API captures (URL in file name; fetched 2026-11-21, generic client, unauthenticated) |
+
+## Addendum 2026-11-21: resolver fix and empty-branch correction (supersedes the numbers above where they differ)
+
+- **Empty branches.** The extractor can return `[[]]`. Earlier counts (this README, and also J1 `surface_curve.json`
+  and `sanad_resolution_audit.json`) treated such a row as having a chain and as vacuously "fully resolved".
+  427 rows are affected (Sunni 253, Imami 168, Zaydi 4, Ibadi 2). `reconcile_common.Canon.extract` now drops empty
+  branches. The real pre-fix baseline is **142** fully resolved rows, not 569, and 14,927 rows have no chain.
+- **Resolver fix** (`regen_unified_csvs.py`; contract in `../../AGENTS.md` §Narrator identity lookup).
+  - 866 placeholder registry rows are never targets: 446 `Shykh`-marked, 235 kunya-only, 137 bare one-token,
+    48 without an Arabic name.
+  - An inner alternative keeps the whole Arabic name.
+  - `measure_resolver_fix_diff.py` writes `output/resolver-fix/`: `resolution_diff.jsonl` (every surface whose
+    resolution changed), `excluded_placeholder_entries.csv`, and `resolver_fix_summary.json` (the diff by class,
+    atomic rows before/after, the K6 regression, and the tradition guard, which is measured but not adopted).
+- After the fix, `measure_learned_candidates.py` gives:
+
+  | Level | View A rows (master `text_ar`) | View B rows (Pure Canon `chain` field) |
+  | --- | ---: | ---: |
+  | S0 strict resolver | 72 | 115 |
+  | S1 + K6 index corroborated by text | 15,002 | 15,045 |
+  | S2 + learned, unique in context | 17,765 | 24,717 |
+  | S3 + learned, unique for surface | 18,050 | 26,083 |
+
+  Occurrences under View B: 53,435 → 188,237 → 292,023 → 298,969 of 533,885.
+- The `learned_from_corroborated_context` channel is now part of the J3 queue
+  (`../narrator-resolution/review_queue.jsonl`).

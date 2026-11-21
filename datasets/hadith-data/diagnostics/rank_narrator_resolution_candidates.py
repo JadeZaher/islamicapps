@@ -40,6 +40,9 @@ GRAPH_RESCORE_POOL = 100      # name-ranked pool re-scored with graph evidence b
 WEAK_NEIGHBOR_MAX = 10        # a neighbour with more name candidates than this carries no edge signal
 SURFACE_CANDIDATES_KEPT = 10
 UNIT_CANDIDATES_KEPT = 5
+LEARNED_CHANNEL = "learned_from_corroborated_context"
+LEARNED_OBSERVATIONS = (Path(__file__).resolve().parent / "chain-reconciliation" / "output"
+                        / "corroborated_observations.jsonl.gz")
 CONTEXT_SHARE = 0.8
 
 
@@ -141,6 +144,45 @@ def contexts_reaching(counter_items: list, share: float) -> list:
     return kept
 
 
+class LearnedObservations:
+    """K6 source ids at positions the Arabic corroborates, keyed by canonical fold (chain-reconciliation Q2)."""
+
+    def __init__(self, path: Path, fold):
+        self.fold = fold
+        self.by_surface: dict = defaultdict(Counter)
+        self.by_context: dict = defaultdict(Counter)
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            for line in handle:
+                obs = json.loads(line)
+                self.by_surface[obs["key"]][obs["source_id"]] += 1
+                self.by_context[(obs["key"], "teacher", obs["teacher"])][obs["source_id"]] += 1
+                self.by_context[(obs["key"], "student", obs["student"])][obs["source_id"]] += 1
+
+    def _fold_context(self, context: str) -> str:
+        return context if context in (START, END) else self.fold(context)
+
+    def candidates(self, norm: str, axis: str, context: str, name_raw: dict) -> list:
+        """Learned candidates for one unit: context observations first, else surface-only observations."""
+        key = self.fold(norm)
+        in_context = self.by_context.get((key, axis, self._fold_context(context)))
+        pool, scope = (in_context, f"{axis}_context") if in_context else (self.by_surface.get(key), "surface_only")
+        if not pool:
+            return []
+        total = sum(pool.values())
+        surface_total = self.by_surface[key]
+        return [{
+            "scholar_indx": indx, "name_raw": name_raw.get(indx, ""), "channel": LEARNED_CHANNEL,
+            "basis": LEARNED_CHANNEL, "name_component_score": 0.0,
+            # Triage share of the supporting observations, halved without context; never confidence in identity.
+            "score": round(count / total * (1.0 if scope != "surface_only" else 0.5), 4),
+            "learned_support": {"scope": scope, "observations": count, "observations_in_scope": total,
+                                "distinct_ids_in_scope": len(pool),
+                                "observations_for_surface": sum(surface_total.values()),
+                                "distinct_ids_for_surface": len(surface_total)},
+            "applies_to": "Sunni occurrences only", "conflicts": [], "status": "candidate_only",
+        } for indx, count in pool.most_common(3)]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--surfaces", type=int, default=10000)
@@ -160,6 +202,8 @@ def main() -> None:
     extractor = common.load_extractor()
     resolve, exact_index, _ = common.build_resolver(regen)
     registry = RegistryIndex(regen)
+    fold = getattr(regen, "narrator_fold_normalize", regen.narrator_normalize)
+    learned = LearnedObservations(LEARNED_OBSERVATIONS, fold) if LEARNED_OBSERVATIONS.exists() else None
 
     # Pass: full contexts for in-scope surfaces, unit row credit, resolved-in-source frequency.
     teacher_ctx: dict[str, Counter] = defaultdict(Counter)
@@ -329,6 +373,10 @@ def main() -> None:
                         "name_component_score": 0.0, "score": 0.5, "channel": "derived_relation",
                         "evidence": [f"registry parents field chain {'>'.join(str(t) for t in trail)} (previous narrator {context_indx})"],
                         "conflicts": [], "status": "candidate_only"})
+            if learned is not None and entry["by_tradition"].get("Sunni"):
+                for candidate in learned.candidates(norm, axis, context, registry.name_raw):
+                    candidate["sunni_occurrences_in_unit"] = entry["by_tradition"]["Sunni"]
+                    candidates.append(candidate)
             for candidate in base:
                 scored = dict(candidate)
                 indx = scored["scholar_indx"]
@@ -424,7 +472,8 @@ def main() -> None:
     summary = {
         "header": common.header_object(
             JOB, "python -B datasets/hadith-data/diagnostics/rank_narrator_resolution_candidates.py",
-            common.input_fingerprints(common.CORPUS_PATH, common.REGISTRY_PATH, census_path)),
+            common.input_fingerprints(common.CORPUS_PATH, common.REGISTRY_PATH, census_path,
+                                      *([LEARNED_OBSERVATIONS] if LEARNED_OBSERVATIONS.exists() else []))),
         "coverage_curve": [coverage_at(n) for n in (100, 500, 2000, 10000)],
         "files": {"review_queue_surfaces.jsonl.gz": surfaces_written, "review_queue.jsonl": units_written},
         "unit_scope_surfaces": args.unit_surfaces,
@@ -445,7 +494,19 @@ def main() -> None:
             "units_with_top1_margin_at_least_0.2": sum(1 for u in unit_rows if u["margin_top1_top2"] >= 0.2),
             "units_with_derived_relation_candidate": sum(
                 1 for u in unit_rows if any(c["channel"] == "derived_relation" for c in u["candidates"])),
+            "units_with_learned_candidate": sum(
+                1 for u in unit_rows if any(c["channel"] == LEARNED_CHANNEL for c in u["candidates"])),
+            "units_with_learned_candidate_unique_in_context": sum(
+                1 for u in unit_rows if any(c["channel"] == LEARNED_CHANNEL
+                                            and c["learned_support"]["scope"] != "surface_only"
+                                            and c["learned_support"]["distinct_ids_in_scope"] == 1
+                                            for c in u["candidates"])),
+            "sunni_occurrences_in_units_with_learned_candidate": sum(
+                u["by_tradition"].get("Sunni", 0) for u in unit_rows
+                if any(c["channel"] == LEARNED_CHANNEL for c in u["candidates"])),
         },
+        "learned_observations_input": (common.relative_path(LEARNED_OBSERVATIONS)
+                                       if learned is not None else None),
         "units_not_listed_residual": sum(r["units_not_listed"] for r in residuals),
         "occurrences_not_listed_residual": sum(r["occurrences_not_listed"] for r in residuals),
         "rows_completable_if_whole_unit_scope_resolved_by_tradition": dict(scope_rows_completable),

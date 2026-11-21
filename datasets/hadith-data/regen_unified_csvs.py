@@ -2318,6 +2318,18 @@ def _extract_arabic_name(name_field: str, strip_formulas: bool = True) -> str:
     return strip_blessing_formulas(narrator_fold_normalize(extracted))
 
 
+_NAME_FIELD_SEPARATOR = re.compile(r'\(\s+')     # the ' ( ' between English label, Arabic name and grade
+_INNER_ALTERNATIVE = re.compile(r'\([^()]*\)')   # an alternative inside the Arabic name: (عبد رب), (الصغرى)
+
+
+def _arabic_block_without_alternatives(name_field: str) -> str:
+    """Whole Arabic name segment of 'English ( Arabic ( grade', inner alternatives removed; '' when absent."""
+    for part in _NAME_FIELD_SEPARATOR.split(name_field)[1:]:
+        if len(_ARABIC_RANGE.findall(part)) >= 3:
+            return ' '.join(_INNER_ALTERNATIVE.sub(' ', part).replace('(', ' ').replace(')', ' ').split())
+    return ''
+
+
 def _extract_arabic_name_raw(name_field: str) -> str:
     """Historical extraction (formulas kept on the unclosed-parenthesis fallback)."""
     # Try to find Arabic text in parentheses
@@ -2328,6 +2340,11 @@ def _extract_arabic_name_raw(name_field: str) -> str:
         if arabic_chars >= 3:
             # Strip trailing honorifics
             candidate = _CLASSICAL_HONORIFIC.sub("", candidate).strip()
+            if '(' in candidate:
+                # Inner alternative: 'عبد الله (عبد رب) بن حق' is the whole name, not 'عبد الله' (AGENTS.md).
+                whole = _CLASSICAL_HONORIFIC.sub("", _arabic_block_without_alternatives(name_field)).strip()
+                if len(_ARABIC_RANGE.findall(whole)) >= 3:
+                    return whole
             # Strip nested paren leftovers
             candidate = re.sub(r'\(.*', '', candidate).strip()
             if arabic_chars >= 3:
@@ -2375,14 +2392,38 @@ class NarratorExactIndex(dict):
 
     folded         : narrator_fold_normalize(formula-free registry name) -> set of scholar_indx
     kunya_folded   : fold_kunya_case_forms(folded key) -> set of scholar_indx (guarded use only)
-    exact_ambiguous: tier-0 keys shared by several scholars (never resolve)
+    exact_ambiguous: tier-0 keys shared by several scholars, or held by a placeholder entry (never resolve)
     withheld_bare_names: scholar_indx whose formula-stripped name is a single token (not indexed in tier 1)
+    placeholders   : scholar_indx -> reason; never an automatic match target (registry_placeholder_reason)
     """
 
     folded: dict
     kunya_folded: dict
     exact_ambiguous: set
     withheld_bare_names: list
+    placeholders: dict
+
+
+_PLACEHOLDER_MARKER = re.compile(r'\bShykh\b')
+
+
+def registry_placeholder_reason(name_field: str) -> str:
+    """Why a registry row can never be an automatic match target ('' for a person entry); see AGENTS.md.
+
+    unidentified_shaykh_marker: the label carries the lexicon's 'Shykh' marker ('Sh'bh Shykh شعبة').
+    no_arabic_name / bare_single_token_name: the formula-free Arabic name has 0 or 1 tokens ('يحيى').
+    kunya_only_name: the name is a kunya alone ('ابو معاوية'), which many people share.
+    """
+    if _PLACEHOLDER_MARKER.search(name_field or ''):
+        return 'unidentified_shaykh_marker'
+    tokens = _extract_arabic_name(name_field or '').split()
+    if not tokens:
+        return 'no_arabic_name'
+    if len(tokens) == 1:
+        return 'bare_single_token_name'
+    if len(tokens) == 2 and tokens[0] in _KUNYA_HEADS:
+        return 'kunya_only_name'
+    return ''
 
 
 def build_narrator_index(all_rawis_path: str):
@@ -2415,6 +2456,8 @@ def build_narrator_index(all_rawis_path: str):
 
     # Gather kunya surfaces for review-only candidate lookup.
     alias_candidates: dict[str, set[str]] = {}  # alias_norm -> set of indxs
+    placeholders: dict = {}           # scholar_indx -> reason (never a target)
+    placeholder_exact_keys: set = set()
 
     with open(all_rawis_path, encoding='utf-8', errors='replace') as f:
         for row in csv.DictReader(f):
@@ -2422,10 +2465,18 @@ def build_narrator_index(all_rawis_path: str):
             name = row.get('name', '').strip()
             if not indx or not name:
                 continue
+            reason = registry_placeholder_reason(name)
+            if reason:
+                placeholders[indx] = reason
             # Index the full (English+Arabic mixed) normalized name
             _add(narrator_normalize(name), indx)
             # Also index the Arabic-only portion extracted from parentheses
             arabic_name = _extract_arabic_name(name, strip_formulas=False)
+            if reason:
+                # A placeholder still makes its keys ambiguous, so removing it never promotes another holder.
+                placeholder_exact_keys.add(narrator_normalize(name))
+                if arabic_name:
+                    placeholder_exact_keys.add(narrator_normalize(arabic_name))
             if arabic_name:
                 _add(narrator_normalize(arabic_name), indx)
                 # Tier 1/2 keys come from the formula-free name; a name that becomes a single bare token only
@@ -2445,13 +2496,15 @@ def build_narrator_index(all_rawis_path: str):
                     if alias_norm:
                         alias_candidates.setdefault(alias_norm, set()).add(indx)
 
-    # Remove ambiguous full-name entries from exact_index
+    # Remove ambiguous full-name entries, and every key a placeholder holds, from exact_index
+    dup_norms |= {key for key in placeholder_exact_keys if key}
     for dn in dup_norms:
         exact_index.pop(dn, None)
     exact_index.folded = folded_index
     exact_index.kunya_folded = kunya_folded_index
     exact_index.exact_ambiguous = set(dup_norms)
     exact_index.withheld_bare_names = withheld_bare
+    exact_index.placeholders = placeholders
 
     # Candidate-only: uniqueness is not identity evidence and cannot complete a chain.
     for alias_norm, indxs in alias_candidates.items():
@@ -2483,15 +2536,24 @@ def resolve_narrator(surface: str, exact_index: dict, blocked_index: dict):
     folded_index = getattr(exact_index, 'folded', None)
     if folded_index is None or norm in exact_index.exact_ambiguous:
         return None
+    placeholders = getattr(exact_index, 'placeholders', {})
     key = narrator_fold_normalize(surface)
     owners = folded_index.get(key)
     if owners:
-        return next(iter(owners)) if len(owners) == 1 else None
+        return _sole_person(owners, placeholders)
     if kunya_fold_allowed(key):
         owners = exact_index.kunya_folded.get(fold_kunya_case_forms(key))
-        if owners and len(owners) == 1:
-            return next(iter(owners))
+        if owners:
+            return _sole_person(owners, placeholders)
     return None
+
+
+def _sole_person(owners: set, placeholders: dict):
+    """The single owner of a key, unless the key is shared or its owner is a placeholder entry."""
+    if len(owners) != 1:
+        return None
+    owner = next(iter(owners))
+    return None if owner in placeholders else owner
 
 
 def narrator_resolution_candidates(surface: str, blocked_index: dict) -> list:

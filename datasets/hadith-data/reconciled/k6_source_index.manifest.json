@@ -1,0 +1,52 @@
+{
+  "artifact": "k6_source_index",
+  "code_sha256": {
+    "datasets/hadith-data/diagnostics/chain-reconciliation/measure_source_index_agreement.py": "3c105130312a8a9fa604d15e15294754688eea16537c975513e0a5d876c51e6b",
+    "datasets/hadith-data/diagnostics/chain-reconciliation/reconcile_common.py": "7cde52ce8e2ef403bc6d708020c0af10b68287da4876e8fef5d228e3538392cd",
+    "datasets/hadith-data/extract_isnad_unified.py": "56ea1ae0968d1cddfa4d0dcdd630e8145e897a1b82413cb3c271cf8023708212",
+    "datasets/hadith-data/reconciled/build_k6_source_index_sidecar.py": "7104a720eb32d292b0fe5f24dfc0c17d252923e76eac5da15fb19f5eb3e1d26c",
+    "datasets/hadith-data/reconciled/sidecar_io.py": "e4564e31cc2e6f16d8e1640b179c1cfc5b771d71a3e424646a03df8dde9e9eb2",
+    "datasets/hadith-data/regen_unified_csvs.py": "72270927fc72c47f7469e7ef5b16726af629d4d2f11e44c2c8aaa02128366da5"
+  },
+  "command": "python -B datasets/hadith-data/reconciled/build_k6_source_index_sidecar.py",
+  "counts": {
+    "by_agreement_class": {
+      "extraction_limit": 1,
+      "full_agreement": 11523,
+      "length_differs_source_longer": 3059,
+      "length_differs_text_longer": 8215,
+      "multi_branch_all_source_ids_aligned": 4178,
+      "multi_branch_partial": 3356,
+      "no_source_index": 123,
+      "no_text_chain": 59,
+      "same_length_name_mismatch": 3927
+    },
+    "by_basis": {
+      "no_source_index": 123,
+      "source_index_corroborated_by_text": 15701,
+      "source_index_extraction_limit": 1,
+      "source_index_length_differs_source_longer": 3059,
+      "source_index_length_differs_text_longer": 8215,
+      "source_index_multi_branch_partial": 3356,
+      "source_index_no_text_chain": 59,
+      "source_index_same_length_name_mismatch": 3927
+    },
+    "reports": 34441,
+    "source_ids": 175695,
+    "source_ids_corroborated_by_aligned_text": 155514
+  },
+  "inputs_sha256": {
+    "datasets/archive/datasets.7z": "2822d053998fd52f9b8482478262ecc6238d9be3cad58e9518a76f74480df378",
+    "datasets/archive/datasets.7z!datasets/hadith-data/all_hadiths_clean.csv": "a6800edb54d45a6e6c5228cf0342c0c72d90eca62a857bcbb5c61684e550db15",
+    "datasets/hadith-data/all_hadiths_clean.csv.gz": "5d0919b3525cead792158af8e8b28d908364e269c528a23e67f853ac9bc1dfef",
+    "datasets/narrator-data/all_rawis.csv": "d87c3af64d48b3cd585294ab5f6381536a51ff95a72a6707a7426ea483bf6c11"
+  },
+  "join": "file position plus byte-identical Arabic and source (K6 `id` is not unique in the original)",
+  "meaning": "Original K6 per-report narrator ids (the source's claim) and their agreement with the Arabic text",
+  "output": {
+    "file": "k6_source_index.jsonl.gz",
+    "rows": 34441,
+    "sha256": "ba11245dc758db5c8f661ffcbd16f9f8592e5a163ae86346e0ed08fddf26c4d4"
+  },
+  "status": "sidecar_unreviewed_not_a_release_input"
+}
