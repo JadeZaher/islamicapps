@@ -1,0 +1,107 @@
+---
+title: PostgreSQL
+description: Deploy PostgreSQL on Railway and convert it to a managed high-availability cluster with backups, point-in-time recovery and connection pooling.
+---
+The Railway PostgreSQL database template allows you to provision and connect to a PostgreSQL database with zero configuration.
+
+This deploys a single node that Railway maintains. For a managed database with automatic failover, convert it to [high availability](/databases/postgresql-ha), then turn on [backups](/volumes/backups) or [point-in-time recovery](/volumes/point-in-time-recovery) and add [connection pooling](/databases/postgresql-pgbouncer). [What Railway manages](/databases#what-railway-manages) lists who handles each operation.
+
+## Deploy
+
+Add a PostgreSQL database to your project via the `ctrl / cmd + k` menu or by clicking the `+ New` button on the Project Canvas.
+
+<Image src="https://res.cloudinary.com/railway/image/upload/v1695934218/docs/databases/addDB_qxyctn.gif"
+alt="GIF of the Adding Database"
+layout="responsive"
+width={450} height={396} quality={100} />
+
+You can also deploy it via the [template](https://railway.com/deploy/postgres) from the template marketplace.
+
+#### Deployed service
+
+Upon deployment, you will have a PostgreSQL service running in your project, deployed from Railway's [SSL-enabled Postgres image](https://github.com/railwayapp-templates/postgres-ssl/pkgs/container/postgres-ssl), which uses the official [Postgres](https://hub.docker.com/_/postgres) image from Docker Hub as its base.
+
+### Connect
+
+Connect to the PostgreSQL server from another service in your project by [referencing the environment variables](/variables#referencing-another-services-variable) made available in the PostgreSQL service:
+
+- `PGHOST`
+- `PGPORT`
+- `PGUSER`
+- `PGPASSWORD`
+- `PGDATABASE`
+- `DATABASE_URL`
+
+_Note, Many libraries will automatically look for the `DATABASE_URL` variable and use
+it to connect to PostgreSQL but you can use these variables in whatever way works for you._
+
+#### Connecting externally
+
+It is possible to connect to PostgreSQL externally (from outside of the [project](/projects) in which it is deployed). Databases are deployed private by default — to expose one, open the service's **Settings → Networking** and add **Public Access**. This creates a [TCP Proxy](/networking/tcp-proxy) and populates a `DATABASE_PUBLIC_URL` variable with the external connection string.
+
+_Keep in mind that you will be billed for [Network Egress](/pricing/plans#resource-usage-pricing) when using the TCP Proxy._
+
+### Modify the deployment
+
+Since the deployed container is based on an image built from the official [PostgreSQL](https://hub.docker.com/_/postgres) image in Docker hub, you can modify the deployment based on the [instructions in Docker hub](https://hub.docker.com/_/postgres#:~:text=How%20to%20extend%20this%20image).
+
+We also encourage you to fork the [Railway postgres-ssl repository](https://github.com/railwayapp-templates/postgres-ssl) to customize it to your needs, or feel free to open a PR in the repo!
+
+## High availability
+
+An existing PostgreSQL service can be converted into a high-availability cluster with automatic failover, backed by Patroni, etcd, and HAProxy. See [Upgrading PostgreSQL to High Availability](/databases/postgresql-ha) for the full guide.
+
+## Major version upgrades
+
+Move a PostgreSQL service to a newer major version in place, with a preflight check, automatic backups, and one-click revert. See [Upgrading PostgreSQL Major Versions](/databases/postgresql-major-upgrade) for the full guide.
+
+## Backups and observability
+
+Especially for production environments, performing regular backups and monitoring the health of your database is essential. Consider adding:
+
+- **Backups**: Automate regular backups to ensure data recovery in case of failure. We suggest checking out the native [Backups](/volumes/backups) feature.
+
+- **Observability**: Implement monitoring for insights into performance and health of your databases. If you're not already running an observability stack, check out these templates to help you get started building one:
+  - [Prometheus](https://railway.com/deploy/KmJatA)
+  - [Grafana Stack](https://railway.com/deploy/8TLSQD)
+  - [PostgreSQL Exporter](https://railway.com/deploy/gDzHrM)
+
+## Extensions
+
+In an effort to maintain simplicity in the default templates, we do not plan to add extensions to the PostgreSQL templates covered in this guide.
+
+For some of the most popular extensions, like PostGIS and Timescale, there are several options in the template marketplace.
+
+- <a href="https://railway.com/deploy/VSbF5V" target="_blank">TimescaleDB</a>
+- <a href="https://railway.com/deploy/postgis" target="_blank">PostGIS</a>
+- <a href="https://railway.com/deploy/timescaledb-postgis" target="_blank">TimescaleDB + PostGIS</a>
+- <a href="https://railway.com/deploy/3jJFCA" target="_blank">pgvector</a>
+
+## Increasing the SHM size
+
+The SHM Size is the maximum amount of shared memory available to the container.
+
+By default it is set to 64MB.
+
+You would need to change the SHM Size if you are experiencing the following error -
+
+```txt
+ERROR: could not resize shared memory segment "PostgreSQL.1590182853" to 182853 bytes: no space left on device
+```
+
+You can modify the SHM Size by setting the `RAILWAY_SHM_SIZE_BYTES` variable in your service variables.
+
+This variable is a number in bytes, so you would need to convert the size you want to use.
+
+For example, to increase the SHM Size to 500MB, you would set the variable to `524288000`.
+
+## Additional resources
+
+Railway maintains this template; [what Railway manages](/databases#what-railway-manages) lists which operations Railway handles and which are yours. Changing the template as shipped, such as its image, start command or variables, makes the database yours to manage; see [database support scope](/databases#database-support-scope).
+
+We _strongly encourage you_ to refer to the source documentation to gain deeper understanding of their functionality and how to use them effectively. Here are some links to help you get started:
+
+- [PostgreSQL Documentation](https://www.postgresql.org/)
+- [PostgreSQL High Availability Documentation](https://www.postgresql.org/docs/current/high-availability.html)
+- [Repmgr Documentation](https://www.repmgr.org/docs/current/getting-started.html)
+- [Pgpool-II Documentation](https://www.pgpool.net/docs/latest/en/html/)

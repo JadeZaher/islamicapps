@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schema brief</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --text: #1c1c1a; --muted: #6b6b66;
+    --line: #e4e4df; --accent: #0f6b4f; --accent-soft: #e6f2ed;
+    --warn: #9a5b00; --warn-soft: #fbf1df; --plan: #5a4bb5; --plan-soft: #eeebfa;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --surface: #1c1c1a; --text: #ededea; --muted: #a3a39c;
+      --line: #32322e; --accent: #5cc7a2; --accent-soft: #17332a;
+      --warn: #e5b566; --warn-soft: #33290f; --plan: #b3a7f2; --plan-soft: #25203f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 48px 16px 96px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 22px; margin: 64px 0 12px; letter-spacing: -0.01em; }
+  h3 { font-size: 16px; margin: 0 0 4px; }
+  h4 { font-size: 15px; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  ul { max-width: 76ch; padding-left: 20px; margin: 0 0 12px; }
+  li { margin-bottom: 6px; }
+  .lede { color: var(--muted); margin-bottom: 24px; }
+  nav { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 12px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 14px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .stat .n { font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 13px; color: var(--muted); }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  code { font-family: var(--mono); font-size: .9em; background: color-mix(in srgb, var(--line) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .tag.pipeline { color: var(--accent); border-color: var(--accent); }
+  .tag.curation { color: var(--warn); border-color: var(--warn); }
+  .tag.planned { color: var(--plan); border-color: var(--plan); }
+  .note { border-left: 3px solid var(--plan); background: var(--plan-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .note p:last-child { margin: 0; }
+  .domain { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; }
+  .domain.planned { border-color: var(--plan); }
+  .domain > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; padding: 16px 16px 4px; }
+  .domain > p { padding: 0 16px; color: var(--muted); font-size: 14.5px; }
+  .diagram { overflow-x: auto; padding: 8px 16px 16px; }
+  .diagram svg { max-width: none; height: auto; }
+  .diagram pre { font: 12px/1.4 var(--mono); white-space: pre; color: var(--muted); }
+  details { border-top: 1px solid var(--line); padding: 10px 16px; font-size: 14.5px; }
+  summary { cursor: pointer; color: var(--muted); }
+  details ul { margin: 8px 0 4px; padding-left: 18px; columns: 2 320px; max-width: none; }
+  details li { break-inside: avoid; margin-bottom: 4px; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Shura wa Istehsan: the app, its schema, and its data limits</h1>
+  <p class="lede">Written 21 November 2026. Column-level detail is in <code>docs/architecture/data-architecture.md</code>.</p>
+
+  <nav aria-label="Sections">
+    <a href="#app">The app and its goals</a>
+    <a href="#rules">Rules the schema enforces</a>
+    <a href="#schema">Schema</a>
+    <a href="#contribution">Contribution system</a>
+    <a href="#limits">Dataset limitations</a>
+  </nav>
+
+  <section id="app">
+    <h2>The app and its goals</h2>
+    <p>Shura wa Istehsan is an open archive of hadith across four traditions: Sunni, Imami, Ibadi and Zaydi. Most hadith sites show the text and a grade. This one shows how a report reached us: who narrated it from whom, what is known about each narrator, when and where they lived, and what scholars have said about the report.</p>
+    <p>It is built for serious readers who do not have a seminary library: practising Muslims who want to understand why a report is graded as it is, self-taught students, teachers who need sourced material, and researchers.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n">99,283</div><div class="k">Reports in the corpus</div></div>
+      <div class="stat"><div class="n">4</div><div class="k">Traditions, side by side</div></div>
+      <div class="stat"><div class="n">34</div><div class="k">Source works</div></div>
+      <div class="stat"><div class="n">24,326</div><div class="k">Narrator identities</div></div>
+    </div>
+
+    <h4>What a reader can do</h4>
+    <ul>
+      <li><strong>Read a report</strong> in Arabic with a translation, its source work and its place in that work.</li>
+      <li><strong>Follow its chain of transmission</strong>, narrator by narrator, including reports that reach us through several branches.</li>
+      <li><strong>Open a narrator</strong> to see teachers and students, assessments by critics, life dates, and events during their lifetime.</li>
+      <li><strong>See gradings as each tradition gives them.</strong> A Sunni verdict and a Zaydi verdict on the same narrator sit side by side; neither overrides the other.</li>
+      <li><strong>Read commentary and historical context</strong> linked to a report or a narrator.</li>
+      <li><strong>Compare with other scriptures.</strong> Parallels in Jewish, Christian and other sources are catalogued with the classical Isra'iliyyat classification.</li>
+    </ul>
+
+    <h4>Goals</h4>
+    <ul>
+      <li><strong>Curation, not broadcast.</strong> The archive presents evidence and attributed scholarship. It does not issue rulings, and no computed score is presented as a verdict.</li>
+      <li><strong>Anti-sectarian.</strong> Every tradition's sources and grading schemes are first-class. Nothing defaults to one tradition.</li>
+      <li><strong>Cumulative scholarship.</strong> In the classical manner of commentary upon commentary, contemporary scholars add attributed, reviewed work that stays linked to what it builds on.</li>
+      <li><strong>Open.</strong> The code is open source and the published data is meant to be exportable with attribution.</li>
+      <li><strong>Honest about gaps.</strong> What is unknown is shown as unknown.</li>
+    </ul>
+  </section>
+
+  <section id="rules">
+    <h2>Rules the schema enforces</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Rule</th><th>How the schema holds it</th></tr></thead>
+        <tbody>
+          <tr><td>The Arabic source is never altered</td><td>Stored byte for byte with a hash. Translations record the hash of the Arabic they rendered, so a translation cannot silently drift from its source.</td></tr>
+          <tr><td>A name is not a person</td><td>Each name in a chain is stored as written. It links to a narrator identity only when that identity is established; otherwise it is displayed as text.</td></tr>
+          <tr><td>Grades belong to a tradition</td><td>Every assessment carries its tradition and grading scheme. No narrator has a single reliability value. "No evaluation exists" is the absence of a row.</td></tr>
+          <tr><td>Disagreement is kept</td><td>Competing claims about a date or a biography are separate rows, each with its citation. None is collapsed into one answer.</td></tr>
+          <tr><td>Reloading data never erases scholarship</td><td>Tables are written either by the data pipeline or by people through the app, never both. A reload updates pipeline rows by permanent ID and leaves human work alone.</td></tr>
+          <tr><td>Nothing is deleted</td><td>Rows are retired with a timestamp and an audit record.</td></tr>
+          <tr><td>Unreviewed machine output stays separate</td><td>Machine translations and proposed name matches live in candidate tables until a person reviews them.</td></tr>
+          <tr><td>Every change has an author</td><td>An audit table records who changed what, with before and after.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="schema">
+    <h2>Schema</h2>
+    <p>48 tables in PostgreSQL, grouped below. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets. <span class="tag curation">curation</span> tables are edited by people in the app. Each diagram shows keys and the most important columns.</p>
+    <div id="domains"></div>
+  </section>
+
+  <section id="contribution">
+    <h2>Contribution system</h2>
+    <p>The Open Scholarly Contribution System plan (March 2026) describes contributor profiles, five roles, eight contribution types, a review lifecycle, endorsements modelled on the ijazah, and bulk collection submissions. It was written for Neo4j. This is how it maps onto the Postgres schema.</p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>In the plan</th><th>In the schema</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>Attribution and timestamps on every contribution</td><td><code>curation_audit</code> records actor, action, before and after</td><td>In the launch schema</td></tr>
+          <tr><td>Review before publication</td><td>Commentaries and parallels start as <code>proposed</code> and are published by a named curator; translations and identity matches carry a review state</td><td>In the launch schema</td></tr>
+          <tr><td>Source verification</td><td><code>citations</code>, <code>editions</code>, <code>bibliographic_works</code>; biographical and date claims must cite one</td><td>In the launch schema</td></tr>
+          <tr><td>Multiple assessments per narrator, not one grade</td><td><code>narrator_assessments</code>, scoped by tradition and critic</td><td>In the launch schema</td></tr>
+          <tr><td>Provenance on imported collections</td><td><code>dataset_versions</code>, <code>sources</code>, <code>collections</code>, <code>collection_rights</code></td><td>In the launch schema</td></tr>
+          <tr><td>Version history, superseding earlier work</td><td>Retire-not-delete on every curation table, plus the audit trail</td><td>In the launch schema</td></tr>
+          <tr><td>Contributor profiles and the five roles</td><td><code>contributors</code></td><td>Planned, below</td></tr>
+          <tr><td>Digital ijazah</td><td><code>contributor_endorsements</code></td><td>Planned, below</td></tr>
+          <tr><td>Submission lifecycle (draft to published)</td><td><code>submissions</code></td><td>Planned, below</td></tr>
+          <tr><td>Peer review votes and discussion</td><td><code>submission_reviews</code>, <code>submission_comments</code></td><td>Planned, below</td></tr>
+          <tr><td>Bulk collection upload with validation and preview</td><td><code>collection_imports</code></td><td>Planned, below</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <article class="domain planned">
+      <header><h3>Contribution</h3><span class="tag planned">planned</span><span class="tag">6 tables</span></header>
+      <p>Not part of the 48. These ship with the contribution features, and replace the small fixed list of named curators that access control starts with.</p>
+      <div class="diagram" id="contribution-diagram"></div>
+      <details>
+        <summary>What each table holds</summary>
+        <ul>
+          <li><code>contributors</code> A person's scholarly profile: name, institution, areas of expertise, and role (reader, contributor, reviewer, editor, admin).</li>
+          <li><code>contributor_endorsements</code> One scholar vouching for another in a named field. The chain of endorsements is public, like a chain of scholarly authority.</li>
+          <li><code>submissions</code> One proposed contribution: its type, what it is about, its content, and its status from draft to published or rejected.</li>
+          <li><code>submission_reviews</code> A reviewer's verdict and notes on a submission.</li>
+          <li><code>submission_comments</code> The discussion between reviewer and contributor.</li>
+          <li><code>collection_imports</code> A bulk upload: file hash, validation report, preview counts, and the dataset version it became.</li>
+        </ul>
+      </details>
+    </article>
+
+    <p><strong>How publishing works.</strong> A submission holds proposed content. When an editor publishes it, the content is written into the table where that kind of scholarship already lives (a commentary into <code>commentaries</code>, a narrator evaluation into <code>narrator_assessments</code>, a correction as a cited claim), and the audit record names the contributor and the submission. Readers query the same tables either way.</p>
+
+    <div class="note">
+      <p><strong>Where the plan and the current design differ.</strong> The plan's "graph-native" principle is kept in substance: every relationship is its own table with its own attributes. Its data exports as a Neo4j dump become a Postgres dump plus CSV. Its figures (about 34,500 hadiths from six collections) predate the four-tradition corpus. And where older product notes describe an automatically calculated grade, the design shows chain facts and attributed verdicts only.</p>
+    </div>
+  </section>
+
+  <section id="limits">
+    <h2>Dataset limitations</h2>
+    <p>Figures are from the audit of 21 July 2026 unless stated. They describe the data as it stands, before any gap-closing work.</p>
+
+    <h4>Coverage</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <tbody>
+          <tr><td>The corpus is uneven across traditions</td><td class="num">Sunni 64,356 · Imami 33,225 · Ibadi 1,004 · Zaydi 698</td></tr>
+          <tr><td>Major works are absent</td><td>Imami: Tahdhib al-Ahkam, al-Istibsar, Bihar al-Anwar, Wasa'il al-Shi'a. Sunni: the works after the six books (al-Bayhaqi, Ibn Hibban, Ibn Khuzayma, al-Tabarani, al-Hakim, the two Musannafs). Zaydi and Ibadi: most works beyond one or two each.</td></tr>
+          <tr><td>No commentaries</td><td>The commentary tables are empty. None of the classical commentaries is ingested.</td></tr>
+          <tr><td>Historical context is a starter set</td><td>54 events and 32 locations, almost all single-year points, with no dynasties or eras.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Chains and narrator identity</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <tbody>
+          <tr><td>Most narrator names are not matched to a person</td><td class="num">387,359 of 437,476 name occurrences unmatched</td></tr>
+          <tr><td>Very few reports have a fully identified chain</td><td class="num">204 of 99,283 under strict matching</td></tr>
+          <tr><td>Some reports yield no chain at all</td><td class="num">14,500 reports; at least one collection has no chains in its source</td></tr>
+          <tr><td>The narrator lexicon is Sunni-centred</td><td>24,326 identities from one dataset. Imami narrators are largely absent, so Imami chains cannot be matched to identities.</td></tr>
+          <tr><td>Chain extraction is validated on a small sample</td><td>32 hand-annotated reports. It scores perfectly on them, which shows the method works, not how it behaves on every edge case.</td></tr>
+          <tr><td>The live site's narrator links come from an older index</td><td>About 159,550 links whose identities were never verified; 37,242 chains have no narrator.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Narrator biographies</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <tbody>
+          <tr><td>Life dates are sparse</td><td class="num">death year 15.7% · birth year 1.6% · neither 84.2%</td></tr>
+          <tr><td>Some dates are impossible</td><td class="num">38 narrators with death before birth</td></tr>
+          <tr><td>Some fields look filled by default</td><td>For example, cause of death is "Natural" far too uniformly to be sourced.</td></tr>
+          <tr><td>Nothing is cited</td><td>The lexicon gives no book, edition or page for any claim.</td></tr>
+          <tr><td>Written biographies exist for 21 narrators</td><td>Hand-written, naming general reference works without page citations.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Gradings</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <tbody>
+          <tr><td>Most reports have no grading</td><td class="num">88% of assessment records are "no evaluation" placeholders</td></tr>
+          <tr><td>Two traditions have none</td><td>No Ibadi or Zaydi gradings. Substantive gradings exist for 29,915 Sunni records and 16,834 Imami assessments.</td></tr>
+          <tr><td>Gradings are mostly one scholar's</td><td>Where a grade exists it is usually a single verdict, not the range of classical opinion.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Translation</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <tbody>
+          <tr><td>No translation has been reviewed</td><td class="num">0 of 99,283 carry a review status</td></tr>
+          <tr><td>Many translations fail quality checks</td><td class="num">12,831 missing, refused by the model, or containing Arabic</td></tr>
+          <tr><td>A third are unreviewed machine output</td><td class="num">31,652</td></tr>
+          <tr><td>English only</td><td>No other target language.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Provenance and rights</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Limitation</th><th>Extent</th></tr></thead>
+        <tbody>
+          <tr><td>Publication rights are not cleared</td><td>No source work has a recorded rights decision. Provider translations in particular cannot be assumed publishable.</td></tr>
+          <tr><td>Sources are digital copies, not editions</td><td>Texts come from aggregated datasets, a provider API and a text repository. Most rows have no printed edition, volume or page.</td></tr>
+          <tr><td>No cited scholarly claims yet</td><td>The citation tables are empty.</td></tr>
+          <tr><td>One upstream source is unstable</td><td>A provider endpoint returned empty for a 659-report book in July; the local copy was kept.</td></tr>
+          <tr><td>Eight reports have no Arabic text</td><td class="num">8</td></tr>
+          <tr><td>The current data bundle is a development snapshot</td><td>It is explicitly marked as not a release.</td></tr>
+          <tr><td>Comparative parallels are machine-found</td><td>Proposed by an AI research step and not yet reviewed by a person.</td></tr>
+          <tr><td>The datasets exist in one place</td><td>A single machine, with no off-site copy.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Sources: the product guide, the Open Scholarly Contribution System plan, <code>datasets/hadith-data/DATA_QUALITY_REPORT.md</code>, and <code>docs/architecture/data-architecture.md</code>.</footer>
+</main>
+
+<script src="brief-erd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+const CONTRIBUTION_ERD = `erDiagram
+  contributors {
+    uuid id PK
+    text display_name
+    text email UK
+    text role
+    text institution
+    timestamptz retired_at
+  }
+  contributor_endorsements {
+    uuid id PK
+    uuid endorser_id FK
+    uuid contributor_id FK
+    text field
+    timestamptz endorsed_at
+  }
+  submissions {
+    uuid id PK
+    uuid contributor_id FK
+    text kind
+    text status
+    text target_type
+    text target_id
+    jsonb content
+    uuid supersedes_id FK
+  }
+  submission_reviews {
+    uuid id PK
+    uuid submission_id FK
+    uuid reviewer_id FK
+    text verdict
+    timestamptz reviewed_at
+  }
+  submission_comments {
+    uuid id PK
+    uuid submission_id FK
+    uuid author_id FK
+    uuid parent_id FK
+    text body
+  }
+  collection_imports {
+    uuid id PK
+    uuid submission_id FK
+    text file_sha256
+    jsonb validation_report
+    text dataset_version_id FK
+  }
+  contributors ||--o{ contributor_endorsements : endorses
+  contributors ||--o{ submissions : submits
+  submissions ||--o{ submission_reviews : receives
+  contributors ||--o{ submission_reviews : writes
+  submissions ||--o{ submission_comments : discussed
+  submissions ||--o| collection_imports : uploads
+  submissions ||--o{ submissions : supersedes
+  collection_imports }o--|| dataset_versions : becomes
+  submissions }o--o{ citations : cites
+  contributors ||--o{ curation_audit : acts`;
+
+(async function () {
+  const host = document.getElementById('domains');
+  const domains = window.ERD || [];
+  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const canRender = typeof mermaid !== 'undefined';
+  if (canRender) mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', securityLevel: 'strict', er: { useMaxWidth: false } });
+  let index = 0;
+  async function draw(target, source, label) {
+    const showSource = () => { const pre = document.createElement('pre'); pre.textContent = source; target.replaceChildren(pre); };
+    if (!canRender) { showSource(); return; }
+    try {
+      const { svg } = await mermaid.render('erd-' + (index++), source);
+      target.innerHTML = svg;
+      target.setAttribute('role', 'img');
+      target.setAttribute('aria-label', label + ' entity relationship diagram');
+    } catch (error) {
+      target.dataset.renderError = String(error && error.message || error);
+      showSource();
+    }
+  }
+  if (!domains.length) host.textContent = 'Schema data file brief-erd.js was not found next to this page.';
+  for (const domain of domains) {
+    const card = document.createElement('article');
+    card.className = 'domain';
+    const header = document.createElement('header');
+    const title = document.createElement('h3'); title.textContent = domain.name;
+    const tag = document.createElement('span'); tag.className = 'tag ' + domain.owner; tag.textContent = domain.owner;
+    const count = document.createElement('span'); count.className = 'tag'; count.textContent = domain.tables.length + ' tables';
+    header.append(title, tag, count);
+    const blurb = document.createElement('p'); blurb.textContent = domain.blurb;
+    const diagram = document.createElement('div'); diagram.className = 'diagram';
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); summary.textContent = 'What each table holds';
+    const list = document.createElement('ul');
+    for (const table of domain.tables) {
+      const item = document.createElement('li');
+      const name = document.createElement('code'); name.textContent = table.name;
+      item.append(name, ' ' + table.purpose + (table.ships === 'later' ? ' (ships later)' : ''));
+      list.append(item);
+    }
+    details.append(summary, list);
+    card.append(header, blurb, diagram, details);
+    host.append(card);
+    await draw(diagram, domain.mermaid, domain.name);
+  }
+  await draw(document.getElementById('contribution-diagram'), CONTRIBUTION_ERD, 'Contribution');
+})();
+</script>
+</body>
+</html>

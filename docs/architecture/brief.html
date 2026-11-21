@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data architecture brief</title>
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --text: #1c1c1a; --muted: #6b6b66;
+    --line: #e4e4df; --accent: #0f6b4f; --accent-soft: #e6f2ed;
+    --warn: #9a5b00; --warn-soft: #fbf1df; --bad: #a12b2b; --bad-soft: #fbe9e9;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --surface: #1c1c1a; --text: #ededea; --muted: #a3a39c;
+      --line: #32322e; --accent: #5cc7a2; --accent-soft: #17332a;
+      --warn: #e5b566; --warn-soft: #33290f; --bad: #f08a8a; --bad-soft: #3a1b1b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 48px 16px 96px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 21px; margin: 56px 0 12px; letter-spacing: -0.01em; }
+  h3 { font-size: 16px; margin: 0 0 4px; }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  .lede { color: var(--muted); margin-bottom: 24px; }
+  nav { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 12px 0; margin-bottom: 8px;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 14px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .choice { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 10px;
+    padding: 20px; margin: 24px 0; }
+  .choice .label { font-size: 13px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .choice .value { font-size: 24px; font-weight: 650; margin: 4px 0 8px; }
+  .choice p { margin: 0; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 16px 0; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .stat .n { font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 13px; color: var(--muted); }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.picked td { background: var(--accent-soft); }
+  code { font-family: var(--mono); font-size: .9em; background: color-mix(in srgb, var(--line) 55%, transparent);
+    padding: 1px 5px; border-radius: 4px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .tag.pipeline { color: var(--accent); border-color: var(--accent); }
+  .tag.curation { color: var(--warn); border-color: var(--warn); }
+  .tag.bad { color: var(--bad); border-color: var(--bad); }
+  .note { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .note.bad { border-left-color: var(--bad); background: var(--bad-soft); }
+  .note p:last-child { margin: 0; }
+  .domain { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin: 16px 0; }
+  .domain > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; padding: 16px 16px 4px; }
+  .domain > p { padding: 0 16px; color: var(--muted); font-size: 14.5px; }
+  .diagram { overflow-x: auto; padding: 8px 16px 16px; }
+  .diagram svg { max-width: none; height: auto; }
+  .diagram pre { font: 12px/1.4 var(--mono); white-space: pre; color: var(--muted); }
+  details { border-top: 1px solid var(--line); padding: 10px 16px; font-size: 14.5px; }
+  summary { cursor: pointer; color: var(--muted); }
+  details ul { margin: 8px 0 4px; padding-left: 18px; columns: 2 320px; }
+  details li { break-inside: avoid; margin-bottom: 4px; }
+  ol.steps { padding-left: 22px; max-width: 78ch; }
+  ol.steps li { margin-bottom: 8px; }
+  .done { color: var(--accent); font-weight: 600; }
+  pre.layers { font: 13.5px/1.5 var(--mono); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 16px; overflow-x: auto; }
+  footer { margin-top: 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Data architecture brief</h1>
+  <p class="lede">Shura wa Istehsan: moving the hadith archive off Neo4j. Written 21 November 2026. The full design, with every column, is in <code>docs/architecture/data-architecture.md</code>.</p>
+
+  <nav aria-label="Sections">
+    <a href="#choice">Database choice</a>
+    <a href="#live">What exists now</a>
+    <a href="#shape">How it fits together</a>
+    <a href="#erd">Schema diagrams</a>
+    <a href="#graph">Graph questions</a>
+    <a href="#gaps">Data gaps</a>
+    <a href="#order">Order of work</a>
+    <a href="#decide">Your decisions</a>
+  </nav>
+
+  <section id="choice">
+    <div class="choice">
+      <div class="label">Selected</div>
+      <div class="value">PostgreSQL 18 on Railway, accessed through Drizzle</div>
+      <p>One small always-on database inside the same Railway project as the app, reached over the private network. It removes about 1.6 GB of memory and the wake-from-sleep errors, and lands at roughly Railway's $5 monthly floor.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n">1,780 MB</div><div class="k">Neo4j memory today (7-day average)</div></div>
+      <div class="stat"><div class="n">250–450 MB</div><div class="k">Postgres estimate, to be measured</div></div>
+      <div class="stat"><div class="n">$5–8</div><div class="k">Estimated monthly bill on the Hobby plan</div></div>
+      <div class="stat"><div class="n">0</div><div class="k">Graph features the app actually uses</div></div>
+    </div>
+
+    <p>The app's queries contain no variable-length paths, shortest-path calls, graph algorithms, or Neo4j search indexes. Every one is a fixed join such as hadith → chain → narrator, which a relational database does with less memory.</p>
+
+    <h2>Options compared on Railway</h2>
+    <p>Railway charges $10 per GB of memory per month, $20 per vCPU, and $0.15 per GB of volume storage. The Hobby plan is $5 and includes $5 of usage.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Option</th><th>Memory</th><th>Monthly</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr class="picked"><td><strong>Railway Postgres, tuned small</strong></td><td class="num">app 150–250 MB<br>db 250–450 MB</td><td class="num">$5–8</td><td>Chosen. Several curators can write at once, deploys cause no downtime, and vector search is built in.</td></tr>
+          <tr><td>SQLite file on a volume in the app</td><td class="num">app 250–350 MB</td><td class="num">$5</td><td>Lowest memory, but saves only $1–2. One writer at a time, downtime on every deploy, and its vector extension is not yet at version 1.</td></tr>
+          <tr><td>Turso (hosted SQLite)</td><td class="num">app only</td><td class="num">$5–10</td><td>Every query crosses the public internet, and a vector search reads all 99k rows against a metered allowance.</td></tr>
+          <tr><td>Neon or Supabase</td><td class="num">app only</td><td class="num">$20–30</td><td>Free tiers are too small once vectors are added; paid floors cost more than everything else combined.</td></tr>
+          <tr><td>Neo4j (today)</td><td class="num">1,780 MB</td><td class="num">about $20</td><td>Sleeps to save money, then returns errors while it wakes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>What would change the choice</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>If this becomes true</th><th>Switch to</th></tr></thead>
+        <tbody>
+          <tr><td>Only one admin ever writes, a few seconds of downtime per deploy is fine, and everything must fit under about 250 MB</td><td>SQLite on a volume</td></tr>
+          <tr><td>The app moves to edge or serverless hosting</td><td>Turso</td></tr>
+          <tr><td>A separate database per pull request becomes a priority</td><td>Neon</td></tr>
+          <tr><td>Semantic search needs fast approximate search over full-width vectors</td><td>A larger Postgres with a vector index, about $3–4 more per month</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px">Because all SQL sits behind Drizzle query modules, a later switch changes those modules and nothing else.</p>
+  </section>
+
+  <section id="live">
+    <h2>What exists now</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Item</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>Postgres service on Railway</td><td><span class="done">Created.</span> PostgreSQL 18.6, Railway's official image, encrypted connections on, 50 GB volume, in the <code>hadith-ontology</code> project.</td></tr>
+          <tr><td>Extensions</td><td><span class="done">Enabled.</span> <code>vector</code> 0.8.7 for embeddings, <code>pg_trgm</code> for fuzzy Arabic and name search, <code>unaccent</code>.</td></tr>
+          <tr><td>App connection</td><td><span class="done">Set.</span> The app's <code>DATABASE_URL</code> points at the database over the private network. The live site has not been redeployed and still reads Neo4j.</td></tr>
+          <tr><td>Local connection</td><td><span class="done">Set.</span> <code>DATABASE_URL</code> in <code>.env.local</code>, over SSL.</td></tr>
+          <tr><td>Tables</td><td>Being created now from the design: 41 at launch, 7 more when their first feature ships.</td></tr>
+          <tr><td>Memory tuning</td><td>Not applied yet. The database runs on defaults (128 MB shared buffers, 100 connections).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>A second, redundant database exists.</strong> The first one created, a service named <code>pgvector</code>, had no encryption. It was replaced by the official image and is empty. It should be deleted, along with its volume.</p>
+    </div>
+  </section>
+
+  <section id="shape">
+    <h2>How it fits together</h2>
+<pre class="layers">datasets/  (Python)              src/db/                        src/app/
+  extract chains, resolve names     schema/    table definitions    actions/   validate, then
+  curation gates                    client.ts  one small pool         call a query function
+  export bundle as CSV              queries/   all SQL lives here   pages and components
+  load with COPY  ───────────────►  load/      merge by stable id   ◄────────────────────</pre>
+    <p><strong>One writer per table.</strong> Tables are either filled by the Python pipeline or edited through the app, never both. A data reload updates pipeline rows by their permanent ID and leaves curation rows alone, so re-importing the corpus cannot erase commentaries, parallels, or review decisions.</p>
+    <p><strong>Permanent IDs.</strong> A hadith is <code>hadith:&lt;record_id&gt;</code> and a narrator is <code>narrator:rawi:&lt;number&gt;</code>, both derived from keys in the source data. They do not change between rebuilds, which is what lets curation rows point at them safely.</p>
+    <p><strong>Names are stored as written.</strong> Each name in a chain is a row holding the Arabic text as it appears. It links to a narrator identity only when that identity is established. An unresolved name is shown as text, never guessed.</p>
+    <p><strong>Grades belong to a tradition.</strong> A grade is always recorded under the tradition and grading scheme that issued it. There is no single reliability value on a narrator. "No evaluation exists" is the absence of a row, which removes 352,315 placeholder records.</p>
+  </section>
+
+  <section id="erd">
+    <h2>Schema diagrams</h2>
+    <p>48 tables in total. Each diagram shows a group of tables with their keys and most important columns. <span class="tag pipeline">pipeline</span> tables are loaded from the datasets; <span class="tag curation">curation</span> tables are edited in the app.</p>
+    <div id="domains"></div>
+  </section>
+
+  <section id="graph">
+    <h2>How graph questions are answered without a graph database</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Question</th><th>How</th></tr></thead>
+        <tbody>
+          <tr><td>The chain of narrators for a hadith</td><td>Join <code>chains</code> to <code>chain_mentions</code>, ordered by branch then position.</td></tr>
+          <tr><td>Who a narrator heard from, and who heard from them</td><td><code>narrator_transmissions</code>, a stored view built by joining each name to the next position in the same chain.</td></tr>
+          <tr><td>Every hadith that passes through a narrator</td><td>Filter <code>chain_mentions</code> by narrator.</td></tr>
+          <tr><td>Events during a narrator's lifetime</td><td>Compare year ranges at read time. Unknown years match nothing rather than everything.</td></tr>
+          <tr><td>Paths several links long</td><td>A recursive query over <code>narrator_transmissions</code>.</td></tr>
+          <tr><td>Centrality and communities</td><td>Computed offline in Python. 24,000 narrators and 80,000 links fit in memory on a laptop.</td></tr>
+          <tr><td>Similar hadiths by meaning</td><td><code>hadith_embeddings</code> with pgvector, added when an embedding model is chosen. No index at first: scanning 99k rows is fast enough.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="gaps">
+    <h2>Data gaps</h2>
+    <p>From the July audit of the 99,283-record corpus. Diagnostic jobs that rank these and build review queues are running now; they write new files only.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Gap</th><th>Size</th><th>What closes it</th></tr></thead>
+        <tbody>
+          <tr><td>Narrator names not matched to an identity</td><td class="num">387,359 of 437,476 name occurrences</td><td>The largest gap. Rank the distinct unmatched names by frequency, propose candidates with evidence, and review the most frequent first.</td></tr>
+          <tr><td>Reports with a fully resolved chain</td><td class="num">204 of 99,283</td><td>Follows from the gap above. Chains are extracted for 84,781 reports; it is the identities that are missing.</td></tr>
+          <tr><td>English translation failing checks</td><td class="num">12,831</td><td>Recover source translations where rights allow; machine drafts stay in a separate candidates table until reviewed.</td></tr>
+          <tr><td>Translations with a review status</td><td class="num">0</td><td>Decide per collection whether provider English may be shown as "source provided".</td></tr>
+          <tr><td>Narrators with a death year</td><td class="num">15.7%</td><td>Cited claims with ranges, entered through the evidence tables. 38 existing records place death before birth.</td></tr>
+          <tr><td>Grades for Ibadi and Zaydi reports</td><td class="num">none</td><td>Source grading works for those traditions must be acquired.</td></tr>
+          <tr><td>Cited scholarly claims</td><td class="num">0</td><td>The citation tables exist so that biography and history can be entered with a source and page.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>The release gate is all-or-nothing today.</strong> A load is allowed only when every one of the 99,283 reports has a resolved chain and a human-verified translation, so nothing can be published. The design replaces this with a status on each report, shown honestly to the reader: Arabic present, translation state, chain resolved or shown as written, graded or not.</p>
+    </div>
+  </section>
+
+  <section id="order">
+    <h2>Order of work</h2>
+    <ol class="steps">
+      <li><span class="done">Done.</span> Working tree checkpointed on branch <code>refactor/postgres-drizzle</code>.</li>
+      <li><strong>Containment.</strong> The AI research endpoint can be called by anyone and spends a paid API key. Remove or rotate that key first.</li>
+      <li><strong>Access control.</strong> Admin pages and every write action currently have no sign-in. Add a gate and named curators.</li>
+      <li><span class="done">In progress.</span> <strong>Build fix.</strong> The current code does not compile (39 type errors), which is why the August deploy failed.</li>
+      <li><span class="done">In progress.</span> <strong>Database foundation.</strong> Drizzle schema, client, and migrations applied to the Railway database.</li>
+      <li><strong>Loader.</strong> Project the Python bundle to plain CSV and load it with <code>COPY</code>.</li>
+      <li><strong>Query port.</strong> Rewrite the server actions against Drizzle query modules, one area at a time.</li>
+      <li><strong>Export curation from Neo4j</strong>, read-only: commentaries, events, parallels, tags, and the hand-written narrator biographies.</li>
+      <li><strong>Cut over</strong> on Railway, measure memory, observe for a week.</li>
+      <li><strong>Retire Neo4j</strong> and remove its code, after a final dump and your approval.</li>
+      <li><strong>Vectors</strong>, once an embedding model is chosen.</li>
+    </ol>
+    <p><span class="done">In progress alongside:</span> five interface lanes (shell and error states, hadith page, narrator page, admin lists, comparative), the conductor reset, and the data-gap diagnostics.</p>
+  </section>
+
+  <section id="decide">
+    <h2>Decisions that need you</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Question</th><th>Why it matters</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr><td>Load the old dataset's narrator links?</td><td>Without them, narrator pages drop from about 159,000 links to a few hundred. But about 10,700 are on Imami reports, whose narrators are largely absent from the lexicon, so those identities cannot be right.</td><td>Load them only where the chain shape matches exactly, never for Imami reports, labelled "identity from the source dataset's index".</td></tr>
+          <tr><td>Which works are cleared for publication?</td><td>The public site shows only works marked cleared. If none is, it shows no hadith text.</td><td>Record each work's real rights status.</td></tr>
+          <tr><td>May provider English be public without row-by-row review?</td><td>The single largest unlock: about 33,000 Thaqalayn rows.</td><td>Decide per work.</td></tr>
+          <tr><td>Is unreviewed machine English ever public?</td><td>31,652 rows.</td><td>No. Reviewer mode only.</td></tr>
+          <tr><td>Show unverified lexicon dates?</td><td>84% of narrators have no date; the rest are uncited.</td><td>Hide on public pages; still use them for timeline overlap, labelled as lexicon-based.</td></tr>
+          <tr><td>Do AI-found parallels need review before going public?</td><td>Today they go live immediately.</td><td>Yes. New ones start as proposed.</td></tr>
+          <tr><td>Does "Delete" in the admin ever erase?</td><td>Your never-delete rule.</td><td>No. Rows are retired with an audit record.</td></tr>
+          <tr><td>Which tradition do the 21 hand-written narrator verdicts belong to?</td><td>Verdicts must be tradition-scoped and cannot be published until answered.</td><td>Sunni, if their critics are Sunni sources.</td></tr>
+          <tr><td>Which embedding model?</td><td>Sets the vector width and memory.</td><td>BGE-M3 at 1,024 dimensions; launch "similar hadiths" first.</td></tr>
+          <tr><td>Where is the off-machine copy of the datasets?</td><td>Pipeline data lives on one laptop.</td><td>A cloud drive or bucket you control, written weekly.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Sources: <code>docs/architecture/data-architecture.md</code> and the research notes in <code>.omc/research/pg-refactor/</code>. Memory and cost figures are estimates until the first load is measured.</footer>
+</main>
+
+<script src="brief-erd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+(async function () {
+  const host = document.getElementById('domains');
+  const domains = window.ERD || [];
+  if (!domains.length) { host.textContent = 'Schema data file brief-erd.js was not found next to this page.'; return; }
+  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const canRender = typeof mermaid !== 'undefined';
+  if (canRender) mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', securityLevel: 'strict', er: { useMaxWidth: false } });
+  let index = 0;
+  for (const domain of domains) {
+    const card = document.createElement('article');
+    card.className = 'domain';
+    const header = document.createElement('header');
+    const title = document.createElement('h3'); title.textContent = domain.name;
+    const tag = document.createElement('span'); tag.className = 'tag ' + domain.owner; tag.textContent = domain.owner;
+    const count = document.createElement('span'); count.className = 'tag'; count.textContent = domain.tables.length + ' tables';
+    header.append(title, tag, count);
+    const blurb = document.createElement('p'); blurb.textContent = domain.blurb;
+    const diagram = document.createElement('div'); diagram.className = 'diagram';
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); summary.textContent = 'What each table holds';
+    const list = document.createElement('ul');
+    for (const table of domain.tables) {
+      const item = document.createElement('li');
+      const name = document.createElement('code'); name.textContent = table.name;
+      item.append(name, ' ' + table.purpose + (table.ships === 'later' ? ' (ships later)' : ''));
+      list.append(item);
+    }
+    details.append(summary, list);
+    card.append(header, blurb, diagram, details);
+    host.append(card);
+    const showSource = () => { const pre = document.createElement('pre'); pre.textContent = domain.mermaid; diagram.replaceChildren(pre); };
+    if (!canRender) { showSource(); continue; }
+    try {
+      const { svg } = await mermaid.render('erd-' + (index++), domain.mermaid);
+      diagram.innerHTML = svg;
+      diagram.setAttribute('role', 'img');
+      diagram.setAttribute('aria-label', domain.name + ' entity relationship diagram');
+    } catch (error) {
+      diagram.dataset.renderError = String(error && error.message || error);
+      showSource();
+    }
+  }
+})();
+</script>
+</body>
+</html>

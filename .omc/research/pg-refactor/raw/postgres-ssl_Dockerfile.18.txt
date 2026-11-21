@@ -1,0 +1,96 @@
+ARG POSTGRES_VERSION=18
+# Base distro pinned EXPLICITLY. The unsuffixed upstream tag
+# (postgres:18) is a floating alias for whichever Debian release
+# docker-library currently prefers; it moved from bookworm (glibc 2.36) to
+# trixie (glibc 2.41) without any change in this repo, and the daily rebuild
+# republished the same :18 tag on the new glibc. A glibc bump changes libc
+# collation order, which silently invalidates every btree index on collatable
+# text columns of a volume initialized under the old glibc (rows become
+# unfindable through the index). The wrapper now reindexes before it
+# refreshes collation versions, but the distro must never move as a side
+# effect of a nightly rebuild. Every published postgres-ssl tag was on
+# trixie when this pin landed (image config: PG_VERSION=*.pgdg13+*), so
+# trixie is the value that changes nothing; moving it is a deliberate act:
+#   1. change this ARG in one PR (all majors, or one major on purpose),
+#   2. accept that the next boot of every volume on that major reindexes its
+#      collation-dependent indexes (see README "Base distro"),
+#   3. confirm the upstream tag exists for every minor the build workflow
+#      still rebuilds (it rebuilds every published per-minor tag).
+# The build workflow's content gate reads this ARG so it tracks the pinned
+# base, not the floating alias.
+ARG DEBIAN_RELEASE=trixie
+FROM postgres:${POSTGRES_VERSION}-${DEBIAN_RELEASE}
+# Extension packages are pinned AT THE MINOR: the volume keeps each
+# extension's SQL catalog at install-time version while the image carries
+# the .so, and this tag is rebuilt daily - an unpinned package would let
+# pgdg move the binaries a whole minor (where catalog/.so compatibility
+# actually breaks) under every existing catalog overnight, with no gate
+# anywhere. PATCH releases and Debian packaging revisions float freely:
+# they are the bugfix/CVE stream and upstream keeps them
+# catalog-compatible (verified empirically 0.8.4->0.8.6). A MINOR bump is
+# the deliberate act: the scheduled bump workflow opens a one-line PR
+# moving this ARG, gated by the extension compat matrix (old catalogs
+# under the candidate .so). If pgdg ever prunes the whole minor from the
+# pool, the daily rebuild fails loudly - a human decides, never a nightly
+# accident.
+ARG PGVECTOR_PKG_VERSION=0.8.*
+# pgaudit is deliberately NOT version-pinned. Upstream keeps one release
+# branch per Postgres major (1.5 for 13, 1.6 for 14, 1.7 for 15, 16.x for
+# 16, 17.x for 17, ...) and pgdg's postgresql-<major>-pgaudit package only
+# ever carries that major's branch, so the package name already fixes the
+# line a tag can move along — there is no minor for the nightly rebuild to
+# drift across. Within a branch, patch releases ship empty catalog upgrade
+# scripts (1.7->1.7.1, 16.0->16.1 are both bare \echo guards), so a
+# refreshed .so under an older catalog is the same bugfix stream the
+# pgvector wildcard admits. The image preloads it next to pg_stat_statements
+# (init-ssl.sh at initdb, wrapper.sh on every boot): pgaudit refuses to load
+# any other way, and preloaded with pgaudit.log unset it is inert, so
+# CREATE EXTENSION pgaudit simply works (see README "Extensions").
+
+# Install OpenSSL, sudo, pgvector, pgaudit, pgbackrest, tini (PID 1, see ENTRYPOINT
+# below), and ca-certificates (needed
+# so pgbackrest can verify the TLS cert of the S3 endpoint — postgres base
+# image disables apt Recommends, so ca-certificates isn't pulled implicitly)
+# CI passes its content key here (see the build workflow's content gate):
+# the value only changes when the repo code, the upstream base, or Debian's
+# pending-security-fix set moved, so this layer re-runs exactly when there
+# is something to pick up — and stays byte-cached (stable digest) otherwise.
+ARG PKG_REFRESH=none
+# apt-mark hold: the OS upgrade must never touch the packages that define
+# the bundled Postgres minor — PGDG always carries the major's newest minor,
+# so an unheld upgrade can make the image bundle a newer server than the
+# minor tag it publishes under. Everything else upgrades freely.
+RUN echo "refresh key: ${PKG_REFRESH}" \
+    && apt-mark hold postgresql-18 postgresql-client-18 \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y openssl sudo ca-certificates jq pgbackrest tini "postgresql-18-pgvector=${PGVECTOR_PKG_VERSION}" postgresql-18-pgaudit \
+    && apt-mark unhold postgresql-18 postgresql-client-18 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Allow the postgres user to execute certain commands as root without a password
+RUN echo "postgres ALL=(root) NOPASSWD: /usr/bin/mkdir, /bin/chown, /usr/bin/openssl" > /etc/sudoers.d/postgres
+
+RUN install -d -m 0750 -o postgres -g postgres /etc/pgbackrest
+
+# Add init scripts while setting permissions
+COPY --chmod=755 init-ssl.sh /docker-entrypoint-initdb.d/init-ssl.sh
+COPY --chmod=755 pgbackrest-init.sh /docker-entrypoint-initdb.d/99-pgbackrest-init.sh
+COPY --chmod=755 pgbackrest-env-wrapper.sh /usr/local/bin/pgbackrest
+COPY --chmod=755 pgbackrest-archive-push-wrapper.sh /usr/local/bin/pgbackrest-archive-push-wrapper.sh
+COPY --chmod=755 pgbackrest-backup-watcher.sh /usr/local/bin/pgbackrest-backup-watcher.sh
+COPY --chmod=755 wrapper.sh /usr/local/bin/wrapper.sh
+
+# tini is PID 1. The runtime stops a container by signaling PID 1 only; a
+# shell there with no handler drops the signal, and the stop ends in SIGKILL
+# once the grace period runs out — every restart becomes a hard kill and the
+# next boot a WAL crash recovery. wrapper.sh cannot simply exec postgres
+# either: it forks background helpers (backup watcher, post-upgrade tasks)
+# that exec would re-parent onto the postmaster, which PANICs on their
+# SIGCHLD. tini -g delivers the stop signal to wrapper.sh's process group
+# (the wrapper and the postgres it runs in the foreground), reaps the
+# helpers when they exit, and exits with the wrapper's status. SIGINT is
+# postgres's fast-shutdown signal; the base image already declares it, and
+# it is restated here because the whole arrangement depends on it.
+STOPSIGNAL SIGINT
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/usr/local/bin/wrapper.sh"]
+CMD ["postgres", "-p", "5432", "-c", "listen_addresses=*"]
