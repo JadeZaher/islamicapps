@@ -228,6 +228,13 @@ takes v1, v2 and v3 readings (any registered prompt; view `text_and_context`). N
 overrides file is absent and every production chain has `chain_fix_id` null. Rationale: `src/db/AGENTS.md` §Chain fixes,
 `reviews/ai/AGENTS.md` §Chain fixes.
 
+**First application (2026-11-22, batch 001; `conductor/RUNBOOK.md` "First model-read fixes applied (batch 001)").** Migration
+`0021_chain_fix_dispositions`: "no chain by reading" (`chain_fixes.disposition`, the page reads `public_chain_fix_dispositions`),
+the reader tool version beside the prompt (`chain_fix_submissions.tool_version`), inherited readings (`inherited_from`; inherited names
+are rows repeating the earlier report's written mention, held unless that chain is rule-checked), the source named in the text labelled
+(`public_chain_fix_mention_kinds`). The projection replay now rewrites rows by the apply's own rule instead of re-running identity
+rules on replayed branches (`datasets/hadith-data/chain-fixes/AGENTS.md` §replay), so apply and replay write the same rows.
+
 ## Integration checklist (for the next schema owner, in order)
 
 1. **Promote the schema.** Move the five tables and the view from `src/db/ops/pending/chain-fixes-schema.ts` into

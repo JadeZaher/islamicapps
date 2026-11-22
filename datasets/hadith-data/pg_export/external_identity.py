@@ -406,20 +406,6 @@ class ExternalSources:
                          "unreviewed"])
         return rows, dropped
 
-    def remap_report_claims(self, old_mention_ids: Iterable[str], mapping: dict[str, str]) -> tuple[int, int]:
-        """Move a replaced report's claims to the new mention id of each kept name; drop the rest. (moved, dropped)."""
-        taken = {mention_id: self.claims_by_mention.pop(mention_id) for mention_id in old_mention_ids
-                 if mention_id in self.claims_by_mention}
-        moved = dropped = 0
-        for mention_id, claims in taken.items():
-            target = mapping.get(mention_id)
-            if target is None:
-                dropped += len(claims)
-                continue
-            self.claims_by_mention[target] = [{**claim, "mention_id": target} for claim in claims]
-            moved += len(claims)
-        return moved, dropped
-
     # -- mention claims ----------------------------------------------------------------------------------------------
     def candidates_for(self, mention_id: str, hadith_id: str, surface_ar: str, arabic_sha256: str,
                        counts: Counter) -> list[Candidate]:

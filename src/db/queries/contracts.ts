@@ -195,6 +195,18 @@ export interface ChainNode {
   chain_compiler?: ChainCompiler | null;
   /** 0019: the model reading this chain shows, and its review state (`public_chain_fix_labels`); null for a rule-built chain. */
   chain_fix?: ChainFixLabel | null;
+  /** 0021: in a model-read chain, `imam_in_text` (the source named in the report text) or `inherited`; null for a written name. */
+  reader_link_kind?: string | null;
+}
+
+/** 0021: a report whose applied model reading found no isnad in the text (`public_chain_fix_dispositions`). */
+export interface ChainDisposition {
+  fix_id: string;
+  disposition: 'no_chain_by_reading';
+  models: string[];
+  runs: number;
+  decided_at: string;
+  awaiting_final_review: boolean;
 }
 
 export type ChainStructureStatus = 'checked_by_rule' | 'uncertain' | 'read_by_model' | 'verified_by_reviewer';
@@ -241,6 +253,8 @@ export interface ChainGraph {
   chain_schema: 'v2';
   nodes: ChainNode[];
   edges: ChainEdge[];
+  /** 0021: set when model readers found no chain written in the report and their reading is applied. */
+  disposition?: ChainDisposition | null;
 }
 
 /** A narrator verdict, tradition-scoped; public pages see `published` only. */

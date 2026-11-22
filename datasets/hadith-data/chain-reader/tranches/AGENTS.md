@@ -1,0 +1,17 @@
+---
+type: reference
+---
+# tranches/: design notes
+
+Operating instructions: `RUN.md` (regenerated from `run_template.md` by `build_tranches.py`). Code carries one-line docs and points here. Nothing here runs a model or writes the database; the builders read production through a read-only session.
+
+- **Population**: reports with at least one non-retired `uncertain` chain in the six Sunni books, Man la Yahduruhu al-Faqih and the other Imami works except al-Kafi (`v3_1/draw_population_v3_1.cjs`, `private/population.jsonl`, never given to a reader). Batch 001's 500 are out except `v3_1/batch-001/reread_under_v3_1.txt`, forced into tranche 01.
+  Earlier audit and pilot samples are NOT excluded: the full run reads the whole population. Reports outside the three groups (al-Kafi, the other Sunni works, Ibadi, Zaydi) are not in any tranche.
+- **Why 10 tranches of whole packets**: a tranche is the unit of the judge's gate (`RUN.md` section 3), so it must be big enough for a 100-report sample to mean something (about 980 reports, about 800 eligible) and small enough that a stop costs one tranche. T = round(N / 1000); packets are dealt evenly (49), the short packet is the last of the last tranche.
+- **Stratification**: the reports are sorted by (work, a seeded random key) and dealt by the largest-deficit rule against each tranche's capacity, so each work is split in proportion to the tranches' sizes within one report; forced reports go to tranche 01 and the deal compensates. Inside a tranche the order is shuffled (a packet mixes works, position tells nothing).
+- **Ids**: `tNN-` + six hex of a salted hash (a collision inside a tranche lengthens that id by a digit); the salt is in `private/id_map.json` only. The id reveals the tranche and nothing else.
+- **Jobs** (`tranche-NN/jobs.json`, `shura-chain-reader-jobs/1`): one job per (pass, pair of packets), the full reader instruction text of `v3/batch-001/RUN.md` section 1 with this tranche's paths and the v3.1 prompt, the output directory, the RUN.txt line format, the expected file count and the expected file names. An orchestrator copies `instruction` and checks the outputs; it composes nothing.
+  Pass B is shifted by one packet (001 alone, then 002+003 ...). Several agents append to one RUN.txt per pass; `to_submission_v3_1.parse_run_lines` finds a packet's run from its `packets=` list.
+- **Version guard**: the dataset version is read before the population draw and after the last packet; a change makes `build_tranches.py` rebuild (three attempts). `tranche-NN/manifest.json` records the read at the draw, at the packet build (the builder's own) and after the build. Rebuild when production has been loaded again before the first job runs: the packets carry the archive's flags, name facts and previous reports as of the build.
+- **Judge draw** (`draw_judge_sample.py`): seed = 20261200 + the tranche number; the sample is split over the three groups in proportion to the tranche's eligible readings; `dump.jsonl` carries the text, the agreed routes and the stored chain for the judge (not a reader).
+- Sizes are in `sizing.json` (characters per job, tokens at 2.5 to 3 characters per token, output measured on batch 001). The tranche folders are large (56 MB with packets and private files); `private/` and `outputs/` are not for a reader.

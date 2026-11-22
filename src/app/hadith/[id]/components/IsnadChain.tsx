@@ -22,7 +22,7 @@ import type { ChainGraph, ChainMentionCandidate, ChainNode, HadithTraditionCode 
 import { groupCandidates, type IdentityGroup, type IdentityRecord } from '@/db/queries/identity-groups';
 import { sourceForLatinName, sourcesForIdentityClaim } from '@/lib/sources/registry';
 import { ChainSourceCredits } from './family/SourceCredits';
-import { chainFixNote, compilerNote, structureNote } from './chain-structure';
+import { chainFixNote, compilerNote, noChainNote, structureNote } from './chain-structure';
 
 /** Which registry a record belongs to, in words, for a second record of the same person. */
 const RECORD_SOURCE: Record<string, string> = {
@@ -170,10 +170,11 @@ function MentionIdentityCell({ node, tradition }: { node: ChainNode; tradition: 
 }
 
 /** What a position is when it is not a name written here: repeated from an earlier report, or a gap the text marks. */
-export function positionNote(node: Pick<ChainNode, 'inherited_from_mention_id' | 'link_kind'>): string | null {
+export function positionNote(node: Pick<ChainNode, 'inherited_from_mention_id' | 'link_kind' | 'reader_link_kind'>): string | null {
     if (node.link_kind === 'anonymous') return 'Unnamed transmitter: the text names no one here';
     if (node.link_kind === 'not_a_narrator') return "Refers back to the previous report's chain; not a narrator";
     if (node.inherited_from_mention_id) return "From the earlier report's chain";
+    if (node.reader_link_kind === 'imam_in_text') return 'Named in the report text';
     return null;
 }
 
@@ -273,7 +274,8 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
     const sourceSanad = sourceSanadText?.trim() || null;
     const tradition = chain?.tradition ?? null;
 
-    if (branches.length === 0 && !sourceSanad) return null;
+    const noChain = branches.length === 0 ? noChainNote(chain?.disposition) : null;
+    if (branches.length === 0 && !sourceSanad && !noChain) return null;
 
     return (
         <div className="space-y-8">
@@ -289,6 +291,12 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                 <ArabicText as="p" variant="reading" className="whitespace-pre-line text-ink-muted">
                     {sourceSanad}
                 </ArabicText>
+            )}
+
+            {noChain && (
+                <p className="type-small text-ink-muted" data-chain-disposition={chain?.disposition?.disposition}>
+                    {noChain}
+                </p>
             )}
 
             {branches.map((branch, branchIndex) => (

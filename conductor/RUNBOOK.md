@@ -896,3 +896,43 @@ so **(a) ships**. Detail: `pg_export/AGENTS.md` §Bare kunya rule; public rule `
 - Back to the first form of the rule: in `external_identity.py` set `KUNYA_RULE_WORKS` to every work id (or restore `9532839`), export, `check_projection.py`, load, approve.
 - No rule at all: `KUNYA_RULE_AUTHORITIES = {}`, export, load, approve (OpenITI keeps its one-carrier gains only if the rule stays; with `{}` they stand too).
 - Data of the previous version: load `development/compiler-chain-fix-2026-11-22/projection` (`.12`), then re-record the approval. Code: redeploy `9532839` (label back to the model-named form).
+
+## First model-read fixes applied (batch 001) (2026-11-22)
+
+The first chain readings by model readers are live: batch 001 (500 uncertain reports, two blind `claude-haiku-5-5` passes under prompt v3.0.0) re-triaged by the
+v3.1 tool, then cross-checked with the v3.2 tool. Of the 394 cleared readings (`chain-reader/v3_1/batch-001/eligible_to_apply.txt`) **348 stand applied**: 258 rewritten routes, 60 stored
+routes confirmed (status only), 30 "no chain is written in this report". **46 wait** (`reviews/ai/records/chain-fixes/queue.json`): 30 reports that also have a rule-checked chain
+(`stored_chain_checked_by_rule`, so no teacher-student pair moves), 3 whose chain later reports repeat (`cited_by_later_report`), 4 with a variant remark (`has_variant_group`),
+1 inheriting from an uncertain chain, 11 held by the v3.2 tool (9 of them applied first and reverted the same day). Detail: `reviews/ai/AGENTS.md` §Chain fixes,
+`datasets/hadith-data/chain-fixes/AGENTS.md`, `src/db/AGENTS.md` §Chain fixes (0021, 0022). Logs, plans, projection and diffs: `datasets/hadith-data/development/first-model-fixes-2026-11-22/` (local).
+
+- **Schema**: `0021_chain_fix_dispositions` (no-chain disposition, tool version, inherited sources, views `public_chain_fix_dispositions` and
+  `public_chain_fix_mention_kinds`) and `0022_chain_fix_tool_v3_2`, both additive, applied to production before any write (`prod-migrate-0021.log`, `prod-migrate-0022.log`).
+- **Apply**: `prod-apply.log` (357 written, 0 skipped; plan `plan-applied.json`), `prod-revert-v32.log` (9 reverted). Identities of the 348: 2,179 mentions written before the
+  revert; of the applied rows 200 kept a standing identity, 1,422 kept candidates only (985 unresolved names with unchanged neighbours, 437 with a changed neighbour), 557 are new
+  (unresolved, no candidate); 58 are the source named in the text. `narrator_transmissions` unchanged: 28,468 rows, same content hash before and after (`transmissions-*.json`).
+- **Replay**: projection `2026.11.22.14` (`projection/`, overrides file hash-bound) rewrites the fixed reports' rows by the apply's rule; its chain, mention and candidate rows for all
+  394 reports equal production's (0 differences in 591 / 3,101 / 3,076 rows: `replay-diff-final.json`; control against `.13`: thousands of differences). Revert test: one fix
+  reverted (rows equal `base_rows` as jsonb, every column) and re-applied (`prod-revert.log`, `prod-reapply.log`).
+- **Load**: projection `2026.11.22.14` loaded into production (`prod-load.log`, dataset version `ac14c3699d37...`): **0 rows changed** in every table, all load
+  checks pass; preview approval re-recorded at once (`approve.log`).
+- **Checks**: `db:verify` OK; `db:verify-data` all invariants hold (two new chain-fix checks); 20 applied reports read against the Arabic (`read20.json`): all right, page rows equal the plan.
+
+### Deploy
+
+1. Done: 0021, 0022, the apply, the revert of the nine, the store and overrides committed. Then push the code to `refactor/postgres-drizzle` and `main` (page labels, `/method`).
+2. Checks: `npx tsc --noEmit`; `npm run build`; `npx tsx reviews/ai/tools/__tests__/chain-fix.test.ts`; `npx tsx --test src/db/ops/__tests__/chain-fix-apply.test.ts`;
+   `python -I datasets/hadith-data/chain-fixes/test_chain_fix_engine.py`; the `pg_export/` and `chain-reader/` Python suites.
+3. Live: a six-books fix (`/hadith/k6/4950/chains`: "Read by model (claude-haiku-5-5), 2026-11-22; awaiting final review", no "not checked" line); an al-Faqih no-chain report
+   (`hadith:thaqalayn:d02d9bf97373f3d079a5d999`: "No chain is written in this report (read by model ...)"); an other-Imami fix with the source named in the text
+   (`hadith:thaqalayn:9daf7c805a204c1a52d9fa20`: «أبي الحسن» "Named in the report text"); `/narrator/narrator%3Arawi%3A3` lists no al-Awzaʿi.
+4. Done: the `.14` load (0 rows changed) and the approval. The next full load replays the overrides (`--chain-fixes` default).
+
+### Revert all / rollback
+
+- One fix: `npm run db:chain-fixes -- --database production --confirm-production --revert <chain-fix:id>`; record why (`chain-fix-hold.ts --fix <id> --code <code> --detail ... --by ...`
+  or a human review), then `chain-fix-decide.ts` so the overrides drop it before the next load.
+- All of batch 001: pass every applied fix id (`state.json` `database: applied`) to `--revert` (one transaction per report, rows restored from `base_rows`); then move
+  `datasets/hadith-data/chain-fixes/accepted_overrides.jsonl.gz` aside (never delete) so the next export replays nothing.
+- A failed apply rolls back per report and leaves the rest; rerun the same command (written fixes are seen as applied and skipped).
+- Schema: never edit 0021/0022; the views and columns are additive and harmless when empty. Code: redeploy `98a7277` (it ignores the new views; model-read chains then show without the label).

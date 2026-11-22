@@ -7,6 +7,9 @@
  * validated and held by chain-reader/v3; `run.second_reader` is recorded as a second run of the same reading, agreement
  * `canonical_equal_v3`), text (text and metadata checks: proposals only). A reader's other findings
  * (`fixes`, `text_check`, `metadata_check`) are filed as proposals in `proposals/<run id>.jsonl`, never applied.
+ * v3.1 (reviews/ai/AGENTS.md §Chain fixes): `run.tool_version` names the reader tool that expands and holds a v3-shaped reading
+ * (prompt v3 readings may be re-triaged by tool v3_1); a `shura-chain-no-chain-envelope/1` carries agreed readings with no isnad
+ * (`disposition: no_chain_by_reading`); a fix's `inherited_from` names the earlier reports whose written mentions it repeats.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -18,6 +21,12 @@ import {
   DEFAULT_STORE,
   ENVELOPE_FORMAT,
   fixFieldProblems,
+  NO_CHAIN_DISPOSITION,
+  NO_CHAIN_ENVELOPE_FORMAT,
+  TOOL_VERSIONS,
+  TOOLS_FOR_FORMAT,
+  type InheritedSource,
+  type ToolVersion,
   fixIdOf,
   isBlindView,
   registeredPrompt,
@@ -116,13 +125,22 @@ async function main(): Promise<number> {
     console.error(`FAIL envelope: not readable JSON (${error instanceof Error ? error.message : String(error)})`);
     return 1;
   }
-  if (envelope.format !== ENVELOPE_FORMAT) problems.push(`format: must be "${ENVELOPE_FORMAT}"`);
+  if (envelope.format !== ENVELOPE_FORMAT && envelope.format !== NO_CHAIN_ENVELOPE_FORMAT) problems.push(`format: must be "${ENVELOPE_FORMAT}" or "${NO_CHAIN_ENVELOPE_FORMAT}"`);
+  const noChainEnvelope = envelope.format === NO_CHAIN_ENVELOPE_FORMAT;
   const run = (envelope.run ?? {}) as Record<string, unknown>;
   // Any registered reader prompt is accepted, and the format follows from it; an unregistered hash is refused.
   const registered = registeredPrompt(run.prompt_sha256);
   const readerFormat = (registered?.format ?? (run.reader_format as ReaderFormat | undefined) ?? 'v1') as ReaderFormat;
-  const prompt = registered ?? readerPrompt(['v1', 'v2', 'v3', 'text'].includes(readerFormat) ? readerFormat : 'v1');
+  const prompt = registered ?? readerPrompt(['v1', 'v2', 'v3', 'v3_1', 'v3_2', 'text'].includes(readerFormat) ? readerFormat : 'v1');
   problems.push(...runProblems(run, prompt.sha256));
+  // The tool that expands and holds a v3-shaped reading: the prompt's own unless the run names another (batch 001: prompt v3, tool v3_1).
+  const v3Shaped = readerFormat === 'v3' || readerFormat === 'v3_1' || readerFormat === 'v3_2';
+  const toolVersion = (run.tool_version ?? (v3Shaped ? readerFormat : undefined)) as ToolVersion | undefined;
+  const toolsForFormat = v3Shaped ? TOOLS_FOR_FORMAT[readerFormat as keyof typeof TOOLS_FOR_FORMAT] : [];
+  if (run.tool_version !== undefined && (!TOOL_VERSIONS.includes(run.tool_version as ToolVersion) || !toolsForFormat.includes(run.tool_version as ToolVersion))) {
+    problems.push(`run.tool_version: ${String(run.tool_version)} cannot read a ${readerFormat} reading (tools for it: ${toolsForFormat.join(', ') || 'none'})`);
+  }
+  if (noChainEnvelope && !v3Shaped) problems.push('format: a no-chain envelope carries v3 or v3.1 readings');
   const second = run.second_reader as Record<string, unknown> | undefined;
   if (second !== undefined) {
     // The second pass of a v3 envelope: its own model, run and times; the reading is the first pass's (canonical-equal).
@@ -153,7 +171,8 @@ async function main(): Promise<number> {
   const view = run.view as View;
   type Pending = EngineItem & { report: ReportRow; fix: Record<string, unknown>; live?: LiveReport; baseChains: BaseChain[] };
   const items: Pending[] = [];
-  const outputIds = fixes.map((fix) => String((fix.output as { id?: unknown } | undefined)?.id ?? ''));
+  // A v3 fix whose every link is inherited has no v1-shaped copy (`output: null`): its id is the reader's own output's.
+  const outputIds = fixes.map((fix) => String((fix.output as { id?: unknown } | null | undefined)?.id ?? (fix.reader_output_v3 as { id?: unknown } | null | undefined)?.id ?? ''));
   if (args.has('database') && args.get('database') !== 'production') return fail(['--database: only "production" is supported (read-only)']);
   const live = args.get('database') === 'production'
     ? await liveReports(outputIds.map((id) => reports.get(id)?.hadith_id).filter((id): id is string => !!id))
@@ -177,8 +196,14 @@ async function main(): Promise<number> {
     if (isBlindView(view) && /"stored_(chains?|surfaces)"/.test(JSON.stringify(item.context ?? null))) {
       return void problems.push(`${where}: the packet's context carries the stored chain; a ${view} reading needs a packet without it`);
     }
-    if (readerFormat === 'v3' && (typeof fix.reader_output_v3 !== 'object' || fix.reader_output_v3 === null)) {
+    if (noChainEnvelope && fix.disposition !== NO_CHAIN_DISPOSITION) {
+      return void problems.push(`${where}.disposition: a no-chain envelope's fix says "${NO_CHAIN_DISPOSITION}"`);
+    }
+    if (v3Shaped && !noChainEnvelope && (typeof fix.reader_output_v3 !== 'object' || fix.reader_output_v3 === null)) {
       return void problems.push(`${where}.reader_output_v3: a v3 reading carries the reader's unchanged output (to_submission.py writes it)`);
+    }
+    if (fix.inherited_from !== undefined && (!v3Shaped || !Array.isArray(fix.inherited_from))) {
+      return void problems.push(`${where}.inherited_from: a list of {ref, previous_report_id, supplies, surfaces} on a v3 or v3.1 reading`);
     }
     const text = item.text;
     let base: BaseChain[] = snapshotBase(report);
@@ -192,19 +217,22 @@ async function main(): Promise<number> {
       base = current.chains;
       sourceWorkId = current.source_work_id;
     }
+    // A v1/v2 reader sees one report's text and cannot read names its stored chain repeats from an earlier one; a v3 reader is
+    // shown the earlier report (its context) and reads them as inherited links.
     const inherited = base.flatMap((chain) => chain.mentions).filter((mention) => mention.inherited_from_mention_id);
-    if (inherited.length > 0) return void problems.push(`${where}: ${report.hadith_id}'s stored chain repeats names from an earlier report (${inherited[0].id}); out of scope for a reader of this text`);
+    if (inherited.length > 0 && !v3Shaped) return void problems.push(`${where}: ${report.hadith_id}'s stored chain repeats names from an earlier report (${inherited[0].id}); out of scope for a reader of this text`);
     items.push({
       key: String(index),
       text,
       expected_id: id,
-      output: readerFormat === 'v3' ? fix.reader_output_v3 : fix.output,
+      output: v3Shaped && !noChainEnvelope ? fix.reader_output_v3 : fix.output,
       base: { chains: base.map((chain) => ({ branch: chain.branch, mentions: chain.mentions })) },
       record_id: report.hadith_id.replace(/^hadith:/, ''),
       source_work_id: sourceWorkId,
       evidence: Array.isArray(fix.evidence) ? (fix.evidence as { quote: string }[]).map((entry) => entry.quote) : [],
       require_coverage: view === 'text_and_stored_chain',
       reader_format: readerFormat,
+      tool_version: toolVersion,
       context: item.context,
       report,
       fix,
@@ -214,12 +242,52 @@ async function main(): Promise<number> {
   });
   if (problems.length > 0) return fail(problems);
 
+  // Inherited readings: the earlier report each `inherited_from` entry names, resolved in production, and its live chains.
+  const inheritedFrom = new Map<string, InheritedSource[]>();
+  const previousChains = new Map<string, EngineItem['previous']>();
+  const inheriting = items.filter((item) => Array.isArray(item.fix.inherited_from) && (item.fix.inherited_from as unknown[]).length > 0);
+  if (inheriting.length > 0) {
+    if (!live) return fail(inheriting.map((item) => `fixes[${item.key}]: an inherited reading names earlier reports; submit with --database production so they are read from the archive`));
+    const { findPreviousByText, readLiveReports } = await import('./chain-fix-database');
+    // A packet's previous-report entry, by ref: its opening text locates the report when the reports file does not name it.
+    const listedText = (item: Pending, ref: string) =>
+      (((item.context as { previous_reports?: { ref: string; chain_text?: string }[] } | undefined)?.previous_reports ?? []).find((entry) => entry.ref === ref)?.chain_text ?? '').slice(0, 200);
+    const lookups = inheriting.flatMap((item) => (item.fix.inherited_from as InheritedSource[])
+      .filter((entry) => !entry.previous_report_id)
+      .map((entry) => ({ hadith_id: item.report.hadith_id, prefix: listedText(item, entry.ref) })))
+      .filter((lookup) => lookup.prefix.length >= 20);
+    const found = await findPreviousByText(lookups);
+    for (const item of inheriting) {
+      inheritedFrom.set(item.key, (item.fix.inherited_from as InheritedSource[]).map((entry) => ({
+        ref: entry.ref,
+        previous_report_id: entry.previous_report_id ?? found.get(`${item.report.hadith_id}\u001f${listedText(item, entry.ref)}`) ?? null,
+        supplies: entry.supplies ?? null,
+        surfaces: entry.surfaces ?? [],
+      })));
+    }
+    const previousIds = [...inheritedFrom.values()].flat().map((entry) => entry.previous_report_id).filter((id): id is string => !!id);
+    const previousLive = await readLiveReports(previousIds);
+    for (const [key, entries] of inheritedFrom) {
+      previousChains.set(key, Object.fromEntries(entries.filter((entry) => entry.previous_report_id && previousLive.has(entry.previous_report_id))
+        .map((entry) => [entry.ref, { hadith_id: entry.previous_report_id!, chains: previousLive.get(entry.previous_report_id!)!.chains }])));
+    }
+  }
+
+  // Later reports that repeat a report's chain («وبهذا الإسناد»): rewriting it would break theirs (archive hold, chain-fix-hold.ts).
+  const citing = live ? await (await import('./chain-fix-database')).readCitingReports(items.map((item) => item.report.hadith_id)) : new Map<string, string[]>();
+
   const results = runEngine(items.map((item): EngineItem => ({
     key: item.key, text: item.text, expected_id: item.expected_id, output: item.output, base: item.base, record_id: item.record_id,
     source_work_id: item.source_work_id, evidence: item.evidence, require_coverage: item.require_coverage,
-    reader_format: item.reader_format, context: item.context,
+    reader_format: item.reader_format, tool_version: item.tool_version, context: item.context, previous: previousChains.get(item.key),
   })));
   for (const result of results) for (const error of result.errors) problems.push(`fixes[${result.key}] (${items[Number(result.key)].expected_id}): ${error}`);
+  for (const result of results) {
+    // The disposition is computed, never claimed: an empty reading goes in a no-chain envelope, and only there.
+    const id = items[Number(result.key)].expected_id;
+    if (noChainEnvelope && result.planned && result.disposition !== NO_CHAIN_DISPOSITION) problems.push(`fixes[${result.key}] (${id}): the reading has routes; it belongs in a chain envelope`);
+    if (!noChainEnvelope && result.disposition === NO_CHAIN_DISPOSITION) problems.push(`fixes[${result.key}] (${id}): the reading has no route; submit it in a ${NO_CHAIN_ENVELOPE_FORMAT}`);
+  }
   if (problems.length > 0) return fail(problems);
 
   const submittedAt = utcNow();
@@ -262,6 +330,17 @@ async function main(): Promise<number> {
     const key = routesKey(result.planned!);
     const fixId = fixIdOf(item.report.hadith_id, arabicSha256, readerTextSha256, key);
     const { fix_kinds: fixKinds, ...comparison } = result.comparison!;
+    // This round a reading replaces only uncertain chains: a report with a rule-checked chain (which may feed teacher and student
+    // lists) waits for the owner (reviews/ai/AGENTS.md §Chain fixes, hold `stored_chain_checked_by_rule`).
+    const checked = baseChains.filter((chain) => chain.structure_status === 'checked_by_rule');
+    const holds = [...result.holds];
+    if (checked.length > 0 && !(fixKinds.length === 1 && fixKinds[0] === 'no_change' && checked.length === baseChains.length)) {
+      holds.push({ code: 'stored_chain_checked_by_rule', detail: `the report also has ${checked.length} rule-checked chain(s) (${checked.map((chain) => chain.chain_id).join(', ')}); a reading replaces only uncertain chains until the owner rules` });
+    }
+    const citedBy = citing.get(item.report.hadith_id);
+    if (citedBy && !(fixKinds.length === 1 && fixKinds[0] === 'no_change')) {
+      holds.push({ code: 'cited_by_later_report', detail: `${citedBy.length} later report(s) repeat this report's chain (${citedBy.slice(0, 3).join(', ')}); rewriting it would break theirs` });
+    }
     return {
       format: SUBMISSION_FORMAT,
       submission_id: submissionIdOf(fixId, String(run.run_id), String(run.model_id)),
@@ -286,7 +365,11 @@ async function main(): Promise<number> {
       external_citation: (item.fix.external_citation as Submission['external_citation']) ?? null,
       view,
       reader_format: readerFormat,
-      holds: result.holds,
+      ...(toolVersion ? { tool_version: toolVersion } : {}),
+      disposition: result.disposition,
+      ...(inheritedFrom.has(item.key) ? { inherited_from: inheritedFrom.get(item.key) } : {}),
+      ...(result.variant_remarks?.length ? { variant_remarks: result.variant_remarks } : {}),
+      holds,
       derived_links: result.derived_links,
       review_kind: 'specialist',
       label: 'AI reviewed',

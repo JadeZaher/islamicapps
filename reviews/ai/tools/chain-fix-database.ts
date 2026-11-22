@@ -44,3 +44,38 @@ export async function readLiveReports(hadithIds: string[]) {
   });
   return out;
 }
+
+/**
+ * The earlier report a packet's previous-report entry stands for, when the reports file does not name it (batch 001's v3
+ * packets): the one live report of the same collection whose reader text starts with that entry's text. Null unless unique.
+ */
+export async function findPreviousByText(lookups: { hadith_id: string; prefix: string }[]): Promise<Map<string, string | null>> {
+  const out = new Map<string, string | null>();
+  if (lookups.length === 0) return out;
+  await withProductionReadOnly(async (sql) => {
+    for (const lookup of lookups) {
+      const rows = await sql<{ id: string }[]>`
+        select p.id from hadiths h join hadiths p on p.collection_id = h.collection_id and p.retired_at is null and p.id <> h.id
+        where h.id = ${lookup.hadith_id} and left(p.text_ar, ${lookup.prefix.length}) = ${lookup.prefix}
+        limit 2`;
+      out.set(`${lookup.hadith_id}\u001f${lookup.prefix}`, rows.length === 1 ? rows[0].id : null);
+    }
+  });
+  return out;
+}
+
+/** Per report: the later reports whose live chains repeat its live mentions (`inherited_from_mention_id`); a fix there would break them. */
+export async function readCitingReports(hadithIds: string[]): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>();
+  const unique = [...new Set(hadithIds)];
+  if (unique.length === 0) return out;
+  await withProductionReadOnly(async (sql) => {
+    const rows = await sql<{ cited: string; citing: string }[]>`
+      select distinct w.hadith_id as cited, m.hadith_id as citing
+      from chain_mentions m join chain_mentions w on w.id = m.inherited_from_mention_id and w.retired_at is null
+      where w.hadith_id = any(${unique}) and m.hadith_id <> w.hadith_id and m.retired_at is null
+      order by 1, 2`;
+    for (const row of rows) out.set(row.cited, [...(out.get(row.cited) ?? []), row.citing]);
+  });
+  return out;
+}

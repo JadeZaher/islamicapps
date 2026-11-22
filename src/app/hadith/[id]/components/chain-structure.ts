@@ -1,5 +1,5 @@
 /** Reader wording for the chain structure gate (0017), model readings (0019) and the compiler head (0019; src/db/AGENTS.md). */
-import type { ChainCompiler, ChainFixLabel, ChainNode } from '@/db/queries/contracts';
+import type { ChainCompiler, ChainDisposition, ChainFixLabel, ChainNode } from '@/db/queries/contracts';
 
 /** Why a chain's structure is uncertain (0017; codes from `pg_export/chain_structure.py`), in plain words. */
 export const CHAIN_STRUCTURE_REASON_LABEL: Record<string, string> = {
@@ -42,6 +42,14 @@ export function chainFixNote(fix: ChainFixLabel | null | undefined, status: Chai
   }
   if (fix.effect === 'annotate') return `A model reader read the same routes (${models}, ${day(fix.decided_at)})`;
   return `Read by model (${models}), ${day(fix.decided_at)}; awaiting final review`;
+}
+
+/** The line for a report whose applied model reading found no isnad in the text (0021): instead of stored junk names. */
+export function noChainNote(disposition: ChainDisposition | null | undefined): string | null {
+  if (!disposition) return null;
+  const models = [...new Set(disposition.models)].join(', ');
+  const review = disposition.awaiting_final_review ? '; awaiting final review' : '';
+  return `No chain is written in this report (read by model (${models}), ${day(disposition.decided_at)}${review}).`;
 }
 
 /** The plain label of the compiler heading a chain: derived from the work, never written in the text. */

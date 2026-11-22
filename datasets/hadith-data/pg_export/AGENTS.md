@@ -410,11 +410,14 @@ chain readings; every change is reversible by name.
 ## Chain fixes (projection `2026.11.22.12`; `src/db/AGENTS.md` §Chain fixes)
 
 `chain_fix_projection.py` replays `chain-fixes/accepted_overrides.jsonl.gz` (`--chain-fixes`; absent or empty: nothing changes,
-`counts.chain_fixes = {"overrides": 0}`) after every builder and before the gate, through `chain-fixes/replay.py`: a broken binding
-(Arabic or reader text changed) drops the row and counts it; `replace_routes` takes the planned branches (kept names bring their
-`origins`, so K6 and edition claims follow them; external claims move to the new mention id or are dropped and counted);
-`set_status` / `annotate` mark the rule-built branches. A replayed branch is not gated: its status is the fix's, `chains.chain_fix_id`
-names it. The manifest binds the overrides file and `replay.py` by SHA-256 (`inputs.chain_fixes`).
+`counts.chain_fixes = {"overrides": 0}`) through `chain-fixes/replay.py`. After every builder and before the gate a broken binding
+(Arabic or reader text changed) drops the row and counts it, and `set_status` / `annotate` mark the rule-built branches (not gated: the
+fix's status, `chains.chain_fix_id`). **`replace_routes` (projection `2026.11.22.14`)**: the report keeps its rule-built branches through
+the whole mention loop (so K6 alignment, external claims and kunya carriers are what they were), then `rewrite_rows` swaps its chain,
+mention and candidate rows for the fix's by the database apply's rule (`chain-fixes/AGENTS.md` §replay): a load after an apply changes
+nothing. A "no chain by reading" fix leaves the report no row. The unused-external-claims check reads the rule-built mention ids. The
+manifest binds the overrides file and `replay.py` by SHA-256 (`inputs.chain_fixes`); `counts.chain_fixes` counts reports replaced and
+no-chain, mentions that kept their identity, kept only candidates, are new, or inherited.
 
 ## Compiler as first transmitter (projection `2026.11.22.12`; owner ruling 2026-11-22)
 

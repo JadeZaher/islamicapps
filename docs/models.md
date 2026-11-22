@@ -15,11 +15,11 @@ Changing this file is a reviewed edit: update model_registry.json and regenerate
 What its output may and may not be used for:
 
 - May: Candidate text for a curator to review against the Arabic and the source edition.
-- May: Public display only for a report with no source-provided English, labelled 'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.' with this model id in the credit line and credited to SWI (public_translations, migration 0018); source-provided English is always shown instead where it exists.
+- May: Public display only for a report with no source-provided English, labelled 'Unreviewed machine translation' with this model id and credited to SWI (public_translations, migration 0018); source-provided English is always shown instead where it exists.
 - May not: Writing to canonical CSV/GZIP, translation_overrides.jsonl or any release input without a hash-bound human review (release accepts only human_verified or source_verified).
 - May not: Presenting the mechanical screen as evidence that the translation is faithful: it checks shape (refusal, Arabic leakage, Latin ratio, loops, truncation), not meaning.
 - May not: Publishing as reviewed English, or attributing the wording to any scholar or source.
-- Review state: machine_unreviewed; no human review of any hy-mt2 output is recorded. Published under the label 'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.' (model in the credit line) for reports with no source English, state machine_unreviewed in translations (0018). 33,307 reports carry a draft (2,025 from the first run under prompt v1, 31,282 from gap-fill run 2: 20,056 terminology prompt, 11,226 base prompt after fallback or no matching term); 113 reports stay without English (91 failed the screen twice, 22 not translatable: sources with no Arabic letters or a sentence over 5,500 characters). Spend: US$0.40369 up to 2026-11-21 and US$0.7767 on 2026-11-22 (journal usage.cost; 4,876,971 tokens that day), about US$1.18 and 7.36 million tokens in all. Reading of 40 random outputs on 2026-11-22 (10 per tradition, one reader): 5 with a meaning-level error (see quality_findings).
+- Review state: machine_unreviewed; no human review of any hy-mt2 output is recorded. Published under the label 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)' for reports with no source English, state machine_unreviewed in translations (0018). 33,307 reports carry a draft (2,025 from the first run under prompt v1, 31,282 from gap-fill run 2: 20,056 terminology prompt, 11,226 base prompt after fallback or no matching term); 113 reports stay without English (91 failed the screen twice, 22 not translatable: sources with no Arabic letters or a sentence over 5,500 characters). Spend: US$0.40369 up to 2026-11-21 and US$0.7767 on 2026-11-22 (journal usage.cost; 4,876,971 tokens that day), about US$1.18 and 7.36 million tokens in all. Reading of 40 random outputs on 2026-11-22 (10 per tradition, one reader): 5 with a meaning-level error (see quality_findings).
 
 ## Summary
 
@@ -39,7 +39,7 @@ What its output may and may not be used for:
 | `Claude Opus 4.7 (1M context)` | coding_assistance | Co-authored application code (src/app, src/lib, src/scripts), data pipeline code (datasets/hadith-data, datasets/archive) and track documentation (conductor, .omc) in 6 commits | 6 commits | not_applicable | namespaced_specific |
 | `Claude Opus 4.6 (1M context)` | coding_assistance | Co-authored data pipeline code (datasets/hadith-data, datasets), application code (src/app, src/lib, src/components, src/scripts) and track documentation (conductor, .omc) in 2 commits | 2 commits | not_applicable | namespaced_specific |
 | `qwen/qwen3.7-flash` | extraction_audit | Scored each of the 1,901 corrected OpenITI reports in production (Musnad al-Rabi 1,005, Musnad Zayd 691, Sahifat al-Rida 205) against a window of the OpenITI source, 0 to 3 for boundaries, cleanliness and sanad/matn split, with flags and verbatim-substring proposals | 1,014 verdict events (+3 more outputs) | candidate_only | namespaced_specific |
-| `claude-haiku-5-5` | chain_reading | Chain reading (chain-fix submissions): read each pilot report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md) | 568 reader outputs (+1 more outputs) | candidate_only | namespaced_specific |
+| `claude-haiku-5-5` | chain_reading | Chain reading (chain-fix submissions): read each report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md) | 568 reader outputs (+4 more outputs) | applied_awaiting_final_review | namespaced_specific |
 
 Row counts for canonical data come from the full-schema master datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz (99,283 rows, streamed; fields translation_source, translation_model, translation_review_status, translation_status). The tracked all_hadiths_unified.csv.gz has the legacy 26-column schema and carries no model fields.
 
@@ -51,7 +51,7 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
 - Work: Arabic to English candidate translations for master rows whose English fails release QA: missing, placeholder, same as Arabic, too short, fully or partly Arabic, and names-or-terms-only leakage. Arabic only is sent; no existing English is shown to the model. Gap-fill run 2 (2026-11-21, 2026-11-22; diagnostics/translation-run-2/): the same model, with a per-request terminology block (prompt hy-mt2-terminology-en-prompt-v2, sha256 03da4f8769e0...dfc5c9, translation_model.json prompt_terminology; fallback prompt hy-mt2-default-en-prompt-v1, sha256 bfe84676c7ff...df8ed4af) over public reports with no public English. 7,046 reports were translated on 2026-11-21 before the OpenRouter account ran out of credits (HTTP 402); on 2026-11-22 the account was topped up and the run resumed: the three corrected OpenITI works first (al-Rabi, Musnad Zayd, Sahifat al-Rida, from their current text), then every other report still without public English. 33,307 of the 33,420 reports without public English now have a gated draft; the drafts are published (migration 0018) as 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)' credited to SWI.
 - Dates: 2026-11-21 to 2026-11-22 (created_at in the journals (one operator-supplied timestamp per run label))
 - Identity: namespaced_specific. Per event the journals record the response model: tencent/hy-mt2-30b-a3b on every one of the 25,097 responses of 2026-11-22 (provider Tencent, through OpenRouter) and on all 61 pilot chunks; the 2026-11-21 gap-fill rows carry the model but no provider.
-- Status: candidate_only. machine_unreviewed; no human review of any hy-mt2 output is recorded. Published under the label 'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.' (model in the credit line) for reports with no source English, state machine_unreviewed in translations (0018). 33,307 reports carry a draft (2,025 from the first run under prompt v1, 31,282 from gap-fill run 2: 20,056 terminology prompt, 11,226 base prompt after fallback or no matching term); 113 reports stay without English (91 failed the screen twice, 22 not translatable: sources with no Arabic letters or a sentence over 5,500 characters). Spend: US$0.40369 up to 2026-11-21 and US$0.7767 on 2026-11-22 (journal usage.cost; 4,876,971 tokens that day), about US$1.18 and 7.36 million tokens in all. Reading of 40 random outputs on 2026-11-22 (10 per tradition, one reader): 5 with a meaning-level error (see quality_findings).
+- Status: candidate_only. machine_unreviewed; no human review of any hy-mt2 output is recorded. Published under the label 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)' for reports with no source English, state machine_unreviewed in translations (0018). 33,307 reports carry a draft (2,025 from the first run under prompt v1, 31,282 from gap-fill run 2: 20,056 terminology prompt, 11,226 base prompt after fallback or no matching term); 113 reports stay without English (91 failed the screen twice, 22 not translatable: sources with no Arabic letters or a sentence over 5,500 characters). Spend: US$0.40369 up to 2026-11-21 and US$0.7767 on 2026-11-22 (journal usage.cost; 4,876,971 tokens that day), about US$1.18 and 7.36 million tokens in all. Reading of 40 random outputs on 2026-11-22 (10 per tradition, one reader): 5 with a meaning-level error (see quality_findings).
 - Inputs:
   - `datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz (text_ar of flagged rows)`
   - `production database, read-only SELECT of public reports with no complete public English (43,914 reports; Arabic text and its SHA-256), 2026-11-21; snapshot regenerated by translate_gap_fill.py snapshot`
@@ -71,7 +71,7 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
   - `datasets/hadith-data/machine_translation_candidates/machine_english_overlay.jsonl.gz`: 33,307 published drafts; one gated draft per report, bound to the exact Arabic by arabic_sha256, each with response model, provider (where recorded), prompt version and sha256, finish reasons, QA result, cost and timestamp; the exporter re-gates every row and binds the file by SHA-256 in the projection manifest
 - May be used for:
   - Candidate text for a curator to review against the Arabic and the source edition.
-  - Public display only for a report with no source-provided English, labelled 'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.' with this model id in the credit line and credited to SWI (public_translations, migration 0018); source-provided English is always shown instead where it exists.
+  - Public display only for a report with no source-provided English, labelled 'Unreviewed machine translation' with this model id and credited to SWI (public_translations, migration 0018); source-provided English is always shown instead where it exists.
 - May not be used for:
   - Writing to canonical CSV/GZIP, translation_overrides.jsonl or any release input without a hash-bound human review (release accepts only human_verified or source_verified).
   - Presenting the mechanical screen as evidence that the translation is faithful: it checks shape (refusal, Arabic leakage, Latin ratio, loops, truncation), not meaning.
@@ -374,10 +374,10 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
 ### claude-haiku-5-5: chain reading (`claude-haiku-5-5-chain-reader-pilots`)
 
 - Runtime: Claude Code subagents, fresh context per run, two independent passes
-- Work: Chain reading (chain-fix submissions): read each pilot report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md). Pilot v1 (prompt.md) and v2 (context/prompt-v2.md) over the 284 labelled pilot reports; v3 (v3/prompt-v3.md) batch 001 of 500 reports is being read. No reading has been submitted to the fix store or applied to any chain.
-- Dates: 2026-11-22 to 2026-11-22 (RUN.txt start and end times)
-- Identity: namespaced_specific. The id each reader run wrote in its RUN.txt line (chain-reader/outputs/*/RUN.txt, context/outputs-v2/*/RUN.txt).
-- Status: candidate_only. ai_reviewed, awaiting final review: an agreed, unheld reading may be applied as 'Read by model, awaiting final review' only through the fix pipeline; none has been.
+- Work: Chain reading (chain-fix submissions): read each report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md). Pilot v1 (prompt.md) and v2 (context/prompt-v2.md) over the 284 labelled pilot reports; batch 001 (500 reports drawn from chains marked uncertain) under prompt v3.0.0 (v3/prompt-v3.md, sha256 a5a223b6acfc...0827764), two blind passes with source context. Re-triaged by the v3.1 tool (v3_1/, prompt 3.1.0 sha256 fca49673fea3...2860fd registered, not yet run): 394 agreed, unheld readings eligible (358 with links, 36 'no chain by reading'); 348 stand applied to the live archive (2026-11-22) as 'Read by model (claude-haiku-5-5), awaiting final review' (258 rewritten routes, 60 stored routes confirmed, 30 'no chain is written'); 46 held (30 reports that also have a rule-checked chain, 3 whose chain later reports repeat, 4 with a variant group, 1 inherited from an uncertain chain, 11 held by the v3.2 tool on re-triage, 9 of which had been applied and were reverted). Chains read by model feed no teacher and student list.
+- Dates: 2026-11-22 to 2026-11-22 (RUN.txt start and end times; applied 2026-11-22)
+- Identity: namespaced_specific. The id each reader run wrote in its RUN.txt line (chain-reader/outputs/*/RUN.txt, context/outputs-v2/*/RUN.txt, v3/batch-001/outputs/pass-a|pass-b/RUN.txt).
+- Status: applied_awaiting_final_review. ai_reviewed, awaiting final review: 348 batch-001 readings are applied as 'Read by model, awaiting final review'; a person's confirmation turns one into 'Verified by <name>', a rejection reverts it.
 - Inputs:
   - `datasets/hadith-data/chain-reader/pilot/ (284 labelled reports)`
   - `datasets/hadith-data/chain-reader/context/pilot-v2/packets/`
@@ -385,8 +385,12 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
 - Outputs:
   - `datasets/hadith-data/chain-reader/outputs/`: 568 reader outputs (v1, two passes)
   - `datasets/hadith-data/chain-reader/context/outputs-v2/`: 568 reader outputs (v2, two passes)
+  - `datasets/hadith-data/chain-reader/v3/batch-001/outputs/`: 1,000 reader outputs (v3, two passes of 500)
+  - `reviews/ai/records/chain-fixes/submissions/`: 788 submissions (394 readings, two runs each); batch 001, prompt v3.0.0, tool v3_1
+  - `datasets/hadith-data/chain-fixes/accepted_overrides.jsonl.gz`: 348 applied fixes replayed by the projection
 - May be used for:
   - Chain-fix submissions under the agreement and hold rules (reviews/ai/tools/chain-fix-*.ts)
+  - Applied readings labelled 'Read by model, awaiting final review' (and 'No chain is written in this report' for an agreed empty reading)
   - Proposals beyond the chain for a person to decide
 - May not be used for:
   - Writing a chain without two agreeing independent readings and no hold
@@ -394,8 +398,10 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
   - Calling a reading verified
 - Quality findings:
   - Pilot v2 re-scored under the v3 tool: 213 of 279 applied, 210 right (99 percent, 96 to 100), measured on the readings the holds were tuned on (in-sample); batch 001 is the out-of-sample measurement. (source: datasets/hadith-data/chain-reader/v3/README.md)
+  - Batch 001 judged by one independent model reader (not blind, not a scholar): agreed, unheld readings right in 98.6% (96.8 to 99.4, weighted) against 16.0% for the stored chains; no reading broke a correct stored chain (0 of 244). Under the v3.1 tool and the owner's rulings of 2026-11-22: 237 of 241 right, 0 wrong, 4 undecided; the 36 no-chain readings all right. (source: datasets/hadith-data/chain-reader/analysis-batch-001/README.md; datasets/hadith-data/chain-reader/v3_1/batch-001/RETRIAGE.md)
 - Evidence:
   - `datasets/hadith-data/chain-reader/v3/rescore_v3.json`: whole file
+  - `datasets/hadith-data/chain-reader/analysis-batch-001/numbers_b1.json`: whole file
 
 ## Coverage notes
 

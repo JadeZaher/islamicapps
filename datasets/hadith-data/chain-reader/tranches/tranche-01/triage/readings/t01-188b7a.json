@@ -1,0 +1,187 @@
+{
+ "expanded_a": {
+  "id": "t01-188b7a",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "البخاري",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "عبد الله بن محمد",
+      "start": 6,
+      "end": 22,
+      "kind": "narrator"
+     },
+     {
+      "surface": "وهب بن جرير",
+      "start": 30,
+      "end": 41,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبي",
+      "start": 50,
+      "end": 53,
+      "kind": "relation"
+     },
+     {
+      "surface": "جرير بن زيد",
+      "start": 63,
+      "end": 74,
+      "kind": "narrator"
+     },
+     {
+      "surface": "سالم بن عبد الله بن عمر",
+      "start": 86,
+      "end": 109,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبا هريرة",
+      "start": 133,
+      "end": 142,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "matn_start": 142,
+  "notes": [
+   "عمه, جرير بن زيد is one link with the name alone (rule 7)",
+   "قال كنت مع سالم ... فقال سمعت أبا هريرة: Salim is the one who relays (rule 5), not only a place; Abu Hurayra is the Companion",
+   "سمع النبي after Abu Hurayra is the end of the chain (rule 12)"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t01-188b7a",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "عبد الله بن محمد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "وهب بن جرير",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "جرير بن زيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "سالم بن عبد الله بن عمر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبا هريرة",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "عمه, جرير بن زيد is one link with the name alone (rule 7)",
+   "قال كنت مع سالم ... فقال سمعت أبا هريرة: Salim is the one who relays (rule 5), not only a place; Abu Hurayra is the Companion",
+   "سمع النبي after Abu Hurayra is the end of the chain (rule 12)"
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "t01-188b7a",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "عبد الله بن محمد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "وهب بن جرير",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "جرير بن زيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "سالم بن عبد الله بن عمر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبا هريرة",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«أخبرنا أبي» is bare: a relation link (rule 7); «عن عمه، جرير بن زيد» — the uncle with his name is one link, the name alone",
+   "«كنت مع سالم بن عبد الله بن عمر على باب داره» places the narrator; «فقال سمعت أبا هريرة» is Salim's own transmission, so he is a link (rule 5)"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "K6I's sequence goes from Jarir straight to Abu Hurayra, omitting Salim, who speaks «سمعت أبا هريرة»",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "فقال سمعت أبا هريرة"
+     },
+     {
+      "source": "K6I",
+      "quote": "جرير بن زيد"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}

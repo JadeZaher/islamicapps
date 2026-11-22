@@ -1,0 +1,75 @@
+{
+ "format": "shura-chain-no-chain-envelope/1",
+ "run": {
+  "model_id": "claude-haiku-5-5",
+  "provider_runtime": "Claude Code subagent, fresh context, packets of the chain reader 3.0.0 (text and context)",
+  "run_id": "b1-a-001-002",
+  "started_at": "2026-11-22T16:20:47Z",
+  "finished_at": "2026-11-22T16:27:51Z",
+  "prompt_sha256": "a5a223b6acfc0b0d25260624bf527284f40a57576ba422f5e821e15dd0827764",
+  "view": "text_and_context",
+  "prompt_version": "3.0.0",
+  "prompt_file": "datasets/hadith-data/chain-reader/v3/prompt-v3.md",
+  "tool_version": "v3_1",
+  "packet_id": "packet-002",
+  "second_reader": {
+   "model_id": "claude-haiku-5-5",
+   "run_id": "b1-b-001-002",
+   "started_at": "2026-11-22T16:21:46Z",
+   "finished_at": "2026-11-22T16:32:58Z"
+  },
+  "agreement": "canonical() equal in both passes, no hold (v3_1/holds_v3_1.py)",
+  "built_at": "2026-11-22T18:16:55Z"
+ },
+ "packet": "v3/batch-001/packets/packet-002.jsonl",
+ "fixes": [
+  {
+   "output": {
+    "id": "b1-b81eac",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«وَ قَدْ رُوِيَ» names no transmitter: a passive saying with no chain"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-001-002 and b1-b-001-002, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "167 - وَ قَدْ رُوِيَ: «فِي اَلْمَنِيِّ أَنَّهُ إِذَا كَانَ اَلرَّجُلُ جُنُباً حَيْثُ قَامَ وَ نَظَرَ وَ طَلَبَ فَلَمْ"
+    }
+   ],
+   "stored_chain_surfaces": [
+    "في المني"
+   ],
+   "external_citation": null
+  },
+  {
+   "output": {
+    "id": "b1-2322c8",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Saying only, no chain"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-001-002 and b1-b-001-002, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "5831 - هِبَةُ اَلرَّجُلِ لِزَوْجَتِهِ تَزِيدُ فِي عِفَّتِهَا\"."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "هبة الرجل لزوجته تزيد في عفتها"
+   ],
+   "external_citation": null
+  }
+ ]
+}

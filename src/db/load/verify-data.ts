@@ -242,7 +242,7 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
   );
   // Chain builder (0014; src/db/AGENTS.md §Chain builder).
   await check(
-    "an inherited mention repeats a live written mention of the same collection, with the same surface, in a chain that inherits (an OpenITI continuation or a Thaqalayn «وبهذا الإسناد»)",
+    "an inherited mention repeats a live written mention of the same collection, with the same surface, in a chain that inherits (an OpenITI continuation, a Thaqalayn «وبهذا الإسناد» or a model reading)",
     `select count(*)::int as value from chain_mentions m
      join hadiths h on h.id = m.hadith_id
      join chains c on c.id = m.chain_id
@@ -250,7 +250,7 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and w.inherited_from_mention_id is null and w.surface_ar = m.surface_ar
      left join hadiths wh on wh.id = w.hadith_id and wh.collection_id = h.collection_id
      where m.retired_at is null and m.inherited_from_mention_id is not null
-       and (wh.id is null or (h.sanad_inherits_from is null and c.extraction_method <> 'thaqalayn_inherited_chain'))`,
+       and (wh.id is null or (h.sanad_inherits_from is null and c.extraction_method not in ('thaqalayn_inherited_chain', 'chain_fix_reader')))`,
   );
   await check(
     'an unnamed transmitter or a back-reference carries no automatic identity (so no machine-reviewed pair touches one)',
@@ -465,6 +465,24 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
        and not exists (select 1 from chain_mention_candidates k where k.mention_id = m.id and k.narrator_id = m.narrator_id
                          and k.retired_at is null)`,
+  );
+  await check(
+    'chain fixes: a report whose applied fix found no isnad (no_chain_by_reading) has no live chain, and such a fix plans none',
+    `select count(*)::int as value from chain_fixes f
+     join chain_fix_decisions d on d.fix_id = f.id and d.retired_at is null and d.effect is not null
+     where f.disposition is not null
+       and 'applied' = (select a.action from chain_fix_applications a where a.fix_id = f.id order by a.id desc limit 1)
+       and (exists (select 1 from chains c where c.hadith_id = f.hadith_id and c.retired_at is null)
+            or jsonb_array_length(f.planned -> 'chains') <> 0)`,
+  );
+  await check(
+    'chain fixes: an inherited name in a model-read chain repeats a mention of a rule-checked or reviewer-verified chain',
+    `select count(*)::int as value from chain_mentions m
+     join chains c on c.id = m.chain_id and c.retired_at is null and c.extraction_method = 'chain_fix_reader'
+     left join chain_mentions w on w.id = m.inherited_from_mention_id and w.retired_at is null
+     left join chains wc on wc.id = w.chain_id and wc.retired_at is null
+     where m.retired_at is null and m.inherited_from_mention_id is not null
+       and (wc.id is null or wc.structure_status is null or wc.structure_status not in ('checked_by_rule', 'verified_by_reviewer'))`,
   );
   await check(
     'chain fixes: every review names its reviewer, a note and a date; an AI review names its model and prompt',

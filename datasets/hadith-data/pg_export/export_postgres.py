@@ -52,7 +52,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.13"
+PROJECTION_VERSION = "2026.11.22.14"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -1282,9 +1282,9 @@ def project(args: argparse.Namespace) -> dict:
     chain_fix_overrides = chain_fix_projection.replay.load_overrides(args.chain_fixes)
     chain_field = {record_to_hadith[record_id]: row["chain"] for record_id, row in sidecars["pure_canon_chain.jsonl.gz"].items()
                    if record_id in record_to_hadith and row.get("chain")}
-    chain_fix_projection.apply_overrides(chain_fix_overrides, branches_by_hadith, hadith_info, hadith_text, chain_field,
-                                         external, chain_fix_counts)
-    counts["chain_fixes"] = {"overrides": len(chain_fix_overrides), **dict(sorted(chain_fix_counts.items()))}
+    # replace_routes reports keep their rule-built branches until the mention loop is done (chain_fix_projection.py).
+    chain_fix_replacing = chain_fix_projection.apply_overrides(chain_fix_overrides, branches_by_hadith, hadith_info,
+                                                               hadith_text, chain_field, chain_fix_counts)
 
     # Chain structure gate (chain_structure.py, AGENTS.md §Chain structure gate): prose and rijal works and chapter
     # headings store no chain at all; the loader retires their earlier rows.
@@ -1588,6 +1588,12 @@ def project(args: argparse.Namespace) -> dict:
                 compiler_counts[f"{tradition}:{work}:{head[1]}"] += 1
             elif work in work_register.compilers:
                 compiler_counts[f"{tradition}:{work}:written_in_text"] += 1
+    # Accepted fixes that replace routes: the rule-built rows of those reports become the fix's rows, by the apply's rule.
+    # External claims were consumed by the rule-built mentions, so the unused-claims check below reads their ids.
+    mention_ids_built = {row[0] for row in mentions}
+    chains, mentions, identity_rows = chain_fix_projection.rewrite_rows(chain_fix_replacing, chains, mentions, identity_rows,
+                                                                        Verbatim, chain_fix_counts)
+    counts["chain_fixes"] = {"overrides": len(chain_fix_overrides), **dict(sorted(chain_fix_counts.items()))}
     counts["chain_structure"] = dict(sorted(structure_counts.items()))
     counts["compiler_heads"] = dict(sorted(compiler_counts.items()))
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
@@ -1602,7 +1608,7 @@ def project(args: argparse.Namespace) -> dict:
     canonical.write("chain_mention_candidates", ["id", "mention_id", "hadith_id", "narrator_id", "basis", "detail",
                                                  "source_position", "source_ref", "source_assertion_origin"],
                     identity_rows)
-    unused_claims = set(external.claims_by_mention) - {row[0] for row in mentions}
+    unused_claims = set(external.claims_by_mention) - mention_ids_built
     # A claim on a chain the gate retires (prose work, chapter heading) goes with it, counted; any other is a refusal.
     gate_dropped = {claim for claim in unused_claims if claim.startswith(tuple(retired_by_gate))} if retired_by_gate else set()
     counts["chain_structure"]["external_claims_dropped_with_retired_chains"] = len(gate_dropped)

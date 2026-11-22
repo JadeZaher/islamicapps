@@ -6,7 +6,7 @@ Design, states, the auto-apply rule and the integration checklist: `docs/review/
 | File | What |
 | --- | --- |
 | `chain_fix_engine.py` | Every Arabic rule of the pipeline: the reader's validator, the comparison with the stored chain, the planned rows. Called once per CLI invocation over stdin/stdout JSON |
-| `replay.py` | What the projection imports to replay accepted fixes (binding check, branches in the exporter's shape, mention-id map for external claims) |
+| `replay.py` | What the projection imports to replay accepted fixes (binding check, `rewrite_rows`: the apply's rule over the rule-built rows) |
 | `accepted_overrides.jsonl.gz` | Derived: one row per report whose chain the projection takes from an accepted or confirmed fix. Absent means none |
 | `test_chain_fix_engine.py` | Engine and replay on real pilot reports: `python -I datasets/hadith-data/chain-fixes/test_chain_fix_engine.py` |
 
@@ -39,15 +39,41 @@ Design, states, the auto-apply rule and the integration checklist: `docs/review/
 - The override is bound to `arabic_sha256` (what every projection binding uses) and `reader_text_sha256` (what the offsets count
   in; Ahmad, al-Darimi, al-Muwatta read the chain field, a blank line, then `text_ar`). A broken binding drops the row and counts
   it; the store re-queues the fix when the new text is read.
-- `origins` carry each kept name's origin from the branch it came from, so the K6 source-index claim and an edition
-  identification follow it (the Sunni builder's mechanism); a new name has none.
+- **Replay equals the apply (2026-11-22).** A replaced report keeps its rule-built branches through the whole projection (so the K6
+  alignment, external claims and kunya carriers of every other report are what they were), and `rewrite_rows` then swaps its chain,
+  mention and candidate rows for the fix's by `chain-fix-apply.ts` `writeRoutes`' own rule, column for column: planned ids, surfaces,
+  contexts and review units; a carried name its identity and Latin form; a kept name its candidates and a Latin form not taken from
+  an identity; a new name unresolved with none; an inherited name its cited mention's candidates; each chain the report's first
+  rule-built chain's sanad confidence and compiler (`indirect` when the route relies elsewhere). Production rows are the last load's
+  rule-built rows, so the database apply and a later export write the same rows and a load changes nothing (proved on batch 001:
+  `conductor/RUNBOOK.md` "First model-read fixes applied"). The first form (re-running the identity rules on replayed branches)
+  could never equal the apply. Change one side only with the other.
 - A rejected fix leaves this file in the same call that records the rejection, so the next load restores the rule-built chain
   even before the database revert runs.
 
-## reader formats (0019/0020)
+## reader formats (0019/0020/0021)
 
-`run_item` takes `reader_format` `v1` (routes with offsets), `v2` (`context/expand.py`, `validate_v2.py`, `holds.py`), `v3`
-(`v3/expand_v3.py`, `validate_v3.py`, `holds_v3.py`; the output is `reader_output_v3`) or `text` (proposals only). v2/v3 readings are
-turned into the v1 shape for comparison (`v1_from_v2`): derived links (compiler head, inherited names) are dropped from the routes and
-returned in `derived_links` with kind and origin; an Imam named in the text stays a written link. Every format returns `holds` and
-`proposals` (the reader's other findings). A v3 reading that takes inherited names gets the hold `inherited_links_not_applied`.
+`run_item` takes `reader_format` `v1` (routes with offsets), `v2` (`context/expand.py`, `validate_v2.py`, `holds.py`), `v3` / `v3_1`
+(the output is `reader_output_v3`) or `text` (proposals only). A v3-shaped reading is validated, expanded and held by the tool
+`tool_version` names (`TOOLS`: `v3` or `v3_1`; a v3.1 reading only by `v3_1`). The format follows from the prompt the reader ran, the
+tool from the envelope: batch 001 was read under prompt v3 and re-triaged by tool v3.1, and the submission stores both. v2/v3 readings
+are turned into the v1 shape for comparison (`v1_from_v2`): derived links are dropped from the routes and returned in `derived_links`
+with kind and origin. Every format returns `holds` and `proposals` (the reader's other findings).
+
+- **No chain by reading**: an agreed reading with no route returns `disposition: no_chain_by_reading` and plans no chain; applying it
+  retires the stored chain (`chain_fixes.disposition`, view `public_chain_fix_dispositions`). The submit tool takes it only in a
+  `shura-chain-no-chain-envelope/1` and refuses an empty reading anywhere else.
+- **Source named in the text** (`imam_in_text`: the Imam asked or speaking, read as the last link): a written mention whose planned
+  `reader_kind` stays `imam_in_text` (`mark_named_in_text`), so the page labels it (view `public_chain_fix_mention_kinds`). The compiler
+  head is never a mention (the projection derives it).
+- **Variant groups** (`variant: true`: «بمثل حديث X», «زاد في حديث Y»: another version's transmitter, never a route) are not yet
+  handled by `to_submission_v3_1.py` or the planned rows, which would write them as ordinary chains (tranche-01 judge, confirmed on
+  batch 001: 4 of the 394 readings). Until a variant is kept as a labelled remark and agreement is computed on the other routes, a
+  reading with any variant group is held (`has_variant_group`; the four batch-001 fixes by archive hold). Tool `v3_2` (`TOOLS`) keeps
+  variants out of the routes and returns them as `variant_remarks` (recorded on the submission); its holds still hold the reading
+  until the page shows the remark.
+- **Inherited links** (`plan_inherited`): each inherited name becomes a mention repeating the cited report's written mention
+  (`inherited_from_mention_id` its root, its surface). `resolve_inherited` holds instead of guessing: no earlier report given
+  (`inherited_previous_report_unknown`), its chain not rule-checked or verified (`inherited_source_chain_uncertain`), a name not found
+  in order in one of its branches (`inherited_name_not_in_source_chain`). Routes that open inherited come first. The v3 hold
+  `inherited_links_not_applied` is lifted. Fix kinds are computed on the written links only.

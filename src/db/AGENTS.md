@@ -283,6 +283,18 @@ states, rules: `docs/review/chain-fix-pipeline.md`; tools: `reviews/ai/tools/cha
   file store only this round (`reviews/ai/records/chain-fixes/proposals/`), listed by `chain-fix-status --proposals`; no table yet.
 - `db:verify` checks the widened status check, the network guard and the view tails; `db:verify-data` holds nine chain-fix checks and
   reports (not fatal) a rejected fix still applied.
+- **0021 (first model-read fixes, 2026-11-22).** Additive. `chain_fixes.disposition` (`no_chain_by_reading`, check: no planned chain),
+  `chain_fix_submissions.tool_version` (`v3` | `v3_1`: the reader tool that expanded and held the reading; the prompt columns name what
+  the reader ran) and `inherited_from` (jsonb list). **Where "no chain by reading" lives**: on the fix, not in `chain_absence_dispositions`.
+  That table is curated "no isnad by nature" with its own writer (the curation actions); a model reading awaiting review is a different
+  claim with a different writer (`chain-fix-apply.ts`), it reverts with its fix, and a load replays it from the overrides file. One writer
+  per table holds. View `public_chain_fix_dispositions`: one row per public report whose latest application of such a fix is `applied`,
+  whose live decision has an effect, bound to the current Arabic, with no live chain; the page reads it. View
+  `public_chain_fix_mention_kinds`: per mention of a model-read chain, `imam_in_text` or `inherited` from the fix's plan, so the page
+  labels the source named in the text without a new mention column. An inherited name is a real `chain_mentions` row with
+  `inherited_from_mention_id` (the 0014 mechanism); the inherited-mention load check now also accepts `extraction_method = 'chain_fix_reader'`.
+  Two new `db:verify-data` checks: an applied no-chain fix leaves no live chain and plans none; an inherited name in a model-read chain
+  repeats a mention of a rule-checked or reviewer-verified chain.
 
 ## Compiler as first transmitter (0019; owner ruling 2026-11-22)
 
@@ -353,7 +365,10 @@ with the structure guard and its two indexes; see §Chain structure gate) -> `00
   the six chain-fix tables, `chains.chain_fix_id`/`compiler_narrator_id`/`compiler_link`, the widened structure check, enum value
   `work_register`, the widened profile source check; hand-written: settings seeded off, `public_chain_links` appended,
   `public_chain_fix_labels`, `narrator_transmissions` dropped and recreated with the feeding guard and compiler pairs; see §Chain fixes,
-  §Compiler as first transmitter) -> `0020_chain_fix_reader_v3_view` (the `text_and_context` view). A `--custom` generate snapshots the previous schema: after promoting a
+  §Compiler as first transmitter) -> `0020_chain_fix_reader_v3_view` (the `text_and_context` view) -> `0021_chain_fix_dispositions` (generated:
+  `chain_fixes.disposition`, `chain_fix_submissions.tool_version` / `inherited_from` and their checks; hand-written: views
+  `public_chain_fix_dispositions`, `public_chain_fix_mention_kinds`; see §Chain fixes) -> `0022_chain_fix_tool_v3_2` (generated: the
+  `tool_version` check widened with `v3_2`). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

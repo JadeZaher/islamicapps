@@ -1,6 +1,8 @@
 /**
- * Flow test: a real slice loaded into a throwaway schema; one accepted fix applied, then reverted. After the revert the report's
- * chains, mentions and candidates equal the rows the application recorded (`base_rows`), column by column.
+ * Flow test: a real slice loaded into a throwaway schema; accepted fixes applied, then reverted. After each revert the report's
+ * chains, mentions and candidates equal the rows the application recorded (`base_rows`), column by column. Cases: a reading that
+ * drops a name; "no chain by reading" (0021: every chain retires, a second run sees it applied); a name inherited from an earlier
+ * report (0021: repeats the cited written mention with its candidates; refused when the cited chain is not rule-checked).
  * Run: npx tsx --test src/db/ops/__tests__/chain-fix-apply.test.ts   (needs DATABASE_URL and a projection with the 0019 columns)
  */
 import assert from 'node:assert/strict';
@@ -106,4 +108,74 @@ test('an accepted fix is written as the model reading, feeds no list, and its re
   assert.deepEqual(await liveRows(loader, hadithId), base);
   const actions = await loader.unsafe<{ action: string }[]>('select action from chain_fix_applications where fix_id = $1 order by id', [FIX_ID]);
   assert.deepEqual(actions.map((row) => row.action), ['applied', 'reverted']);
+});
+
+/** The report's single live chain, the fix row and its base hash, for the cases below. */
+async function prepare(hadithId: string, fixId: string, planned: { chains: unknown[] }, disposition: string | null = null) {
+  const [{ arabic_sha256: arabicSha256 }] = await loader.unsafe<{ arabic_sha256: string }[]>('select arabic_sha256 from hadiths where id = $1', [hadithId]);
+  const base = await liveRows(loader, hadithId);
+  const baseChains = base.chains.map((chain) => ({ chain_id: String(chain.id), branch: Number(chain.branch), structure_status: null,
+    mentions: base.chain_mentions.filter((m) => m.chain_id === chain.id).sort((a, b) => Number(a.position) - Number(b.position))
+      .map((m) => ({ id: String(m.id), position: Number(m.position), surface_ar: String(m.surface_ar) })) }));
+  await loader.unsafe(`insert into chain_fixes (id, hadith_id, arabic_sha256, reader_text_sha256, text_layout, routes_key, fix_kinds, planned, disposition, created_by)
+                       values ($1, $2, $3, $3, 'full_text', 'k', array['chain_removed'], $4::text::jsonb, $5, 'test')`,
+    [fixId, hadithId, arabicSha256, JSON.stringify(planned), disposition]);
+  return { base, arabicSha256, baseChainSha256: chainSha256(baseChains) };
+}
+
+test('"no chain by reading" retires every chain of the report, is seen as applied on a second run, and reverts exactly', async () => {
+  const fixId = 'chain-fix:0123456789abcdef0123456a';
+  const [{ hadith_id: hadithId }] = await loader.unsafe<{ hadith_id: string }[]>(
+    `select c.hadith_id from chains c where c.retired_at is null and c.chain_fix_id is null group by c.hadith_id order by c.hadith_id offset 1 limit 1`);
+  const [{ id: version }] = await loader.unsafe<{ id: string }[]>('select id from dataset_versions where is_current');
+  const { base, arabicSha256, baseChainSha256 } = await prepare(hadithId, fixId, { chains: [] }, 'no_chain_by_reading');
+  const override: Override = { hadith_id: hadithId, record_id: hadithId.replace(/^hadith:/, ''), fix_id: fixId, arabic_sha256: arabicSha256,
+    effect: 'replace_routes', structure_status: 'read_by_model', base_chain_sha256: baseChainSha256, planned: { chains: [] }, disposition: 'no_chain_by_reading' };
+  await loader.begin(async (tx) => assert.equal(await applyOverride(tx as unknown as LoaderSql, override, version), true));
+  const applied = await liveRows(loader, hadithId);
+  assert.deepEqual([applied.chains.length, applied.chain_mentions.length, applied.chain_mention_candidates.length], [0, 0, 0]);
+  await loader.begin(async (tx) => assert.equal(await applyOverride(tx as unknown as LoaderSql, override, version), false, 'already applied, not stale'));
+  await loader.begin(async (tx) => assert.equal(await revertFix(tx as unknown as LoaderSql, fixId, version), hadithId));
+  assert.deepEqual(await liveRows(loader, hadithId), base);
+});
+
+test('an inherited name repeats the cited written mention and its candidates; a cited chain that is not rule-checked refuses', async () => {
+  const fixId = 'chain-fix:0123456789abcdef0123456b';
+  // A cited mention with candidates in a rule-checked chain, and another report of the same collection to inherit it.
+  const [cited] = await loader.unsafe<{ id: string; surface_ar: string; hadith_id: string; chain_id: string }[]>(
+    `select m.id, m.surface_ar, m.hadith_id, m.chain_id from chain_mentions m join chains c on c.id = m.chain_id and c.structure_status = 'checked_by_rule'
+     where m.retired_at is null and m.inherited_from_mention_id is null
+       and exists (select 1 from chain_mention_candidates k where k.mention_id = m.id and k.retired_at is null)
+       and exists (select 1 from hadiths h join hadiths o on o.collection_id = h.collection_id and o.id <> h.id
+                   join chains oc on oc.hadith_id = o.id and oc.retired_at is null and oc.chain_fix_id is null
+                   where h.id = m.hadith_id)
+     order by m.id limit 1`);
+  const [{ id: hadithId }] = await loader.unsafe<{ id: string }[]>(
+    `select o.id from hadiths h join hadiths o on o.collection_id = h.collection_id and o.id <> h.id
+     where h.id = $1 and exists (select 1 from chains oc where oc.hadith_id = o.id and oc.retired_at is null and oc.chain_fix_id is null)
+     order by o.id limit 1`, [cited.hadith_id]);
+  const [{ id: version }] = await loader.unsafe<{ id: string }[]>('select id from dataset_versions where is_current');
+  const record = hadithId.replace(/^hadith:/, '');
+  const planned = { chains: [{ id: `chain:${record}:0000`, branch: 0, length: 1, suspension: null, extraction_method: 'chain_fix_reader',
+    mentions: [{ id: `mention:${record}:0000:0000`, position: 0, surface_ar: cited.surface_ar, surface_normalized: cited.surface_ar,
+      teacher_context_normalized: null, student_context_normalized: null, review_unit_id: 'u', review_unit_fine_id: 'f', reader_kind: 'inherited',
+      link_kind_if_new: 'unclassified', span: null, kept_mention_id: null, carry_identity: false, inherited_from_mention_id: cited.id }] }] };
+  const { base, arabicSha256, baseChainSha256 } = await prepare(hadithId, fixId, planned);
+  const override: Override = { hadith_id: hadithId, record_id: record, fix_id: fixId, arabic_sha256: arabicSha256, effect: 'replace_routes',
+    structure_status: 'read_by_model', base_chain_sha256: baseChainSha256, planned: planned as Override['planned'] };
+
+  await loader.begin(async (tx) => assert.equal(await applyOverride(tx as unknown as LoaderSql, override, version), true));
+  const applied = await liveRows(loader, hadithId);
+  assert.deepEqual(applied.chain_mentions.map((m) => [m.surface_ar, m.inherited_from_mention_id, m.resolution, m.narrator_id]),
+    [[cited.surface_ar, cited.id, 'unresolved', null]]);
+  const citedCandidates = await loader.unsafe<{ narrator_id: string; basis: string }[]>(
+    'select narrator_id, basis::text from chain_mention_candidates where mention_id = $1 and retired_at is null order by narrator_id, basis', [cited.id]);
+  assert.deepEqual(applied.chain_mention_candidates.map((k) => [k.narrator_id, k.basis]).sort(), citedCandidates.map((k) => [k.narrator_id, k.basis]).sort());
+  await loader.begin(async (tx) => assert.equal(await revertFix(tx as unknown as LoaderSql, fixId, version), hadithId));
+  assert.deepEqual(await liveRows(loader, hadithId), base);
+
+  // Once the cited chain is no longer rule-checked the same fix waits (stale), and writes nothing.
+  await loader.unsafe(`update chains set structure_status = 'uncertain', structure_reasons = array['not_a_name'] where id = $1`, [cited.chain_id]);
+  await loader.begin(async (tx) => assert.match(String(await applyOverride(tx as unknown as LoaderSql, override, version)), /stale: the earlier report/));
+  assert.deepEqual(await liveRows(loader, hadithId), base);
 });

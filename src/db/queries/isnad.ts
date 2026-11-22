@@ -14,6 +14,7 @@ import type {
   NarratorAuthority,
   ChainStructureStatus,
   ChainCompiler,
+  ChainDisposition,
   ChainFixLabel,
 } from './contracts';
 import { BASIS_ORDER, mentionIdentity } from './identity-groups';
@@ -162,12 +163,14 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              'chain_fix', case when fl.fix_id is not null then json_build_object(
                'fix_id', fl.fix_id, 'state', fl.state, 'effect', fl.effect, 'models', fl.models, 'runs', fl.runs,
                'decided_at', fl.decided_at, 'awaiting_final_review', fl.awaiting_final_review,
-               'human_confirmations', fl.human_confirmations) end)
+               'human_confirmations', fl.human_confirmations) end,
+             'reader_link_kind', mk.reader_kind)
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
     left join narrators cn on cn.id = l.chain_compiler_narrator_id and cn.retired_at is null
     left join public_chain_fix_labels fl on fl.chain_id = l.chain_id
+    left join public_chain_fix_mention_kinds mk on mk.mention_id = l.id
     left join candidates k on k.mention_id = l.id
     where l.hadith_id = any (${hadithIds})
   )`;
@@ -203,6 +206,7 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     chain_structure_reasons: Array.isArray(node.chain_structure_reasons) ? node.chain_structure_reasons.map(String) : [],
     chain_compiler: (node.chain_compiler as ChainCompiler | null) ?? null,
     chain_fix: (node.chain_fix as ChainFixLabel | null) ?? null,
+    reader_link_kind: text(node.reader_link_kind),
   };
 }
 
@@ -230,6 +234,7 @@ export async function getChainGraph(hadithId: string, visibility: ReadVisibility
     source_work: string | null;
     nodes: Record<string, unknown>[] | null;
     verdicts: Record<string, string> | null;
+    disposition: ChainDisposition | null;
   }>(sql`
     select
       (select t.code from ${hadiths} h join traditions t on t.id = h.tradition_id where h.id = ${hadithId}) as tradition,
@@ -250,7 +255,13 @@ export async function getChainGraph(hadithId: string, visibility: ReadVisibility
           limit 1
         ) v on true
         where l.hadith_id = ${hadithId} and l.is_link
-      ) as verdicts
+      ) as verdicts,
+      (
+        select json_build_object('fix_id', d.fix_id, 'disposition', d.disposition, 'models', d.models, 'runs', d.runs,
+                                 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review)
+        from public_chain_fix_dispositions d where d.hadith_id = ${hadithId}
+        limit 1
+      ) as disposition
   `);
 
   const verdicts = row?.verdicts ?? {};
@@ -262,5 +273,6 @@ export async function getChainGraph(hadithId: string, visibility: ReadVisibility
     chain_schema: 'v2',
     nodes,
     edges: chainEdges(nodes),
+    disposition: row?.disposition ?? null,
   };
 }

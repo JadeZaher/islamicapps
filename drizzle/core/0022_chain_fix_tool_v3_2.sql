@@ -1,0 +1,3 @@
+-- 0022 (2026-11-22): readings re-triaged by the v3.2 reader tool record tool_version 'v3_2'. Widened, never narrowed. src/db/AGENTS.md §Chain fixes.
+ALTER TABLE "chain_fix_submissions" DROP CONSTRAINT "chain_fix_submissions_tool_version_check";--> statement-breakpoint
+ALTER TABLE "chain_fix_submissions" ADD CONSTRAINT "chain_fix_submissions_tool_version_check" CHECK ("chain_fix_submissions"."tool_version" is null or "chain_fix_submissions"."tool_version" in ('v3', 'v3_1', 'v3_2'));

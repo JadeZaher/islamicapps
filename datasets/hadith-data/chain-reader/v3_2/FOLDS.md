@@ -1,0 +1,19 @@
+---
+type: reference
+---
+# v3.2 comparison folds: what `canonical()` / `readings_agree()` now treat as one reading
+
+Source: the judge's 40 random disagreements of tranche 01 (`../tranches/tranche-01/judge/analysis/cases.md` section 4, `dis_t1.py`): 11 were two right readings that failed to compare equal (10 epithet / title in the surface, 1 restated name), "fixable in: tool". Each fold below is exactly what those cases show; a fold never reaches past the name it shortens. `FoldTests` in `tests/test_tool_v3_2.py` pins every row and the negatives.
+Agreement counts, tranche 01 (863 agreed under v3.2 against 821): switching one fold off at a time (`agreed` falls by) patron 8, restated short form 5, title prefix 3, companion 1, relation 1; 47 reports became agreed, 5 stopped (a variant written as a route by one pass and as a remark by the other), 6 of the 47 only because an output became valid, about 23 because a variant remark no longer takes part in agreement. Batch 001: 462 agreed against 457, one from the restated short form.
+
+| fold (where) | what it does | example (case) | negative tests: must stay different |
+|---|---|---|---|
+| appended patron, `norm_v3_2.appended_epithet_cut` | cuts «مولى X» and everything after it, when something stands before it | «أبا النضر، مولى عمر بن عبيد الله» = «أبا النضر» (084141); «عكرمة مولى ابن عباس» = «عكرمة» (58d272); «بعض بني أبي رافع، مولى النبي» (58d272); also 2a00dd, 352803, 561fd8, a9947f | «سعيد مولى عمر» vs «خالد مولى عمر» (the name is not cut); a name that STARTS with «مولى» is kept («مولى عمر بن عبيد الله» is not «عمر بن عبيد الله») |
+| title before a name, `norm_v3_2.TITLE_PREFIXES` | drops «أم المؤمنين» / «أمير المؤمنين» when a name follows | «أم المؤمنين، عائشة» = «عائشة» (167c0f); «أمير المؤمنين علي بن أبي طالب» = «علي بن أبي طالب» (6a2991) | the title alone is never reduced to nothing («أم المؤمنين», «أمير المؤمنين» keep a key and differ from «عائشة», «علي») |
+| companion after a kunya, same function | cuts «صاحب X» only when the name starts with a kunya (أبو / أم) and has at least one word between | «أبا عمر صاحب أبي العباس ثعلب» = «أبا عمر» (d98ce4) | «علي صاحب الدار» is not «علي» (no kunya first) |
+| relation appended, same function | drops a trailing «امرأة أبيه» (four words or more) | «أم محمد امرأة أبيه» = «أم محمد» (c36297) | «أم سلمة» vs «أم عطية» |
+| restated short form, `expand_v3_2.readings_agree` / `routes_equal_in_slot` | two routes that pair off one to one and differ in exactly ONE slot, where one side is the first words of the other followed by «بن»; every neighbour equal | «مخرمة» in one reading, «مخرمة بن بكير» in the other (59eb95) | a different neighbour; «محمد بن علي» vs «محمد بن سيرين» (not a prefix); two slots that differ |
+| editor's insertion «[ ... ]», `expand_v3_2` + `triage_v3_2` | a link inside square brackets carries `bracketed` and is left out of `canonical()`; if the two passes wrote it differently the report agrees but is HELD (`bracketed_insertion_differs`) | «جعفر بن محمد [عن أبيه] عن جده» (54c186); «[قال حدثنا بكر بن عبد الله بن حبيب]» (dfff83) | a reading that depends on the bracket is never applied: the judge found the pass that writes the insertion is the right one |
+
+Considered and **not** folded: «ابن علية» next to «إسماعيل ابن علية» (871527: a suffix, not a prefix; it is a duplicate-link question for `collapse_repeats`); a kunya split by a comma (0684f6; a hold now catches the applied form, `first_links_split_by_comma`); three men fused in one link (69ae9b); «الأعمش / الاعمش» (a hamza spelling already folded by `fold_chars`).
+A fold makes the reading ELIGIBLE only when the two passes' stored surface is still the one the pipeline resolves: the applied reading is pass A's, so an epithet that A wrote («أبا النضر، مولى عمر بن عبيد الله») stays in the stored surface (see README "Deferred").

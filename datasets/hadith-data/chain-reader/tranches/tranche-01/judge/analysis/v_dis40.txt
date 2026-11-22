@@ -1,0 +1,41 @@
+# id|which pass is right (A/B/both/neither/CT)|primary cause|secondary|fixable in|note
+0684f6|B|name split|[B] written or not|prompt|«حدثنا إسحاق بن إبراهيم، أخبرنا أبو خالد الأحمر، سليمان بن حيان»: kunya then name of one man; A writes two links, B one
+084141|both|surface scope||tool|epithet «مولى عمر بن عبيد الله» in the surface (A) or not (B)
+167c0f|both|surface scope||tool|title «أم المؤمنين، عائشة» (B) vs «عائشة» (A)
+26bb55|B|confirmer added as a link|needs_ruling set by A|prompt|«فقال صدق ابن عمر»: ابن عباس only confirms; A adds a second route to him and flags it
+2a00dd|both|surface scope||tool|«أبا السائب، مولى هشام بن زهرة» vs «أبا السائب»; «المصريان» dual
+2a5330|CT|unruled encounter (Q4)||owner|«قال لي شريح القاضي: اشتريت دارا ... فبلغ ذلك أمير المؤمنين علي»: A flags and stops at عاصم, B adds شريح
+2aea01|A|speaker (the one asked answers)|rule applied by one pass only|prompt|«لم أزل حريصا على أن أسأل عمر ... فقلت يا أ...»: A adds عمر, B flags
+306ccd|B|author of a cited book (Q3), asked-about person|both flag|owner|«قال الكليني: وحدثني شيخ ... أن أبا عمرو سئل عن أحمد بن إسحاق»: A adds the man asked ABOUT as a link
+352803|both|surface scope||tool|«أبا سفيان، مولى ابن أبي أحمد»
+3b10bc|A|shared tail dropped|B drops it from three of four routes|tool hold|«حدثنا أبو أسامة، وعبد الله بن نمير، وعلي بن مسهر، عن عبيد الله بن عمر»: B stops at عبيد الله بن عمر
+3c440f|neither|variant remark written as a route|A one extra, B two extras|prompt|«رواه سفيان عن أبي هاشم. وقال عثمان عن جرير ...»
+3e5548|B|shared tail dropped|A drops it from one route|tool hold|«حدثني محمد بن حاتم، حدثنا محمد بن بكر، أخبرنا ابن جريج»: A stops at محمد بن بكر
+3e855d|A|variant remark written as a route|B adds [U]من غير هذا الوجه|prompt|«وقد روي من غير هذا الوجه عن عقبة بن عامر ... حدثنا بذلك محمد بن بشار»
+434301|B|shared tail dropped|A drops it from two of three routes|tool hold|«ح وحدثنا موسى بن إسماعيل، حدثنا حماد يعني ابن سلمة، ح وحدثنا موسى، حدثنا وهيب، عن هشام بن عروة»
+54c186|B|bracketed insertion|rule applied by one pass only|prompt|«عن جعفر بن محمد [عن أبيه] عن جده»: B writes [عن أبيه], A skips it
+561fd8|both|surface scope||tool|«عبد الله بن عمير، مولى ابن عباس»
+570d61|A|shared tail dropped|B stops at محمد بن كثير|tool hold|«حدثنا محمد بن كثير، قال أخبرنا ح، وحدثنا موسى بن إسماعيل، حدثنا همام»
+58d272|both|surface scope||tool|«بعض بني أبي رافع، مولى النبي» / «عكرمة مولى ابن عباس»
+59eb95|both|surface scope (restated name)||tool|«عن مخرمة، ح ... أخبرني مخرمة بن بكير»: short vs fuller form
+5dc04b|A|shared tail dropped|B stops before أم عطية; hold routes_end fires|tool hold|«فأما خالد وهشام فقالا عن محمد وحفصة وقال منصور عن محمد عن أم عطية قالت»
+657bb9|B|variant remark written as routes|A adds «ابن عون» and «عطاء بن السائب»|prompt|«أرسله ابن عون وعطاء بن السائب»
+69ae9b|B|co-transmitters fused in one link|A writes «قتيبة، وهناد، ومحمود بن غيلان» as one link|tool check|«حدثنا قتيبة، وهناد، ومحمود بن غيلان، قالوا حدثنا وكيع»
+6a2991|both|surface scope||tool|«أمير المؤمنين علي بن أبي طالب» vs «علي بن أبي طالب»
+6cef3d|A|shared tail dropped|B stops at الزهري in two routes; hold fires|tool hold|«حدثنا سعيد بن عبد الرحمن المخزومي، وغير واحد، قالوا حدثنا سفيان، عن الزهري، ح ... عن الزهري، عن علي بن حسين»
+73ae7c|A|variant remark written as a route|B adds [U]بعضهم > ثابت|prompt|«وقد روى بعضهم هذا الحديث عن ثابت عن النبي صلى الله عليه وسلم مرسلا»
+75e2df|A|shared tail dropped, the one answering omitted|B stops at سفيان and قيس بن سكن|tool hold|«دخل على عبد الله ... قال كنا نصومه ثم ترك»
+770271|A|shared tail dropped|B stops at يونس بن يزيد in the first route; hold fires|tool hold|«حدثنا سعيد بن منصور، حدثنا حسان بن إبراهيم، حدثنا يونس بن يزيد، ح وحدثني حرملة»
+7abdb7|B|variant remark written as a route|A adds «عبد العزيز بن محمد > بالإسنادين جميعا»|prompt|«مثل رواية عبد العزيز بن محمد بالإسنادين جميعا»
+871527|A|restated name written twice|B writes «ابن علية > إسماعيل ابن علية»|tool dedupe|«حدثنا ابن علية ... إسماعيل ابن علية»: rule 7 applied by A only
+881857|B per ruling|unruled encounter (Q4) / the one asked answers|both flag|owner|«فذهبنا إلى أنس بن مالك ... يسأله ... فقال يا أبا حمزة»: B adds أنس, A stops at معبد
+8b6d16|B|unnamed co-transmitter omitted|A omits «وذكر آخر»|prompt|«أخبرني يحيى بن أيوب، وذكر، آخر أن عبد الله بن أبي بكر»
+98cb64|B|shared tail dropped|A stops at مفضل in route 1|tool hold|«حدثنا يحيى بن آدم، حدثنا مفضل، ح ... كلاهما عن منصور، بهذا الإسناد»
+a9947f|both|surface scope||tool|«سمى، مولى أبي بكر بن عبد الرحمن ...» (B) vs «سمى» (A); A flags the first-person narrative
+c1d4c5|CT|variant remark inside the chain||owner/prompt|«ولم يذكرا عن حماد، ومالك، عن عائشة، أنهم قالوا»: what the dual refers to is unclear; A and B differ on whether حماد and مالك reach هشام
+c36297|both|surface scope||tool|«أم محمد امرأة أبيه» vs «أم محمد»
+cb56aa|B|the one who speaks omitted|A stops at همام|prompt|«بال جرير ... فقيل تفعل هذا فقال نعم رأيت رسول الله»
+d98ce4|both|surface scope||tool|«أبا عمر صاحب أبي العباس ثعلب»
+dfff83|A|bracketed insertion|hamza spelling «الأعمش / الاعمش»|prompt + tool|«أحمد بن يحيى بن زكريا القطان [قال حدثنا بكر بن عبد الله بن حبيب]»: A writes it, B skips it
+e8c24c|B|variant remark written as a route|A adds «الزهري > سعيد»; B flags|prompt|«وروى الزهري الكلام الأول عن سعيد فأرسله»
+fb4b56|CT|unnamed link placement||prompt|«عن محمد بن المنكدر، وذكر، آخر قبله عن عبد الرحمن بن هرمز الأعرج»: A makes [U]آخر a separate route with no head, B none

@@ -1,7 +1,8 @@
 /**
  * Chain-fix flows through the CLIs, on real pilot reports (datasets/hadith-data/chain-reader/pilot/reports.jsonl):
  * submit (accepted, refused, duplicate), decide (lone, agreed, disputed, held), review (many reviewers, a human rejection),
- * a v2 reading (levels, expanded by the tool) and a reader's proposal filed for a person to decide.
+ * a v2 reading (levels, expanded by the tool), a reader's proposal filed for a person to decide, and (0021) a batch-001 reading
+ * under prompt v3 re-triaged by tool v3.1: "no chain by reading" in its own envelope, refused elsewhere, and an archive hold.
  * Each run uses a private store and overrides file in a temporary directory. Run: npx tsx reviews/ai/tools/__tests__/chain-fix.test.ts
  */
 import assert from 'node:assert/strict';
@@ -340,8 +341,62 @@ check('a v3 envelope (text and context, two passes) is recorded as two blind run
   assert.ok(submissions.some((s) => (s.derived_links ?? []).some((link) => link.kind === 'compiler_head' && link.origin === 'work')),
     'the compiler head is kept as a derived link with its origin, never a planned row');
   assert.equal(cli('chain-fix-decide', ['--store', v3Store, '--overrides', v3Overrides]).status, 0);
-  const states = (JSON.parse(readFileSync(path.join(v3Store, 'state.json'), 'utf8')) as { fixes: { state: string; text_only_runs: number }[] }).fixes;
-  assert.ok(states.length > 0 && states.every((state) => state.state === 'accepted' && state.text_only_runs === 2), JSON.stringify(states.map((x) => x.state)));
+  const states = (JSON.parse(readFileSync(path.join(v3Store, 'state.json'), 'utf8')) as { fixes: { state: string; text_only_runs: number; holds: string[] }[] }).fixes;
+  // A pilot report whose stored chain is rule-checked waits for the owner (hold stored_chain_checked_by_rule); every other is accepted.
+  assert.ok(states.some((state) => state.state === 'accepted'), JSON.stringify(states.map((x) => x.state)));
+  assert.ok(states.every((state) => state.text_only_runs === 2 && (state.state === 'accepted'
+    || (state.state === 'held' && state.holds.join() === 'stored_chain_checked_by_rule'))), JSON.stringify(states.map((x) => [x.state, x.holds])));
+});
+
+// v3.1 (0021): batch 001's «العائد في هبته» (b1-2c405e) read under prompt v3, both passes empty, re-triaged by tool v3.1.
+const batchDirectory = path.join(REPOSITORY_ROOT, 'datasets', 'hadith-data', 'chain-reader', 'v3', 'batch-001');
+const noChainItem = readdirSync(path.join(batchDirectory, 'packets')).filter((n) => /^packet-\d+\.jsonl$/.test(n))
+  .flatMap((n) => readFileSync(path.join(batchDirectory, 'packets', n), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as { id: string; text: string }))
+  .find((row) => row.id === 'b1-2c405e')!;
+const noChainOutput = JSON.parse(readFileSync(path.join(batchDirectory, 'outputs', 'pass-a', 'b1-2c405e.json'), 'utf8')) as object;
+const noChainPacket = path.join(work, 'packet-nochain.jsonl');
+const noChainReports = path.join(work, 'reports-nochain.jsonl');
+writeFileSync(noChainPacket, `${JSON.stringify(noChainItem)}\n`, 'utf8');
+writeFileSync(noChainReports, `${JSON.stringify({ id: 'b1-2c405e', hadith_id: 'hadith:test:nochain', tradition: 'imami', work: 'man-la-yahduruhu-al-faqih',
+  text: noChainItem.text, text_layout: 'full_text', stored_chains: [{ chain_id: 'chain:test:nochain:0000', branch: 0, structure_status: 'uncertain', surfaces: ['العائد في هبته'] }] })}\n`, 'utf8');
+const v31Store = path.join(work, 'store-v31');
+const v31Overrides = path.join(work, 'v31-overrides.jsonl.gz');
+const v31Envelope = (format: string, runOverrides: Record<string, unknown> = {}) => {
+  const file = path.join(work, `envelope-v31-${format.length}-${Object.keys(runOverrides).length}.json`);
+  const run = { model_id: 'claude-haiku-5-5', provider_runtime: 'Claude Code subagent, fresh context', run_id: 'b1-a-test', started_at: '2026-11-22T16:20:00Z',
+    finished_at: '2026-11-22T16:27:00Z', prompt_sha256: readerPrompt('v3').sha256, view: 'text_and_context', tool_version: 'v3_1',
+    second_reader: { model_id: 'claude-haiku-5-5', run_id: 'b1-b-test', started_at: '2026-11-22T16:30:00Z', finished_at: '2026-11-22T16:37:00Z' }, ...runOverrides };
+  const fixEntry = { output: noChainOutput, disposition: 'no_chain_by_reading', reason: 'Two readers read no isnad.', evidence: [{ quote: noChainItem.text.slice(0, 20) }],
+    external_citation: null, reader_output_v3: noChainOutput };
+  writeFileSync(file, JSON.stringify({ format, run, packet: noChainPacket, fixes: [fixEntry] }), 'utf8');
+  return file;
+};
+
+check('"no chain by reading": refused in a chain envelope, recorded from its own envelope with the prompt the reader ran and the tool that held it', () => {
+  const refused = cli('chain-fix-submit', ['--envelope', v31Envelope('shura-chain-fix-envelope/1'), '--reports', noChainReports, '--store', v31Store]);
+  assert.equal(refused.status, 1);
+  assert.match(refused.err, /has no route; submit it in a shura-chain-no-chain-envelope\/1/);
+  const wrongTool = cli('chain-fix-submit', ['--envelope', v31Envelope('shura-chain-no-chain-envelope/1', { prompt_sha256: readerPrompt('v3_1').sha256, tool_version: 'v3' }), '--reports', noChainReports, '--store', v31Store]);
+  assert.match(wrongTool.err, /run.tool_version: v3 cannot read a v3_1 reading/);
+  const recorded = cli('chain-fix-submit', ['--envelope', v31Envelope('shura-chain-no-chain-envelope/1'), '--reports', noChainReports, '--store', v31Store]);
+  assert.equal(recorded.status, 0, recorded.err);
+  const submissions = readdirSync(path.join(v31Store, 'submissions')).flatMap((n) => readFileSync(path.join(v31Store, 'submissions', n), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as Submission));
+  assert.equal(submissions.length, 2);
+  assert.ok(submissions.every((x) => x.disposition === 'no_chain_by_reading' && x.tool_version === 'v3_1' && x.prompt_path.endsWith('v3/prompt-v3.md') && x.planned.chains.length === 0));
+  assert.equal(cli('chain-fix-decide', ['--store', v31Store, '--overrides', v31Overrides]).status, 0);
+  const [row] = gunzipSync(readFileSync(v31Overrides)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as Record<string, unknown>);
+  assert.deepEqual([row.effect, row.disposition, row.structure_status, (row.planned as { chains: unknown[] }).chains.length], ['replace_routes', 'no_chain_by_reading', 'read_by_model', 0]);
+  assert.equal((row.read_by as { tool_version: string }).tool_version, 'v3_1');
+});
+
+check('an archive hold keeps an agreed reading out of the overrides', () => {
+  const [fix] = (JSON.parse(readFileSync(path.join(v31Store, 'state.json'), 'utf8')) as { fixes: { fix_id: string }[] }).fixes;
+  const held = cli('chain-fix-hold', ['--store', v31Store, '--fix', fix.fix_id, '--code', 'cited_by_later_report', '--detail', 'a later report repeats this chain', '--by', 'test']);
+  assert.equal(held.status, 0, held.err);
+  assert.equal(cli('chain-fix-decide', ['--store', v31Store, '--overrides', v31Overrides]).status, 0);
+  const [state] = (JSON.parse(readFileSync(path.join(v31Store, 'state.json'), 'utf8')) as { fixes: { state: string; holds: string[] }[] }).fixes;
+  assert.deepEqual([state.state, state.holds], ['held', ['cited_by_later_report']]);
+  assert.equal(gunzipSync(readFileSync(v31Overrides)).toString('utf8'), '');
 });
 
 rmSync(work, { recursive: true, force: true });

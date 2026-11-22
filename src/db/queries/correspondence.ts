@@ -3,6 +3,7 @@
 import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import type {
+  ChainDisposition,
   ChainGraph,
   CorrespondenceClass,
   FamilyTelling,
@@ -118,7 +119,10 @@ function familyStatement(relations: FamilyRelations, hadithId: string, cap: numb
           order by x.id limit 1
         ) tr on true
       ) as tellings,
-      ${chainNodesJson(relations.chains, sql`array(select id from members)`)} as nodes
+      ${chainNodesJson(relations.chains, sql`array(select id from members)`)} as nodes,
+      (select json_object_agg(d.hadith_id, json_build_object('fix_id', d.fix_id, 'disposition', d.disposition, 'models', d.models,
+                'runs', d.runs, 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review))
+       from public_chain_fix_dispositions d where d.hadith_id in (select id from members)) as dispositions
   `;
 }
 
@@ -147,7 +151,7 @@ function toTellingEnglish(value: unknown): FamilyTelling['english'] {
 
 /** Reads one family through the given relations; null when the report is not visible to this reader. */
 export async function readReportFamily(relations: FamilyRelations, hadithId: string, cap = FAMILY_CAP): Promise<ReportFamily | null> {
-  const row = await oneRow<{ total: number; tellings: Record<string, unknown>[] | null; nodes: Record<string, unknown>[] | null }>(
+  const row = await oneRow<{ total: number; tellings: Record<string, unknown>[] | null; nodes: Record<string, unknown>[] | null; dispositions: Record<string, ChainDisposition> | null }>(
     familyStatement(relations, hadithId, cap),
   );
   if (!row?.tellings || row.tellings.length === 0) return null;
@@ -163,7 +167,8 @@ export async function readReportFamily(relations: FamilyRelations, hadithId: str
     const sourceWork = String(telling.source_work);
     const sourceWorkId = String(telling.source_work_id);
     const nodes = nodesByHadith.get(id) ?? [];
-    const chain: ChainGraph = { hadith_id: id, tradition, source_work: sourceWork, chain_schema: 'v2', nodes, edges: chainEdges(nodes) };
+    const chain: ChainGraph = { hadith_id: id, tradition, source_work: sourceWork, chain_schema: 'v2', nodes, edges: chainEdges(nodes),
+      disposition: row.dispositions?.[id] ?? null };
     return {
       hadith_id: id,
       record_id: String(telling.record_id),

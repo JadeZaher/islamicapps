@@ -1,0 +1,44 @@
+{
+ "reports": 9784,
+ "population_by_group": {
+  "sunni_six_books": 7580,
+  "imami_faqih": 658,
+  "imami_other_not_kafi": 1546
+ },
+ "tranches": 10,
+ "jobs_total": 500,
+ "jobs_per_tranche": [
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50,
+  50
+ ],
+ "characters_per_job": {
+  "mean": 134147,
+  "min": 38157,
+  "max": 183503
+ },
+ "prompt_chars": 27173,
+ "packet_bytes_total": 35589994,
+ "input_chars_per_pass": 33536646,
+ "input_chars_two_passes": 67073292,
+ "output_chars_per_report_batch_001_pass_a": 624,
+ "output_chars_two_passes": 12201587,
+ "tokens_two_passes": {
+  "input": [
+   22357764,
+   26829317
+  ],
+  "output": [
+   4067196,
+   4880635
+  ]
+ },
+ "assumption": "2.5 to 3 characters per token for diacritised Arabic with JSON; every job reads the whole prompt once; the output is the reading JSON measured on batch 001's pass A (chars per report)"
+}

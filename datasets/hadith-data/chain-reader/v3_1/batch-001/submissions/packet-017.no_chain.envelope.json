@@ -1,0 +1,75 @@
+{
+ "format": "shura-chain-no-chain-envelope/1",
+ "run": {
+  "model_id": "claude-haiku-5-5",
+  "provider_runtime": "Claude Code subagent, fresh context, packets of the chain reader 3.0.0 (text and context)",
+  "run_id": "b1-a-017-018",
+  "started_at": "2026-11-22T16:21:26Z",
+  "finished_at": "2026-11-22T16:32:08Z",
+  "prompt_sha256": "a5a223b6acfc0b0d25260624bf527284f40a57576ba422f5e821e15dd0827764",
+  "view": "text_and_context",
+  "prompt_version": "3.0.0",
+  "prompt_file": "datasets/hadith-data/chain-reader/v3/prompt-v3.md",
+  "tool_version": "v3_1",
+  "packet_id": "packet-017",
+  "second_reader": {
+   "model_id": "claude-haiku-5-5",
+   "run_id": "b1-b-017-018",
+   "started_at": "2026-11-22T16:28:17Z",
+   "finished_at": "2026-11-22T16:36:25Z"
+  },
+  "agreement": "canonical() equal in both passes, no hold (v3_1/holds_v3_1.py)",
+  "built_at": "2026-11-22T18:16:55Z"
+ },
+ "packet": "v3/batch-001/packets/packet-017.jsonl",
+ "fixes": [
+  {
+   "output": {
+    "id": "b1-9eebbf",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«وَ رُوِيَ» has no transmitter: the text is the saying alone, so no route"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-017-018 and b1-b-017-018, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "174 - وَ رُوِيَ: «أَنَّ مَنْ قَتَلَ وَزَغاً فَعَلَيْهِ اَلْغُسْلُ."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "زغا فعليه الغسل"
+   ],
+   "external_citation": null
+  },
+  {
+   "output": {
+    "id": "b1-0d6c37",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "The text is a sentence of advice (the end of a saying) with no transmitter, so no route"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-017-018 and b1-b-017-018, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "2262 - وَ اَلسَّاجِدُ بِمَكَّةَ كَالْمُتَشَحِّطِ بِدَمِهِ فِي سَبِيلِ اَللَّهِ عَزَّ وَ جَلَّ »."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "و الساجد بمكة كالمتشحط بدمه في سبيل الله عز و جل"
+   ],
+   "external_citation": null
+  }
+ ]
+}

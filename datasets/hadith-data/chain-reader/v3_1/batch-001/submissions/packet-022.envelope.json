@@ -1,0 +1,2302 @@
+{
+ "format": "shura-chain-fix-envelope/1",
+ "run": {
+  "model_id": "claude-haiku-5-5",
+  "provider_runtime": "Claude Code subagent, fresh context, packets of the chain reader 3.0.0 (text and context)",
+  "run_id": "b1-a-021-022",
+  "started_at": "2026-11-22T16:21:35Z",
+  "finished_at": "2026-11-22T16:28:25Z",
+  "prompt_sha256": "a5a223b6acfc0b0d25260624bf527284f40a57576ba422f5e821e15dd0827764",
+  "view": "text_and_context",
+  "prompt_version": "3.0.0",
+  "prompt_file": "datasets/hadith-data/chain-reader/v3/prompt-v3.md",
+  "tool_version": "v3_1",
+  "packet_id": "packet-022",
+  "second_reader": {
+   "model_id": "claude-haiku-5-5",
+   "run_id": "b1-b-021-022",
+   "started_at": "2026-11-22T16:29:51Z",
+   "finished_at": "2026-11-22T16:36:49Z"
+  },
+  "agreement": "canonical() equal in both passes, no hold (v3_1/holds_v3_1.py)",
+  "built_at": "2026-11-22T18:16:55Z"
+ },
+ "packet": "v3/batch-001/packets/packet-022.jsonl",
+ "fixes": [
+  {
+   "output": {
+    "id": "b1-3fe68a",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "سهل بن أبي سهل",
+        "start": 6,
+        "end": 20,
+        "kind": "narrator"
+       },
+       {
+        "surface": "معن بن عيسى",
+        "start": 32,
+        "end": 43,
+        "kind": "narrator"
+       },
+       {
+        "surface": "مالك",
+        "start": 97,
+        "end": 101,
+        "kind": "narrator"
+       },
+       {
+        "surface": "ابن شهاب",
+        "start": 106,
+        "end": 114,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عروة",
+        "start": 119,
+        "end": 123,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عائشة",
+        "start": 128,
+        "end": 133,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": 2
+     },
+     {
+      "links": [
+       {
+        "surface": "محمد بن يحيى",
+        "start": 54,
+        "end": 66,
+        "kind": "narrator"
+       },
+       {
+        "surface": "بشر بن عمر",
+        "start": 74,
+        "end": 84,
+        "kind": "narrator"
+       },
+       {
+        "surface": "مالك",
+        "start": 97,
+        "end": 101,
+        "kind": "narrator"
+       },
+       {
+        "surface": "ابن شهاب",
+        "start": 106,
+        "end": 114,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عروة",
+        "start": 119,
+        "end": 123,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عائشة",
+        "start": 128,
+        "end": 133,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": 2
+     }
+    ],
+    "matn_start": 133,
+    "notes": [
+     "«ح» splits two routes; «قالا حدثنا مالك» marks the names written once after both, so Malik, Ibn Shihab, Urwa and Aisha form the shared tail",
+     "the Prophet is not a link; Aisha is the Companion"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "سهل بن أبي سهل، قال حدثنا معن بن عيسى، ح وحدثنا محمد بن يحيى، حدثنا بشر بن عمر، قالا حدثنا مالك، عن ابن شهاب، عن عروة، عن عائشة"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-3fe68a",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "سهل بن أبي سهل",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "معن بن عيسى",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن يحيى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "بشر بن عمر",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "مالك",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن شهاب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عروة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عائشة",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "«ح» splits two routes; «قالا حدثنا مالك» marks the names written once after both, so Malik, Ibn Shihab, Urwa and Aisha form the shared tail",
+     "the Prophet is not a link; Aisha is the Companion"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-38eab6",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "محمد بن الصباح",
+        "start": 7,
+        "end": 21,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل",
+        "start": 29,
+        "end": 36,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سهيل",
+        "start": 57,
+        "end": 61,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أختي",
+        "start": 71,
+        "end": 75,
+        "kind": "relation"
+       },
+       {
+        "surface": "أبي هريرة",
+        "start": 80,
+        "end": 89,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 89,
+    "notes": [
+     "the editor's gloss «يعني ابن زكرياء» after «إسماعيل» is left out",
+     "«حدثتني أختي» names no one: relation (rule 7)",
+     "the Prophet's saying is not a link"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "محمد بن الصباح، حدثنا إسماعيل يعني ابن زكرياء، عن سهيل، حدثتني  أختي، عن أبي هريرة"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-38eab6",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن الصباح",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إسماعيل",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سهيل",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أختي",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "أبي هريرة",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "the editor's gloss «يعني ابن زكرياء» after «إسماعيل» is left out",
+     "«حدثتني أختي» names no one: relation (rule 7)",
+     "the Prophet's saying is not a link"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-d03630",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "محمد بن منصور",
+        "start": 7,
+        "end": 20,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سفيان",
+        "start": 32,
+        "end": 37,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الأعمش",
+        "start": 49,
+        "end": 55,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إبراهيم",
+        "start": 60,
+        "end": 67,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عمارة بن عمير",
+        "start": 72,
+        "end": 85,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عمة، له",
+        "start": 90,
+        "end": 97,
+        "kind": "relation"
+       },
+       {
+        "surface": "عائشة",
+        "start": 101,
+        "end": 106,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 106,
+    "notes": [
+     "«عمة، له» is a kinship word with no name: relation (rule 7); the text writes it between Umara and Aisha",
+     "the Prophet's saying is not a link"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "محمد بن منصور، قال حدثنا سفيان، قال حدثنا الأعمش، عن إبراهيم، عن عمارة بن عمير، عن عمة، له عن عائشة"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-d03630",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن منصور",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سفيان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الأعمش",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إبراهيم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عمارة بن عمير",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عمة له",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "عائشة",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«عمة، له» is a kinship word with no name: relation (rule 7); the text writes it between Umara and Aisha",
+     "the Prophet's saying is not a link"
+    ],
+    "fixes": [
+     {
+      "kind": "chain_differs_from_source",
+      "reason": "K6I's index goes from عمارة بن عمير straight to عائشة; the text writes an aunt between them, as RWY (عمة له) and HKG (عمة عمارة بن عمير) also do.",
+      "evidence": [
+       {
+        "source": "text",
+        "quote": "عن عمة، له عن عائشة"
+       },
+       {
+        "source": "K6I",
+        "quote": "عمارة بن عمير التيمي"
+       }
+      ],
+      "confidence": "medium"
+     }
+    ]
+   }
+  },
+  {
+   "output": {
+    "id": "b1-10467d",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "مُوسَى بْنُ بَكْرٍ",
+        "start": 16,
+        "end": 34,
+        "kind": "narrator"
+       },
+       {
+        "surface": "اَلْعَبْدِ اَلصَّالِحِ",
+        "start": 40,
+        "end": 62,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 62,
+    "notes": [
+     "«العبد الصالح» is the laqab as written, after «عن» inside the chain: narrator (owner ruling 2); not identified",
+     "the number 5278 and the blessing are left out"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "مُوسَى بْنُ بَكْرٍ عَنِ اَلْعَبْدِ اَلصَّالِحِ"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-10467d",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "موسى بن بكر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "العبد الصالح",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«العبد الصالح» is the laqab as written, after «عن» inside the chain: narrator (owner ruling 2); not identified",
+     "the number 5278 and the blessing are left out"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-f7bde2",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "يحيى بن أيوب",
+        "start": 6,
+        "end": 18,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل",
+        "start": 50,
+        "end": 57,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي سهيل",
+        "start": 79,
+        "end": 87,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبيه",
+        "start": 92,
+        "end": 96,
+        "kind": "relation"
+       },
+       {
+        "surface": "أبي هريرة",
+        "start": 101,
+        "end": 110,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "قتيبة",
+        "start": 21,
+        "end": 26,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل",
+        "start": 50,
+        "end": 57,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي سهيل",
+        "start": 79,
+        "end": 87,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبيه",
+        "start": 92,
+        "end": 96,
+        "kind": "relation"
+       },
+       {
+        "surface": "أبي هريرة",
+        "start": 101,
+        "end": 110,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "ابن، حجر",
+        "start": 29,
+        "end": 37,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل",
+        "start": 50,
+        "end": 57,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي سهيل",
+        "start": 79,
+        "end": 87,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبيه",
+        "start": 92,
+        "end": 96,
+        "kind": "relation"
+       },
+       {
+        "surface": "أبي هريرة",
+        "start": 101,
+        "end": 110,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 110,
+    "notes": [
+     "«قالوا حدثنا» joins the three co-transmitters in one level; «ابن، حجر» is one name with a comma",
+     "the gloss «وهو ابن جعفر» after «إسماعيل» is left out",
+     "«عن أبيه» names no one: relation (rule 7)"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "يحيى بن أيوب، وقتيبة، وابن، حجر قالوا حدثنا إسماعيل، - وهو ابن جعفر - عن أبي سهيل، عن أبيه، عن أبي هريرة"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-f7bde2",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "يحيى بن أيوب",
+         "kind": "narrator"
+        },
+        {
+         "surface": "قتيبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "ابن حجر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إسماعيل",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي سهيل",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبيه",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "أبي هريرة",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«قالوا حدثنا» joins the three co-transmitters in one level; «ابن، حجر» is one name with a comma",
+     "the gloss «وهو ابن جعفر» after «إسماعيل» is left out",
+     "«عن أبيه» names no one: relation (rule 7)"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-879cb3",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "مُحَمَّدُ بْنُ أَحْمَدَ الشَّيْبَانِيُ‌",
+        "start": 14,
+        "end": 53,
+        "kind": "narrator"
+       },
+       {
+        "surface": "مُحَمَّدُ بْنُ أَبِي عَبْدِ اللَّهِ الْكُوفِيُّ",
+        "start": 93,
+        "end": 140,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سَهْلِ بْنِ زِيَادٍ الْآدَمِيِّ",
+        "start": 146,
+        "end": 177,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عَبْدِ الْعَظِيمِ بْنِ عَبْدِ اللَّهِ الْحَسَنِيِّ",
+        "start": 183,
+        "end": 233,
+        "kind": "narrator"
+       },
+       {
+        "surface": "مُحَمَّدِ بْنِ عَلِيِّ بْنِ مُوسَى",
+        "start": 250,
+        "end": 284,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 284,
+    "notes": [
+     "the Imam is named only in the question «قُلْتُ لِمُحَمَّدِ بْنِ عَلِيِّ بْنِ مُوسَى» and answers in the words that follow: last link, kind imam_in_text (owner ruling 2)",
+     "the blessings and «رَضِيَ اللَّهُ عَنْهُ» are left out; «قَالَ عَبْدُ الْعَظِيمِ فَقُلْتُ لَهُ» is inside the matn, not a route"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "مُحَمَّدُ بْنُ أَحْمَدَ الشَّيْبَانِيُ‌ رَضِيَ اللَّهُ عَنْهُ قَالَ حَدَّثَنَا مُحَمَّدُ بْنُ أَبِي عَبْدِ اللَّهِ الْكُوفِيُّ عَنْ سَهْلِ بْنِ زِيَادٍ الْآدَمِيِّ عَنْ عَبْدِ الْعَظِيمِ بْنِ عَبْدِ"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-879cb3",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن أحمد الشيباني",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن أبي عبد الله الكوفي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سهل بن زياد الآدمي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبد العظيم بن عبد الله الحسني",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن علي بن موسى",
+         "kind": "imam_in_text"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "the Imam is named only in the question «قُلْتُ لِمُحَمَّدِ بْنِ عَلِيِّ بْنِ مُوسَى» and answers in the words that follow: last link, kind imam_in_text (owner ruling 2)",
+     "the blessings and «رَضِيَ اللَّهُ عَنْهُ» are left out; «قَالَ عَبْدُ الْعَظِيمِ فَقُلْتُ لَهُ» is inside the matn, not a route"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-935d23",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "أبو بكر بن أبي شيبة",
+        "start": 6,
+        "end": 25,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عباد بن العوام",
+        "start": 33,
+        "end": 47,
+        "kind": "narrator"
+       },
+       {
+        "surface": "حصين",
+        "start": 52,
+        "end": 56,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الشعبي",
+        "start": 61,
+        "end": 67,
+        "kind": "narrator"
+       },
+       {
+        "surface": "النعمان بن بشير",
+        "start": 78,
+        "end": 93,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "يحيى بن يحيى",
+        "start": 104,
+        "end": 116,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبو الأحوص",
+        "start": 139,
+        "end": 149,
+        "kind": "narrator"
+       },
+       {
+        "surface": "حصين",
+        "start": 154,
+        "end": 158,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الشعبي",
+        "start": 163,
+        "end": 169,
+        "kind": "narrator"
+       },
+       {
+        "surface": "النعمان بن بشير",
+        "start": 174,
+        "end": 189,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 189,
+    "notes": [
+     "the two «ح» branches repeat their names in full, so they are two groups with no shared tail",
+     "«- واللفظ له -» is a wording gloss, left out"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "أبو بكر بن أبي شيبة، حدثنا عباد بن العوام، عن حصين، عن الشعبي، قال سمعت النعمان بن بشير، ح وحدثنا يحيى بن يحيى، - واللفظ له - أخبرنا أبو الأحوص، عن حصين، عن الشعبي، عن النعمان بن بشير"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-935d23",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أبو بكر بن أبي شيبة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عباد بن العوام",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حصين",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "الشعبي",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "النعمان بن بشير",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "يحيى بن يحيى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبو الأحوص",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حصين",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ],
+       [
+        {
+         "surface": "الشعبي",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ],
+       [
+        {
+         "surface": "النعمان بن بشير",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "the two «ح» branches repeat their names in full, so they are two groups with no shared tail",
+     "«- واللفظ له -» is a wording gloss, left out"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-21bc20",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "محمد بن رافع",
+        "start": 6,
+        "end": 18,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عبد الرزاق",
+        "start": 26,
+        "end": 36,
+        "kind": "narrator"
+       },
+       {
+        "surface": "معمر",
+        "start": 41,
+        "end": 45,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل بن أمية",
+        "start": 50,
+        "end": 65,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عياض بن عبد الله بن سعد بن أبي سرح",
+        "start": 78,
+        "end": 112,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبا سعيد الخدري",
+        "start": 122,
+        "end": 137,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 137,
+    "notes": [
+     "«أخبرني» and «أنه سمع» name the next links (rule 5); Abu Sa'id is the Companion whose words follow",
+     "Mu'awiya in the saying is not a link"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "محمد بن رافع، حدثنا عبد الرزاق، عن معمر، عن إسماعيل بن أمية، قال أخبرني عياض بن عبد الله بن سعد بن أبي سرح، أنه سمع أبا سعيد الخدري"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-21bc20",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن رافع",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبد الرزاق",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "معمر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إسماعيل بن أمية",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عياض بن عبد الله بن سعد بن أبي سرح",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبا سعيد الخدري",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«أخبرني» and «أنه سمع» name the next links (rule 5); Abu Sa'id is the Companion whose words follow",
+     "Mu'awiya in the saying is not a link"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-a756e8",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "نصر بن عاصم الأنطاكي",
+        "start": 6,
+        "end": 26,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الوليد",
+        "start": 34,
+        "end": 40,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبو عمرو",
+        "start": 114,
+        "end": 122,
+        "kind": "narrator"
+       },
+       {
+        "surface": "قتادة",
+        "start": 134,
+        "end": 139,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي سعيد الخدري",
+        "start": 144,
+        "end": 159,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "نصر بن عاصم الأنطاكي",
+        "start": 6,
+        "end": 26,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الوليد",
+        "start": 34,
+        "end": 40,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبو عمرو",
+        "start": 114,
+        "end": 122,
+        "kind": "narrator"
+       },
+       {
+        "surface": "قتادة",
+        "start": 134,
+        "end": 139,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أنس بن مالك",
+        "start": 162,
+        "end": 173,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "نصر بن عاصم الأنطاكي",
+        "start": 6,
+        "end": 26,
+        "kind": "narrator"
+       },
+       {
+        "surface": "مبشر",
+        "start": 43,
+        "end": 47,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبو عمرو",
+        "start": 114,
+        "end": 122,
+        "kind": "narrator"
+       },
+       {
+        "surface": "قتادة",
+        "start": 134,
+        "end": 139,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي سعيد الخدري",
+        "start": 144,
+        "end": 159,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "نصر بن عاصم الأنطاكي",
+        "start": 6,
+        "end": 26,
+        "kind": "narrator"
+       },
+       {
+        "surface": "مبشر",
+        "start": 43,
+        "end": 47,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبو عمرو",
+        "start": 114,
+        "end": 122,
+        "kind": "narrator"
+       },
+       {
+        "surface": "قتادة",
+        "start": 134,
+        "end": 139,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أنس بن مالك",
+        "start": 162,
+        "end": 173,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 173,
+    "notes": [
+     "the closing dash of the gloss «- يعني ابن إسماعيل الحلبي» is missing; «عن أبي عمرو» is read as the chain from Mubashshir and Walid",
+     "«يعني الوليد» (inside dashes) is a gloss; the repeated «حدثنا أبو عمرو» is the same man written twice (rule 7)",
+     "Qatada's two Companions share one level"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "نصر بن عاصم الأنطاكي، حدثنا الوليد، ومبشر، - يعني ابن إسماعيل الحلبي عن أبي عمرو، قال - يعني الوليد - حدثنا أبو عمرو، قال حدثني قتادة، عن أبي سعيد الخدري، وأنس بن مالك"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-a756e8",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "نصر بن عاصم الأنطاكي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الوليد",
+         "kind": "narrator",
+         "occurrence": 1
+        },
+        {
+         "surface": "مبشر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبو عمرو",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "قتادة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي سعيد الخدري",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أنس بن مالك",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "the closing dash of the gloss «- يعني ابن إسماعيل الحلبي» is missing; «عن أبي عمرو» is read as the chain from Mubashshir and Walid",
+     "«يعني الوليد» (inside dashes) is a gloss; the repeated «حدثنا أبو عمرو» is the same man written twice (rule 7)",
+     "Qatada's two Companions share one level"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-4a05d9",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "محمد بن معمر",
+        "start": 6,
+        "end": 18,
+        "kind": "narrator"
+       },
+       {
+        "surface": "محمد بن بكر البرساني",
+        "start": 26,
+        "end": 46,
+        "kind": "narrator"
+       },
+       {
+        "surface": "ابن جريج",
+        "start": 54,
+        "end": 62,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عطاء الخراساني",
+        "start": 72,
+        "end": 86,
+        "kind": "narrator"
+       },
+       {
+        "surface": "ابن عباس",
+        "start": 90,
+        "end": 98,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 98,
+    "notes": [
+     "«قال قال عطاء الخراساني عن ابن عباس»: Ibn Jurayj names Ata as his source (rule 5); Ibn Abbas is the Companion whose report follows"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "محمد بن معمر، حدثنا محمد بن بكر البرساني، حدثنا ابن جريج، قال قال عطاء الخراساني عن ابن عباس"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-4a05d9",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن معمر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن بكر البرساني",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن جريج",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عطاء الخراساني",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن عباس",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«قال قال عطاء الخراساني عن ابن عباس»: Ibn Jurayj names Ata as his source (rule 5); Ibn Abbas is the Companion whose report follows"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-df20cb",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "أبو الحسن علي بن خالد",
+        "start": 16,
+        "end": 37,
+        "kind": "narrator"
+       },
+       {
+        "surface": "زيد بن الحسين الكوفي",
+        "start": 49,
+        "end": 69,
+        "kind": "narrator"
+       },
+       {
+        "surface": "جعفر بن نجيح",
+        "start": 81,
+        "end": 93,
+        "kind": "narrator"
+       },
+       {
+        "surface": "جندل بن والق التغلبي",
+        "start": 105,
+        "end": 125,
+        "kind": "narrator"
+       },
+       {
+        "surface": "محمد بن عمر المازني",
+        "start": 137,
+        "end": 156,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي زيد الأنصاري",
+        "start": 162,
+        "end": 178,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سعيد بن بشير",
+        "start": 183,
+        "end": 195,
+        "kind": "narrator"
+       },
+       {
+        "surface": "قتادة",
+        "start": 201,
+        "end": 206,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سعيد بن المسيب",
+        "start": 211,
+        "end": 225,
+        "kind": "narrator"
+       },
+       {
+        "surface": "ابن عباس",
+        "start": 295,
+        "end": 303,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 303,
+    "notes": [
+     "Ibn Abbas is read as the last link because his answer («فقال له ابن عباس: إن علي») is the saying that Sa'id relates; he speaks inside a scene Sa'id watched (rule 11): is he the source, or only a person in it?",
+     "the questioner «رجلا» is a person in the scene, not a link",
+     "the number 6 and «قال:» are left out"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "أبو الحسن علي بن خالد قال: حدثنا زيد بن الحسين الكوفي قال: حدثنا جعفر بن نجيح قال: حدثنا جندل بن والق التغلبي قال: حدثنا محمد بن عمر المازني ، عن أبي زيد الأنصاري، عن سعيد بن بشير ، عن قتادة، عن سعيد"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-df20cb",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أبو الحسن علي بن خالد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "زيد بن الحسين الكوفي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "جعفر بن نجيح",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "جندل بن والق التغلبي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن عمر المازني",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي زيد الأنصاري",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سعيد بن بشير",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "قتادة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سعيد بن المسيب",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن عباس",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": true,
+    "notes": [
+     "Ibn Abbas is read as the last link because his answer («فقال له ابن عباس: إن علي») is the saying that Sa'id relates; he speaks inside a scene Sa'id watched (rule 11): is he the source, or only a person in it?",
+     "the questioner «رجلا» is a person in the scene, not a link",
+     "the number 6 and «قال:» are left out"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-0213f3",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "محمد بن همام",
+        "start": 12,
+        "end": 24,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الحسن بن محمد بن الجمهور",
+        "start": 69,
+        "end": 93,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبيه",
+        "start": 98,
+        "end": 102,
+        "kind": "relation"
+       },
+       {
+        "surface": "سليمان بن سماعة",
+        "start": 107,
+        "end": 122,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي الجارود",
+        "start": 127,
+        "end": 138,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي جعفر محمد بن علي",
+        "start": 143,
+        "end": 163,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "محمد بن الحسن بن محمد بن الجمهور العمي",
+        "start": 26,
+        "end": 64,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الحسن بن محمد بن الجمهور",
+        "start": 69,
+        "end": 93,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبيه",
+        "start": 98,
+        "end": 102,
+        "kind": "relation"
+       },
+       {
+        "surface": "سليمان بن سماعة",
+        "start": 107,
+        "end": 122,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي الجارود",
+        "start": 127,
+        "end": 138,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أبي جعفر محمد بن علي",
+        "start": 143,
+        "end": 163,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 163,
+    "notes": [
+     "«أخبرنا محمد بن همام ومحمد بن الحسن ...» gives two co-transmitters in one level",
+     "«عن أبيه» names no one: relation (rule 7)",
+     "the Imam named after «عن» inside the chain stays narrator (owner ruling 2); the number 29 is left out"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "محمد بن همام ومحمد بن الحسن بن محمد بن الجمهور العمي، عن الحسن بن محمد بن الجمهور، عن أبيه، عن سليمان بن سماعة، عن أبي الجارود، عن أبي جعفر محمد بن علي"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-0213f3",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن همام",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن الحسن بن محمد بن الجمهور العمي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الحسن بن محمد بن الجمهور",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ],
+       [
+        {
+         "surface": "أبيه",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "سليمان بن سماعة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي الجارود",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي جعفر محمد بن علي",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«أخبرنا محمد بن همام ومحمد بن الحسن ...» gives two co-transmitters in one level",
+     "«عن أبيه» names no one: relation (rule 7)",
+     "the Imam named after «عن» inside the chain stays narrator (owner ruling 2); the number 29 is left out"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-8880f9",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "يحيى بن أيوب",
+        "start": 7,
+        "end": 19,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل بن جعفر",
+        "start": 68,
+        "end": 83,
+        "kind": "narrator"
+       },
+       {
+        "surface": "العلاء بن عبد الرحمن",
+        "start": 88,
+        "end": 108,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أنس بن مالك",
+        "start": 122,
+        "end": 133,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "محمد بن الصباح",
+        "start": 22,
+        "end": 36,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل بن جعفر",
+        "start": 68,
+        "end": 83,
+        "kind": "narrator"
+       },
+       {
+        "surface": "العلاء بن عبد الرحمن",
+        "start": 88,
+        "end": 108,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أنس بن مالك",
+        "start": 122,
+        "end": 133,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "قتيبة",
+        "start": 39,
+        "end": 44,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل بن جعفر",
+        "start": 68,
+        "end": 83,
+        "kind": "narrator"
+       },
+       {
+        "surface": "العلاء بن عبد الرحمن",
+        "start": 88,
+        "end": 108,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أنس بن مالك",
+        "start": 122,
+        "end": 133,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "ابن، حجر",
+        "start": 47,
+        "end": 55,
+        "kind": "narrator"
+       },
+       {
+        "surface": "إسماعيل بن جعفر",
+        "start": 68,
+        "end": 83,
+        "kind": "narrator"
+       },
+       {
+        "surface": "العلاء بن عبد الرحمن",
+        "start": 88,
+        "end": 108,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أنس بن مالك",
+        "start": 122,
+        "end": 133,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 133,
+    "notes": [
+     "«أنه دخل على أنس بن مالك» is the scene; Anas's own words («قال سمعت رسول الله») make him the last link (rule 6)",
+     "the four co-transmitters share one level via «قالوا حدثنا»"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "يحيى بن أيوب، ومحمد بن الصباح، وقتيبة، وابن، حجر قالوا حدثنا إسماعيل بن جعفر، عن العلاء بن عبد الرحمن، أنه دخل على أنس بن مالك"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-8880f9",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "يحيى بن أيوب",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن الصباح",
+         "kind": "narrator"
+        },
+        {
+         "surface": "قتيبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "ابن حجر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إسماعيل بن جعفر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "العلاء بن عبد الرحمن",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أنس بن مالك",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«أنه دخل على أنس بن مالك» is the scene; Anas's own words («قال سمعت رسول الله») make him the last link (rule 6)",
+     "the four co-transmitters share one level via «قالوا حدثنا»"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-f1c69d",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "أمية بن بسطام",
+        "start": 7,
+        "end": 20,
+        "kind": "narrator"
+       },
+       {
+        "surface": "يزيد",
+        "start": 28,
+        "end": 32,
+        "kind": "narrator"
+       },
+       {
+        "surface": "روح بن القاسم",
+        "start": 58,
+        "end": 71,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سهيل",
+        "start": 167,
+        "end": 171,
+        "kind": "narrator"
+       },
+       {
+        "surface": "بهذا الإسناد",
+        "start": 173,
+        "end": 185,
+        "kind": "back_reference"
+       }
+      ],
+      "shared_tail_from": 3
+     },
+     {
+      "links": [
+       {
+        "surface": "أحمد بن عثمان الأودي",
+        "start": 83,
+        "end": 103,
+        "kind": "narrator"
+       },
+       {
+        "surface": "خالد بن مخلد",
+        "start": 111,
+        "end": 123,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سليمان",
+        "start": 131,
+        "end": 137,
+        "kind": "narrator"
+       },
+       {
+        "surface": "سهيل",
+        "start": 167,
+        "end": 171,
+        "kind": "narrator"
+       },
+       {
+        "surface": "بهذا الإسناد",
+        "start": 173,
+        "end": 185,
+        "kind": "back_reference"
+       }
+      ],
+      "shared_tail_from": 3
+     }
+    ],
+    "matn_start": 185,
+    "notes": [
+     "the glosses «يعني ابن زريع» and «يعني ابن بلال» are left out",
+     "«كلاهما عن سهيل، بهذا الإسناد» is written once after the last «ح», so Suhayl and the back reference end both routes",
+     "«في حديث روح» and «وفي حديث سليمان» are wording variants («في حقها» / «في موضعها»): left out (rule 4)"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "أمية بن بسطام، حدثنا يزيد، - يعني ابن زريع - حدثنا روح بن القاسم، ح وحدثنيه أحمد بن عثمان الأودي، حدثنا خالد بن مخلد، حدثني سليمان، - يعني ابن بلال - كلاهما عن سهيل، بهذا الإسناد"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-f1c69d",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أمية بن بسطام",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "يزيد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "روح بن القاسم",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "أحمد بن عثمان الأودي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "خالد بن مخلد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سليمان",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "سهيل",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "بهذا الإسناد",
+       "kind": "back_reference"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "the glosses «يعني ابن زريع» and «يعني ابن بلال» are left out",
+     "«كلاهما عن سهيل، بهذا الإسناد» is written once after the last «ح», so Suhayl and the back reference end both routes",
+     "«في حديث روح» and «وفي حديث سليمان» are wording variants («في حقها» / «في موضعها»): left out (rule 4)"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-1070cb",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "هِشَامٌ",
+        "start": 16,
+        "end": 23,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أَبِي عَبْدِ اَللَّهِ",
+        "start": 66,
+        "end": 87,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "حَفْصٌ",
+        "start": 27,
+        "end": 33,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أَبِي عَبْدِ اَللَّهِ",
+        "start": 66,
+        "end": 87,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     },
+     {
+      "links": [
+       {
+        "surface": "حَمَّادُ بْنُ عُثْمَانَ",
+        "start": 37,
+        "end": 60,
+        "kind": "narrator"
+       },
+       {
+        "surface": "أَبِي عَبْدِ اَللَّهِ",
+        "start": 66,
+        "end": 87,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 87,
+    "notes": [
+     "the three co-transmitters share one level via «وَ»",
+     "the Imam named after «عن» inside the chain stays narrator (owner ruling 2); the number 4973 is left out"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "هِشَامٌ وَ حَفْصٌ وَ حَمَّادُ بْنُ عُثْمَانَ عَنْ أَبِي عَبْدِ اَللَّهِ"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-1070cb",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "هشام",
+         "kind": "narrator"
+        },
+        {
+         "surface": "حفص",
+         "kind": "narrator"
+        },
+        {
+         "surface": "حماد بن عثمان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "the three co-transmitters share one level via «وَ»",
+     "the Imam named after «عن» inside the chain stays narrator (owner ruling 2); the number 4973 is left out"
+    ],
+    "fixes": []
+   }
+  },
+  {
+   "output": {
+    "id": "b1-a08a38",
+    "routes": [
+     {
+      "links": [
+       {
+        "surface": "أحمد بن إبراهيم بن محمد",
+        "start": 7,
+        "end": 30,
+        "kind": "narrator"
+       },
+       {
+        "surface": "ابن عائذ",
+        "start": 42,
+        "end": 50,
+        "kind": "narrator"
+       },
+       {
+        "surface": "يحيى",
+        "start": 62,
+        "end": 66,
+        "kind": "narrator"
+       },
+       {
+        "surface": "الأوزاعي",
+        "start": 71,
+        "end": 79,
+        "kind": "narrator"
+       },
+       {
+        "surface": "عطاء",
+        "start": 84,
+        "end": 88,
+        "kind": "narrator"
+       },
+       {
+        "surface": "من",
+        "start": 109,
+        "end": 111,
+        "kind": "unnamed"
+       },
+       {
+        "surface": "عبد الله بن عمرو بن العاص",
+        "start": 117,
+        "end": 142,
+        "kind": "narrator"
+       }
+      ],
+      "shared_tail_from": null
+     }
+    ],
+    "matn_start": 142,
+    "notes": [
+     "«حدثني من، سمع» — the transmitter is not named: unnamed (rule 8); «سمع عبد الله بن عمرو بن العاص» names the Companion (rule 5)",
+     "«أنه حدثه» — the pronoun is Ata, not a link"
+    ]
+   },
+   "reason": "Two independent readers (runs b1-a-021-022 and b1-b-021-022, prompt 3.0.0) read the same routes from the text and its context; no hold fired.",
+   "evidence": [
+    {
+     "quote": "أحمد بن إبراهيم بن محمد، قال حدثنا ابن عائذ، قال حدثنا يحيى، عن الأوزاعي، عن عطاء، أنه حدثه قال حدثني من، سمع عبد الله بن عمرو بن العاص"
+    }
+   ],
+   "external_citation": null,
+   "reader_output_v3": {
+    "id": "b1-a08a38",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أحمد بن إبراهيم بن محمد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن عائذ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "يحيى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الأوزاعي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عطاء",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "من",
+         "kind": "unnamed",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "عبد الله بن عمرو بن العاص",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«حدثني من، سمع» — the transmitter is not named: unnamed (rule 8); «سمع عبد الله بن عمرو بن العاص» names the Companion (rule 5)",
+     "«أنه حدثه» — the pronoun is Ata, not a link"
+    ],
+    "fixes": []
+   }
+  }
+ ]
+}

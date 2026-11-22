@@ -1,4 +1,4 @@
-"""Engine and replay on real pilot reports: kinds, identity carry, planned ids, replay origins and hash binding.
+"""Engine and replay on real pilot reports: kinds, identity carry, planned ids, the replay rewrite and hash binding.
 
     python -I datasets/hadith-data/chain-fixes/test_chain_fix_engine.py
 """
@@ -156,6 +156,64 @@ class ReaderV2Test(unittest.TestCase):
         self.assertTrue(self.run_v2("cr-0002")["errors"][0].startswith("occurrence:"))
 
 
+BATCH_001 = HERE.parent / "chain-reader" / "v3" / "batch-001"
+PACKETS = {row["id"]: row for path in sorted((BATCH_001 / "packets").glob("packet-*.jsonl"))
+           for row in (json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip())}
+
+
+def batch_output(report_id: str) -> dict:
+    return json.loads((BATCH_001 / "outputs" / "pass-a" / f"{report_id}.json").read_text(encoding="utf-8"))
+
+
+class ReaderV3Test(unittest.TestCase):
+    """Batch-001 readings (prompt v3) through tool v3_1, as the first applied batch was (AGENTS.md §reader formats)."""
+
+    def run_v3(self, report_id: str, base: dict, **extra) -> dict:
+        packet = PACKETS[report_id]
+        return engine.run_item({"key": "0", "text": packet["text"], "expected_id": report_id, "output": batch_output(report_id),
+                                "base": base, "record_id": "test:1", "source_work_id": "imami:test", "evidence": [packet["text"][:40]],
+                                "reader_format": "v3", "tool_version": "v3_1", "context": packet.get("context"), **extra})
+
+    def test_an_empty_agreed_reading_is_a_no_chain_disposition_that_plans_no_chain(self):
+        stored = {"chains": [{"branch": 0, "mentions": [{"id": "mention:test:1:0000:0000", "surface_ar": "العائد في هبته"}]}]}
+        result = self.run_v3("b1-2c405e", stored)
+        self.assertEqual((result["errors"], result["holds"]), ([], []))
+        self.assertEqual(result["disposition"], "no_chain_by_reading")
+        self.assertEqual(result["planned"], {"chains": []})
+        self.assertIn("chain_removed", result["comparison"]["fix_kinds"])
+
+    def test_the_source_named_in_the_text_is_a_row_with_its_kind(self):
+        result = self.run_v3("b1-011436", {"chains": []})
+        self.assertEqual(result["errors"], [])
+        mentions = result["planned"]["chains"][0]["mentions"]
+        self.assertEqual([m["reader_kind"] for m in mentions], ["narrator", "narrator", "narrator", "imam_in_text"])
+        self.assertIsNone(result["disposition"])
+
+    def test_a_variant_group_holds_the_reading(self):
+        result = self.run_v3("b1-244c94", {"chains": []})       # «الأعمش ... جابرا» marked variant beside the route to Jabir
+        self.assertIn("has_variant_group", [hold["code"] for hold in result["holds"]])
+
+    def test_a_v3_1_reading_needs_the_v3_1_tool(self):
+        result = self.run_v3("b1-011436", {"chains": []}, reader_format="v3_1", tool_version="v3")
+        self.assertTrue(result["errors"][0].startswith("tool_version:"))
+
+    def test_inherited_names_repeat_a_rule_checked_chain_or_hold(self):
+        cited = ["محمد بن موسى بن المتوكل", "علي بن إبراهيم", "إبراهيم بن هاشم", "محمد بن أبي عمير", "من سمع", "أبا عبد الله الصادق"]
+        previous = {"hadith_id": "hadith:test:prev", "chains": [{"chain_id": "chain:test:prev:0000", "branch": 0, "structure_status": "checked_by_rule",
+                                                                "mentions": [{"id": f"mention:test:prev:0000:{p:04d}", "position": p, "surface_ar": s,
+                                                                              "inherited_from_mention_id": None} for p, s in enumerate(cited)]}]}
+        result = self.run_v3("b1-2e0f3a", {"chains": []}, previous={"prev2": previous})
+        self.assertEqual(result["holds"], [])
+        mentions = result["planned"]["chains"][0]["mentions"]
+        self.assertEqual([m["inherited_from_mention_id"] for m in mentions], [f"mention:test:prev:0000:{p:04d}" for p in range(6)])
+        self.assertEqual([m["surface_ar"] for m in mentions], cited)
+        self.assertTrue(all(m["span"] is None and m["reader_kind"] == "inherited" for m in mentions))
+        previous["chains"][0]["structure_status"] = "uncertain"
+        held = self.run_v3("b1-2e0f3a", {"chains": []}, previous={"prev2": previous})
+        self.assertEqual([hold["code"] for hold in held["holds"]], ["inherited_source_chain_uncertain"])
+        self.assertEqual([h["code"] for h in self.run_v3("b1-2e0f3a", {"chains": []})["holds"]], ["inherited_previous_report_unknown"])
+
+
 class ReplayTest(unittest.TestCase):
     def override(self) -> dict:
         result = EngineTest().run_item(ABU_DAWUD, ABU_DAWUD_READ, evidence=["الليث بن سعد"])
@@ -164,15 +222,61 @@ class ReplayTest(unittest.TestCase):
                 "arabic_sha256": replay.sha256_text(text), "reader_text_sha256": replay.sha256_text(text), "text_layout": "full_text",
                 "effect": "replace_routes", "structure_status": "read_by_model", "planned": result["planned"]}
 
-    def test_kept_names_bring_their_origin_new_names_none(self):
-        old = [{"id": c["chain_id"], "branch": c["branch"], "sanad_confidence": "0",
-                "mentions": [(f"{c['chain_id'].replace('chain:', 'mention:', 1)}:{p:04d}", s, s) for p, s in enumerate(c["surfaces"])],
-                "origins": [(7, p) for p in range(len(c["surfaces"]))]} for c in ABU_DAWUD["stored_chains"]]
+    def old_rows(self) -> tuple[list[list], list[list], list[list]]:
+        """The rule-built rows of k6:17633 in the projection's CSV order: «سليمان بن يسار» stands (source index), the rest unresolved."""
+        chains, mentions, candidates = [], [], []
+        for c in ABU_DAWUD["stored_chains"]:
+            chains.append([c["chain_id"], ABU_DAWUD["hadith_id"], c["branch"], len(c["surfaces"]), False, "extract_isnad_unified", None,
+                           "0", None, None, "uncertain", "{not_a_name}", None, "narrator:work:abu-dawud", "direct"])
+            for p, s in enumerate(c["surfaces"]):
+                mention_id = f"{c['chain_id'].replace('chain:', 'mention:', 1)}:{p:04d}"
+                stands = s == "سليمان بن يسار"
+                mentions.append([mention_id, c["chain_id"], ABU_DAWUD["hadith_id"], p, s, s, None, None, "u", "f",
+                                 "person" if stands else "unclassified", "source_index" if stands else "unresolved",
+                                 "source_index" if stands else None, "narrator:rawi:7" if stands else None, 1.0 if stands else None,
+                                 "source_index_confirmed_by_text" if stands else None,
+                                 "Sulayman" if stands else "Bukayr", "identity_name" if stands else "transliteration_table",
+                                 "narrator:rawi:7" if stands else None, None, None])
+                candidates.append([replay.candidate_id(mention_id, "name_exact", "narrator:rawi:9"), mention_id, ABU_DAWUD["hadith_id"],
+                                   "narrator:rawi:9", "name_exact", "tier0", None, None, None])
+        return chains, mentions, candidates
+
+    def test_rewrite_follows_the_apply_rule_for_kept_carried_and_new_names(self):
+        row = self.override()
+        chains, mentions, candidates = self.old_rows()
         counts = Counter()
-        branches = replay.replay_branches(self.override(), old, counts)
-        self.assertEqual(branches[0]["origins"], [(7, 0), None, (7, 1), (7, 2), (7, 3)])
+        new_chains, new_mentions, new_candidates = replay.rewrite_rows(row, chains, mentions, candidates, {}, str, counts)
+        self.assertEqual([c[0] for c in new_chains], ["chain:k6:17633:0000", "chain:k6:17633:0001"])
+        self.assertEqual(new_chains[0][10:], ["read_by_model", None, "chain-fix:t", "narrator:work:abu-dawud", "direct"])
+        first = [m for m in new_mentions if m[1] == "chain:k6:17633:0000"]
+        # «سليمان بن يسار» keeps its neighbours: identity carried; «يزيد بن خالد» kept with a new teacher: candidates only;
+        # «الليث بن سعد» is new: unresolved, no candidate, no Latin form.
+        self.assertEqual(first[3][4], "سليمان بن يسار")
+        self.assertEqual(first[3][13], "narrator:rawi:7")
+        self.assertEqual((first[0][11], first[0][16]), ("unresolved", "Bukayr"))
+        self.assertEqual((first[1][4], first[1][11], first[1][16]), ("الليث بن سعد", "unresolved", None))
+        self.assertNotIn(first[1][0], {c[1] for c in new_candidates})
+        self.assertIn(replay.candidate_id(first[0][0], "name_exact", "narrator:rawi:9"), {c[0] for c in new_candidates})
         self.assertEqual(counts["mentions_new"], 2)
-        self.assertEqual(replay.mention_id_map(self.override())["mention:k6:17633:0000:0001"], "mention:k6:17633:0000:0002")
+
+    def test_a_no_chain_reading_leaves_no_row(self):
+        row = {**self.override(), "planned": {"chains": []}, "disposition": "no_chain_by_reading"}
+        self.assertEqual(replay.rewrite_rows(row, *self.old_rows(), {}, str, Counter()), ([], [], []))
+
+    def test_an_inherited_name_repeats_its_cited_mention(self):
+        row = self.override()
+        cited = ["mention:k6:1:0000:0002", "chain:k6:1:0000", "hadith:k6:1", 2, "بكير", "بكير", None, None, "u", "f", "person",
+                 "source_index", "source_index", "narrator:rawi:3", 1.0, "source_index_confirmed_by_text", "Bukayr", "identity_name",
+                 "narrator:rawi:3", None, None]
+        cited_candidate = [replay.candidate_id(cited[0], "source_index_confirmed_by_text", "narrator:rawi:3"), cited[0], "hadith:k6:1",
+                           "narrator:rawi:3", "source_index_confirmed_by_text", "full", 2, None, None]
+        planned = json.loads(json.dumps(row["planned"]))
+        planned["chains"][0]["mentions"][2].update(inherited_from_mention_id=cited[0], kept_mention_id=None, span=None)
+        _, new_mentions, new_candidates = replay.rewrite_rows({**row, "planned": planned}, *self.old_rows(),
+                                                              {cited[0]: (cited, [cited_candidate])}, str, Counter())
+        inherited = new_mentions[2]
+        self.assertEqual((inherited[11], inherited[13], inherited[16], inherited[20]), ("unresolved", None, None, cited[0]))
+        self.assertIn(replay.candidate_id(inherited[0], "source_index_confirmed_by_text", "narrator:rawi:3"), {c[0] for c in new_candidates})
 
     def test_binding_and_file_round_trip(self):
         row = self.override()

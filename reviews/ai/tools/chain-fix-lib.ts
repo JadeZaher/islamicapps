@@ -23,6 +23,10 @@ import { sha256Hex, UTC_TIMESTAMP } from './specialist-lib';
 
 export const REPOSITORY_ROOT = path.resolve(__dirname, '..', '..', '..');
 export const ENVELOPE_FORMAT = 'shura-chain-fix-envelope/1';
+/** Agreed readings that find no isnad in the text (chain-reader/v3_1/to_submission_v3_1.py): the stored chain retires. */
+export const NO_CHAIN_ENVELOPE_FORMAT = 'shura-chain-no-chain-envelope/1';
+/** The one disposition a no-chain fix carries; the page says the report writes no chain. */
+export const NO_CHAIN_DISPOSITION = 'no_chain_by_reading';
 export const SUBMISSION_FORMAT = 'shura-chain-fix-submission/1';
 export const REVIEW_FORMAT = 'shura-chain-fix-review/1';
 export const TRANSITION_FORMAT = 'shura-chain-fix-transition/1';
@@ -30,6 +34,7 @@ export const APPLICATION_FORMAT = 'shura-chain-fix-application/1';
 export const OVERRIDE_FORMAT = 'shura-chain-fix-override/1';
 export const PROPOSAL_FORMAT = 'shura-reader-proposal/1';
 export const PROPOSAL_REVIEW_FORMAT = 'shura-reader-proposal-review/1';
+export const ARCHIVE_HOLD_FORMAT = 'shura-chain-fix-archive-hold/1';
 export const DEFAULT_STORE = path.join(REPOSITORY_ROOT, 'reviews', 'ai', 'records', 'chain-fixes');
 export const DEFAULT_OVERRIDES = path.join(REPOSITORY_ROOT, 'datasets', 'hadith-data', 'chain-fixes', 'accepted_overrides.jsonl.gz');
 export const ENGINE_PATH = path.join(REPOSITORY_ROOT, 'datasets', 'hadith-data', 'chain-fixes', 'chain_fix_engine.py');
@@ -63,16 +68,33 @@ export const REVIEW_DECISIONS = ['confirmed', 'rejected', 'superseded'] as const
 export type ReviewDecision = (typeof REVIEW_DECISIONS)[number];
 /** `accepted` is "agreed and passed the auto-apply rule" (in the store everything agreed passes it: see the design note). */
 export const STATES = ['submitted', 'disputed', 'outvoted', 'held', 'accepted', 'confirmed', 'rejected', 'superseded', 'stale'] as const;
-/** Reader output formats: v1 (routes with offsets), v2 (levels, expanded by the tool), text (text and metadata checks only). */
-export const READER_FORMATS = ['v1', 'v2', 'v3', 'text'] as const;
+/** Reader output formats, one per registered prompt: v1 (routes with offsets), v2 (levels, expanded by the tool), v3 and v3_1 (groups with context), text (text and metadata checks only). */
+export const READER_FORMATS = ['v1', 'v2', 'v3', 'v3_1', 'v3_2', 'text'] as const;
 export type ReaderFormat = (typeof READER_FORMATS)[number];
 /** Each format's prompt, hashed on every submission (a reading under an older prompt is re-run, not recorded). */
 export const READER_PROMPTS: Record<ReaderFormat, string> = {
   v1: 'datasets/hadith-data/chain-reader/prompt.md',
   v2: 'datasets/hadith-data/chain-reader/context/prompt-v2.md',
   v3: 'datasets/hadith-data/chain-reader/v3/prompt-v3.md',
+  v3_1: 'datasets/hadith-data/chain-reader/v3_1/prompt-v3_1.md',
+  v3_2: 'datasets/hadith-data/chain-reader/v3_2/prompt-v3_2.md',
   text: 'datasets/hadith-data/chain-reader/context/prompt-v2-text.md',
 };
+/**
+ * The reader tool that validated, expanded and held a v3-shaped reading (chain_fix_engine.py `TOOLS`). Separate from the prompt:
+ * batch 001 was read under prompt v3 and re-triaged by tool v3_1; a v3.1 reading needs tool v3_1. Absent: the prompt's own tool.
+ */
+export const TOOL_VERSIONS = ['v3', 'v3_1', 'v3_2'] as const;
+export type ToolVersion = (typeof TOOL_VERSIONS)[number];
+/** Tools that may read a reading made under each v3-shaped prompt (chain_fix_engine.py `TOOLS_FOR_FORMAT`). */
+export const TOOLS_FOR_FORMAT: Record<'v3' | 'v3_1' | 'v3_2', readonly ToolVersion[]> = { v3: ['v3', 'v3_1', 'v3_2'], v3_1: ['v3_1', 'v3_2'], v3_2: ['v3_2'] };
+/** A previous report an inherited reading takes names from (to_submission_v3_1.py `inherited_from`), resolved to the archive. */
+export interface InheritedSource {
+  ref: string;
+  previous_report_id: string | null;
+  supplies: string | null;
+  surfaces: string[];
+}
 export interface Hold {
   code: string;
   detail: string;
@@ -108,9 +130,12 @@ export interface PlannedMention {
   review_unit_fine_id: string;
   reader_kind: string;
   link_kind_if_new: string;
-  span: [number, number];
+  /** Offsets in the reader text; null for a name inherited from an earlier report. */
+  span: [number, number] | null;
   kept_mention_id: string | null;
   carry_identity: boolean;
+  /** The cited report's written mention this one repeats (its root), for an inherited name. */
+  inherited_from_mention_id?: string | null;
 }
 export interface PlannedChain {
   id: string;
@@ -157,6 +182,14 @@ export interface Submission {
   derived_links?: DerivedLink[];
   /** How this run's reading was found equal to another's: `canonical_equal_v3` for the second pass of a v3 envelope. */
   agreement_basis?: string;
+  /** The reader tool (v3, v3_1) that validated, expanded and held this reading; the prompt fields name what the reader ran. */
+  tool_version?: ToolVersion;
+  /** `no_chain_by_reading`: the readers found no isnad in the text; applying retires the stored chain. */
+  disposition?: typeof NO_CHAIN_DISPOSITION | null;
+  /** The previous reports an inherited reading takes names from, as submitted and resolved. */
+  inherited_from?: InheritedSource[];
+  /** v3.2: remarks that another version names another transmitter, recorded with the fix, never a route. */
+  variant_remarks?: unknown[];
   review_kind: 'specialist';
   label: 'AI reviewed';
   specialist_id: string;
@@ -210,7 +243,9 @@ export function chainSha256(chains: readonly BaseChain[]): string {
 
 /** What is applied, per route: span and link kind. Route order is canonical (text order), so two readers agree regardless of order. */
 export function routesKey(planned: { chains: PlannedChain[] }): string {
-  return sha256Hex(JSON.stringify(planned.chains.map((chain) => [chain.suspension, chain.mentions.map((m) => [m.span[0], m.span[1], m.link_kind_if_new])])));
+  // A written name is its span; an inherited one is the mention it repeats (written keys are unchanged from before 0021).
+  return sha256Hex(JSON.stringify(planned.chains.map((chain) => [chain.suspension, chain.mentions.map((m) =>
+    m.span ? [m.span[0], m.span[1], m.link_kind_if_new] : ['inherited', m.inherited_from_mention_id ?? null, m.link_kind_if_new])])));
 }
 
 export const fixIdOf = (hadithId: string, arabicSha256: string, readerTextSha256: string, key: string) =>
@@ -287,6 +322,9 @@ export interface EngineItem {
   context?: unknown;
   /** v3: the second reader's output, so `needs_ruling` holds only when both readers set it (holds_v3.py). */
   other_output?: unknown;
+  tool_version?: ToolVersion;
+  /** Per `inherited_from` ref: the previous report's live chains (status and mentions), for inherited names. */
+  previous?: Record<string, { hadith_id: string; chains: BaseChain[] }>;
 }
 /** A link the reader derived (compiler head, inherited from an earlier report) or named from the text (an Imam), with its origin. */
 export interface DerivedLink {
@@ -318,6 +356,9 @@ export interface EngineResult {
   proposals: ReaderFinding[];
   needs_ruling: boolean;
   derived_links: DerivedLink[];
+  disposition: typeof NO_CHAIN_DISPOSITION | null;
+  /** v3.2: variant groups kept as remarks about another version, never routes. */
+  variant_remarks?: unknown[];
 }
 
 /**
@@ -412,6 +453,8 @@ export interface StorePaths {
   queue: string;
   proposals: string;
   proposalReviews: string;
+  /** Holds the pipeline records from archive facts (not the reader's), appended by chain-fix-hold.ts; read by the decide rule. */
+  archiveHolds: string;
 }
 export function storePaths(root: string = DEFAULT_STORE): StorePaths {
   return {
@@ -424,6 +467,7 @@ export function storePaths(root: string = DEFAULT_STORE): StorePaths {
     queue: path.join(root, 'queue.json'),
     proposals: path.join(root, 'proposals'),
     proposalReviews: path.join(root, 'proposal-reviews'),
+    archiveHolds: path.join(root, 'archive-holds.jsonl'),
   };
 }
 
@@ -478,6 +522,18 @@ export const readSubmissions = (paths: StorePaths) => readJsonl<Submission>(path
 export const readReviews = (paths: StorePaths) => readJsonl<Review>(paths.reviews);
 export const readProposals = (paths: StorePaths) => readJsonl<Proposal>(paths.proposals);
 export const readProposalReviews = (paths: StorePaths) => readJsonl<ProposalReview>(paths.proposalReviews);
+/** An archive hold: a fact about the archive (not the reading) that keeps a fix from being applied (reviews/ai/AGENTS.md §Chain fixes). */
+export interface ArchiveHold {
+  format: typeof ARCHIVE_HOLD_FORMAT;
+  fix_id: string;
+  hadith_id: string;
+  code: string;
+  detail: string;
+  at: string;
+  by: string;
+}
+export const readArchiveHolds = (paths: StorePaths): ArchiveHold[] =>
+  existsSync(paths.archiveHolds) ? readFileSync(paths.archiveHolds, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line) as ArchiveHold) : [];
 export const readApplications = (paths: StorePaths) => readJsonl<{ fix_id: string; action: 'applied' | 'reverted'; at: string }>(paths.applications);
 
 /** Write a derived file atomically (temp file, then rename), so a reader never sees half of it. */
@@ -532,7 +588,11 @@ const latestPerReviewer = (reviews: Review[]) => {
  * chain, and at least twice the runs of every other reading together. Final review: the latest review per reviewer counts;
  * any human rejection rejects; else a human confirmation confirms; AI reviews never move a fix, they only object.
  */
-export function computeStates(submissions: Submission[], reviews: Review[], applications: { fix_id: string; action: string; at: string }[]): FixState[] {
+export function computeStates(submissions: Submission[], reviews: Review[], applications: { fix_id: string; action: string; at: string }[],
+                              archiveHolds: ArchiveHold[] = []): FixState[] {
+  const archiveCodes = new Map<string, string[]>();
+  for (const hold of archiveHolds) archiveCodes.set(hold.fix_id, [...new Set([...(archiveCodes.get(hold.fix_id) ?? []), hold.code])]);
+  const holdsOf = (fixId: string, runs: Submission[]) => [...new Set([...holdCodes(runs), ...(archiveCodes.get(fixId) ?? [])])].sort();
   const unique = new Map<string, Submission>();
   for (const submission of submissions) if (!unique.has(submission.submission_id)) unique.set(submission.submission_id, submission);
   const byReport = new Map<string, Submission[]>();
@@ -590,10 +650,10 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
       } else if (humanConfirmed.size > 0) {
         state = 'superseded';
         why = `a human reviewer confirmed another reading of this report (${[...humanConfirmed].join(', ')})`;
-      } else if (holdCodes(runs).length > 0) {
-        // Held by the tool (HOLDS.md): never auto-applied, whatever the agreement; queued for a third reader or a person.
+      } else if (holdsOf(fixId, runs).length > 0) {
+        // Held by the tool (HOLDS.md) or by an archive fact: never auto-applied, whatever the agreement; queued for a third reader or a person.
         state = 'held';
-        why = `held: ${holdCodes(runs).join(', ')}; queued for a third reader or a person`;
+        why = `held: ${holdsOf(fixId, runs).join(', ')}; queued for a third reader or a person`;
       } else if (fixId === leaderId && agreed) {
         state = 'accepted';
         why = `${runs.length} independent readers agree (${leaderBlind} blind to the stored chain)${dissent ? `, over ${dissent} dissenting` : ''}`;
@@ -635,7 +695,7 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
         ai_objections: latest.filter((r) => r.reviewer_kind === 'ai' && r.decision !== 'confirmed').length,
         reviewers: latest.map((r) => `${r.reviewer_kind}:${r.reviewer}`).sort(),
         representative_submission_id: representative.submission_id,
-        holds: holdCodes(runs),
+        holds: holdsOf(fixId, runs),
         why,
       });
     }
@@ -674,7 +734,8 @@ export function buildOverrides(states: FixState[], submissions: Submission[]): B
         fix_kinds: state.fix_kinds,
         base_chain_sha256: s.base.chain_sha256,
         planned: state.effect === 'replace_routes' ? s.planned : null,
-        read_by: { models: state.models, runs: state.runs, prompt_sha256: s.prompt_sha256, prompt_version: s.prompt_version },
+        disposition: s.disposition ?? null,
+        read_by: { models: state.models, runs: state.runs, prompt_sha256: s.prompt_sha256, prompt_version: s.prompt_version, tool_version: s.tool_version ?? null },
       });
     });
   return gzipSync(Buffer.from(lines.length ? `${lines.join('\n')}\n` : '', 'utf8'), { level: 9 });
@@ -687,7 +748,7 @@ export function buildOverrides(states: FixState[], submissions: Submission[]): B
 export function reconcile(paths: StorePaths, overridesPath: string, now: string): { states: FixState[]; transitions: object[] } {
   return withLock(path.join(paths.root, 'store.lock'), () => {
     const submissions = readSubmissions(paths);
-    const states = computeStates(submissions, readReviews(paths), readApplications(paths));
+    const states = computeStates(submissions, readReviews(paths), readApplications(paths), readArchiveHolds(paths));
     const previous = new Map<string, string>(
       existsSync(paths.state) ? (JSON.parse(readFileSync(paths.state, 'utf8')) as { fixes: FixState[] }).fixes.map((f) => [f.fix_id, f.state]) : [],
     );

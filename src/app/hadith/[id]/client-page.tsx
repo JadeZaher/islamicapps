@@ -56,9 +56,12 @@ export function HadithClientPage({ hadith, chain, parallels = [], family = null,
     const chainSpan = hadith.split_confidence === 'high' && arabicMatn ? hadith.sanad_ar?.trim() || null : null;
     const sourceSanadText = hasArabicMatn && !chainSpan ? writtenSanad : null;
     const hasChain = (chain?.nodes.length ?? 0) > 0;
-    const continuation = hadith.chain_continues_from ?? null;
+    // A model-read chain that repeats an earlier report's names (0021) continues from that report, as an OpenITI continuation does.
+    const inheritedMention = chain?.nodes.find((node) => node.chain_fix && node.inherited_from_mention_id)?.inherited_from_mention_id ?? null;
+    const continuation = hadith.chain_continues_from
+        ?? (inheritedMention ? { id: `hadith:${inheritedMention.slice('mention:'.length).replace(/:\d{4}:\d{4}$/, '')}`, hadith_no: null } : null);
     const sourceNotes = hadith.source_notes ?? [];
-    const showChain = Boolean(sourceSanadText?.trim()) || hasChain || Boolean(chainSpan) || Boolean(continuation);
+    const showChain = Boolean(sourceSanadText?.trim()) || hasChain || Boolean(chainSpan) || Boolean(continuation) || Boolean(chain?.disposition);
 
     // Thaqalayn's stored hadith_no is the chapter number: the report's own number comes from the provider URL.
     const referenceFields = {

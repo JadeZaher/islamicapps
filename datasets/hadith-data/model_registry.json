@@ -899,14 +899,14 @@
       "id": "claude-haiku-5-5-chain-reader-pilots",
       "model_id": "claude-haiku-5-5",
       "model_id_status": "namespaced_specific",
-      "model_id_note": "The id each reader run wrote in its RUN.txt line (chain-reader/outputs/*/RUN.txt, context/outputs-v2/*/RUN.txt).",
+      "model_id_note": "The id each reader run wrote in its RUN.txt line (chain-reader/outputs/*/RUN.txt, context/outputs-v2/*/RUN.txt, v3/batch-001/outputs/pass-a|pass-b/RUN.txt).",
       "runtime": "Claude Code subagents, fresh context per run, two independent passes",
       "kind": "chain_reading",
-      "work": "Chain reading (chain-fix submissions): read each pilot report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md). Pilot v1 (prompt.md) and v2 (context/prompt-v2.md) over the 284 labelled pilot reports; v3 (v3/prompt-v3.md) batch 001 of 500 reports is being read. No reading has been submitted to the fix store or applied to any chain.",
+      "work": "Chain reading (chain-fix submissions): read each report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md). Pilot v1 (prompt.md) and v2 (context/prompt-v2.md) over the 284 labelled pilot reports; batch 001 (500 reports drawn from chains marked uncertain) under prompt v3.0.0 (v3/prompt-v3.md, sha256 a5a223b6acfc...0827764), two blind passes with source context. Re-triaged by the v3.1 tool (v3_1/, prompt 3.1.0 sha256 fca49673fea3...2860fd registered, not yet run): 394 agreed, unheld readings eligible (358 with links, 36 'no chain by reading'); 348 stand applied to the live archive (2026-11-22) as 'Read by model (claude-haiku-5-5), awaiting final review' (258 rewritten routes, 60 stored routes confirmed, 30 'no chain is written'); 46 held (30 reports that also have a rule-checked chain, 3 whose chain later reports repeat, 4 with a variant group, 1 inherited from an uncertain chain, 11 held by the v3.2 tool on re-triage, 9 of which had been applied and were reverted). Chains read by model feed no teacher and student list.",
       "date_range": {
         "start": "2026-11-22",
         "end": "2026-11-22",
-        "basis": "RUN.txt start and end times"
+        "basis": "RUN.txt start and end times; applied 2026-11-22"
       },
       "inputs": [
         "datasets/hadith-data/chain-reader/pilot/ (284 labelled reports)",
@@ -925,13 +925,32 @@
           "rows": 568,
           "unit": "reader outputs (v2, two passes)",
           "note": ""
+        },
+        {
+          "path": "datasets/hadith-data/chain-reader/v3/batch-001/outputs/",
+          "rows": 1000,
+          "unit": "reader outputs (v3, two passes of 500)",
+          "note": ""
+        },
+        {
+          "path": "reviews/ai/records/chain-fixes/submissions/",
+          "rows": 788,
+          "unit": "submissions (394 readings, two runs each)",
+          "note": "batch 001, prompt v3.0.0, tool v3_1"
+        },
+        {
+          "path": "datasets/hadith-data/chain-fixes/accepted_overrides.jsonl.gz",
+          "rows": 348,
+          "unit": "applied fixes replayed by the projection",
+          "note": ""
         }
       ],
-      "output_status": "candidate_only",
-      "review_state": "ai_reviewed, awaiting final review: an agreed, unheld reading may be applied as 'Read by model, awaiting final review' only through the fix pipeline; none has been.",
+      "output_status": "applied_awaiting_final_review",
+      "review_state": "ai_reviewed, awaiting final review: 348 batch-001 readings are applied as 'Read by model, awaiting final review'; a person's confirmation turns one into 'Verified by <name>', a rejection reverts it.",
       "pinned": false,
       "allowed_uses": [
         "Chain-fix submissions under the agreement and hold rules (reviews/ai/tools/chain-fix-*.ts)",
+        "Applied readings labelled 'Read by model, awaiting final review' (and 'No chain is written in this report' for an agreed empty reading)",
         "Proposals beyond the chain for a person to decide"
       ],
       "prohibited_uses": [
@@ -943,11 +962,19 @@
         {
           "finding": "Pilot v2 re-scored under the v3 tool: 213 of 279 applied, 210 right (99 percent, 96 to 100), measured on the readings the holds were tuned on (in-sample); batch 001 is the out-of-sample measurement.",
           "source": "datasets/hadith-data/chain-reader/v3/README.md"
+        },
+        {
+          "finding": "Batch 001 judged by one independent model reader (not blind, not a scholar): agreed, unheld readings right in 98.6% (96.8 to 99.4, weighted) against 16.0% for the stored chains; no reading broke a correct stored chain (0 of 244). Under the v3.1 tool and the owner's rulings of 2026-11-22: 237 of 241 right, 0 wrong, 4 undecided; the 36 no-chain readings all right.",
+          "source": "datasets/hadith-data/chain-reader/analysis-batch-001/README.md; datasets/hadith-data/chain-reader/v3_1/batch-001/RETRIAGE.md"
         }
       ],
       "evidence": [
         {
           "path": "datasets/hadith-data/chain-reader/v3/rescore_v3.json",
+          "locator": "whole file"
+        },
+        {
+          "path": "datasets/hadith-data/chain-reader/analysis-batch-001/numbers_b1.json",
           "locator": "whole file"
         }
       ]

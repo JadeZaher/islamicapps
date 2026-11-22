@@ -1,0 +1,152 @@
+{
+ "expanded_a": {
+  "id": "b1-a6a7de",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "الصدوق",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "طَلْحَةَ بْنِ زَيْدٍ",
+      "start": 25,
+      "end": 45,
+      "kind": "narrator"
+     },
+     {
+      "surface": "جَعْفَرِ بْنِ مُحَمَّدٍ",
+      "start": 51,
+      "end": 74,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أَبِيهِ",
+      "start": 80,
+      "end": 87,
+      "kind": "relation"
+     },
+     {
+      "surface": "عَلَيْ",
+      "start": 88,
+      "end": 94,
+      "kind": "imam_in_text"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "matn_start": 87,
+  "notes": [
+   "«في رواية» is a route marker, not a name",
+   "«أبيه» written bare is a relation with no name",
+   "«قال قال علي» names the Imam after the chain: the last link (owner ruling 2)"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "b1-a6a7de",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "طلحة بن زيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "جعفر بن محمد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "علي",
+       "kind": "imam_in_text"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«في رواية» is a route marker, not a name",
+   "«أبيه» written bare is a relation with no name",
+   "«قال قال علي» names the Imam after the chain: the last link (owner ruling 2)"
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "b1-a6a7de",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "طلحة بن زيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "جعفر بن محمد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "علي",
+       "kind": "imam_in_text"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«عن أبيه» with no name is a relation link (rule 7)",
+   "«قال قال علي عليه السلام» names Ali after the chain as the speaker of the saying: last link, imam_in_text (owner ruling 2)",
+   "The stray «- وَ-» before «فِي رِوَايَةِ» is punctuation and is ignored"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "THQ's English names the father of Imam Jafar, which the Arabic writes only as «أبيه».",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "عَنْ أَبِيهِ عَلَيْهِ اَلسَّلاَمُ"
+     },
+     {
+      "source": "THQ",
+      "quote": "from Imam Muhammad ibn Ali Al-Baqir (as)"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}

@@ -1,0 +1,150 @@
+{
+ "format": "shura-chain-no-chain-envelope/1",
+ "run": {
+  "model_id": "claude-haiku-5-5",
+  "provider_runtime": "Claude Code subagent, fresh context, packets of the chain reader 3.0.0 (text and context)",
+  "run_id": "b1-a-011-012",
+  "started_at": "2026-11-22T16:21:12Z",
+  "finished_at": "2026-11-22T16:31:56Z",
+  "prompt_sha256": "a5a223b6acfc0b0d25260624bf527284f40a57576ba422f5e821e15dd0827764",
+  "view": "text_and_context",
+  "prompt_version": "3.0.0",
+  "prompt_file": "datasets/hadith-data/chain-reader/v3/prompt-v3.md",
+  "tool_version": "v3_1",
+  "packet_id": "packet-012",
+  "second_reader": {
+   "model_id": "claude-haiku-5-5",
+   "run_id": "b1-b-011-012",
+   "started_at": "2026-11-22T16:22:10Z",
+   "finished_at": "2026-11-22T16:32:45Z"
+  },
+  "agreement": "canonical() equal in both passes, no hold (v3_1/holds_v3_1.py)",
+  "built_at": "2026-11-22T18:16:55Z"
+ },
+ "packet": "v3/batch-001/packets/packet-012.jsonl",
+ "fixes": [
+  {
+   "output": {
+    "id": "b1-972f10",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "no chain: «وَ فِي حَدِيثٍ آخَرَ قَالَ» names no transmitter; the saying alone (rule 10)"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-011-012 and b1-b-011-012, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "4518 - وَ فِي حَدِيثٍ آخَرَ قَالَ: \"جِهَادُ اَلْمَرْأَةِ حُسْنُ اَلتَّبَعُّلِ \"."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "و في حديث آخر"
+   ],
+   "external_citation": null
+  },
+  {
+   "output": {
+    "id": "b1-82e210",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "no chain: «وَ قَدْ رُوِيَ» is passive with no transmitter named (rule 10)"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-011-012 and b1-b-011-012, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "5475 - وَ قَدْ رُوِيَ : \"أَنَّ اَلسَّهْمَ وَاحِدٌ مِنْ سِتَّةٍ \"."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "أن السهم",
+    "احد من ستة"
+   ],
+   "external_citation": null
+  },
+  {
+   "output": {
+    "id": "b1-7470a0",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "no chain: a bracketed title «[زيارة البيت]» and an advice text with a supplication (rule 10)"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-011-012 and b1-b-011-012, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "[زيارة البيت] وزر البيت يوم النحر أو من الغد وأنت على غسل ولا تؤخر أن تزوره من يومك أو من الغد فإنه ليس للمتمتع أن"
+    }
+   ],
+   "stored_chain_surfaces": [
+    "زيارة البيت",
+    "أنت على غسل",
+    "لا تؤخر"
+   ],
+   "external_citation": null
+  },
+  {
+   "output": {
+    "id": "b1-2c9e2a",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "no chain: a saying attributed to the Prophet with no transmitter written (rule 10)"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-011-012 and b1-b-011-012, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "5776 - شَرُّ اَلْمَآكِلِ أَكْلُ مَالِ اَلْيَتِيمِ ظُلْماً\"."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "شر المآكل أكل مال اليتيم ظلما"
+   ],
+   "external_citation": null
+  },
+  {
+   "output": {
+    "id": "b1-208e99",
+    "status": "read",
+    "groups": [],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "no chain: a saying with no transmitter written (rule 10)"
+    ],
+    "fixes": []
+   },
+   "disposition": "no_chain_by_reading",
+   "reason": "Two independent readers (runs b1-a-011-012 and b1-b-011-012, prompt 3.0.0) read no isnad in this report: the text writes no transmission word and name before the saying, and does not open as an asker or an inherited speaker; the stored chain is the saying's own words.",
+   "evidence": [
+    {
+     "quote": "5809 - لاَ يَحِلُّ لِلْمُؤْمِنِ أَنْ يَهْجُرَ أَخَاهُ اَلْمُؤْمِنَ فَوْقَ ثَلاَثٍ\"."
+    }
+   ],
+   "stored_chain_surfaces": [
+    "لا يحل للمؤمن"
+   ],
+   "external_citation": null
+  }
+ ]
+}

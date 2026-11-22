@@ -33,9 +33,31 @@ Design, states, rules and the integration checklist: `docs/review/chain-fix-pipe
   triage found both passes canonical-equal), so the decide rule sees two independent runs.
 - **Derived links** (compiler head, a name inherited from an earlier report, an Imam named in the text) are not substrings of the
   report: the v3 validator checks an inherited name against the previous report's text in the packet and the head against the
-  work profile. They are stored on the submission (`derived_links`: kind, origin, span) for the page; planned rows hold only
-  written links (the projection derives the compiler head itself). A reading that takes inherited names is held
-  (`inherited_links_not_applied`): writing an inherited mention needs the earlier report's written mention.
+  work profile. They are stored on the submission (`derived_links`: kind, origin, span) for the page. The compiler head is never a
+  row (the projection derives it); an Imam named in the text is a written row labelled by kind; an inherited name is a row repeating
+  the earlier report's written mention (`datasets/hadith-data/chain-fixes/AGENTS.md` §reader formats).
+- **v3.1 (0021, 2026-11-22).** `READER_PROMPTS.v3_1` registers prompt 3.1.0; `run.tool_version` (`TOOL_VERSIONS`) names the reader tool
+  that expanded and held a v3-shaped reading, separately from the prompt the reader ran (both stored: `prompt_*`, `tool_version`).
+  `shura-chain-no-chain-envelope/1` carries agreed empty readings (`disposition: no_chain_by_reading`, computed by the engine and
+  checked against the envelope). A fix's `inherited_from` (`{ref, previous_report_id, supplies, surfaces}`) is kept on the
+  submission; a null `previous_report_id` (batch 001's v3 packets) is resolved in production as the one report of the same
+  collection whose text starts with the packet's previous-report text (`findPreviousByText`); its live chains go to the engine.
+  Inherited readings therefore need `--database production`. A v3 reader may read a report whose stored chain repeats an earlier
+  report's names (it sees that report), so that refusal now applies to v1/v2 only.
+- **v3.2 tool (0022).** `READER_PROMPTS.v3_2` registers the v3.2 draft prompt (3.2.0); `TOOLS_FOR_FORMAT` says which tool may read a
+  reading of each prompt (v3: v3, v3_1, v3_2; v3.1: v3_1, v3_2; v3.2: v3_2). Under tool v3_2 a `variant: true` group never becomes a
+  route: the engine returns it as `variant_remarks` and the submission keeps them; the v3.2 holds still hold such a reading
+  (`has_variant_group`) because the page cannot yet show the remark. Batch 001 was applied under tool v3_1; its 11 readings the v3.2
+  tool holds were recorded as archive holds with the v3.2 codes (9 applied ones reverted).
+- **Hold `stored_chain_checked_by_rule`** (submit tool, not a reader hold): this round a reading replaces only uncertain chains. A
+  report that also has a rule-checked chain (which may feed teacher and student lists) waits for the owner, so applying a batch never
+  changes `narrator_transmissions`. Lift it by removing the check in `chain-fix-submit.ts` and re-submitting.
+- **Archive holds** (`records/chain-fixes/archive-holds.jsonl`, `chain-fix-hold.ts`): facts about the archive, not the reading, that
+  keep a fix out of the overrides; the decide rule unites them with the readers' holds. `--scan --database production` records
+  `cited_by_later_report` for every fix not yet applied whose report's mentions later reports repeat (`inherited_from_mention_id`, a
+  Thaqalayn «وبهذا الإسناد» chain): rewriting it would leave theirs pointing at changed rows (found on batch 001 by `check_projection.py`:
+  3 reports). The submit tool records the same hold for new submissions, and the apply refuses such a report anyway. Append-only, so
+  a hold is never silently undone; lifting one needs a new rule in `computeStates`.
 - **Holds** (`held` state, codes on the fix and in `chain_fix_decisions.hold_codes`): v1/v2 readings use `context/holds.py`, v3 readings
   `v3/holds_v3.py` (no `drops_stored_name`; `needs_ruling` only when both readers set it, which the v3 triage already applies before
   an envelope is written). A held reading is never applied, whatever the agreement; it waits for a third reader or a person.

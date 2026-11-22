@@ -1,0 +1,290 @@
+{
+ "tool": "v3.1 tool on the v3 outputs of batch 001 (500 reports, prompt v3.0.0, packets without the new previous reports)",
+ "counts": {
+  "v3": {
+   "valid_a": 493,
+   "valid_b": 493,
+   "agreed": 450,
+   "eligible": 370
+  },
+  "v3_1": {
+   "valid_a": 497,
+   "valid_b": 497,
+   "agreed": 457,
+   "eligible": 402,
+   "applies_chain": 366,
+   "applies_no_chain": 36
+  }
+ },
+ "newly_agreed": [
+  "b1-1b65ce",
+  "b1-83044c",
+  "b1-ab0a95",
+  "b1-b43223",
+  "b1-c44673",
+  "b1-d8f54e",
+  "b1-de6e12"
+ ],
+ "newly_valid": [
+  "b1-6e0cb4",
+  "b1-ab0a95",
+  "b1-b50f75",
+  "b1-c44673",
+  "b1-d8f54e"
+ ],
+ "right_rate_among_eligible_judged": {
+  "before_v3_as_judged": {
+   "sunni six-book": {
+    "judged": 85,
+    "right": 85,
+    "wrong": 0,
+    "undecided": 0,
+    "rate": "85/85 = 100.0% (96-100)",
+    "eligible": 205
+   },
+   "al-faqih": {
+    "judged": 80,
+    "right": 78,
+    "wrong": 1,
+    "undecided": 1,
+    "rate": "78/80 = 97.5% (91-99)",
+    "eligible": 86
+   },
+   "other imami": {
+    "judged": 79,
+    "right": 76,
+    "wrong": 0,
+    "undecided": 3,
+    "rate": "76/79 = 96.2% (89-99)",
+    "eligible": 79
+   },
+   "overall_unweighted": {
+    "judged": 244,
+    "right": 239,
+    "rate": "239/244 = 98.0% (95-99)"
+   },
+   "overall_weighted_by_eligible_share": "98.6%"
+  },
+  "v3_outputs_under_the_new_rulings_no_tool_change": {
+   "sunni six-book": {
+    "judged": 85,
+    "right": 85,
+    "wrong": 0,
+    "undecided": 0,
+    "rate": "85/85 = 100.0% (96-100)",
+    "eligible": 205
+   },
+   "al-faqih": {
+    "judged": 80,
+    "right": 70,
+    "wrong": 9,
+    "undecided": 1,
+    "rate": "70/80 = 87.5% (78-93)",
+    "eligible": 86
+   },
+   "other imami": {
+    "judged": 79,
+    "right": 76,
+    "wrong": 0,
+    "undecided": 3,
+    "rate": "76/79 = 96.2% (89-99)",
+    "eligible": 79
+   },
+   "overall_unweighted": {
+    "judged": 244,
+    "right": 231,
+    "rate": "231/244 = 94.7% (91-97)"
+   },
+   "overall_weighted_by_eligible_share": "96.3%"
+  },
+  "after_v3_1_tool": {
+   "sunni six-book": {
+    "judged": 90,
+    "right": 90,
+    "wrong": 0,
+    "undecided": 0,
+    "rate": "90/90 = 100.0% (96-100)",
+    "eligible": 210
+   },
+   "al-faqih": {
+    "judged": 71,
+    "right": 70,
+    "wrong": 0,
+    "undecided": 1,
+    "rate": "70/71 = 98.6% (92-100)",
+    "eligible": 75
+   },
+   "other imami": {
+    "judged": 80,
+    "right": 77,
+    "wrong": 0,
+    "undecided": 3,
+    "rate": "77/80 = 96.2% (90-99)",
+    "eligible": 81
+   },
+   "overall_unweighted": {
+    "judged": 241,
+    "right": 237,
+    "rate": "237/241 = 98.3% (96-99)"
+   },
+   "overall_weighted_by_eligible_share": "98.9%"
+  }
+ },
+ "after_judged_outside_sample_tsv": {
+  "b1-d8f54e": "right",
+  "b1-b43223": "right",
+  "b1-21210d": "right",
+  "b1-1b65ce": "right",
+  "b1-de6e12": "right",
+  "b1-3c59ef": "right"
+ },
+ "eligible_chain_readings": {
+  "v3": 370,
+  "v3_1": 366,
+  "v3_1_judged": 235,
+  "v3_1_not_judged": 125
+ },
+ "empties": {
+  "judged": 57,
+  "made_applicable": 36,
+  "judge_verdict_of_those": {
+   "empty reading: right": 36
+  },
+  "held_or_reread": 21,
+  "held_by_category": {
+   "cat:asker": 10,
+   "cat:implicit": 7,
+   "cat:collective": 1,
+   "cat:narrative": 1,
+   "cat:asker-first-person": 1,
+   "cat:clear-no-name": 1
+  },
+  "applicable_not_judged": []
+ },
+ "holds": {
+  "routes_end_at_different_links": {
+   "v3_hits": 7,
+   "v3_1_hits": 4,
+   "v3_right_wrong": [
+    2,
+    5
+   ],
+   "v3_1_right_wrong": [
+    0,
+    4
+   ],
+   "released": [
+    "b1-21210d",
+    "b1-3c59ef",
+    "b1-ee5c9a"
+   ],
+   "still_held": [
+    "b1-160be9",
+    "b1-162ebe",
+    "b1-844adb",
+    "b1-d2bb6c"
+   ]
+  },
+  "reading_empty_stored_has_links": {
+   "v3_hits": 55,
+   "v3_1_hits": 0,
+   "judged": {
+    "right_as_no_chain": 46,
+    "undecided": 9,
+    "wrong": 0,
+    "of": 55
+   }
+  },
+  "empty_reading_transmission_name": {
+   "v3_hits": 0,
+   "v3_1_hits": 0
+  },
+  "empty_reading_unsettled_opening": {
+   "v3_hits": 0,
+   "v3_1_hits": 19,
+   "by_category": {
+    "cat:asker": 9,
+    "cat:implicit": 7,
+    "cat:narrative": 1,
+    "cat:asker-first-person": 1,
+    "cat:clear-no-name": 1
+   }
+  },
+  "asker_not_a_link": {
+   "v3_hits": 0,
+   "v3_1_hits": 13,
+   "judged_Q1d": 9,
+   "not_judged_eligible_in_v3": [
+    "b1-1e63b5",
+    "b1-7079de",
+    "b1-fd86b8"
+   ],
+   "not_eligible_in_v3": [
+    "b1-83044c"
+   ],
+   "all_wrong_under_ruling": true
+  },
+  "back_reference_without_previous_report": {
+   "v3_hits": 10,
+   "v3_1_hits": 28
+  },
+  "back_reference_only": {
+   "v3_hits": 1,
+   "v3_1_hits": 1
+  },
+  "needs_ruling": {
+   "v3_hits": 8,
+   "v3_1_hits": 8
+  },
+  "nested_jami": {
+   "v3_hits": 5,
+   "v3_1_hits": 5
+  },
+  "nested_semicolon": {
+   "v3_hits": 3,
+   "v3_1_hits": 3
+  }
+ },
+ "asker_ruling": {
+  "eligible_v3_readings_made_wrong": 12,
+  "of_which_judged": 9,
+  "ids": [
+   "b1-1507aa",
+   "b1-1e63b5",
+   "b1-2fd814",
+   "b1-5d1972",
+   "b1-7079de",
+   "b1-7b9421",
+   "b1-9fc153",
+   "b1-b348c8",
+   "b1-b9039f",
+   "b1-b908c9",
+   "b1-f03941",
+   "b1-fd86b8"
+  ]
+ },
+ "eligible_to_apply": 394,
+ "withheld_judged_undecided_or_unruled": [
+  "b1-550aae",
+  "b1-57c34c",
+  "b1-86d128",
+  "b1-941f93",
+  "b1-b2ad9c",
+  "b1-cb13de"
+ ],
+ "reread_under_v3_1": 39,
+ "reread_by_opening": {
+  "asker_pronoun": 13,
+  "implicit_speaker": 6,
+  "asker_named": 19,
+  "bare_an": 1
+ },
+ "reread_matched_but_eligible_and_consistent": [
+  "b1-16848e",
+  "b1-4cbe02",
+  "b1-cb13de"
+ ],
+ "not_reread_but_unruled": [
+  "b1-3fe7a2"
+ ]
+}

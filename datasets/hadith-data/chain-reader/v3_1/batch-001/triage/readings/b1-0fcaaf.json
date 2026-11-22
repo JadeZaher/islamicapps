@@ -1,0 +1,49 @@
+{
+ "expanded_a": {
+  "id": "b1-0fcaaf",
+  "routes": [],
+  "matn_start": 0,
+  "notes": [
+   "Bare «وقال عليه السلام» with no named speaker and no transmitter: no chain."
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "b1-0fcaaf",
+  "status": "read",
+  "groups": [],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "Bare «وقال عليه السلام» with no named speaker and no transmitter: no chain."
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "b1-0fcaaf",
+  "status": "read",
+  "groups": [],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "no chain: the text opens with a bare «وَ قَالَ عَلَيْهِ اَلسَّلاَمُ» and names no transmitter"
+  ],
+  "fixes": [
+   {
+    "kind": "data_problem_other",
+    "reason": "RWY's machine reading takes the conjunction «و» for a transmitter; the text has no chain.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "وَ قَالَ عَلَيْهِ اَلسَّلاَمُ"
+     },
+     {
+      "source": "RWY",
+      "quote": "و"
+     }
+    ],
+    "confidence": "high"
+   }
+  ]
+ }
+}

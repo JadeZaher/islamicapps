@@ -23,10 +23,10 @@ import * as schema from './schema';
  * Views: the 5 launch views, public_chain_mention_candidates (0006), report_correspondence_shown_pairs,
  * report_correspondence_display and public_report_correspondences (0007), published_epochs (0008) and
  * public_chain_mention_candidates_v2 (0011). 0019: the five chain-fix tables, chain_fix_work_settings and
- * public_chain_fix_labels.
+ * public_chain_fix_labels. 0021: public_chain_fix_dispositions, public_chain_fix_mention_kinds.
  */
 const EXPECTED_TABLE_COUNT = 54;
-const EXPECTED_VIEW_COUNT = 12;
+const EXPECTED_VIEW_COUNT = 14;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];
 /** Indexes created by hand-written migrations, not by drizzle-kit. */

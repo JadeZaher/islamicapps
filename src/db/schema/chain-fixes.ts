@@ -25,11 +25,17 @@ export const chainFixes = pgTable(
     routesKey: text('routes_key').notNull(),
     fixKinds: text('fix_kinds').array().notNull(),
     planned: jsonb('planned').notNull(),
+    /** 0021: `no_chain_by_reading` when the readers found no isnad in the text (no planned chain); null for a reading with routes. */
+    disposition: text('disposition'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     createdBy: text('created_by').notNull(),
   },
   (table) => [
     restrictForeignKey('chain_fixes_hadith_id_fk', table.hadithId, hadiths.id),
+    check(
+      'chain_fixes_disposition_check',
+      sql`${table.disposition} is null or (${table.disposition} = 'no_chain_by_reading' and jsonb_array_length(${table.planned} -> 'chains') = 0)`,
+    ),
     check('chain_fixes_id_check', sql`${table.id} ~ '^chain-fix:[0-9a-f]{24}$'`),
     check('chain_fixes_hashes_check', sql`${table.arabicSha256} ~ '^[0-9a-f]{64}$' and ${table.readerTextSha256} ~ '^[0-9a-f]{64}$'`),
     check('chain_fixes_text_layout_check', sql`${table.textLayout} in ('full_text', 'chain_field_then_matn')`),
@@ -64,6 +70,10 @@ export const chainFixSubmissions = pgTable(
     promptPath: text('prompt_path').notNull(),
     promptVersion: text('prompt_version').notNull(),
     promptSha256: text('prompt_sha256').notNull(),
+    /** 0021 (v3_2: 0022): the reader tool (v3, v3_1, v3_2) that validated, expanded and held a v3-shaped reading; the prompt columns name what the reader ran. */
+    toolVersion: text('tool_version'),
+    /** 0021: the earlier reports an inherited reading takes names from ({ref, previous_report_id, supplies, surfaces}). */
+    inheritedFrom: jsonb('inherited_from'),
     modelId: text('model_id').notNull(),
     providerRuntime: text('provider_runtime').notNull(),
     orchestratorRunId: text('orchestrator_run_id').notNull(),
@@ -83,6 +93,8 @@ export const chainFixSubmissions = pgTable(
     check('chain_fix_submissions_view_check', sql`${table.view} in ('text_only', 'text_and_context', 'text_and_stored_chain')`),
     check('chain_fix_submissions_review_kind_check', sql`${table.reviewKind} = 'specialist'`),
     check('chain_fix_submissions_prompt_sha256_check', sql`${table.promptSha256} ~ '^[0-9a-f]{64}$'`),
+    check('chain_fix_submissions_tool_version_check', sql`${table.toolVersion} is null or ${table.toolVersion} in ('v3', 'v3_1', 'v3_2')`),
+    check('chain_fix_submissions_inherited_from_check', sql`${table.inheritedFrom} is null or jsonb_typeof(${table.inheritedFrom}) = 'array'`),
     check('chain_fix_submissions_times_check', sql`${table.finishedAt} >= ${table.startedAt} and ${table.submittedAt} >= ${table.finishedAt}`),
     check('chain_fix_submissions_provenance_check', sql`btrim(${table.modelId}) <> '' and btrim(${table.providerRuntime}) <> '' and btrim(${table.orchestratorRunId}) <> ''`),
     check('chain_fix_submissions_evidence_check', sql`jsonb_typeof(${table.evidence}) = 'array' and jsonb_array_length(${table.evidence}) > 0 and btrim(${table.reason}) <> ''`),
@@ -249,4 +261,24 @@ export const publicChainFixLabels = pgView('public_chain_fix_labels', {
   decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
   awaitingFinalReview: boolean('awaiting_final_review').notNull(),
   humanConfirmations: jsonb('human_confirmations').notNull(),
+}).existing();
+
+/** Public view (0021): a report whose applied fix found no isnad in the text; its chains are retired, the page says so. */
+export const publicChainFixDispositions = pgView('public_chain_fix_dispositions', {
+  hadithId: text('hadith_id').notNull(),
+  fixId: text('fix_id').notNull(),
+  disposition: text('disposition').notNull(),
+  state: text('state').notNull(),
+  models: text('models').array().notNull(),
+  runs: integer('runs').notNull(),
+  decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
+  awaitingFinalReview: boolean('awaiting_final_review').notNull(),
+}).existing();
+
+/** Public view (0021): what a model-read mention is beyond a name written in the chain (`imam_in_text`, `inherited`), from the fix's plan. */
+export const publicChainFixMentionKinds = pgView('public_chain_fix_mention_kinds', {
+  mentionId: text('mention_id').notNull(),
+  chainId: text('chain_id').notNull(),
+  hadithId: text('hadith_id').notNull(),
+  readerKind: text('reader_kind').notNull(),
 }).existing();

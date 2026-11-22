@@ -58,7 +58,7 @@ def main(directory: Path) -> int:
             owner = hadiths.get(mention["hadith_id"])
             if (written is None or written["inherited_from_mention_id"] or written["surface_ar"] != mention["surface_ar"]
                     or hadiths[written["hadith_id"]][1] != owner[1]
-                    or (not owner[2] and chain["extraction_method"] != "thaqalayn_inherited_chain")):
+                    or (not owner[2] and chain["extraction_method"] not in ("thaqalayn_inherited_chain", "chain_fix_reader"))):
                 fail("inherited mention does not repeat a written mention of its collection in an inheriting chain", mention["id"])
     for chain_id, chain in chains.items():
         found = sorted(positions.get(chain_id, []))

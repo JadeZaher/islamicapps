@@ -3,11 +3,12 @@
     python -I chain_fix_engine.py < request.json > response.json
 
 Request `{"items": [{"key", "text", "expected_id", "output", "base", "record_id", "source_work_id", "evidence",
-"require_coverage", "reader_format"?, "context"?}]}`; response `{"results": [{"key", "errors", "reading", "offsets_repaired",
-"comparison", "planned", "computed_evidence", "holds", "proposals", "needs_ruling"}]}`. `reader_format` `v2` (levels, no
-offsets) is expanded by `chain-reader/context/expand.py` and validated by `validate_v2.py`; `text` is a text/metadata checker
-output, which only files proposals. Every Arabic rule of the pipeline lives here so the submit tool, the database apply and
-the projection replay share one implementation.
+"require_coverage", "reader_format"?, "tool_version"?, "context"?, "previous"?}]}`; response `{"results": [{"key", "errors",
+"reading", "offsets_repaired", "comparison", "planned", "computed_evidence", "holds", "proposals", "needs_ruling",
+"derived_links", "disposition"}]}`. `reader_format` `v2` (levels, no offsets) is expanded by `chain-reader/context/expand.py`
+and validated by `validate_v2.py`; `v3`/`v3_1` readings by the tool `tool_version` names (AGENTS.md §reader formats); `text` is a
+text/metadata checker output, which only files proposals. Every Arabic rule of the pipeline lives here so the submit tool, the
+database apply and the projection replay share one implementation.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE.parent
-for extra in (DATA / "chain-reader" / "v3", DATA / "chain-reader" / "context", DATA / "chain-reader", DATA):   # -I drops the script directory
+for extra in (DATA / "chain-reader" / "v3_2", DATA / "chain-reader" / "v3_1", DATA / "chain-reader" / "v3", DATA / "chain-reader" / "context", DATA / "chain-reader", DATA):   # -I drops the script directory
     if str(extra) not in sys.path:
         sys.path.insert(0, str(extra))
 
@@ -34,9 +35,25 @@ from validate_v2 import validate_chain as validate_chain_v2, validate_text as va
 from expand_v3 import expand as expand_v3  # noqa: E402  (reader v3: spelling fold, compiler aliases, same man once)
 from holds_v3 import compute_holds as compute_holds_v3  # noqa: E402  (v3 holds: chain-reader/v3/HOLDS.md)
 from validate_v3 import validate_v3  # noqa: E402
+from expand_v3_1 import expand as expand_v3_1  # noqa: E402  (tool v3.1: folds, empty readings, asker rule; v3_1/AGENTS.md)
+from holds_v3_1 import compute_holds as compute_holds_v3_1  # noqa: E402  (v3.1 holds: chain-reader/v3_1/HOLDS.md)
+from validate_v3_1 import validate_v3_1  # noqa: E402
+from expand_v3_2 import expand as expand_v3_2  # noqa: E402  (tool v3.2: a variant group is a remark, never a route; v3_2/README.md)
+from holds_v3_2 import compute_holds as compute_holds_v3_2  # noqa: E402  (v3.2 holds: chain-reader/v3_2/HOLDS.md)
+from validate_v3_2 import validate_v3_2  # noqa: E402
 
-# Links the reader derives rather than reads: not substrings of the report text. Kept with kind and origin; never planned rows.
+# Links the reader derives rather than reads: not substrings of the report text. Kept with kind and origin; the compiler head is
+# never a row (the projection derives it); an inherited name is a row that repeats the cited report's written mention.
 DERIVED_KINDS = ("compiler_head", "inherited")
+# The reader toolchain per tool version: (validate, expand, holds). A reading names the prompt it ran under (its format) and the
+# tool that expanded and held it; batch 001 was read under prompt v3 and is re-triaged by tool v3.1 (AGENTS.md §reader formats).
+TOOLS = {"v3": (validate_v3, expand_v3, compute_holds_v3), "v3_1": (validate_v3_1, expand_v3_1, compute_holds_v3_1),
+         "v3_2": (validate_v3_2, expand_v3_2, compute_holds_v3_2)}
+# The tools that may read a reading made under each prompt: a later tool reads an earlier prompt's output, never the reverse.
+TOOLS_FOR_FORMAT = {"v3": ("v3", "v3_1", "v3_2"), "v3_1": ("v3_1", "v3_2"), "v3_2": ("v3_2",)}
+# A cited report's chain may lend its names only when a tested rule or a person stands behind it.
+INHERITABLE_STATUSES = ("checked_by_rule", "verified_by_reviewer")
+NO_CHAIN_DISPOSITION = "no_chain_by_reading"
 
 FIX_KINDS = ("no_change", "link_added", "link_removed", "surface_changed", "route_split", "routes_merged",
              "shared_tail_attached", "chain_removed", "chain_added")
@@ -195,40 +212,143 @@ def review_unit_ids(surface: str, teacher: str | None, student: str | None, sour
     return coarse, fine
 
 
-def plan(text: str, reading: dict, base: dict, comparison: dict, record_id: str, source_work_id: str) -> dict:
-    """The chain and mention rows this reading becomes, ids in the projection's scheme (see AGENTS.md §rows)."""
-    reader = _reader_routes(reading)
-    stored_by_id = {m["id"]: (branch["branch"], m) for branch in base["chains"] for m in branch["mentions"]}
-    stored_neighbours = {}
+def stored_neighbours_of(base: dict) -> dict[str, tuple[str | None, str | None]]:
+    """Stored mention id -> (teacher id, student id) in its stored branch: what the carry rule compares."""
+    neighbours = {}
     for branch in base["chains"]:
         ids = [m["id"] for m in branch["mentions"]]
         for index, mention_id in enumerate(ids):
-            stored_neighbours[mention_id] = (ids[index + 1] if index + 1 < len(ids) else None, ids[index - 1] if index > 0 else None)
+            neighbours[mention_id] = (ids[index + 1] if index + 1 < len(ids) else None, ids[index - 1] if index > 0 else None)
+    return neighbours
+
+
+def chain_rows(index: int, entries: list[dict], suspension: str | None, record_id: str, source_work_id: str,
+               stored_neighbours: dict) -> dict:
+    """One planned chain from its entries (surface, reader kind, span, kept id, inherited root), ids, contexts and carry computed."""
+    normalized = [name_normalize(entry["surface_ar"]) for entry in entries]
+    kept = [entry["kept_mention_id"] for entry in entries]
+    mentions = []
+    for p, entry in enumerate(entries):
+        teacher = normalized[p + 1] if p + 1 < len(entries) else None
+        student = normalized[p - 1] if p > 0 else None
+        coarse, fine = review_unit_ids(normalized[p], teacher, student, source_work_id)
+        # Identity is carried only when the name and both neighbours are the stored ones (same fine review unit).
+        carry = bool(kept[p]) and stored_neighbours[kept[p]] == (kept[p + 1] if p + 1 < len(entries) else None, kept[p - 1] if p > 0 else None)
+        mentions.append({
+            "id": f"mention:{record_id}:{index:04d}:{p:04d}", "position": p, "surface_ar": entry["surface_ar"],
+            "surface_normalized": normalized[p], "teacher_context_normalized": teacher, "student_context_normalized": student,
+            "review_unit_id": coarse, "review_unit_fine_id": fine, "reader_kind": entry["reader_kind"],
+            "link_kind_if_new": entry["link_kind_if_new"], "span": entry["span"],
+            "kept_mention_id": kept[p], "carry_identity": carry,
+            "inherited_from_mention_id": entry.get("inherited_from_mention_id"),
+        })
+    return {"id": f"chain:{record_id}:{index:04d}", "branch": index, "length": len(entries), "suspension": suspension,
+            "extraction_method": EXTRACTION_METHOD, "mentions": mentions}
+
+
+def plan(text: str, reading: dict, base: dict, comparison: dict, record_id: str, source_work_id: str) -> dict:
+    """The chain and mention rows this reading becomes, ids in the projection's scheme (see AGENTS.md §rows)."""
+    reader = _reader_routes(reading)
+    stored_by_id = {m["id"]: m for branch in base["chains"] for m in branch["mentions"]}
+    neighbours = stored_neighbours_of(base)
     relies_elsewhere = _ends_with_back_reference(reading)
     chains = []
     for index, route in enumerate(reader):
         kept = comparison["kept_mention_ids"][index]
-        surfaces = [stored_by_id[kept[p]][1]["surface_ar"] if kept[p] else _strip_arabic_marks(text[link["start"]:link["end"]])
-                    for p, link in enumerate(route)]
-        normalized = [name_normalize(surface) for surface in surfaces]
-        mentions = []
-        for p, link in enumerate(route):
-            teacher = normalized[p + 1] if p + 1 < len(route) else None
-            student = normalized[p - 1] if p > 0 else None
-            coarse, fine = review_unit_ids(normalized[p], teacher, student, source_work_id)
-            # Identity is carried only when the name and both neighbours are the stored ones (same fine review unit).
-            carry = bool(kept[p]) and stored_neighbours[kept[p]] == (kept[p + 1] if p + 1 < len(route) else None, kept[p - 1] if p > 0 else None)
-            mentions.append({
-                "id": f"mention:{record_id}:{index:04d}:{p:04d}", "position": p, "surface_ar": surfaces[p],
-                "surface_normalized": normalized[p], "teacher_context_normalized": teacher, "student_context_normalized": student,
-                "review_unit_id": coarse, "review_unit_fine_id": fine, "reader_kind": link["kind"],
-                "link_kind_if_new": LINK_KIND_FOR_READER_KIND[link["kind"]], "span": [link["start"], link["end"]],
-                "kept_mention_id": kept[p], "carry_identity": carry,
-            })
+        entries = [{"surface_ar": stored_by_id[kept[p]]["surface_ar"] if kept[p] else _strip_arabic_marks(text[link["start"]:link["end"]]),
+                    "reader_kind": link["kind"], "link_kind_if_new": LINK_KIND_FOR_READER_KIND[link["kind"]],
+                    "span": [link["start"], link["end"]], "kept_mention_id": kept[p]} for p, link in enumerate(route)]
         suspension = "back_reference" if route[0]["kind"] == "back_reference" or index in relies_elsewhere else None
-        chains.append({"id": f"chain:{record_id}:{index:04d}", "branch": index, "length": len(route), "suspension": suspension,
-                       "extraction_method": EXTRACTION_METHOD, "mentions": mentions})
+        chains.append(chain_rows(index, entries, suspension, record_id, source_work_id, neighbours))
     return {"chains": chains}
+
+
+def mark_named_in_text(planned: dict, expanded: dict) -> None:
+    """A planned mention that is an Imam named in the text (`imam_in_text`) keeps that kind, so the page can label it."""
+    spans = {(link["start"], link["end"]) for route in expanded["routes"] for link in route["links"]
+             if link["kind"] == "imam_in_text" and link["start"] is not None}
+    for chain in planned["chains"]:
+        for mention in chain["mentions"]:
+            if mention["span"] and tuple(mention["span"]) in spans:
+                mention["reader_kind"] = "imam_in_text"
+
+
+def resolve_inherited(links: list[dict], previous: dict | None) -> tuple[list[dict] | None, dict | None]:
+    """The cited report's written mentions these inherited links repeat, in order (the root of each), or (None, hold).
+
+    Held, never guessed: no previous report given; its chain not rule-checked or verified (an uncertain chain lends no names);
+    a name not found, in order, in one of its branches (comparison key equality, the same fold as the comparison)."""
+    if not previous:
+        return None, {"code": "inherited_previous_report_unknown",
+                      "detail": "the reading takes names from an earlier report the submission could not identify in the archive"}
+    statuses = sorted({chain.get("structure_status") or "none" for chain in previous["chains"]})
+    if not previous["chains"] or any(status not in INHERITABLE_STATUSES for status in statuses):
+        return None, {"code": "inherited_source_chain_uncertain",
+                      "detail": f"the earlier report {previous['hadith_id']} has a chain no tested rule or person stands behind ({', '.join(statuses) or 'no chain'}); its names are not repeated"}
+    wanted = [comparison_key(link["surface"]) for link in links]
+    for branch in sorted(previous["chains"], key=lambda chain: chain["branch"]):
+        keys = [comparison_key(mention["surface_ar"]) for mention in branch["mentions"]]
+        pairs = _lcs_pairs(wanted, keys)
+        if len(pairs) == len(wanted):
+            return [{"id": branch["mentions"][j].get("inherited_from_mention_id") or branch["mentions"][j]["id"],
+                     "surface_ar": branch["mentions"][j]["surface_ar"]} for _, j in pairs], None
+    return None, {"code": "inherited_name_not_in_source_chain",
+                  "detail": f"a name the reading takes from {previous['hadith_id']} is not, in that order, in one of its chains"}
+
+
+def plan_inherited(planned: dict, expanded: dict, previous: dict, base: dict, record_id: str,
+                   source_work_id: str) -> tuple[dict | None, list[dict]]:
+    """Planned rows with inherited names spliced in at their places (AGENTS.md §inherited links), or (None, holds).
+
+    Each expanded route with an inherited link: its written links keep their planned entries (matched by span), its inherited
+    links become mentions repeating the cited written mention (its surface, `inherited_from_mention_id` its root). Routes are
+    renumbered in order: routes that start inherited first (their chain precedes the text), then by first written offset."""
+    written_by_span = {tuple(m["span"]): m for chain in planned["chains"] for m in chain["mentions"] if m["span"]}
+    neighbours = stored_neighbours_of(base)
+    holds: list[dict] = []
+    rebuilt: list[tuple[tuple, list[dict], str | None]] = []
+    used_spans: set[tuple] = set()
+    for route in expanded["routes"]:
+        links = [link for link in route["links"] if link["kind"] != "compiler_head" and not is_isnad_phrase(link)]
+        if not any(link["kind"] == "inherited" for link in links):
+            continue
+        groups: dict[str, list[dict]] = {}
+        for link in links:
+            if link["kind"] == "inherited":
+                groups.setdefault(link.get("from") or "", []).append(link)
+        roots: dict[int, dict] = {}
+        for ref, group in groups.items():
+            found, hold = resolve_inherited(group, previous.get(ref))
+            if hold:
+                holds.append(hold)
+                continue
+            roots.update({id(link): root for link, root in zip(group, found)})
+        if holds:
+            continue
+        entries = []
+        for link in links:
+            if link["kind"] == "inherited":
+                root = roots[id(link)]
+                entries.append({"surface_ar": root["surface_ar"], "reader_kind": "inherited", "link_kind_if_new": "unclassified",
+                                "span": None, "kept_mention_id": None, "inherited_from_mention_id": root["id"]})
+            else:
+                mention = written_by_span[(link["start"], link["end"])]
+                used_spans.add((link["start"], link["end"]))
+                entries.append({key: mention[key] for key in ("surface_ar", "reader_kind", "link_kind_if_new", "span", "kept_mention_id")})
+        first_written = min((entry["span"][0] for entry in entries if entry["span"]), default=-1)
+        starts_inherited = entries[0]["span"] is None
+        rebuilt.append(((0 if starts_inherited else 1, first_written), entries, None))
+    if holds:
+        return None, holds
+    for chain in planned["chains"]:
+        spans = [tuple(m["span"]) for m in chain["mentions"]]
+        if any(span in used_spans for span in spans):
+            continue
+        entries = [{key: m[key] for key in ("surface_ar", "reader_kind", "link_kind_if_new", "span", "kept_mention_id")} for m in chain["mentions"]]
+        rebuilt.append(((1, chain["mentions"][0]["span"][0]), entries, chain["suspension"]))
+    rebuilt.sort(key=lambda item: item[0])
+    return {"chains": [chain_rows(index, entries, suspension, record_id, source_work_id, neighbours)
+                       for index, (_, entries, suspension) in enumerate(rebuilt)]}, []
 
 
 def evidence_problems(text: str, quotes: list[str], comparison: dict, require_coverage: bool) -> list[str]:
@@ -317,7 +437,7 @@ def proposals_of(output: dict, kind: str) -> list[dict]:
 
 def run_item(item: dict) -> dict:
     result = {"key": item["key"], "errors": [], "reading": None, "offsets_repaired": False, "comparison": None, "planned": None,
-              "computed_evidence": [], "holds": [], "proposals": [], "needs_ruling": False, "derived_links": []}
+              "computed_evidence": [], "holds": [], "proposals": [], "needs_ruling": False, "derived_links": [], "disposition": None, "variant_remarks": []}
     output, context = item["output"], item.get("context") or {}
     stored = [m["surface_ar"] for c in item["base"]["chains"] for m in c["mentions"]]
     if item.get("reader_format") == "text":
@@ -327,26 +447,39 @@ def run_item(item: dict) -> dict:
         else:
             result["proposals"] = proposals_of(output, "text")
         return result
-    if item.get("reader_format") == "v3":
-        # The reader's own v3 output (`reader_output_v3`): validated and expanded by the v3 tool against the packet's text and
-        # context; derived links are checked there (an inherited name against the previous report's text, the compiler head
-        # against the work profile) and recorded with their origin; planned rows come from the written links only.
-        errors = validate_v3(output, item["text"], item["expected_id"], context)
+    expanded_v3 = None
+    if item.get("reader_format") in ("v3", "v3_1", "v3_2"):
+        # The reader's own v3-shaped output (`reader_output_v3`), validated, expanded and held by the tool `tool_version` names
+        # (v3 or v3_1; a v3.1 reading only by the v3.1 tool) against the packet's text and context; derived links are checked
+        # there (an inherited name against the previous report's text, the compiler head against the work profile).
+        tool = item.get("tool_version") or item["reader_format"]
+        if tool not in TOOLS_FOR_FORMAT[item["reader_format"]]:
+            result["errors"] = [f"tool_version: {tool!r} cannot read a {item['reader_format']} reading (tools for it: {', '.join(TOOLS_FOR_FORMAT[item['reader_format']])})"]
+            return result
+        validate_tool, expand_tool, holds_tool = TOOLS[tool]
+        errors = validate_tool(output, item["text"], item["expected_id"], context)
         if errors:
             result["errors"] = errors
             return result
-        expanded, errors = expand_v3(output, item["text"], context) if output["status"] == "read" else (None, [])
-        result["holds"] = compute_holds_v3(expanded, output, item["text"], context, stored, item.get("other_output"))
+        expanded, errors = expand_tool(output, item["text"], context) if output["status"] == "read" else (None, [])
+        result["holds"] = holds_tool(expanded, output, item["text"], context, stored, item.get("other_output"))
         result["proposals"] = proposals_of(output, "chain")
         result["needs_ruling"] = bool(output.get("needs_ruling"))
         if expanded is None:
             result["errors"] = errors or ["status: the reader could not read this report without the previous report's chain; nothing to apply"]
             return result
         result["derived_links"] = derived_links(expanded)
-        if any(link["kind"] == "inherited" for link in result["derived_links"]):
-            # Recorded and validated, not yet written as rows: an inherited mention needs the earlier report's written mention.
-            result["holds"].append({"code": "inherited_links_not_applied",
-                                    "detail": "the reading takes names from an earlier report; recorded with their origin, applied only by a person"})
+        # v3.2: a variant group is a remark about another version, kept with the fix and never a route; the v3.2 holds keep such a
+        # reading back (has_variant_group) until the page shows the remark.
+        result["variant_remarks"] = expanded.get("variant_remarks") or []
+        if any(route.get("variant") for route in expanded["routes"]):
+            # A variant group is a remark that another version names another transmitter («بمثل حديث X»), never a route: until it is
+            # kept as a labelled remark, the whole reading waits (AGENTS.md §reader formats, tranche-01 judge 2026-11-22).
+            result["holds"].append({"code": "has_variant_group",
+                                    "detail": "the reading marks a variant route (another version's transmitter); it would be written as a chain"})
+        # "This report has no isnad": an agreed reading with no route (v3_1/AGENTS.md §empty readings); the stored chain retires.
+        result["disposition"] = NO_CHAIN_DISPOSITION if not expanded["routes"] else None
+        expanded_v3 = expanded
         output, errors = v1_from_v2(expanded, allow_inherited=True)
         if errors:
             result["errors"] = errors
@@ -377,11 +510,19 @@ def run_item(item: dict) -> dict:
     if problems:
         result["errors"] = problems
         return result
-    if item.get("reader_format") not in ("v2", "v3"):
+    if item.get("reader_format") not in ("v2", "v3", "v3_1", "v3_2"):
         result["holds"] = compute_holds(reading, {}, item["text"], None, stored)
+    planned = plan(item["text"], reading, item["base"], comparison, item["record_id"], item["source_work_id"])
+    if expanded_v3 is not None:
+        mark_named_in_text(planned, expanded_v3)
+        if any(link["kind"] == "inherited" for link in result["derived_links"]):
+            # Inherited names become rows that repeat the cited report's written mentions (AGENTS.md §inherited links), or hold.
+            spliced, holds = plan_inherited(planned, expanded_v3, item.get("previous") or {}, item["base"], item["record_id"],
+                                            item["source_work_id"])
+            result["holds"] += holds
+            planned = spliced or planned
     result.update(reading=reading, offsets_repaired=repaired, comparison=comparison,
-                  computed_evidence=computed_evidence(item["text"], comparison),
-                  planned=plan(item["text"], reading, item["base"], comparison, item["record_id"], item["source_work_id"]))
+                  computed_evidence=computed_evidence(item["text"], comparison), planned=planned)
     return result
 
 
