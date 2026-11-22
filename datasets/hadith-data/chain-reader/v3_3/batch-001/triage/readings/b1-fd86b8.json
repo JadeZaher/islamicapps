@@ -1,0 +1,115 @@
+{
+ "expanded_a": {
+  "id": "b1-fd86b8",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "الصدوق",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "مُوسَى بْنَ جَعْفَرٍ",
+      "start": 46,
+      "end": 66,
+      "kind": "imam_in_text"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 0,
+  "notes": [
+   "«سأل علي بن جعفر أخاه» : the asker is not a link when the report is the Imam's answer (rule 5), so only the Imam is read",
+   "The Imam is named in the words of the report with no chain: imam_in_text (owner ruling 2)",
+   "«يعني المسلخ» is an editor's gloss, left out"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "b1-fd86b8",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "موسى بن جعفر",
+       "kind": "imam_in_text"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«سأل علي بن جعفر أخاه» : the asker is not a link when the report is the Imam's answer (rule 5), so only the Imam is read",
+   "The Imam is named in the words of the report with no chain: imam_in_text (owner ruling 2)",
+   "«يعني المسلخ» is an editor's gloss, left out"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "RWY reads Ali b. Ja'far as the only link; the text has him as the asker and Musa b. Ja'far as the one who answers",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "سَأَلَ عَلِيُّ بْنُ جَعْفَرٍ أَخَاهُ مُوسَى بْنَ جَعْفَرٍ"
+     },
+     {
+      "source": "RWY",
+      "quote": "علي بن جعفر"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "b1-fd86b8",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "موسى بن جعفر",
+       "kind": "imam_in_text"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«سَأَلَ عَلِيُّ بْنُ جَعْفَرٍ أَخَاهُ» — the asker is not a link (rule 5); the report is the Imam's answer, so the Imam asked is the one link",
+   "The Imam named in the words is the last link, surface as written (owner ruling 2)"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "RWY's machine reading takes the asker for the only transmitter; the text makes him the asker and the Imam the one who answers.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "سَأَلَ عَلِيُّ بْنُ جَعْفَرٍ أَخَاهُ مُوسَى بْنَ جَعْفَرٍ"
+     },
+     {
+      "source": "RWY",
+      "quote": "علي بن جعفر"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}

@@ -1,0 +1,135 @@
+{"format": "shura-chain-review-output/1", "specialist_id": "chain-reviewer", "prompt_version": "1.0.0", "packet_id": "pilot-001-p1-04",
+ "reviews": [
+  {"id": "cr1-7e8e53",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The dashed words are a gloss on the first shaykh, not a link.", "source": "text", "quote": "- هو باوردي -"},
+    {"claim": "Kunya, comma and name are one man, who transmits from Ma'mar.", "source": "text", "quote": "حدثنا أبو سفيان، محمد بن حميد عن معمر"},
+    {"claim": "The chain ends at the bare relation whose own practice the report relays.", "source": "text", "quote": "عن ابن طاوس، عن أبيه، أنه كان يكره"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-25de39",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The dashed remark of Ibn Awf about the original copy sits inside the isnad and the chain continues from the father to Damdam.", "source": "text", "quote": "قال حدثني أبي، - قال ابن عوف ورأيت في أصل إسماعيل - قال حدثني ضمضم"},
+    {"claim": "The Companion quoting the Prophet is the last link.", "source": "text", "quote": "عن أبي مالك الأشعري، قال قال رسول الله"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-750b73",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The compiler states the Ibn Mahdi version without hearing it, then gives his own connection to it, so Ibn Mahdi is not the compiler's shaykh.", "source": "text", "quote": "حدثنا بذلك إسحاق بن منصور حدثنا عبد الرحمن بن مهدي"},
+    {"claim": "The connection keeps the rest of the stated isnad: Ibn Mahdi from Ikrima, so there is one route, not two.", "source": "text", "quote": "وروى عبد الرحمن بن مهدي، عن عكرمة بن عمار"},
+    {"claim": "Ibn al-Mubarak is named only to compare versions, a remark and not a route.", "source": "text", "quote": "نحو رواية ابن المبارك"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g2", "verdict": "remark_about_another_version", "quote": "نحو رواية ابن المبارك"},
+    {"group": "B.g2", "verdict": "remark_about_another_version", "quote": "نحو رواية ابن المبارك"}
+   ],
+   "corrected_reading": {"id": "cr1-750b73", "status": "read", "groups": [
+     {"levels": [[{"surface": "إسحاق بن منصور", "kind": "narrator"}], [{"surface": "عبد الرحمن بن مهدي", "kind": "narrator", "occurrence": 2}], [{"surface": "عكرمة بن عمار", "kind": "narrator"}]]},
+     {"levels": [[{"surface": "ابن المبارك", "kind": "narrator"}]], "variant": true}
+    ], "shared_tail": null, "needs_ruling": false,
+    "notes": ["«حدثنا بذلك إسحاق بن منصور حدثنا عبد الرحمن بن مهدي» connects the compiler to the Ibn Mahdi version stated before it: one route Ishaq, Ibn Mahdi, Ikrima; the readers' route compiler to Ibn Mahdi directly is not in the text", "the chain beyond Ikrima is given only by «نحو رواية ابن المبارك», which refers to an earlier report not in the packet"],
+    "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The route stops at Ikrima because the rest of the chain belongs to an earlier report that the packet does not supply."},
+  {"id": "cr1-e25ac5",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Two shaykhs share Zayd, who names Sayf as his source.", "source": "text", "quote": "أن زيد بن الحباب، حدثهم حدثنا سيف المكي"},
+    {"claim": "The dashed words give Uthman's wording of the same man's name, not another route.", "source": "text", "quote": "- قال عثمان سيف بن سليمان -"},
+    {"claim": "The Companion relating the Prophet's judgment is the last link.", "source": "text", "quote": "عن ابن عباس، أن رسول الله"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "remark_about_another_version", "quote": "قال عثمان سيف بن سليمان"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-eb03bd",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The first isnad ends at the bare relation before a first wording of the saying.", "source": "text", "quote": "عن أبيه، كنت أطلب بعيرا لي"},
+    {"claim": "A second isnad of the same saying follows, ending at the father named after a comma, one link.", "source": "text", "quote": "وحدثنا مسدد، حدثنا سفيان، عن عمرو، سمع محمد بن جبير، عن أبيه، جبير بن مطعم قال"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-2c29bb",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Three co-transmitters meet at one shaykh, and the dashed words give Abu Bakr's wording of the same man, not a link.", "source": "text", "quote": "جميعا عن ابن، عيينة - قال أبو بكر حدثنا سفيان بن عيينة، -"},
+    {"claim": "Kurayb with his patron is one link, and the following Ibn Abbas is the last link before the Prophet.", "source": "text", "quote": "عن كريب، مولى ابن عباس عن ابن عباس، عن النبي"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-0b5d5a",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The «قال» before the third isnad shows its speaker is the first shaykh, not the compiler, so the later isnads keep the head Hasan b. al-Rabi.", "source": "text", "quote": "قال وحدثنا مخلد بن حسين"},
+    {"claim": "The Fudayl isnad is spoken in the same run of the first shaykh's words, so it too starts after Hasan b. al-Rabi.", "source": "text", "quote": "عن محمد، وحدثنا فضيل، عن هشام، قال"},
+    {"claim": "The saying is Ibn Sirin's, so the Fudayl route through Hisham ends at him as the other routes do, not at Hisham.", "source": "text", "quote": "عن محمد بن سيرين، قال إن هذا العلم دين"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-0b5d5a", "status": "read", "groups": [
+     {"levels": [[{"surface": "حسن بن الربيع", "kind": "narrator"}], [{"surface": "حماد بن زيد", "kind": "narrator"}], [{"surface": "أيوب", "kind": "narrator"}, {"surface": "هشام", "kind": "narrator", "occurrence": 1}], [{"surface": "محمد", "kind": "narrator", "occurrence": 1}]]},
+     {"levels": [[{"surface": "حسن بن الربيع", "kind": "narrator"}], [{"surface": "فضيل", "kind": "narrator"}], [{"surface": "هشام", "kind": "narrator", "occurrence": 2}], [{"surface": "محمد بن سيرين", "kind": "narrator"}]]},
+     {"levels": [[{"surface": "حسن بن الربيع", "kind": "narrator"}], [{"surface": "مخلد بن حسين", "kind": "narrator"}], [{"surface": "هشام", "kind": "narrator", "occurrence": 3}], [{"surface": "محمد بن سيرين", "kind": "narrator"}]]}
+    ], "shared_tail": null, "needs_ruling": false,
+    "notes": ["«قال وحدثنا مخلد بن حسين»: the speaker of «قال» is the first shaykh, so the second isnad keeps the head up to حسن بن الربيع, as does «وحدثنا فضيل» in the same speech", "the Fudayl route «عن هشام» has no name after it; it ends at محمد بن سيرين, whose saying the report relays, as the Mukhallad route does"],
+    "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The text does not write who heard Fudayl or what follows his Hisham; the reading from «قال وحدثنا» and the saying's speaker is the clearly better one but not the only possible one."},
+  {"id": "cr1-7e756d",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The report opens with a back reference whose asker is unnamed, an unnamed link before the one asked.", "source": "text", "quote": "و سَأَلَهُ بَعْضُ أَصْحَابِهِ"},
+    {"claim": "The nearest previous report only says «he said» without naming the speaker, so it cannot supply him.", "source": "prev1", "quote": "وَ قَالَ عَلَيْهِ اَلسَّلاَمُ"},
+    {"claim": "The report before it names the speaker, who is inherited as the last link.", "source": "prev2", "quote": "وَ قَالَ اَلصَّادِقُ عَلَيْهِ اَلسَّلاَمُ"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-fa1729",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Abu Qilaba names Malik as his source, and Malik tells the encounter, so Malik is the last link.", "source": "text", "quote": "عن أبي قلابة، قال حدثنا مالك، أتينا إلى النبي"},
+    {"claim": "The stored chain stops at Abu Qilaba and leaves out the last link.", "source": "stored", "quote": "أبي قلابة"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-a3a8fb",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Two shaykhs share Waki and the chain runs to Urwa b. Amir.", "source": "text", "quote": "قالا حدثنا وكيع، عن سفيان، عن حبيب بن أبي ثابت، عن عروة بن عامر،"},
+    {"claim": "The dashed words are Ahmad's description of Urwa, and Urwa then tells what was said before the Prophet, so he is the last link.", "source": "text", "quote": "- قال أحمد القرشي - قال ذكرت الطيرة"},
+    {"claim": "The stored chain carries the editorial word «المعنى» inside a name, which the readers rightly drop.", "source": "stored", "quote": "أبو بكر بن أبي شيبة المعنى"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""}
+ ]}

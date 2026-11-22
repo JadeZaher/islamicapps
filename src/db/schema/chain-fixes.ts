@@ -74,6 +74,8 @@ export const chainFixSubmissions = pgTable(
     toolVersion: text('tool_version'),
     /** 0021: the earlier reports an inherited reading takes names from ({ref, previous_report_id, supplies, surfaces}). */
     inheritedFrom: jsonb('inherited_from'),
+    /** 0023: a fix written from the AI reviewer's correction (two reviews, the same routes): the readers' fix it corrects. */
+    correctsFixId: text('corrects_fix_id'),
     modelId: text('model_id').notNull(),
     providerRuntime: text('provider_runtime').notNull(),
     orchestratorRunId: text('orchestrator_run_id').notNull(),
@@ -89,11 +91,12 @@ export const chainFixSubmissions = pgTable(
   (table) => [
     restrictForeignKey('chain_fix_submissions_fix_id_fk', table.fixId, chainFixes.id),
     restrictForeignKey('chain_fix_submissions_hadith_id_fk', table.hadithId, hadiths.id),
+    restrictForeignKey('chain_fix_submissions_corrects_fix_id_fk', table.correctsFixId, chainFixes.id),
     // 0020: `text_and_context` (reader v3): the text and the sources' context, never the stored chain; blind for agreement.
     check('chain_fix_submissions_view_check', sql`${table.view} in ('text_only', 'text_and_context', 'text_and_stored_chain')`),
     check('chain_fix_submissions_review_kind_check', sql`${table.reviewKind} = 'specialist'`),
     check('chain_fix_submissions_prompt_sha256_check', sql`${table.promptSha256} ~ '^[0-9a-f]{64}$'`),
-    check('chain_fix_submissions_tool_version_check', sql`${table.toolVersion} is null or ${table.toolVersion} in ('v3', 'v3_1', 'v3_2')`),
+    check('chain_fix_submissions_tool_version_check', sql`${table.toolVersion} is null or ${table.toolVersion} in ('v3', 'v3_1', 'v3_2', 'v3_3', 'v3_4')`),
     check('chain_fix_submissions_inherited_from_check', sql`${table.inheritedFrom} is null or jsonb_typeof(${table.inheritedFrom}) = 'array'`),
     check('chain_fix_submissions_times_check', sql`${table.finishedAt} >= ${table.startedAt} and ${table.submittedAt} >= ${table.finishedAt}`),
     check('chain_fix_submissions_provenance_check', sql`btrim(${table.modelId}) <> '' and btrim(${table.providerRuntime}) <> '' and btrim(${table.orchestratorRunId}) <> ''`),
@@ -127,6 +130,12 @@ export const chainFixDecisions = pgTable(
     why: text('why').notNull(),
     decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
     supersedesDecisionId: text('supersedes_decision_id'),
+    /** 0023: the AI reviewer confirmed it ({model_id, run_id, at, review_id, outcome, decision}); never "verified". */
+    aiReview: jsonb('ai_review'),
+    /** 0023: the AI reviewer did not confirm an applied reading: it stays applied, labelled disputed, awaiting a second review. */
+    aiDisputed: jsonb('ai_disputed'),
+    /** 0023: the fix is the AI reviewer's correction, written alike by two independent reviews ({corrects_fix_id, runs, models, at}). */
+    aiCorrected: jsonb('ai_corrected'),
     ...curationBookkeeping(),
   },
   (table) => [
@@ -134,7 +143,12 @@ export const chainFixDecisions = pgTable(
     restrictForeignKey('chain_fix_decisions_hadith_id_fk', table.hadithId, hadiths.id),
     check(
       'chain_fix_decisions_state_check',
-      sql`${table.state} in ('submitted', 'disputed', 'outvoted', 'held', 'accepted', 'confirmed', 'rejected', 'superseded', 'stale')`,
+      sql`${table.state} in ('submitted', 'disputed', 'outvoted', 'held', 'accepted', 'confirmed', 'rejected', 'superseded', 'stale', 'awaiting_human', 'set_aside_by_ai')`,
+    ),
+    check(
+      'chain_fix_decisions_ai_marks_check',
+      sql`(${table.aiReview} is null or jsonb_typeof(${table.aiReview}) = 'object') and (${table.aiDisputed} is null or ${table.state} = 'accepted')
+        and (${table.aiCorrected} is null or ${table.state} in ('accepted', 'confirmed', 'rejected', 'superseded'))`,
     ),
     check(
       'chain_fix_decisions_hold_codes_check',
@@ -150,7 +164,8 @@ export const chainFixDecisions = pgTable(
     ),
     check(
       'chain_fix_decisions_agreement_check',
-      sql`${table.state} <> 'accepted' or ${table.effect} = 'annotate' or (${table.runs} >= 2 and ${table.textOnlyRuns} >= 1 and ${table.runs} >= 2 * ${table.dissentingRuns})`,
+      sql`${table.state} <> 'accepted' or ${table.effect} = 'annotate' or (${table.runs} >= 2 and ${table.textOnlyRuns} >= 1 and ${table.runs} >= 2 * ${table.dissentingRuns})
+        or (${table.aiCorrected} is not null and ${table.runs} >= 2)`,
     ),
     check('chain_fix_decisions_counts_check', sql`${table.runs} >= 1 and ${table.textOnlyRuns} between 0 and ${table.runs} and ${table.dissentingRuns} >= 0`),
     uniqueIndex('chain_fix_decisions_live_fix_key').on(table.fixId).where(isLive(table.retiredAt)),
@@ -169,13 +184,34 @@ export const chainFixReviews = pgTable(
     modelId: text('model_id'),
     promptPath: text('prompt_path'),
     promptSha256: text('prompt_sha256'),
-    decision: text('decision').notNull(),
+    /** A human's decision (confirmed / rejected / superseded); null on an AI reviewer-tier row (0023), whose vocabulary is `review_decision`. */
+    decision: text('decision'),
     supersededByFixId: text('superseded_by_fix_id'),
     note: text('note').notNull(),
     citation: jsonb('citation'),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     createdBy: text('created_by').notNull(),
+    /** 0023, AI reviewer tier (chain-reader/reviewer, review_rules_v1_1): the reviewer's decision and what the rule did with it. */
+    reviewDecision: text('review_decision'),
+    outcome: text('outcome'),
+    codesAtReview: text('codes_at_review').array(),
+    statusAtReview: text('status_at_review'),
+    specialistVersion: text('specialist_version'),
+    runId: text('run_id'),
+    pass: integer('pass'),
+    packetPath: text('packet_path'),
+    packetSha256: text('packet_sha256'),
+    packetItemId: text('packet_item_id'),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    uncertainty: text('uncertainty'),
+    question: text('question'),
+    reasons: jsonb('reasons'),
+    variantVerdicts: jsonb('variant_verdicts'),
+    correctedReading: jsonb('corrected_reading'),
+    secondRunId: text('second_run_id'),
+    secondRunAgrees: boolean('second_run_agrees'),
   },
   (table) => [
     restrictForeignKey('chain_fix_reviews_fix_id_fk', table.fixId, chainFixes.id),
@@ -188,7 +224,17 @@ export const chainFixReviews = pgTable(
     ),
     check(
       'chain_fix_reviews_decision_check',
-      sql`${table.decision} in ('confirmed', 'rejected', 'superseded') and (${table.decision} = 'superseded') = (${table.supersededByFixId} is not null)`,
+      sql`(${table.decision} is null or ${table.decision} in ('confirmed', 'rejected', 'superseded'))
+        and coalesce(${table.decision} = 'superseded', false) = (${table.supersededByFixId} is not null)`,
+    ),
+    // 0023: a human row always decides; an AI reviewer-tier row names its decision, outcome, run, pass and packet and never a human decision.
+    check(
+      'chain_fix_reviews_ai_tier_check',
+      sql`(${table.reviewerKind} = 'human' and ${table.decision} is not null and ${table.reviewDecision} is null)
+        or (${table.reviewerKind} = 'ai' and ${table.reviewDecision} is null and ${table.decision} is not null)
+        or (${table.reviewerKind} = 'ai' and ${table.decision} is null and ${table.reviewDecision} in ('confirm_reading', 'confirm_with_correction', 'prefer_reader_a', 'prefer_reader_b', 'no_chain', 'keep_stored', 'refer_to_human')
+            and ${table.outcome} is not null and btrim(coalesce(${table.runId}, '')) <> '' and ${table.pass} >= 1 and ${table.packetSha256} ~ '^[0-9a-f]{64}$'
+            and ${table.statusAtReview} in ('held', 'pending', 'applied') and ${table.codesAtReview} is not null)`,
     ),
     check(
       'chain_fix_reviews_citation_check',
@@ -248,7 +294,34 @@ export const chainFixWorkSettings = pgTable(
   ],
 );
 
-/** Public view: the label under a public chain read by a model (hand-written SQL, drizzle/core/0019). */
+/**
+ * 0023: a match of a model-read report's text against a primary witness (a printed edition or manuscript). The goal-state label
+ * "Agent verified" needs one live matched row; nothing writes this table yet (text witness matching is not built). Curation-owned.
+ */
+export const chainFixWitnessMatches = pgTable(
+  'chain_fix_witness_matches',
+  {
+    id: text('id').primaryKey(),
+    fixId: text('fix_id').notNull(),
+    hadithId: text('hadith_id').notNull(),
+    witness: text('witness').notNull(),
+    locator: text('locator').notNull(),
+    method: text('method').notNull(),
+    matched: boolean('matched').notNull(),
+    readerTextSha256: text('reader_text_sha256').notNull(),
+    note: text('note').notNull(),
+    ...curationBookkeeping(),
+  },
+  (table) => [
+    restrictForeignKey('chain_fix_witness_matches_fix_id_fk', table.fixId, chainFixes.id),
+    restrictForeignKey('chain_fix_witness_matches_hadith_id_fk', table.hadithId, hadiths.id),
+    check('chain_fix_witness_matches_text_check', sql`btrim(${table.witness}) <> '' and btrim(${table.locator}) <> '' and btrim(${table.method}) <> '' and btrim(${table.note}) <> ''`),
+    check('chain_fix_witness_matches_hash_check', sql`${table.readerTextSha256} ~ '^[0-9a-f]{64}$'`),
+    index('chain_fix_witness_matches_fix_id_idx').on(table.fixId),
+  ],
+);
+
+/** Public view: the label under a public chain read by a model (hand-written SQL, drizzle/core/0019; 0023 appends the AI review marks and the witness match). */
 export const publicChainFixLabels = pgView('public_chain_fix_labels', {
   chainId: text('chain_id').notNull(),
   hadithId: text('hadith_id').notNull(),
@@ -261,6 +334,10 @@ export const publicChainFixLabels = pgView('public_chain_fix_labels', {
   decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
   awaitingFinalReview: boolean('awaiting_final_review').notNull(),
   humanConfirmations: jsonb('human_confirmations').notNull(),
+  aiReview: jsonb('ai_review'),
+  aiDisputed: jsonb('ai_disputed'),
+  aiCorrected: jsonb('ai_corrected'),
+  witnessMatch: jsonb('witness_match'),
 }).existing();
 
 /** Public view (0021): a report whose applied fix found no isnad in the text; its chains are retired, the page says so. */
@@ -273,6 +350,7 @@ export const publicChainFixDispositions = pgView('public_chain_fix_dispositions'
   runs: integer('runs').notNull(),
   decidedAt: timestamp('decided_at', { withTimezone: true }).notNull(),
   awaitingFinalReview: boolean('awaiting_final_review').notNull(),
+  aiReview: jsonb('ai_review'),
 }).existing();
 
 /** Public view (0021): what a model-read mention is beyond a name written in the chain (`imam_in_text`, `inherited`), from the fix's plan. */

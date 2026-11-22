@@ -1,0 +1,329 @@
+{
+ "format": "shura-chain-review-jobs/1",
+ "batch": "review-disagreements-t02",
+ "pass": "1",
+ "what": "C: tranche 02 reports whose two valid readings differ",
+ "prompt": {
+  "path": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md",
+  "version": "1.1.0",
+  "sha256": "1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6"
+ },
+ "model": "claude-opus-5-5 for every job; one fresh worker per packet, nothing shared between workers (reviews/ai/README.md §Isolation)",
+ "run_line_format": "run_id={RUNID} | packet={NN} | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews>",
+ "output_file_format": "one JSON object per packet (shura-chain-review-output/1, prompt_version 1.1.0), exactly as the prompt describes, at output_file",
+ "after": "record per item: python -B -X utf8 reviewer/record_reviews_v1_1.py --batch review-disagreements-t02; then --second-pass for corrections and --requeue for invalid items (reviewer/RUN.md)",
+ "decision_rule": "reviewer/review_rules_v1_1.py outcome()",
+ "expected": {
+  "jobs": 11,
+  "items": 107,
+  "run_txt_lines": 11,
+  "packet_characters": 1085467,
+  "input_characters": 1250841
+ },
+ "jobs": [
+  {
+   "job_id": "review-disagreements-t02-review-p1-01",
+   "pass": "1",
+   "packet": "01",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-01.json",
+   "packet_sha256": "541aa87c824bd68cc782c72229e6f41c7caf868bab66dd5ec0ba89450e87049c",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-01.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-01",
+   "items": 10,
+   "expected_items": [
+    "cr1-4f4355",
+    "cr1-12038d",
+    "cr1-f625c7",
+    "cr1-035bad",
+    "cr1-681a1d",
+    "cr1-24bd55",
+    "cr1-201fec",
+    "cr1-924de0",
+    "cr1-4af517",
+    "cr1-085bda"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 132523,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-01.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-01.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-01 | packet=01 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-02",
+   "pass": "1",
+   "packet": "02",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-02.json",
+   "packet_sha256": "08c4b93c1e6beaf87a87c656d9b785e5bcf44aa9e485045d2d3514323bcb4814",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-02.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-02",
+   "items": 10,
+   "expected_items": [
+    "cr1-f672ed",
+    "cr1-6a1359",
+    "cr1-463c05",
+    "cr1-ddf7df",
+    "cr1-96622b",
+    "cr1-ee5c70",
+    "cr1-24487d",
+    "cr1-d6d24e",
+    "cr1-6a6a16",
+    "cr1-362b00"
+   ],
+   "not_clearable_items": [
+    "cr1-6a6a16",
+    "cr1-362b00"
+   ],
+   "input_chars": 116053,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-02.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-02.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-02 | packet=02 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-03",
+   "pass": "1",
+   "packet": "03",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-03.json",
+   "packet_sha256": "6f16c28d8df1674b1fba914e17151763badf015f7466746184b5ba80b12990e7",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-03.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-03",
+   "items": 10,
+   "expected_items": [
+    "cr1-b0fb79",
+    "cr1-e95f82",
+    "cr1-e8b44f",
+    "cr1-e38535",
+    "cr1-826de8",
+    "cr1-8ee4ad",
+    "cr1-3483d1",
+    "cr1-414b8c",
+    "cr1-e87625",
+    "cr1-c07efe"
+   ],
+   "not_clearable_items": [
+    "cr1-b0fb79",
+    "cr1-e8b44f",
+    "cr1-e87625"
+   ],
+   "input_chars": 109344,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-03.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-03.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-03 | packet=03 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-04",
+   "pass": "1",
+   "packet": "04",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-04.json",
+   "packet_sha256": "d04e867bda8bff3c934a5b6f275c34ebeee9f9acf6a690e5b19fba01a52b46d8",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-04.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-04",
+   "items": 10,
+   "expected_items": [
+    "cr1-9bcc0f",
+    "cr1-87435f",
+    "cr1-f85c86",
+    "cr1-5cc0b2",
+    "cr1-e63055",
+    "cr1-9f424a",
+    "cr1-61fcf3",
+    "cr1-feba78",
+    "cr1-5e3c97",
+    "cr1-57d216"
+   ],
+   "not_clearable_items": [
+    "cr1-5e3c97",
+    "cr1-57d216"
+   ],
+   "input_chars": 156375,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-04.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-04.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-04 | packet=04 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-05",
+   "pass": "1",
+   "packet": "05",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-05.json",
+   "packet_sha256": "0627f8c1277c64b3e6a2dc00eb425a248e0fe5eac97a90de7fbcfe90bcb3d948",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-05.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-05",
+   "items": 10,
+   "expected_items": [
+    "cr1-25f7a4",
+    "cr1-876a88",
+    "cr1-f5830b",
+    "cr1-fff4c0",
+    "cr1-3d82e1",
+    "cr1-cc335d",
+    "cr1-db12a5",
+    "cr1-216d69",
+    "cr1-de3c0c",
+    "cr1-4666d0"
+   ],
+   "not_clearable_items": [
+    "cr1-876a88",
+    "cr1-f5830b"
+   ],
+   "input_chars": 109714,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-05.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-05.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-05 | packet=05 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-06",
+   "pass": "1",
+   "packet": "06",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-06.json",
+   "packet_sha256": "335ae7ffd8fa3755875d64e833126e47bc685dbd4772fae306d7bc0c9bfcc06b",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-06.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-06",
+   "items": 10,
+   "expected_items": [
+    "cr1-10dd84",
+    "cr1-95b824",
+    "cr1-17b918",
+    "cr1-26cdb1",
+    "cr1-911474",
+    "cr1-3181d5",
+    "cr1-c21b74",
+    "cr1-42eeb0",
+    "cr1-12ab32",
+    "cr1-4661c4"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 120358,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-06.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-06.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-06 | packet=06 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-07",
+   "pass": "1",
+   "packet": "07",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-07.json",
+   "packet_sha256": "8910b0cc25935f84e5845d4900bce24723ef60c5d3443f92258eedee7fa5b5be",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-07.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-07",
+   "items": 10,
+   "expected_items": [
+    "cr1-dbc278",
+    "cr1-be8c4e",
+    "cr1-72de9e",
+    "cr1-f9095e",
+    "cr1-8e2792",
+    "cr1-9ddc6c",
+    "cr1-d1a5d6",
+    "cr1-ffb910",
+    "cr1-b7b629",
+    "cr1-839bb9"
+   ],
+   "not_clearable_items": [
+    "cr1-dbc278"
+   ],
+   "input_chars": 115327,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-07.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-07.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-07 | packet=07 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-08",
+   "pass": "1",
+   "packet": "08",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-08.json",
+   "packet_sha256": "acada46b38f2ae1e2a3b63ad427d06e4f02fef5eeb1e9b28895007c8b1cec813",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-08.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-08",
+   "items": 10,
+   "expected_items": [
+    "cr1-5a3979",
+    "cr1-0225d5",
+    "cr1-df4cd9",
+    "cr1-536c79",
+    "cr1-8ded62",
+    "cr1-4d0e2a",
+    "cr1-f5517a",
+    "cr1-14ce71",
+    "cr1-f1386c",
+    "cr1-82a5c7"
+   ],
+   "not_clearable_items": [
+    "cr1-8ded62",
+    "cr1-4d0e2a",
+    "cr1-f5517a",
+    "cr1-14ce71",
+    "cr1-82a5c7"
+   ],
+   "input_chars": 88182,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-08.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-08.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-08 | packet=08 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-09",
+   "pass": "1",
+   "packet": "09",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-09.json",
+   "packet_sha256": "ab0afa5e2e3f9d0ef5047970637b541a7f5a95f08ac09a16309a66a62773e5f5",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-09.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-09",
+   "items": 10,
+   "expected_items": [
+    "cr1-37b14c",
+    "cr1-9c30fd",
+    "cr1-dd6284",
+    "cr1-e80647",
+    "cr1-b3367b",
+    "cr1-ed1737",
+    "cr1-a64b5c",
+    "cr1-5be8cc",
+    "cr1-d98b65",
+    "cr1-3ea170"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 108643,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-09.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-09.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-09 | packet=09 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-10",
+   "pass": "1",
+   "packet": "10",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-10.json",
+   "packet_sha256": "c624e3f81054d2bc5270ac6aa055688ee87441857e851ab95b79733a5dbaf7ed",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-10.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-10",
+   "items": 10,
+   "expected_items": [
+    "cr1-95fc6a",
+    "cr1-663b38",
+    "cr1-7ab838",
+    "cr1-d077bd",
+    "cr1-f7d88b",
+    "cr1-43f72d",
+    "cr1-26c857",
+    "cr1-d26050",
+    "cr1-56b38e",
+    "cr1-425098"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 105976,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-10.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-10.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-10 | packet=10 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-disagreements-t02-review-p1-11",
+   "pass": "1",
+   "packet": "11",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-11.json",
+   "packet_sha256": "5b35f58150cb329fbb727b6ad1acee5395956551ca6aaa8a76c7b6b85b7fb7da",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-11.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt",
+   "run_id": "review-disagreements-t02-review-p1-11",
+   "items": 7,
+   "expected_items": [
+    "cr1-f2bcac",
+    "cr1-7a8fc8",
+    "cr1-c001a6",
+    "cr1-c47b25",
+    "cr1-833dac",
+    "cr1-46b318",
+    "cr1-6c5d01"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 88346,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\packets\\packet-11.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\packet-11.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-disagreements-t02\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-disagreements-t02-review-p1-11 | packet=11 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  }
+ ]
+}

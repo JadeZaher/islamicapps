@@ -1,0 +1,142 @@
+{"format": "shura-chain-review-output/1", "specialist_id": "chain-reviewer", "prompt_version": "1.0.0", "packet_id": "pilot-001-p1-01",
+ "reviews": [
+  {"id": "cr1-cb858d",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Two co-transmitters open the chain at one level and both take it from Sufyan.", "source": "text", "quote": "حدثنا عثمان بن أبي شيبة، وأحمد بن عبدة، - المعنى - أن سفيان بن عيينة، أخبرهم"},
+    {"claim": "The chain then runs singly to Umar, who is the last link quoted on the Prophet's property.", "source": "text", "quote": "عن عمرو بن دينار، عن الزهري، عن مالك بن أوس بن الحدثان، عن عمر، قال"},
+    {"claim": "The dashed «المعنى» is an editor's gloss and the remarks of Ibn Abda only give his wording, so neither adds a link.", "source": "text", "quote": "قال ابن عبدة في الكراع والسلاح"},
+    {"claim": "The stored chain dropped Sufyan and fused the gloss into a name, so the readers' reading is better than it.", "source": "stored", "quote": "أحمد بن عبدة - المعنى"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-dd467b",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The first isnad runs Qutayba, Abd al-Aziz, Suhayl and then defers to an earlier chain.", "source": "text", "quote": "وحدثناه قتيبة بن سعيد، حدثنا عبد العزيز، - يعني الدراوردي - عن سهيل، بهذا الإسناد"},
+    {"claim": "A second isnad opens with its own «وحدثنيه» and also ends in a back reference, so it is its own group.", "source": "text", "quote": "وحدثنيه محمد بن عبد الله بن بزيع، حدثنا يزيد بن زريع، حدثنا روح بن القاسم، حدثنا سهيل بن أبي صالح، بهذا الإسناد"},
+    {"claim": "The words after the second back reference are wording differences, not transmitters.", "source": "text", "quote": "وقال بدل عقصاء عضباء"},
+    {"claim": "The stored chain wrongly holds the verb «ساق» as a name, which the readers correctly left out.", "source": "stored", "quote": "ساق"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The structure written here is settled, but the earlier report «بهذا الإسناد» points to is not in the packet, so the chain beyond Suhayl cannot be completed or checked."},
+  {"id": "cr1-2fc4ff",
+   "decision": "refer_to_human",
+   "question": "Unruled: al-Faqih's statement of the compiler's routes to a source («و ما كان فيه عن ... فقد رويته») with no saying; should it be stored as chains at all?",
+   "reasons": [
+    {"claim": "The report is the compiler's statement of his routes to a source's material, with no saying after it.", "source": "text", "quote": "و ما كان فيه عن الحسين بن المختار فقد رويته عن أبي"},
+    {"claim": "If it is stored, the readers' first group is structurally right: four co-transmitters converge with «جميعا» on one name.", "source": "text", "quote": "عن سعد بن عبد اللّه؛ و الحميريّ؛ و محمّد بن يحيى العطّار؛ و أحمد بن إدريس جميعا عن محمّد ابن الحسين بن أبي الخطّاب"},
+    {"claim": "If it is stored, the second «رويته» is a separate route with its own names, as both readers read it.", "source": "text", "quote": "و قد رويته عن محمّد بن الحسين- رضي اللّه عنه- عن الحسين بن الحسن بن أبان"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The structure is clear; only the owner's ruling on route statements is missing."},
+  {"id": "cr1-f4ad85",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Qutayba gives two branches, through Abd al-Aziz and through Yaqub.", "source": "text", "quote": "حدثنا عبد العزيز، - يعني ابن أبي حازم - وقال قتيبة حدثنا يعقوب"},
+    {"claim": "Both branches meet in a tail written once, ending at Sahl b. Sa'd.", "source": "text", "quote": "كلاهما عن أبي حازم، عن سهل بن سعد"},
+    {"claim": "The mention of Malik's version is a remark comparing wording, not a route of this saying.", "source": "text", "quote": "بمثل حديث مالك"},
+    {"claim": "The stored chain cut the tail before Sahl and mixed the branches, so it is not preferred.", "source": "stored", "quote": "يعقوب"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g2", "verdict": "remark_about_another_version", "quote": "بمثل حديث مالك"},
+    {"group": "B.g2", "verdict": "remark_about_another_version", "quote": "بمثل حديث مالك"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-1d4e8b",
+   "decision": "refer_to_human",
+   "question": "Unruled: al-Faqih's statement of the compiler's routes to a source («و ما كان فيه عن ... فقد رويته») with no saying; if stored, should «عنهم» in the second route be expanded to the three shaykhs named before it in this same report?",
+   "reasons": [
+    {"claim": "The report is the compiler's statement of his routes to a source's material, with no saying after it.", "source": "text", "quote": "و ما كان فيه عن ثعلبة بن ميمون فقد رويته عن أبي؛"},
+    {"claim": "The first route has three co-transmitters at the first level, joined by «؛».", "source": "text", "quote": "عن أبي؛ و محمّد بن الحسن؛ و محمّد بن موسى بن المتوكّل"},
+    {"claim": "The second route opens with a pronoun pointing back to those three shaykhs, which both readers left as a bare back reference.", "source": "text", "quote": "و رويته أيضا عنهم، عن الحميريّ"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The structure is clear; the owner's ruling on route statements and on expanding an in-report «عنهم» is missing."},
+  {"id": "cr1-9203c4",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The chain runs singly from Ishaq to Hudhayfa, who is quoted praying with the Prophet.", "source": "text", "quote": "عن طلحة بن يزيد الأنصاري، عن حذيفة، أنه صلى مع رسول الله"},
+    {"claim": "The dashed «ثقة» is an editor's grading and not part of a name, which the stored chain wrongly kept.", "source": "stored", "quote": "النضر بن محمد المروزي - ثقة"},
+    {"claim": "The compiler's closing note reports how other transmitters gave this chain, a remark about another version and not a route of this saying.", "source": "text", "quote": "وغير العلاء بن المسيب قال في هذا الحديث عن طلحة عن رجل عن حذيفة"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "remark_about_another_version", "quote": "وغير العلاء بن المسيب قال في هذا الحديث عن طلحة عن رجل عن حذيفة"},
+    {"group": "B.g1", "verdict": "remark_about_another_version", "quote": "وغير العلاء بن المسيب قال في هذا الحديث عن طلحة عن رجل عن حذيفة"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-6dfc38",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The report opens with a back reference: Layth is the asker and the one asked is only a pronoun.", "source": "text", "quote": "وَ سَأَلَهُ لَيْثٌ اَلْمُرَادِيُّ"},
+    {"claim": "The nearest previous report names the source it relays, so the one asked is inherited from it.", "source": "prev1", "quote": "عَنْ أَبِي عَبْدِ اَللَّهِ"},
+    {"claim": "Reader A's inherited name is the asker of the earlier report, not the one asked, so it cannot fill the place of the one who answers.", "source": "context", "quote": "وَ رُوِيَ عَنِ اَلْحَلَبِيِّ قَالَ : سَأَلْتُهُ"},
+    {"claim": "Reader B stops at the asker, leaving out the one asked who answers, who is a link in his place.", "source": "text", "quote": "قَالَ «نَعَمْ إِنَّمَا يُكْرَهُ اَلْمُلْحَمُ."}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-6dfc38", "status": "read", "groups": [{"levels": [[{"surface": "لَيْثٌ اَلْمُرَادِيُّ", "kind": "narrator"}], [{"surface": "أَبِي عَبْدِ اَللَّهِ", "kind": "inherited", "from": "prev1"}]]}], "shared_tail": null,
+    "needs_ruling": false, "notes": ["«وَ سَأَلَهُ» is a back reference: Layth asks, and the one asked is the source named in prev1 («عَنْ أَبِي عَبْدِ اَللَّهِ»); al-Halabi in prev2 is an asker, not the one asked."], "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "prev1 is a short version note rather than a full report, so a person should confirm that its named source is the one the pronoun points to."},
+  {"id": "cr1-2cd568",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The chain runs singly from Abu Kamil to Shahr, with the dashed words an editor's gloss.", "source": "text", "quote": "حدثنا أبو كامل، حدثنا عبد العزيز، - يعني ابن المختار - حدثنا ثابت، عن شهر بن حوشب"},
+    {"claim": "Shahr asks Umm Salama and she answers, so she is the last link.", "source": "text", "quote": "قال سألت أم سلمة"},
+    {"claim": "The compiler's note on Harun and Musa is a remark about another version, not a route of this saying.", "source": "text", "quote": "ورواه هارون النحوي وموسى بن خلف عن ثابت كما قال عبد العزيز"},
+    {"claim": "The stored chain stopped at Shahr and lacked the one who answers.", "source": "stored", "quote": "شهر بن حوشب"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "remark_about_another_version", "quote": "ورواه هارون النحوي وموسى بن خلف عن ثابت كما قال عبد العزيز"},
+    {"group": "B.g1", "verdict": "remark_about_another_version", "quote": "ورواه هارون النحوي وموسى بن خلف عن ثابت كما قال عبد العزيز"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-723cba",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The first branch stops at Abu Usama only because «ح» switches to the second branch; it is not a chain that ends there.", "source": "text", "quote": "حدثنا أبو أسامة، ح وحدثنا إسحاق بن منصور"},
+    {"claim": "The second branch's own head ends at al-Nadr, and from Bahz on the chain is written once with «عن», so it is the tail shared by both branches.", "source": "text", "quote": "أنبأنا النضر بن شميل، عن بهز بن حكيم، عن أبيه، عن جده، معاوية القشيري"},
+    {"claim": "Both readers left the first route ending at Abu Usama with no source, which the hold also flags.", "source": "reader_a", "quote": "branch 1 stops at أبو أسامة"},
+    {"claim": "The grandfather is named after a comma, so «جده» and the name are one link, the last before the Prophet.", "source": "text", "quote": "عن جده، معاوية القشيري قال قال رسول الله"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-723cba", "status": "read", "groups": [{"levels": [[{"surface": "أبو بكر بن أبي شيبة", "kind": "narrator"}], [{"surface": "أبو أسامة", "kind": "narrator"}]]}, {"levels": [[{"surface": "إسحاق بن منصور", "kind": "narrator"}], [{"surface": "النضر بن شميل", "kind": "narrator"}]]}], "shared_tail": [[{"surface": "بهز بن حكيم", "kind": "narrator"}], [{"surface": "أبيه", "kind": "relation"}], [{"surface": "معاوية القشيري", "kind": "narrator"}]],
+    "needs_ruling": false, "notes": ["«ح» splits the head: Abu Bakr and Abu Usama, then Ishaq and al-Nadr; «عن بهز بن حكيم، عن أبيه، عن جده، معاوية القشيري» is written once and shared by both branches."], "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The join at Bahz follows the change from «أنبأنا» to «عن» after the second head; a join one link earlier is grammatically possible but much less likely."},
+  {"id": "cr1-d695ec",
+   "decision": "refer_to_human",
+   "question": "Who says «ح وحدثني أبو عثمان»: the compiler, or a narrator inside the first chain (so the second branch shares its head)? The text writes no «قال X» before it; also, under ruling 9 and 10 Umar speaks a second saying inside Uqba's story and should be a last link of a second saying, which both readers left out.",
+   "reasons": [
+    {"claim": "The second branch opens with a singular «وحدثني» and no named speaker, so the text alone does not show where it joins the first chain.", "source": "text", "quote": "عن عقبة بن عامر، ح وحدثني أبو عثمان، عن جبير بن نفير"},
+    {"claim": "The compiler's own opening also uses «حدثني», so the verb does not settle who speaks the second branch.", "source": "text", "quote": "حدثني محمد بن حاتم بن ميمون"},
+    {"claim": "Uqba first hears a saying from the Prophet himself, ending the first saying at Uqba.", "source": "text", "quote": "فأدركت رسول الله صلى الله عليه وسلم قائما يحدث الناس فأدركت من قوله"},
+    {"claim": "Inside the story Umar speaks and relays a second saying, so under the narrated-encounter and two-sayings rulings he is the last link of that second saying, not a mere bystander as both readers held.", "source": "text", "quote": "فنظرت فإذا عمر قال إني قد رأيتك جئت آنفا قال"},
+    {"claim": "Reader A excluded Umar as only present in the story.", "source": "reader_a", "quote": "Umar is in the story, not a link"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "high",
+   "uncertainty_note": "The join point of the «ح» branch is not settled by the words of the text, and the reading is already applied on the site."}
+ ]}

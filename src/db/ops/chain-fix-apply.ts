@@ -5,7 +5,8 @@
  *
  *   npm run db:chain-fixes -- --database production --confirm-production [--dry-run]
  *   npm run db:chain-fixes -- --database production --confirm-production --revert <chain-fix:id> [...]
- *   npm run db:chain-fixes -- --database production --confirm-production --revert-rejected
+ *   npm run db:chain-fixes -- --database production --confirm-production --revert-rejected   (also the 0023 queue `revert_before_apply`)
+ *   npm run db:chain-fixes -- --database production --confirm-production --repair-compiler-links --fix <chain-fix:id> [...] [--dry-run]
  *   [--plan <file.json>]   writes what was (or, with --dry-run, would be) written, per report and in total
  *   --dry-run --no-mirror --store <scratch> --overrides <scratch file>   a store-free rehearsal: nothing is mirrored; each report's
  *                          transaction inserts its fix row, applies, records the tally and is rolled back (no row stays)
@@ -30,13 +31,16 @@ import {
   DEFAULT_STORE,
   readReviews,
   readSubmissions,
+  runEngine,
   storePaths,
   utcNow,
   type BaseChain,
+  type EngineItem,
   type FixState,
   type PlannedChain,
   type VariantRemark,
 } from '../../../reviews/ai/tools/chain-fix-lib';
+import { sha256Hex } from '../../../reviews/ai/tools/specialist-lib';
 
 type Sql = postgres.Sql | postgres.TransactionSql;
 type Row = Record<string, unknown>;
@@ -252,43 +256,55 @@ export async function syncMirror(sql: Sql, storeRoot: string) {
     }
     await sql`insert into chain_fix_submissions (id, fix_id, hadith_id, view, reading, base_chain_sha256, base_read_from, reason, evidence,
                 computed_evidence, external_citation, specialist_id, specialist_version, prompt_path, prompt_version, prompt_sha256, tool_version, inherited_from, model_id,
-                provider_runtime, orchestrator_run_id, packet_path, packet_sha256, packet_item_id, started_at, finished_at, submitted_at, created_by)
+                provider_runtime, orchestrator_run_id, packet_path, packet_sha256, packet_item_id, started_at, finished_at, submitted_at, created_by, corrects_fix_id)
               values (${s.submission_id}, ${s.fix_id}, ${s.hadith_id}, ${s.view}, ${sql.json(s.reading as unknown as postgres.JSONValue)},
                 ${s.base.chain_sha256}, ${s.base.read_from}, ${s.reason}, ${sql.json(s.evidence as unknown as postgres.JSONValue)},
                 ${sql.json(s.computed_evidence as unknown as postgres.JSONValue)}, ${s.external_citation ? sql.json(s.external_citation as unknown as postgres.JSONValue) : null},
                 ${s.specialist_id}, ${s.specialist_version}, ${s.prompt_path}, ${s.prompt_version}, ${s.prompt_sha256}, ${s.tool_version ?? null},
                 ${s.inherited_from ? sql.json(s.inherited_from as unknown as postgres.JSONValue) : null}, ${s.model_id},
                 ${s.provider_runtime}, ${s.orchestrator_run_id}, ${s.packet_path}, ${s.packet_sha256}, ${s.packet_item_id}, ${s.started_at},
-                ${s.finished_at}, ${s.submitted_at}, ${ACTOR}) on conflict (id) do nothing`;
+                ${s.finished_at}, ${s.submitted_at}, ${ACTOR}, ${s.corrects_fix_id ?? null}) on conflict (id) do nothing`;
   }
+  const json = (value: unknown) => (value === undefined || value === null ? null : sql.json(value as postgres.JSONValue));
   for (const r of readReviews(paths).filter((x) => live.has(x.hadith_id))) {
     await sql`insert into chain_fix_reviews (id, fix_id, reviewer_kind, reviewer, model_id, prompt_path, prompt_sha256, decision, superseded_by_fix_id,
-                note, citation, reviewed_at, created_by)
+                note, citation, reviewed_at, created_by, review_decision, outcome, codes_at_review, status_at_review, specialist_version, run_id, pass,
+                packet_path, packet_sha256, packet_item_id, started_at, finished_at, uncertainty, question, reasons, variant_verdicts, corrected_reading,
+                second_run_id, second_run_agrees)
               values (${r.review_id}, ${r.fix_id}, ${r.reviewer_kind}, ${r.reviewer}, ${r.model_id}, ${r.prompt_path}, ${r.prompt_sha256}, ${r.decision},
-                ${r.superseded_by}, ${r.note}, ${r.citation ? sql.json(r.citation as unknown as postgres.JSONValue) : null}, ${r.reviewed_at}, ${ACTOR})
+                ${r.superseded_by}, ${r.note}, ${json(r.citation)}, ${r.reviewed_at}, ${ACTOR}, ${r.review_decision ?? null}, ${r.outcome ?? null},
+                ${r.codes_at_review ?? null}, ${r.status_at_review ?? null}, ${r.specialist_version ?? null}, ${r.run_id ?? null}, ${r.pass ?? null},
+                ${r.packet_path ?? null}, ${r.packet_sha256 ?? null}, ${r.packet_item_id ?? null}, ${r.started_at ?? null}, ${r.finished_at ?? null},
+                ${r.uncertainty ?? null}, ${r.question ?? null}, ${json(r.reasons)}, ${json(r.variant_verdicts)}, ${json(r.corrected_reading)},
+                ${r.second_run_id ?? null}, ${r.second_run_agrees ?? null})
               on conflict (id) do nothing`;
   }
   const now = utcNow();
   // Retire first, insert after: the live-effect index allows one effect per report at a time.
   const changed: FixState[] = [];
   const liveStates = states.filter((x) => live.has(x.hadith_id));
-  const decisions = new Map((await sql<{ id: string; fix_id: string; state: string; effect: string | null; structure_status: string | null; runs: number; dissenting_runs: number; hold_codes: string[] }[]>`
-    select id, fix_id, state, effect, structure_status, runs, dissenting_runs, hold_codes from chain_fix_decisions
+  const decisions = new Map((await sql<{ id: string; fix_id: string; state: string; effect: string | null; structure_status: string | null; runs: number; dissenting_runs: number; hold_codes: string[]; marks: string }[]>`
+    select id, fix_id, state, effect, structure_status, runs, dissenting_runs, hold_codes,
+           jsonb_build_array(ai_review, ai_disputed, ai_corrected)::text as marks from chain_fix_decisions
     where fix_id = any(${liveStates.map((x) => x.fix_id)}) and retired_at is null`).map((row) => [row.fix_id, row]));
+  // The AI marks as the database prints them (jsonb normalises key order), so an unchanged mark is no transition.
+  const marksOf = async (state: FixState) => (await sql<{ marks: string }[]>`
+    select jsonb_build_array(${json(state.ai_review)}::jsonb, ${json(state.ai_disputed)}::jsonb, ${json(state.ai_corrected)}::jsonb)::text as marks`)[0].marks;
   for (const state of liveStates) {
     const current = decisions.get(state.fix_id);
     if (current && current.state === state.state && current.effect === state.effect && current.structure_status === state.structure_status
         && current.runs === state.runs.length && current.dissenting_runs === state.dissenting_runs
-        && current.hold_codes.join(',') === (state.state === 'held' ? state.holds : []).join(',')) continue;
+        && current.hold_codes.join(',') === (state.state === 'held' ? state.holds : []).join(',')
+        && (!(state.ai_review || state.ai_disputed || state.ai_corrected || current.marks !== '[null, null, null]') || current.marks === await marksOf(state))) continue;
     if (current) await sql`update chain_fix_decisions set retired_at = now(), retired_by = ${ACTOR}, updated_at = now(), updated_by = ${ACTOR} where id = ${current.id}`;
     changed.push(Object.assign(state, { supersedes: current?.id ?? null }));
   }
   for (const state of changed as (FixState & { supersedes: string | null })[]) {
     await sql`insert into chain_fix_decisions (fix_id, hadith_id, state, effect, structure_status, runs, text_only_runs, dissenting_runs, models,
-                hold_codes, why, decided_at, supersedes_decision_id, created_by, updated_by)
+                hold_codes, why, decided_at, supersedes_decision_id, created_by, updated_by, ai_review, ai_disputed, ai_corrected)
               values (${state.fix_id}, ${state.hadith_id}, ${state.state}, ${state.effect}, ${state.structure_status}, ${state.runs.length},
                 ${state.text_only_runs}, ${state.dissenting_runs}, ${state.models}, ${state.state === 'held' ? state.holds : []}, ${state.why}, ${now},
-                ${state.supersedes}, ${ACTOR}, ${ACTOR})`;
+                ${state.supersedes}, ${ACTOR}, ${ACTOR}, ${json(state.ai_review)}, ${json(state.ai_disputed)}, ${json(state.ai_corrected)})`;
   }
   return changed.length;
 }
@@ -309,6 +325,7 @@ async function main(): Promise<number> {
   const applications: object[] = [];
   const plan: { fix_id: string; hadith_id: string; effect: string; disposition: string | null; tally: ApplicationTally }[] = [];
   const skipped: { fix_id: string; hadith_id: string; why: string }[] = [];
+  const repairs: CompilerLinkRepair[] = [];
   let touched = 0;
   try {
     const [{ locked }] = await sql<{ locked: boolean }[]>`select pg_try_advisory_lock(${String(DATA_WRITE_LOCK_KEY)}::bigint) as locked`;
@@ -317,10 +334,26 @@ async function main(): Promise<number> {
     if (args.has('no-mirror') && !dryRun) throw new Error('--no-mirror is a rehearsal option: it needs --dry-run');
     if (!args.has('no-mirror')) await sql.begin(async (tx) => console.log(`mirror: ${await syncMirror(tx, storeRoot)} decision rows changed`));
 
+    if (args.has('repair-compiler-links')) {
+      const fixIds = argv.filter((value, index) => argv[index - 1] === '--fix');
+      for (const fixId of fixIds) {
+        await sql.begin(async (tx) => {
+          const changed = await repairCompilerLinks(tx, fixId, args.get('overrides') ?? DEFAULT_OVERRIDES, version);
+          repairs.push(...changed);
+          if (dryRun) throw new DryRun();
+        }).catch(swallowDryRun);
+      }
+      for (const repair of repairs) console.log(`repair ${repair.chain_id}: compiler_link ${repair.from} -> ${repair.to} (${repair.fix_id})`);
+      if (!dryRun && repairs.length > 0) appendRecords(path.join(storePaths(storeRoot).root, 'repairs', `${utcNow().slice(0, 10)}.jsonl`), repairs);
+      console.log(`${dryRun ? 'dry run, rolled back: would have ' : ''}repaired ${repairs.length} chain(s)`);
+      return 0;
+    }
     if (reverting) {
       const paths = storePaths(storeRoot);
-      const queue = JSON.parse(readFileSync(paths.queue, 'utf8')) as { rejected_but_in_database: string[] };
-      const fixIds = args.has('revert-rejected') ? queue.rejected_but_in_database : argv.filter((value, index) => argv[index - 1] === '--revert');
+      const queue = JSON.parse(readFileSync(paths.queue, 'utf8')) as { rejected_but_in_database: string[]; revert_before_apply?: string[] };
+      // A human rejection, and (0023) a reading the AI reviewer reverted or an applied correction replaces: out of the overrides, still written.
+      const fixIds = args.has('revert-rejected') ? [...new Set([...queue.rejected_but_in_database, ...(queue.revert_before_apply ?? [])])]
+        : argv.filter((value, index) => argv[index - 1] === '--revert');
       for (const fixId of fixIds) {
         await sql.begin(async (tx) => {
           const hadithId = await revertFix(tx, fixId, version);
@@ -425,6 +458,51 @@ export async function applyOverride(tx: Sql, override: Override, version: string
            values (${override.fix_id}, ${override.hadith_id}, 'applied', ${override.effect}, ${tx.json(base as unknown as postgres.JSONValue)},
              ${tx.json(written as postgres.JSONValue)}, ${version}, ${ACTOR})`;
   return true;
+}
+
+export interface CompilerLinkRepair {
+  format: 'shura-chain-fix-repair/1';
+  kind: 'compiler_link';
+  fix_id: string;
+  hadith_id: string;
+  chain_id: string;
+  from: string | null;
+  to: string;
+  at: string;
+}
+
+/**
+ * Repair mode (`--repair-compiler-links --fix <id>`): an applied fix planned before the compiler mark per route existed wrote each later
+ * route with the first chain's mark. Recompute the marks by the projection's rule (the engine's `route_links`, as replay does) and set
+ * the ones that differ; only `compiler_link` of the fix's own live chains moves, so a later load writes the same value.
+ */
+export async function repairCompilerLinks(tx: Sql, fixId: string, overridesFile: string, version: string): Promise<CompilerLinkRepair[]> {
+  const override = readOverrides(overridesFile).find((row) => row.fix_id === fixId);
+  if (!override?.planned || override.effect !== 'replace_routes') throw new Error(`${fixId}: not a replace_routes fix in the overrides file`);
+  const [hadith] = await tx<{ text_ar: string | null; sanad: string | null; source_work_id: string; arabic_sha256: string }[]>`
+    select h.text_ar, h.sanad, c.source_work_id, h.arabic_sha256 from hadiths h join collections c on c.id = h.collection_id
+    where h.id = ${override.hadith_id} and h.retired_at is null for update of h`;
+  if (!hadith || hadith.arabic_sha256 !== override.arabic_sha256) throw new Error(`${fixId}: stale: the Arabic changed`);
+  // The reader text the fix's offsets count in (chain-fix-database.ts readLiveReports), bound by its hash.
+  const sanad = (hadith.sanad ?? '').trim();
+  const text = override.text_layout === 'chain_field_then_matn' && sanad ? `${sanad}\n\n${hadith.text_ar ?? ''}` : hadith.text_ar ?? '';
+  if (override.reader_text_sha256 && sha256Hex(text) !== override.reader_text_sha256) throw new Error(`${fixId}: stale: the reader text changed`);
+  const [{ marks }] = runEngine([{ mode: 'route_links', key: fixId, text, source_work_id: hadith.source_work_id, planned: override.planned } as unknown as EngineItem]) as unknown as { marks: (string | null)[] }[];
+  const live = await tx<{ id: string; compiler_link: string | null; compiler_narrator_id: string | null; suspension: string | null; chain_fix_id: string | null }[]>`
+    select id, compiler_link, compiler_narrator_id, suspension, chain_fix_id from chains where hadith_id = ${override.hadith_id} and retired_at is null`;
+  const first = live.find((chain) => chain.id === override.planned!.chains[0]?.id);
+  const repairs: CompilerLinkRepair[] = [];
+  for (const [index, chain] of override.planned.chains.entries()) {
+    const row = live.find((candidate) => candidate.id === chain.id);
+    if (!row || row.chain_fix_id !== fixId || !row.compiler_narrator_id) continue;
+    // The apply's own rule (writeRoutes): a suspended route is indirect; else the route's mark, else the first chain's.
+    const wanted = row.suspension ? 'indirect' : (marks[index] ?? first?.compiler_link ?? null);
+    if (!wanted || wanted === row.compiler_link) continue;
+    await tx`update chains set compiler_link = ${wanted}, updated_at = now(), changed_in_dataset_version_id = ${version} where id = ${row.id}`;
+    repairs.push({ format: 'shura-chain-fix-repair/1', kind: 'compiler_link', fix_id: fixId, hadith_id: override.hadith_id, chain_id: row.id, from: row.compiler_link, to: wanted, at: utcNow() });
+  }
+  if (repairs.length > 0) await tx`select refresh_publication_facets(${[override.hadith_id]})`;
+  return repairs;
 }
 
 /** Revert the latest application of one fix inside `tx`: the rows as they were, column by column. False when not applied. */

@@ -419,5 +419,61 @@ class CompilerHeadPerRouteTest(unittest.TestCase):
         self.assertEqual([c[14] for c in chains], ["direct", "indirect"])
 
 
+class SayingLabelTest(unittest.TestCase):
+    """Tool v3.4: a two-saying reading carries each route's saying and the sayings' openings on the plan (AGENTS.md §sayings). No real labelled
+    reading exists yet (the v3.4 re-read has not run), so the input is the v3.4 example of t01-520f51 (v3_4/tests/judge_cases_v3_4.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        reader = HERE.parent / "chain-reader"
+        sys.path[:0] = [str(reader / "v3_4" / "tests"), str(reader / "v3_4"), str(reader / "v3_2"), str(reader)]
+        from judge_cases_v3_4 import TWO_SAYINGS  # noqa: E402
+        cls.output = TWO_SAYINGS["t01-520f51"][1]
+        packets = {}
+        for path in sorted((reader / "tranches" / "tranche-01" / "packets").glob("*.jsonl")):
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    row = json.loads(line)
+                    packets[row["id"]] = row
+        cls.packet = packets["t01-520f51"]
+
+    def read(self, supported: bool) -> dict:
+        stored = {"chains": [{"branch": 0, "mentions": [{"id": f"mention:k6:x:0000:{p:04d}", "surface_ar": s} for p, s in enumerate(["عبد بن حميد", "عبد الرزاق", "معمر"])]}]}
+        return engine.run_item({"key": "0", "text": self.packet["text"], "expected_id": "t01-520f51", "output": self.output, "other_output": self.output, "base": stored,
+                                "record_id": "k6:x", "source_work_id": "sunni:muslim", "evidence": [self.packet["text"][:30]], "reader_format": "v3_4",
+                                "tool_version": "v3_4", "context": self.packet["context"], "sayings_supported": supported})
+
+    def test_without_the_switch_the_reading_is_held_with_it_each_route_names_its_saying(self):
+        self.assertIn("two_sayings_not_supported", [hold["code"] for hold in self.read(False)["holds"]])
+        result = self.read(True)
+        self.assertEqual(result["errors"], [])
+        self.assertNotIn("two_sayings_not_supported", [hold["code"] for hold in result["holds"]])
+        planned = result["planned"]
+        self.assertEqual([chain["saying"] for chain in planned["chains"]], [1, 2])
+        self.assertEqual([(s["saying"], s["label"]) for s in planned["sayings"]], [(1, "Chain of the first saying"), (2, "Chain of the second saying")])
+        for saying in planned["sayings"]:
+            self.assertEqual(self.packet["text"][saying["start"]:saying["end"]], saying["opens"])     # the opening is the text's own words
+        self.assertEqual([m["surface_ar"] for m in planned["chains"][1]["mentions"]][-2:], ["عروة", "عائشة"])
+
+    def test_a_later_prompt_s_reading_is_refused_by_an_earlier_tool(self):
+        item = {"key": "0", "text": self.packet["text"], "expected_id": "t01-520f51", "output": self.output, "base": {"chains": []}, "record_id": "k6:x",
+                "source_work_id": "sunni:muslim", "evidence": [], "reader_format": "v3_4", "tool_version": "v3_3", "context": self.packet["context"]}
+        self.assertTrue(engine.run_item(item)["errors"][0].startswith("tool_version: 'v3_3' cannot read a v3_4 reading"))
+
+
+class QuoteRuleTest(unittest.TestCase):
+    """Evidence quotes: letters exact; harakat, superscript alef, tatweel and Qur'anic marks ignored; stored in the text's own characters (vocalised Imami text)."""
+
+    TEXT = "عَنْ أَبِي عَبْدِ اللَّهِ عَلَيْهِ السَّلاَمُ قَالَ: لاَ يَحِلُّ"
+
+    def test_an_unvocalised_quote_stands_in_vocalised_text_and_is_stored_as_the_text_writes_it(self):
+        self.assertEqual(engine.text_quotes(self.TEXT, ["عن أبي عبد الله"]), ["عَنْ أَبِي عَبْدِ اللَّهِ"])
+        self.assertEqual(engine.evidence_problems(self.TEXT, ["عن أبي عبد الله", "قـال"], {"added": [], "changed": [], "removed": []}, False), [])
+
+    def test_a_different_letter_is_still_refused(self):
+        problems = engine.evidence_problems(self.TEXT, ["عن ابي عبد الله"], {"added": [], "changed": [], "removed": []}, False)   # alif for hamza-alif: a letter
+        self.assertEqual(len(problems), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

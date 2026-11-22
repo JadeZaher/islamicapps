@@ -67,9 +67,9 @@ export type View = (typeof VIEWS)[number];
 export const REVIEW_DECISIONS = ['confirmed', 'rejected', 'superseded'] as const;
 export type ReviewDecision = (typeof REVIEW_DECISIONS)[number];
 /** `accepted` is "agreed and passed the auto-apply rule" (in the store everything agreed passes it: see the design note). */
-export const STATES = ['submitted', 'disputed', 'outvoted', 'held', 'accepted', 'confirmed', 'rejected', 'superseded', 'stale'] as const;
-/** Reader output formats, one per registered prompt: v1 (routes with offsets), v2 (levels, expanded by the tool), v3 and v3_1 (groups with context), text (text and metadata checks only). */
-export const READER_FORMATS = ['v1', 'v2', 'v3', 'v3_1', 'v3_2', 'text'] as const;
+export const STATES = ['submitted', 'disputed', 'outvoted', 'held', 'accepted', 'confirmed', 'rejected', 'superseded', 'stale', 'awaiting_human', 'set_aside_by_ai'] as const;
+/** Reader output formats, one per registered prompt: v1 (routes with offsets), v2 (levels, expanded by the tool), v3 to v3_4 (groups with context), text (text and metadata checks only). */
+export const READER_FORMATS = ['v1', 'v2', 'v3', 'v3_1', 'v3_2', 'v3_4', 'text'] as const;
 export type ReaderFormat = (typeof READER_FORMATS)[number];
 /** Each format's prompt, hashed on every submission (a reading under an older prompt is re-run, not recorded). */
 export const READER_PROMPTS: Record<ReaderFormat, string> = {
@@ -78,16 +78,44 @@ export const READER_PROMPTS: Record<ReaderFormat, string> = {
   v3: 'datasets/hadith-data/chain-reader/v3/prompt-v3.md',
   v3_1: 'datasets/hadith-data/chain-reader/v3_1/prompt-v3_1.md',
   v3_2: 'datasets/hadith-data/chain-reader/v3_2/prompt-v3_2.md',
+  v3_4: 'datasets/hadith-data/chain-reader/v3_4/prompt-v3_4.md',
   text: 'datasets/hadith-data/chain-reader/context/prompt-v2-text.md',
 };
 /**
  * The reader tool that validated, expanded and held a v3-shaped reading (chain_fix_engine.py `TOOLS`). Separate from the prompt:
  * batch 001 was read under prompt v3 and re-triaged by tool v3_1; a v3.1 reading needs tool v3_1. Absent: the prompt's own tool.
  */
-export const TOOL_VERSIONS = ['v3', 'v3_1', 'v3_2'] as const;
+export const TOOL_VERSIONS = ['v3', 'v3_1', 'v3_2', 'v3_3', 'v3_4'] as const;
 export type ToolVersion = (typeof TOOL_VERSIONS)[number];
-/** Tools that may read a reading made under each v3-shaped prompt (chain_fix_engine.py `TOOLS_FOR_FORMAT`). */
-export const TOOLS_FOR_FORMAT: Record<'v3' | 'v3_1' | 'v3_2', readonly ToolVersion[]> = { v3: ['v3', 'v3_1', 'v3_2'], v3_1: ['v3_1', 'v3_2'], v3_2: ['v3_2'] };
+/** Formats whose reading is the reader's own v3-shaped output (`reader_output_v3`), expanded and held by a reader tool. */
+export type V3ShapedFormat = 'v3' | 'v3_1' | 'v3_2' | 'v3_4';
+export const isV3Shaped = (format: string): format is V3ShapedFormat => format === 'v3' || format === 'v3_1' || format === 'v3_2' || format === 'v3_4';
+/** Tools that may read a reading made under each v3-shaped prompt (chain_fix_engine.py `TOOLS_FOR_FORMAT`): a later tool reads an earlier prompt's output, never the reverse. */
+export const TOOLS_FOR_FORMAT: Record<V3ShapedFormat, readonly ToolVersion[]> = {
+  v3: ['v3', 'v3_1', 'v3_2', 'v3_3', 'v3_4'], v3_1: ['v3_1', 'v3_2', 'v3_3', 'v3_4'], v3_2: ['v3_2', 'v3_3', 'v3_4'], v3_4: ['v3_4'],
+};
+/** Holds the owner lifted (code -> ruling): a lifted code no longer keeps a fix back; its record stays. reviews/ai/AGENTS.md §Rule-checked ruling. */
+export const LIFTED_HOLD_CODES: Record<string, string> = {
+  stored_chain_checked_by_rule: 'owner ruling 2026-11-22: the agreed reading is applied and the report leaves teacher and student lists until a reviewer confirms',
+};
+/** The AI reviewer's prompts by version (chain-reader/reviewer); 1.0.0 is the pilot's only. */
+export const REVIEWER_PROMPTS: Record<string, string> = {
+  '1.1.0': 'datasets/hadith-data/chain-reader/reviewer/prompt-reviewer-v1_1.md',
+  '1.0.0': 'datasets/hadith-data/chain-reader/reviewer/prompt-reviewer-v1.md',
+};
+export const REVIEWER_SPECIALIST_ID = 'chain-reviewer';
+/** What a review by the AI reviewer led to (review_rules_v1_1.ACTION_CLASS keys). */
+export type ReviewOutcome = 'apply_reading' | 'apply_reader_a' | 'apply_reader_b' | 'apply_correction' | 'apply_no_chain' | 'label_ai_reviewed' | 'label_disputed'
+  | 'queue_for_human' | 'keep_held' | 'discard_reading' | 'revert_to_stored' | 'human_decides';
+/** An AI review's mark on a fix's state (model, run, time); never worded "verified". */
+export interface AiMark {
+  model_id: string;
+  run_id: string;
+  at: string;
+  review_id: string;
+  outcome: ReviewOutcome;
+  decision: string;
+}
 /** A previous report an inherited reading takes names from (to_submission_v3_1.py `inherited_from`), resolved to the archive. */
 export interface InheritedSource {
   ref: string;
@@ -146,6 +174,16 @@ export interface PlannedChain {
   mentions: PlannedMention[];
   /** The compiler's own `direct`/`indirect` mark for this route, from its opening words (work_register.py `route_links`); absent on the first chain and on fixes planned before it. */
   compiler_link?: 'direct' | 'indirect';
+  /** Tool v3.4: the saying (1 = first in the text) whose chain this route is; the page heads it "Chain of the first saying". */
+  saying?: number;
+}
+/** Tool v3.4: one saying of a two-saying report, its page label and opening words (an exact stretch of the reader text). */
+export interface PlannedSaying {
+  saying: number;
+  label: string;
+  opens: string;
+  start: number;
+  end: number;
 }
 /** A remark that another version names another transmitter («بمثل حديث X»): kept with the fix and shown under the chain, never a route. */
 export interface VariantRemark {
@@ -163,6 +201,7 @@ export interface VariantRemark {
 export interface PlannedChains {
   chains: PlannedChain[];
   variant_remarks?: VariantRemark[];
+  sayings?: PlannedSaying[];
 }
 export interface ExternalCitation {
   url?: string;
@@ -209,6 +248,8 @@ export interface Submission {
   inherited_from?: InheritedSource[];
   /** v3.2: remarks that another version names another transmitter, recorded with the fix (the union of both passes), never a route. */
   variant_remarks?: VariantRemark[];
+  /** A fix written from the AI reviewer's correction (two runs, the same routes): the readers' fix it corrects. */
+  corrects_fix_id?: string;
   review_kind: 'specialist';
   label: 'AI reviewed';
   specialist_id: string;
@@ -237,11 +278,34 @@ export interface Review {
   model_id: string | null;
   prompt_path: string | null;
   prompt_sha256: string | null;
-  decision: ReviewDecision;
+  /** A human's decision; null on an AI reviewer's row, whose vocabulary is `review_decision` (only a human confirmation is "verified"). */
+  decision: ReviewDecision | null;
   superseded_by: string | null;
   note: string;
   citation: ExternalCitation | null;
   reviewed_at: string;
+  /** AI reviewer rows (chain-review-record.ts): the reviewer's own decision, what review_rules_v1_1.outcome did with it, and the run. */
+  review_decision?: string;
+  outcome?: ReviewOutcome;
+  /** The fix's holds and status when the review was recorded: an apply outcome stands only while no hold has come since. */
+  codes_at_review?: string[];
+  status_at_review?: 'held' | 'pending' | 'applied';
+  run_id?: string;
+  pass?: number;
+  packet_path?: string;
+  packet_sha256?: string;
+  packet_item_id?: string;
+  started_at?: string;
+  finished_at?: string;
+  specialist_version?: string;
+  uncertainty?: string;
+  question?: string | null;
+  reasons?: unknown[];
+  variant_verdicts?: unknown[];
+  corrected_reading?: unknown;
+  /** The second independent review a correction needs: its run and whether it wrote the same routes. */
+  second_run_id?: string | null;
+  second_run_agrees?: boolean | null;
 }
 
 /** Bytes of a prompt file and its front matter `version` (the reader prompt says `reader:`, a specialist prompt `specialist:`). */
@@ -343,6 +407,8 @@ export interface EngineItem {
   other_output?: unknown;
   /** v3.2 tool: the pipeline carries variant remarks, so a reading with one is not held for it (`--variant-notes-supported`). */
   variant_notes_supported?: boolean;
+  /** v3.4 tool: the pipeline stores each route's saying, so a two-saying reading is not held for it (`--sayings-supported`). */
+  sayings_supported?: boolean;
   tool_version?: ToolVersion;
   /** Per `inherited_from` ref: the previous report's live chains (status and mentions), for inherited names. */
   previous?: Record<string, { hadith_id: string; chains: BaseChain[] }>;
@@ -380,6 +446,8 @@ export interface EngineResult {
   disposition: typeof NO_CHAIN_DISPOSITION | null;
   /** v3.2: variant groups kept as remarks about another version, never routes. */
   variant_remarks?: VariantRemark[];
+  /** The evidence quotes as the text writes them (its own vowel marks), located letters-exact. */
+  evidence_quotes?: string[];
 }
 
 /**
@@ -587,8 +655,16 @@ export interface FixState {
   ai_objections: number;
   reviewers: string[];
   representative_submission_id: string;
-  /** Hold codes of any current run of this reading (HOLDS.md); a held reading is never applied. */
+  /** Hold codes of any current run of this reading (HOLDS.md); a held reading is never applied. Lifted codes (LIFTED_HOLD_CODES) are not here. */
   holds: string[];
+  /** Codes the owner lifted that this reading carried (kept for the record; they no longer hold it). */
+  lifted_holds: string[];
+  /** The AI reviewer confirmed it (or cleared its holds and it was applied): "AI reviewed (<model>), <date>". */
+  ai_review: AiMark | null;
+  /** The AI reviewer did not confirm an applied reading: it stays applied, labelled disputed, its correction queued for a second review. */
+  ai_disputed: AiMark | null;
+  /** This fix was written from the AI reviewer's correction, repeated by a second independent review. */
+  ai_corrected: { corrects_fix_id: string; runs: string[]; models: string[]; at: string } | null;
   why: string;
 }
 
@@ -603,17 +679,31 @@ const latestPerReviewer = (reviews: Review[]) => {
   return [...latest.values()];
 };
 
+/** The latest review of a fix by the AI reviewer tier (a row with `outcome`), or null. */
+const latestAiReview = (reviews: Review[]) =>
+  [...reviews].filter((r) => r.reviewer_kind === 'ai' && r.outcome).sort((a, b) => a.reviewed_at.localeCompare(b.reviewed_at) || a.review_id.localeCompare(b.review_id)).at(-1) ?? null;
+
+const aiMark = (review: Review): AiMark => ({
+  model_id: review.model_id ?? '', run_id: review.run_id ?? '', at: review.reviewed_at, review_id: review.review_id, outcome: review.outcome!, decision: review.review_decision ?? '',
+});
+
+/** Outcomes that apply a held or pending reading (review_rules_v1_1.ACTION_CLASS "apply" for the readers' own fix). */
+const APPLY_READING = new Set<ReviewOutcome>(['apply_reading', 'apply_reader_a']);
+
 /**
  * Every fix's state from the store, deterministically. Per report, only submissions bound to the newest text are current;
  * per run, its latest reading counts. Agreement: one reading has at least two runs, at least one of them blind to the stored
  * chain, and at least twice the runs of every other reading together. Final review: the latest review per reviewer counts;
- * any human rejection rejects; else a human confirmation confirms; AI reviews never move a fix, they only object.
+ * any human rejection rejects; else a human confirmation confirms. The AI reviewer moves a fix only as its recorded outcome
+ * (review_rules_v1_1.outcome, computed at recording time on the fix's state then) says, and any human decision wins over it.
+ * Codes the owner lifted (LIFTED_HOLD_CODES) no longer hold a fix. Rationale: reviews/ai/AGENTS.md §AI review tier.
  */
 export function computeStates(submissions: Submission[], reviews: Review[], applications: { fix_id: string; action: string; at: string }[],
                               archiveHolds: ArchiveHold[] = []): FixState[] {
   const archiveCodes = new Map<string, string[]>();
   for (const hold of archiveHolds) archiveCodes.set(hold.fix_id, [...new Set([...(archiveCodes.get(hold.fix_id) ?? []), hold.code])]);
-  const holdsOf = (fixId: string, runs: Submission[]) => [...new Set([...holdCodes(runs), ...(archiveCodes.get(fixId) ?? [])])].sort();
+  const allHoldsOf = (fixId: string, runs: Submission[]) => [...new Set([...holdCodes(runs), ...(archiveCodes.get(fixId) ?? [])])].sort();
+  const holdsOf = (fixId: string, runs: Submission[]) => allHoldsOf(fixId, runs).filter((code) => !(code in LIFTED_HOLD_CODES));
   const unique = new Map<string, Submission>();
   for (const submission of submissions) if (!unique.has(submission.submission_id)) unique.set(submission.submission_id, submission);
   const byReport = new Map<string, Submission[]>();
@@ -630,26 +720,34 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
     const current = all.filter((s) => binding(s) === binding(newest));
     const latestByRun = new Map<string, Submission>();
     for (const s of [...current].sort((a, b) => a.submitted_at.localeCompare(b.submitted_at))) latestByRun.set(s.orchestrator_run_id, s);
-    const counted = [...latestByRun.values()];
+    // A fix written from the AI reviewer's correction is not a reader's reading: it takes no part in the agreement count.
+    const counted = [...latestByRun.values()].filter((s) => !s.corrects_fix_id);
+    const corrections = [...latestByRun.values()].filter((s) => s.corrects_fix_id);
     const byFix = new Map<string, Submission[]>();
     for (const s of counted) byFix.set(s.fix_id, [...(byFix.get(s.fix_id) ?? []), s]);
+    const correctionRuns = new Map<string, Submission[]>();
+    for (const s of corrections) correctionRuns.set(s.fix_id, [...(correctionRuns.get(s.fix_id) ?? []), s]);
 
     const ranked = [...byFix.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
-    const [leaderId, leaderRuns] = ranked[0];
+    const [leaderId, leaderRuns] = ranked[0] ?? ['', []];
     const dissent = ranked.slice(1).reduce((sum, [, runs]) => sum + runs.length, 0);
     const tied = ranked.length > 1 && ranked[1][1].length === leaderRuns.length;
     const leaderBlind = leaderRuns.filter((s) => isBlindView(s.view)).length;
     const agreed = !tied && leaderRuns.length >= 2 && leaderBlind >= 1 && leaderRuns.length >= 2 * dissent;
 
+    const humanLatest = (fixId: string) => latestPerReviewer(reviewsByFix.get(fixId) ?? []).filter((r) => r.reviewer_kind === 'human');
     // A human confirmation of one reading of a disputed report settles it; the other readings are superseded by it.
-    const humanConfirmed = new Set(
-      [...byFix.keys()].filter((fixId) => {
-        const latest = latestPerReviewer(reviewsByFix.get(fixId) ?? []).filter((r) => r.reviewer_kind === 'human');
-        return latest.some((r) => r.decision === 'confirmed') && !latest.some((r) => r.decision === 'rejected');
-      }),
-    );
+    const allFixIds = [...byFix.keys(), ...correctionRuns.keys()];
+    const humanConfirmed = new Set(allFixIds.filter((fixId) => {
+      const latest = humanLatest(fixId);
+      return latest.some((r) => r.decision === 'confirmed') && !latest.some((r) => r.decision === 'rejected');
+    }));
+    // A correction (two reviews, the same routes) replaces the reading it corrects, unless a human has decided either.
+    const correctedBy = new Map<string, string>();
+    for (const [fixId, runs] of correctionRuns) if (runs.length >= 2 && humanLatest(fixId).every((r) => r.decision !== 'rejected')) correctedBy.set(runs[0].corrects_fix_id!, fixId);
 
-    for (const [fixId, runs] of byFix) {
+    for (const [fixId, runs] of [...byFix, ...correctionRuns]) {
+      const isCorrection = correctionRuns.has(fixId);
       const representative = [...runs].sort((a, b) => (a.text_checked_against === 'database' ? 0 : 1) - (b.text_checked_against === 'database' ? 0 : 1) || b.submitted_at.localeCompare(a.submitted_at))[0];
       const isNoChange = representative.fix_kinds.includes('no_change');
       const latest = latestPerReviewer(reviewsByFix.get(fixId) ?? []);
@@ -657,6 +755,11 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
       const rejections = humans.filter((r) => r.decision === 'rejected').length;
       const confirmations = humans.filter((r) => r.decision === 'confirmed').length;
       const supersededBy = humans.find((r) => r.decision === 'superseded')?.superseded_by ?? null;
+      const ai = latestAiReview(reviewsByFix.get(fixId) ?? []);
+      const holds = holdsOf(fixId, runs);
+      const inDatabase = database.get(fixId) === 'applied';
+      let aiReview: AiMark | null = null;
+      let aiDisputed: AiMark | null = null;
       let state: State;
       let why: string;
       if (rejections > 0) {
@@ -671,13 +774,45 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
       } else if (humanConfirmed.size > 0) {
         state = 'superseded';
         why = `a human reviewer confirmed another reading of this report (${[...humanConfirmed].join(', ')})`;
-      } else if (holdsOf(fixId, runs).length > 0) {
+      } else if (isCorrection) {
+        state = runs.length >= 2 ? 'accepted' : 'awaiting_human';
+        why = runs.length >= 2 ? `the AI reviewer's correction, written alike by ${runs.length} independent reviews` : 'one review wrote this correction; a second independent review must repeat it';
+      } else if (correctedBy.has(fixId)) {
+        state = 'superseded';
+        why = `the AI reviewer's correction ${correctedBy.get(fixId)} (two reviews, the same routes) replaces it`;
+      } else if (ai && (ai.outcome === 'apply_correction' || ai.outcome === 'apply_no_chain') && !inDatabase) {
+        state = 'awaiting_human';
+        why = "two reviews wrote the same correction, but it is not yet written as a fix (chain-review-record.ts): listed for a person";
+      } else if (ai && ai.outcome === 'queue_for_human' && !inDatabase) {
+        state = 'awaiting_human';
+        why = 'the AI reviewer did not confirm it and nothing the rule allows applies: listed for a person';
+      } else if (ai && ai.outcome === 'keep_held' && holds.length === 0 && !inDatabase) {
+        // A referral of a cleared, not yet applied reading keeps it back (pending behaves as held).
+        state = 'held';
+        why = 'held: the AI reviewer referred it to a person (referred_by_ai_reviewer)';
+        holds.push('referred_by_ai_reviewer');
+      } else if (ai && (ai.outcome === 'revert_to_stored' || (ai.outcome === 'discard_reading' && !inDatabase))) {
+        state = 'set_aside_by_ai';
+        why = ai.outcome === 'revert_to_stored' ? 'the AI reviewer kept the stored chain, which differs from this reading: reverted and listed for a person'
+          : 'the AI reviewer kept the stored chain: set aside, never applied, listed for a person';
+      } else if (holds.length > 0 && ai && APPLY_READING.has(ai.outcome!) && holds.every((code) => (ai.codes_at_review ?? []).includes(code)) && fixId === leaderId && agreed) {
+        // review_rules_v1_1: a confirmation of a held reading whose every hold the reviewer may clear applies it (holds checked again: a hold
+        // that came after the review keeps it back).
+        state = 'accepted';
+        why = `the AI reviewer confirmed it and cleared its holds (${holds.join(', ')}); ${runs.length} independent readers agree`;
+        aiReview = aiMark(ai);
+      } else if (holds.length > 0) {
         // Held by the tool (HOLDS.md) or by an archive fact: never auto-applied, whatever the agreement; queued for a third reader or a person.
         state = 'held';
-        why = `held: ${holdsOf(fixId, runs).join(', ')}; queued for a third reader or a person`;
+        why = `held: ${holds.join(', ')}; queued for a third reader or a person`;
       } else if (fixId === leaderId && agreed) {
         state = 'accepted';
         why = `${runs.length} independent readers agree (${leaderBlind} blind to the stored chain)${dissent ? `, over ${dissent} dissenting` : ''}`;
+        if (ai && (ai.outcome === 'label_ai_reviewed' || APPLY_READING.has(ai.outcome!))) aiReview = aiMark(ai);
+        // An applied reading the reviewer did not confirm stays applied (never reverted by a correction or a referral), labelled disputed.
+        if (ai && ai.outcome === 'label_disputed') aiDisputed = aiMark(ai);
+        // Reviewed while pending, applied since: never reverted by a referral or a set-aside, labelled disputed instead.
+        if (ai && inDatabase && ['queue_for_human', 'keep_held', 'discard_reading', 'apply_correction', 'apply_no_chain'].includes(ai.outcome!)) aiDisputed = aiMark(ai);
       } else if (agreed) {
         state = 'outvoted';
         why = `another reading has ${leaderRuns.length} readers against this one's ${runs.length}`;
@@ -696,6 +831,8 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
       const lone = runs.length < 2;
       let effect: FixState['effect'] = null;
       if (live) effect = !isNoChange ? 'replace_routes' : uncertain && (!lone || state === 'confirmed') ? 'set_status' : 'annotate';
+      if (isCorrection && live && isNoChange) effect = 'set_status';
+      const lifted = allHoldsOf(fixId, runs).filter((code) => code in LIFTED_HOLD_CODES);
       states.push({
         fix_id: fixId,
         hadith_id: hadithId,
@@ -709,15 +846,21 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
         runs: runs.map((s) => s.orchestrator_run_id).sort(),
         models: [...new Set(runs.map((s) => s.model_id))].sort(),
         text_only_runs: runs.filter((s) => isBlindView(s.view)).length,
-        dissenting_runs: counted.length - runs.length,
+        dissenting_runs: isCorrection ? 0 : counted.length - runs.length,
         database: database.get(fixId) ?? 'not_applied',
         human_confirmations: confirmations,
         human_rejections: rejections,
-        ai_objections: latest.filter((r) => r.reviewer_kind === 'ai' && r.decision !== 'confirmed').length,
+        ai_objections: latest.filter((r) => r.reviewer_kind === 'ai' && (r.outcome ? r.outcome === 'label_disputed' || r.outcome === 'queue_for_human' : r.decision !== 'confirmed')).length,
         reviewers: latest.map((r) => `${r.reviewer_kind}:${r.reviewer}`).sort(),
         representative_submission_id: representative.submission_id,
-        holds: holdsOf(fixId, runs),
-        why,
+        holds,
+        lifted_holds: lifted,
+        ai_review: aiReview,
+        ai_disputed: aiDisputed,
+        ai_corrected: isCorrection && runs.length >= 2
+          ? { corrects_fix_id: representative.corrects_fix_id!, runs: runs.map((s) => s.orchestrator_run_id).sort(), models: [...new Set(runs.map((s) => s.model_id))].sort(), at: [...runs].map((s) => s.submitted_at).sort().at(-1)! }
+          : null,
+        why: inDatabase && !live ? `${why} (still in the database: revert it)` : why,
       });
     }
     // Submissions bound to older text: kept, never applied.
@@ -727,13 +870,13 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
         fix_id: s.fix_id, hadith_id: hadithId, record_id: s.record_id, tradition: s.tradition, work: s.source_work_id, state: 'stale', effect: null,
         structure_status: null, fix_kinds: s.fix_kinds, runs: [s.orchestrator_run_id], models: [s.model_id], text_only_runs: isBlindView(s.view) ? 1 : 0,
         dissenting_runs: 0, database: database.get(s.fix_id) ?? 'not_applied', human_confirmations: 0, human_rejections: 0, ai_objections: 0, reviewers: [],
-        representative_submission_id: s.submission_id, holds: [], why: 'read from an older text of this report; re-read the current text',
+        representative_submission_id: s.submission_id, holds: [], lifted_holds: [], ai_review: null, ai_disputed: null, ai_corrected: null,
+        why: 'read from an older text of this report; re-read the current text',
       });
     }
   }
   return states.sort((a, b) => a.hadith_id.localeCompare(b.hadith_id) || a.fix_id.localeCompare(b.fix_id));
 }
-
 /** The rows the projection replays: one per report with an accepted or confirmed fix, sorted, gzip with no timestamp. */
 export function buildOverrides(states: FixState[], submissions: Submission[]): Buffer {
   const byId = new Map(submissions.map((s) => [s.submission_id, s]));
@@ -788,6 +931,12 @@ export function reconcile(paths: StorePaths, overridesPath: string, now: string)
       held: states.filter((s) => s.state === 'held').map((s) => ({ fix_id: s.fix_id, holds: s.holds })),
       awaiting_second_reader: states.filter((s) => s.state === 'submitted').map((s) => s.fix_id),
       rejected_but_in_database: states.filter((s) => s.state === 'rejected' && s.database === 'applied').map((s) => s.fix_id),
+      // AI reviewer tier (review_rules_v1_1): what a person or a second review must look at, and what must leave the database.
+      awaiting_human: states.filter((s) => s.state === 'awaiting_human').map((s) => s.fix_id),
+      ai_disputed_awaiting_second_review: states.filter((s) => s.ai_disputed).map((s) => ({ fix_id: s.fix_id, run_id: s.ai_disputed!.run_id, decision: s.ai_disputed!.decision })),
+      set_aside_by_ai: states.filter((s) => s.state === 'set_aside_by_ai').map((s) => s.fix_id),
+      // Out of the overrides but still written: the reverted-by-AI reading and a reading an applied correction replaces (revert before the apply).
+      revert_before_apply: states.filter((s) => s.database === 'applied' && !['accepted', 'confirmed', 'rejected'].includes(s.state)).map((s) => s.fix_id),
     };
     writeAtomically(paths.queue, `${JSON.stringify(queue, null, 1)}\n`);
     writeAtomically(overridesPath, buildOverrides(states, submissions));

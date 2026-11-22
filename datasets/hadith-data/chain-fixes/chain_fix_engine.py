@@ -21,7 +21,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE.parent
-for extra in (DATA / "pg_export", DATA / "chain-reader" / "v3_2", DATA / "chain-reader" / "v3_1", DATA / "chain-reader" / "v3", DATA / "chain-reader" / "context", DATA / "chain-reader", DATA):   # -I drops the script directory
+for extra in (DATA / "pg_export", DATA / "chain-reader" / "v3_4", DATA / "chain-reader" / "v3_3", DATA / "chain-reader" / "v3_2", DATA / "chain-reader" / "v3_1", DATA / "chain-reader" / "v3",
+              DATA / "chain-reader" / "context", DATA / "chain-reader", DATA):   # -I drops the script directory
     if str(extra) not in sys.path:
         sys.path.insert(0, str(extra))
 
@@ -41,6 +42,13 @@ from validate_v3_1 import validate_v3_1  # noqa: E402
 from expand_v3_2 import expand as expand_v3_2, link_key as link_key_v3_2, readings_agree as readings_agree_v3_2  # noqa: E402  (tool v3.2: a variant group is a remark, never a route; v3_2/README.md)
 from holds_v3_2 import compute_holds as compute_holds_v3_2  # noqa: E402  (v3.2 holds: chain-reader/v3_2/HOLDS.md)
 from validate_v3_2 import validate_v3_2  # noqa: E402
+from holds_v3_3_pipeline import compute_holds as compute_holds_v3_3  # noqa: E402  (tool v3.3, half-route hold taken back to v3.2's: AGENTS.md §tool v3.3)
+import holds_v3_3_pipeline  # noqa: E402
+import holds_v3_4  # noqa: E402
+from expand_v3_4 import expand as expand_v3_4, readings_agree as readings_agree_v3_4  # noqa: E402  (tool v3.4: the saying label; v3_4/README.md)
+from validate_v3_4 import validate_v3_4  # noqa: E402
+
+holds_v3_4.base = holds_v3_3_pipeline          # v3.4's holds stand on the pipeline's v3.3 (the corrected half-route hold), per saying
 
 # Links the reader derives rather than reads: not substrings of the report text. Kept with kind and origin; the compiler head is
 # never a row (the projection derives it); an inherited name is a row that repeats the cited report's written mention.
@@ -48,9 +56,14 @@ DERIVED_KINDS = ("compiler_head", "inherited")
 # The reader toolchain per tool version: (validate, expand, holds). A reading names the prompt it ran under (its format) and the
 # tool that expanded and held it; batch 001 was read under prompt v3 and is re-triaged by tool v3.1 (AGENTS.md §reader formats).
 TOOLS = {"v3": (validate_v3, expand_v3, compute_holds_v3), "v3_1": (validate_v3_1, expand_v3_1, compute_holds_v3_1),
-         "v3_2": (validate_v3_2, expand_v3_2, compute_holds_v3_2)}
+         "v3_2": (validate_v3_2, expand_v3_2, compute_holds_v3_2), "v3_3": (validate_v3_2, expand_v3_2, compute_holds_v3_3),
+         "v3_4": (validate_v3_4, expand_v3_4, holds_v3_4.compute_holds)}
 # The tools that may read a reading made under each prompt: a later tool reads an earlier prompt's output, never the reverse.
-TOOLS_FOR_FORMAT = {"v3": ("v3", "v3_1", "v3_2"), "v3_1": ("v3_1", "v3_2"), "v3_2": ("v3_2",)}
+TOOLS_FOR_FORMAT = {"v3": ("v3", "v3_1", "v3_2", "v3_3", "v3_4"), "v3_1": ("v3_1", "v3_2", "v3_3", "v3_4"), "v3_2": ("v3_2", "v3_3", "v3_4"), "v3_4": ("v3_4",)}
+V3_SHAPED = tuple(TOOLS_FOR_FORMAT)
+# Tools that keep a variant group as a remark (never a route) and read the second pass for the union of remarks.
+VARIANT_TOOLS = ("v3_2", "v3_3", "v3_4")
+AGREE = {"v3_2": readings_agree_v3_2, "v3_3": readings_agree_v3_2, "v3_4": readings_agree_v3_4}
 # A cited report's chain may lend its names only when a tested rule or a person stands behind it.
 INHERITABLE_STATUSES = ("checked_by_rule", "verified_by_reviewer")
 NO_CHAIN_DISPOSITION = "no_chain_by_reading"
@@ -351,15 +364,47 @@ def plan_inherited(planned: dict, expanded: dict, previous: dict, base: dict, re
                        for index, (_, entries, suspension) in enumerate(rebuilt)]}, []
 
 
+# Marks a quote may differ in (letters stay exact): harakat, superscript alef, tatweel, Qur'anic annotation marks (AGENTS.md §quotes).
+IGNORED_QUOTE_MARKS = re.compile("[ً-ْٰـۖ-ۭ]")
+
+
+def locate_quotes(text: str, quote: str) -> list[tuple[int, int]]:
+    """Every place a quote stands in the text, letters exact, the ignored marks aside on both sides; spans are in the text's own characters."""
+    if not quote:
+        return []
+    kept = [index for index, char in enumerate(text) if not IGNORED_QUOTE_MARKS.match(char)]
+    bare = "".join(text[index] for index in kept)
+    needle = IGNORED_QUOTE_MARKS.sub("", quote)
+    if not needle:
+        return []
+    spans, start = [], bare.find(needle)
+    while start >= 0:
+        end = kept[start + len(needle) - 1] + 1
+        while end < len(text) and IGNORED_QUOTE_MARKS.match(text[end]):      # the last letter's own marks belong to the quote
+            end += 1
+        spans.append((kept[start], end))
+        start = bare.find(needle, start + 1)
+    return spans
+
+
+def text_quotes(text: str, quotes: list[str]) -> list[str]:
+    """Each quote as the text writes it (its own marks), for storing; a quote that does not stand in the text is kept as given."""
+    out = []
+    for quote in quotes:
+        spans = locate_quotes(text, quote)
+        out.append(text[spans[0][0]:spans[0][1]] if spans else quote)
+    return out
+
+
 def evidence_problems(text: str, quotes: list[str], comparison: dict, require_coverage: bool) -> list[str]:
-    """Every quote must be an exact substring; a reader who saw the stored chain must also quote around every change."""
-    problems = [f"evidence: quote {index} is not an exact substring of the text: {quote!r}"
-                for index, quote in enumerate(quotes) if not quote or quote not in text]
+    """Every quote must stand in the text (letters exact; vowel marks, tatweel and Qur'anic marks ignored); a reader who saw the stored chain must also quote around every change."""
+    problems = [f"evidence: quote {index} is not in the text (letters must be exact): {quote!r}"
+                for index, quote in enumerate(quotes) if not locate_quotes(text, quote)]
     if not quotes:
         problems.append("evidence: give at least one quote copied exactly from the text")
     if problems or not require_coverage:
         return problems
-    spans = [(m.start(), m.start() + len(q)) for q in quotes for m in re.finditer(re.escape(q), text)]
+    spans = [span for q in quotes for span in locate_quotes(text, q)]
     for item in comparison["added"] + comparison["changed"]:
         start, end = item["span"]
         if not any(s <= start and end <= e for s, e in spans):
@@ -465,7 +510,28 @@ def compiler_links_for(planned: dict, text: str, source_work_id: str) -> None:
 _REGISTER = None
 
 
+def label_sayings(planned: dict, expanded: dict) -> None:
+    """Tool v3.4: each planned chain carries the saying its route belongs to (by the spans of its written links), and the fix carries the
+    sayings with their page label and opening words (`planned.sayings`), computed from the reading, never taken from the envelope."""
+    saying_of_span = {(link["start"], link["end"]): route.get("saying") for route in expanded["routes"] for link in route["links"]
+                      if link["start"] is not None and route.get("saying") is not None}
+    for chain in planned["chains"]:
+        numbers = sorted({saying_of_span[tuple(m["span"])] for m in chain["mentions"] if m["span"] and tuple(m["span"]) in saying_of_span})
+        if numbers:
+            chain["saying"] = numbers[0]
+    planned["sayings"] = [{"saying": s["saying"], "label": s["label"], "opens": s["opens"], "start": s["start"], "end": s["end"]} for s in expanded["sayings"]]
+
+
+def route_marks(item: dict) -> dict:
+    """Repair mode (`mode: route_links`): the compiler mark each planned chain of an applied fix should carry, by the projection's rule."""
+    planned = {"chains": [{key: value for key, value in chain.items() if key != "compiler_link"} for chain in item["planned"]["chains"]]}
+    compiler_links_for(planned, item["text"], item["source_work_id"])
+    return {"key": item["key"], "marks": [chain.get("compiler_link") for chain in planned["chains"]]}
+
+
 def run_item(item: dict) -> dict:
+    if item.get("mode") == "route_links":
+        return route_marks(item)
     result = {"key": item["key"], "errors": [], "reading": None, "offsets_repaired": False, "comparison": None, "planned": None,
               "computed_evidence": [], "holds": [], "proposals": [], "needs_ruling": False, "derived_links": [], "disposition": None, "variant_remarks": []}
     output, context = item["output"], item.get("context") or {}
@@ -478,7 +544,7 @@ def run_item(item: dict) -> dict:
             result["proposals"] = proposals_of(output, "text")
         return result
     expanded_v3 = None
-    if item.get("reader_format") in ("v3", "v3_1", "v3_2"):
+    if item.get("reader_format") in V3_SHAPED:
         # The reader's own v3-shaped output (`reader_output_v3`), validated, expanded and held by the tool `tool_version` names
         # (v3 or v3_1; a v3.1 reading only by the v3.1 tool) against the packet's text and context; derived links are checked
         # there (an inherited name against the previous report's text, the compiler head against the work profile).
@@ -502,7 +568,7 @@ def run_item(item: dict) -> dict:
         # v3.2: a variant group is a remark about another version, kept with the fix and never a route; the v3.2 holds keep such a
         # reading back (has_variant_group) until the page shows the remark.
         other_expanded = None
-        if tool == "v3_2" and isinstance(item.get("other_output"), dict) and item["other_output"].get("status") == "read":
+        if tool in VARIANT_TOOLS and isinstance(item.get("other_output"), dict) and item["other_output"].get("status") == "read":
             # The second pass: it must be a valid reading of the same text whose ROUTES agree with the first's (variant remarks
             # may differ); only its remarks are used here (the agreement itself was found by the triage and is re-checked).
             other_errors = validate_tool(item["other_output"], item["text"], item["expected_id"], item.get("context") or {})
@@ -510,13 +576,16 @@ def run_item(item: dict) -> dict:
             if other_errors or other_expanded is None:
                 result["errors"] = ["second reading: not a valid reading of this text: " + "; ".join((other_errors or other_expand_errors)[:2])]
                 return result
-            if not readings_agree_v3_2(expanded, other_expanded):
+            if not AGREE[tool](expanded, other_expanded):
                 result["errors"] = ["second reading: its routes differ from the first's; agreement is on the routes (variant remarks may differ)"]
                 return result
-        result["variant_remarks"] = variant_remarks_union(expanded, other_expanded) if tool == "v3_2" else (expanded.get("variant_remarks") or [])
-        if tool == "v3_2" and item.get("variant_notes_supported"):
+        result["variant_remarks"] = variant_remarks_union(expanded, other_expanded) if tool in VARIANT_TOOLS else (expanded.get("variant_remarks") or [])
+        if tool in VARIANT_TOOLS and item.get("variant_notes_supported"):
             # The pipeline carries a variant remark (planned.variant_remarks, shown on the page): the reading is no longer held for having one.
             result["holds"] = [hold for hold in result["holds"] if hold["code"] != "has_variant_group"]
+        if tool == "v3_4" and item.get("sayings_supported"):
+            # The pipeline stores each route's saying (planned.chains[].saying, planned.sayings) and the page labels it (AGENTS.md §sayings).
+            result["holds"] = [hold for hold in result["holds"] if hold["code"] != "two_sayings_not_supported"]
         if any(route.get("variant") for route in expanded["routes"]):
             # A variant group is a remark that another version names another transmitter («بمثل حديث X»), never a route: until it is
             # kept as a labelled remark, the whole reading waits (AGENTS.md §reader formats, tranche-01 judge 2026-11-22).
@@ -555,7 +624,7 @@ def run_item(item: dict) -> dict:
     if problems:
         result["errors"] = problems
         return result
-    if item.get("reader_format") not in ("v2", "v3", "v3_1", "v3_2"):
+    if item.get("reader_format") not in ("v2", *V3_SHAPED):
         result["holds"] = compute_holds(reading, {}, item["text"], None, stored)
     planned = plan(item["text"], reading, item["base"], comparison, item["record_id"], item["source_work_id"])
     if expanded_v3 is not None:
@@ -567,8 +636,11 @@ def run_item(item: dict) -> dict:
             result["holds"] += holds
             planned = spliced or planned
     compiler_links_for(planned, item["text"], item["source_work_id"])
+    if expanded_v3 is not None and expanded_v3.get("sayings"):
+        label_sayings(planned, expanded_v3)
     if result["variant_remarks"]:
         planned["variant_remarks"] = result["variant_remarks"]       # kept with the fix, never a route (AGENTS.md §variant remarks)
+    result["evidence_quotes"] = text_quotes(item["text"], item.get("evidence", []))      # stored in the text's own characters
     result.update(reading=reading, offsets_repaired=repaired, comparison=comparison,
                   computed_evidence=computed_evidence(item["text"], comparison), planned=planned)
     return result

@@ -22,7 +22,7 @@ import type { ChainGraph, ChainMentionCandidate, ChainNode, HadithTraditionCode 
 import { groupCandidates, type IdentityGroup, type IdentityRecord } from '@/db/queries/identity-groups';
 import { sourceForLatinName, sourcesForIdentityClaim } from '@/lib/sources/registry';
 import { ChainSourceCredits } from './family/SourceCredits';
-import { chainFixNote, compilerNote, noChainNote, structureNote, VARIANT_REMARK_LEAD, variantRemarkCaveat, variantRemarkNames, variantRemarksOf } from './chain-structure';
+import { chainFixNote, compilerNote, noChainNote, sayingHeading, structureNote, VARIANT_REMARK_LEAD, variantRemarkCaveat, variantRemarkNames, variantRemarksOf } from './chain-structure';
 
 /** Which registry a record belongs to, in words, for a second record of the same person. */
 const RECORD_SOURCE: Record<string, string> = {
@@ -224,6 +224,13 @@ function nodeKind(node: ChainNode): NarratorNodeKind {
 }
 
 /** The work's compiler as the chain's first transmitter (owner ruling 2026-11-22): derived from the work, not written. */
+/** (route number within its saying, routes of that saying) for a route of a two-saying report. */
+function sayingPlace(branches: { nodes: ChainNode[] }[], index: number): [number, number] {
+  const saying = branches[index].nodes[0].chain_saying?.saying;
+  const same = branches.map((branch, position) => ({ position, saying: branch.nodes[0].chain_saying?.saying })).filter((entry) => entry.saying === saying);
+  return [same.findIndex((entry) => entry.position === index) + 1, same.length];
+}
+
 function CompilerHead({ compiler }: { compiler: NonNullable<ChainNode['chain_compiler']> }) {
     const { latin, arabic } = narratorNameParts(compiler.name_en, compiler.name_ar);
     return (
@@ -302,7 +309,12 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
 
             {branches.map((branch, branchIndex) => (
                 <div key={branch.id}>
-                    {(branches.length > 1 || sourceSanad) && (
+                    {branch.nodes[0].chain_saying ? (
+                        <div className="mb-2" data-chain-saying={branch.nodes[0].chain_saying.saying}>
+                            <p className="type-h3 text-ink">{sayingHeading(branch.nodes[0].chain_saying, ...sayingPlace(branches, branchIndex))}</p>
+                            <ArabicText as="p" variant="reading" className="type-small text-ink-muted">«{branch.nodes[0].chain_saying.opens}…»</ArabicText>
+                        </div>
+                    ) : (branches.length > 1 || sourceSanad) && (
                         <p className="mb-2 type-h3 text-ink">{branches.length > 1 ? `Branch ${branchIndex + 1}` : 'Narrators'}</p>
                     )}
                     {branch.nodes[0].chain_missing_link_after != null && (

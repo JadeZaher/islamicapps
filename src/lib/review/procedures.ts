@@ -324,12 +324,12 @@ const IDENTITY: readonly RuleProcedure[] = [
   {
     kind: 'rule',
     id: 'chain-fix-agreement',
-    version: '2026.11.22.2',
+    version: '2026.11.22.3',
     claimKind: 'chain_structure',
     title: 'Chains read by model readers: when a reading replaces the stored chain',
     status: 'in_use',
     rule:
-      'A model reader reads one report’s Arabic and writes its routes, name by name; a tool checks that every name is written in the text and in order, and compares the reading with the stored chain. A reading replaces the stored chain only when at least two independent reader runs gave exactly the same routes, at least one of them blind to the stored chain, with at least twice the runs of every other reading together, and the tool holds nothing against it. A held reading (it drops a name the stored chain has and the text writes; more than eight routes; nested «جميعا» or several «؛»; a back-reference with no previous report; a point the owner’s rulings do not settle) is never applied: it waits for a third reader or a person. The page then says "Read by model (<model>), <date>; awaiting final review". When both readings find no isnad in the text (no transmission word and name before the saying, and the report does not open as an asker or as a speaker named only in an earlier report), the stored chain is retired and the page says "No chain is written in this report (read by model, awaiting final review)". The source named in the text (an Imam asked or speaking) is a link and is labelled "Named in the report text"; a name taken from an earlier report repeats that report’s written name, only when its chain is rule-checked. A kept name keeps its identity only when both its neighbours are unchanged; a new or changed name starts unresolved. This round a reading replaces only uncertain chains: a report that also has a rule-checked chain waits for the owner. A chain read by model forms no teacher–student pair in any work until the owner lifts it per work. Only a named person’s confirmation turns it into "Verified by <name>, <date>"; one person’s rejection restores the rule-built chain. Readers’ other findings (identity, lexicon dates, duplicate records, text, translation, metadata) are filed for reviewers and never applied by a tool.',
+      'A model reader reads one report’s Arabic and writes its routes, name by name; a tool checks that every name is written in the text and in order, and compares the reading with the stored chain. A reading replaces the stored chain only when at least two independent reader runs gave exactly the same routes, at least one of them blind to the stored chain, with at least twice the runs of every other reading together, and the tool holds nothing against it. A held reading (it drops a name the stored chain has and the text writes; a route at most half as long as the longest; more than eight routes; nested «جميعا» or several «؛»; a mutabaʿa marker «تابعه» with several routes; a back-reference with no previous report; a point the owner’s rulings do not settle) is never applied by the tool. The page then says "Read by two models (<model>), <date>". A stronger model, the AI reviewer (claude-opus-5-5), then reads the Arabic against the reading: its confirmation adds "AI reviewed (<model>), <date>"; it may clear the holds its rules list as clearable (never a point the owner has not ruled), and a held reading it confirms is applied; a correction is applied only when a second independent review writes the same routes ("Corrected by AI review (<model>, 2 runs), <date>"); a reading already shown that it does not confirm stays shown and says "Disputed by the reviewer; awaiting second review"; it reverts a shown reading only when it keeps the stored chain and that chain differs. The goal state reads "Agent verified: two readers agree, reviewed by <model>, text matched to <witness>", and needs a match of the text to a primary witness, which is not yet built, so no chain says it. When both readings find no isnad in the text, the stored chain is retired and the page says "No chain is written in this report (read by two models (<model>), <date>)". The source named in the text (an Imam asked or speaking) is a link, labelled "Named in the report text"; in a narrated encounter the one who speaks is the last link; two sayings in one report keep their own chains, each headed "Chain of the first saying" / "Chain of the second saying" with the saying’s opening words. A name taken from an earlier report repeats that report’s written name, only when its chain is rule-checked. A kept name keeps its identity only when both its neighbours are unchanged; a new or changed name starts unresolved. Owner ruling (2026-11-22): a report with both a rule-checked and an uncertain chain is read too; when its reading is applied, all its chains are model-read and leave teacher and student lists until a reviewer confirms. A chain read by model forms no teacher–student pair in any work until the owner lifts it per work. Only a named person’s confirmation turns it into "Verified by <name>, <date>", and a person’s decision overrides every AI one; one person’s rejection restores the rule-built chain. Readers’ other findings (identity, lexicon dates, duplicate records, text, translation, metadata) are filed for reviewers and never applied by a tool.',
     evidence: ['The report’s Arabic (Pure Canon: the source’s chain field, then the text)', 'Two or more independent readings of it, each with the reader’s model, prompt and quotes', 'The stored chain, for comparison only'],
     measured: {
       summary:
@@ -343,10 +343,10 @@ const IDENTITY: readonly RuleProcedure[] = [
       'A point the owner has not ruled (a judgment of the Imam with no transmitter, a cited book’s author, a narrated encounter): only the readers’ own flag guards it',
       'The measurement is one model judge’s, not blind: a shared blind spot of reader and judge is not seen',
     ],
-    readerLabel: 'Read by model (<model>), <date>; awaiting final review',
-    excluded: ['Readers’ findings other than the chain: filed as proposals for reviewers, never applied', 'Reports with a rule-checked chain beside the uncertain one: held until the owner rules', 'Names inherited from an earlier report whose chain is uncertain: held', 'The Prophet as the speaker of a report with no transmitter (not ruled): held, not shown as “no chain”', 'A reading with a variant remark («بمثل حديث X», another version’s transmitter): held until the remark is kept as a note, never written as a chain', 'An earlier report whose chain later reports repeat: held, so theirs is not broken'],
+    readerLabel: 'Read by two models (<model>), <date>; then AI reviewed (<model>), <date>',
+    excluded: ['Readers’ findings other than the chain: filed as proposals for reviewers, never applied', 'Names inherited from an earlier report whose chain is uncertain: held', 'The Prophet as the speaker of a report with no transmitter (not ruled): held, not shown as “no chain”', 'A reading with a variant remark («بمثل حديث X», another version’s transmitter): held until the remark is kept as a note, never written as a chain', 'An earlier report whose chain later reports repeat: held, so theirs is not broken'],
     sources: ['SWI'],
-    code: ['reviews/ai/tools/chain-fix-lib.ts', 'datasets/hadith-data/chain-fixes/chain_fix_engine.py', 'datasets/hadith-data/chain-reader/v3_1/holds_v3_1.py', 'src/db/ops/chain-fix-apply.ts', 'datasets/hadith-data/chain-fixes/replay.py'],
+    code: ['reviews/ai/tools/chain-fix-lib.ts', 'datasets/hadith-data/chain-fixes/chain_fix_engine.py', 'datasets/hadith-data/chain-reader/v3_3/holds_v3_3_pipeline.py', 'datasets/hadith-data/chain-reader/v3_4/holds_v3_4.py', 'datasets/hadith-data/chain-reader/reviewer/review_rules_v1_1.py', 'reviews/ai/tools/chain-review-record.ts', 'src/db/ops/chain-fix-apply.ts', 'datasets/hadith-data/chain-fixes/replay.py'],
     covers: [],
     glossary: [],
   },
@@ -713,8 +713,40 @@ export const CHAIN_READER_SPECIALIST: Specialist = {
   unmeasured: 'Batch 001 (prompt 3.0.0, 500 uncertain reports, two blind passes) was judged by one independent model reader: agreed, unheld readings right in 98.6% (96.8–99.4) against 16% for the stored chains (datasets/hadith-data/chain-reader/analysis-batch-001/README.md); prompt 3.1.0 has not yet been run, and no per-work rate is established for lifting the list exclusion.',
 };
 
+/** The AI reviewer of model-read chains (chain-reader/reviewer, prompt 1.1.0): its decision moves a fix only as review_rules_v1_1.outcome says. */
+export const CHAIN_REVIEWER_SPECIALIST: Specialist = {
+  kind: 'specialist',
+  id: 'chain-reviewer',
+  version: '1.1.0',
+  claimKinds: ['chain_structure'],
+  title: 'Chain reviewer (AI first pass of final review)',
+  status: 'pilot_ready',
+  question: 'Does the readers’ reading of this report’s routes match the Arabic, and if not, what does?',
+  prompt: 'datasets/hadith-data/chain-reader/reviewer/prompt-reviewer-v1_1.md',
+  packet: [
+    'The report’s Arabic and the sources’ context',
+    'Both readers’ readings and notes, and the tool’s holds in plain words',
+    'The stored chain, for comparison',
+  ],
+  recommendedModel: 'claude-opus-5-5',
+  modelReason: 'Close reading of the Arabic against two model readings; it must out-read the readers it reviews.',
+  notThisModel: ['claude-haiku-5-5 (the readers it reviews)'],
+  measured: null,
+  unmeasured: 'Pilot (prompt 1.0.0, 81 tranche-02 readings, one Opus adjudicator over 55, not blind, not a person), re-scored under the v1.1 rule: 26 of 26 wrong readings caught, 52 of 52 right readings confirmed (3 by a cosmetic correction counted as a confirmation), no harmful outcome (datasets/hadith-data/chain-reader/reviewer/README-v1_1.md §4). Prompt 1.1.0 has not been run.',
+};
+
+/** The tier lines the chain page shows, in order (owner wording, 2026-11-22); "Verified" names a person only. */
+export const CHAIN_TIER_WORDING = [
+  'Read by two models (claude-haiku-5-5), <date>',
+  'AI reviewed (claude-opus-5-5), <date>',
+  'Agent verified: two readers agree, reviewed by claude-opus-5-5, text matched to <witness>',
+  'Disputed by the reviewer; awaiting second review',
+  'Verified by <name>, <date>',
+] as const;
+
 export const SPECIALISTS: readonly Specialist[] = [
   CHAIN_READER_SPECIALIST,
+  CHAIN_REVIEWER_SPECIALIST,
   {
     kind: 'specialist',
     id: 'isnad-identity',
@@ -820,7 +852,7 @@ export const METHOD_SECTIONS: readonly MethodSection[] = [
     claimKinds: ['identity'],
     intro: 'Every candidate identity for a name is kept with its basis. Where sources disagree, all are shown and none is preferred.',
     procedures: IDENTITY,
-    specialistIds: ['isnad-identity'],
+    specialistIds: ['isnad-identity', 'chain-reader', 'chain-reviewer'],
   },
   {
     id: 'correspondence',

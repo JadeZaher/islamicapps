@@ -68,3 +68,27 @@ Design, states, rules and the integration checklist: `docs/review/chain-fix-pipe
   `records/chain-fixes/proposals/<run>.jsonl` with both readings and their sources, the evidence and the reader's provenance;
   `chain-fix-review --proposal` records a person's decision (`proposal-reviews/`); `chain-fix-status --proposals` lists them. No tool
   applies one; there is no table for them yet (file store only this round).
+- **Tools v3.3 and v3.4 (0023).** `TOOL_VERSIONS` gains `v3_3` (prompt v3.2's reading, the v3.3 holds) and `v3_4` (prompt 3.4.0, the saying label);
+  `READER_PROMPTS.v3_4` registers `v3_4/prompt-v3_4.md` (sha256 `b63fd535…`). `TOOLS_FOR_FORMAT`: a later tool reads an earlier prompt's output,
+  never the reverse (a v3.4 reading only by `v3_4`). The engine runs v3.3 with ONE correction (`chain-reader/v3_3/holds_v3_3_pipeline.py`): the
+  hold `route_at_most_half_the_longest` is v3.2's un-narrowed rule, because the narrowing released readings that look wrong (t01-6d7565 judged
+  wrong; b1-2c5437, b1-cb35a4); the right reading 1552aa is held again (the known cost). v3.4's holds stand on the same corrected base.
+- **Sayings (`--sayings-supported`).** A v3.4 reading may label each group with its saying (`saying`, `saying_opens`); the engine computes, from its own
+  expansion, `planned.chains[].saying` and `planned.sayings` ({saying, label, opens, start, end}); the envelope's `sayings` is never trusted. The
+  flag lifts `two_sayings_not_supported` (engine side, like `--variant-notes-supported`). The label lives in `chain_fixes.planned` (jsonb): no row column,
+  so the page reads it from the fix beside the label view and a revert takes it away with the chain.
+- **Rule-checked ruling (owner, 2026-11-22).** `stored_chain_checked_by_rule` is no longer added by the submit tool and is a lifted code
+  (`LIFTED_HOLD_CODES`) in `computeStates`: old submissions keep the code for the record (`FixState.lifted_holds`), it no longer holds them. Applying
+  such a reading writes every chain of the report as `read_by_model` (replace and set-status both act on the whole report), so the report leaves
+  teacher and student lists until a reviewer confirms; the per-work setting stays off.
+- **AI review tier (reviewer v1.1, 0023).** `chain-review-record.ts --batch <reviewer set>` records each VALID item as a review row
+  (`reviewer_kind: ai`, `decision: null`, `review_decision` in the reviewer's vocabulary, `outcome`, run, pass, packet and hash, times, reasons with quotes,
+  question, corrected reading, second run). The outcome is `review_rules_v1_1.outcome` itself, called through `chain-fixes/review_bridge.py` on the
+  fix's CURRENT state (status held / pending / applied from the store, current holds, `stored_equals_reading` from the fix's own comparison, the latest
+  human decision): imported, never mirrored, so the rule cannot drift. `computeStates` acts on the latest recorded outcome: `apply_reading` on a held
+  reading only while every current hold was seen at review (a later hold keeps it back) and the readers agree; `label_ai_reviewed` / `label_disputed`
+  set `ai_review` / `ai_disputed` and keep the reading applied (a correction or referral never reverts it); `queue_for_human` -> `awaiting_human`;
+  `discard_reading` / `revert_to_stored` -> `set_aside_by_ai` (out of the overrides; `queue.revert_before_apply` for `--revert-rejected`). A correction
+  two reviews wrote alike becomes a new fix (engine-planned, `corrects_fix_id`, one submission per review run, holds the reviewer may clear dropped):
+  it is accepted without a blind reader (`ai_corrected`), the readers' fix superseded. A human decision always wins and is the only thing worded
+  "verified". Invalid items go to `records/chain-fixes/review-invalid/` and change nothing. Flow test: `__tests__/chain-review.test.ts`.

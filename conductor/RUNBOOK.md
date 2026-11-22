@@ -982,3 +982,27 @@ No schema change, no load, no fix applied to production. Three things built, two
 
 ### Rollback
 - Variant remarks: stop passing `--variant-notes-supported` (the hold returns); the remark lives only on the fix row. Compiler mark: make `route_links` return no marks (replay then copies the first chain's, as before); code: redeploy `de483e6`.
+
+## AI review tier, tools v3.3/v3.4, rule-checked ruling (milestone 1, 2026-11-22)
+
+Owner rulings of 2026-11-22 wired into the pipeline; **no fix applied, no reading released**. Detail: `reviews/ai/AGENTS.md` (§Tools v3.3 and v3.4, §Sayings,
+§Rule-checked ruling, §AI review tier), `datasets/hadith-data/chain-fixes/AGENTS.md` (§tools v3.3 and v3.4, §AI review), `src/db/AGENTS.md` §AI review tier.
+Logs: `datasets/hadith-data/development/ai-review-tier-2026-11-22/` (local).
+
+- **Tools.** Engine and CLIs register tool `v3_3` and tool/prompt `v3_4` (prompt sha256 `b63fd535…`); a later tool reads an earlier prompt's output, never the reverse.
+  v3.3 runs with ONE correction, a patch module (`chain-reader/v3_3/holds_v3_3_pipeline.py`): `route_at_most_half_the_longest` is v3.2's un-narrowed rule
+  (t01-6d7565, b1-2c5437, b1-cb35a4 held; t02-1552aa held again). v3.4's holds stand on the same corrected base, per saying.
+- **Sayings.** `--sayings-supported` (submit) lifts `two_sayings_not_supported`; the engine writes `planned.chains[].saying` and `planned.sayings`; the page heads
+  each route "Chain of the first saying" / "Chain of the second saying" with the opening words. Tested on the v3.4 example t01-520f51 (no real labelled
+  reading exists: the v3.4 re-read has not run).
+- **Reviewer tier.** Specialist `chain-reviewer` 1.1.0 (`1136aec2…`) registered (`/method`, `reviews/ai/specialists.json`, `model_registry.json`).
+  `chain-review-record.ts --batch <set> [--extra-second <dir>] [--expect <outcomes.tsv>]` records per item; outcomes are `review_rules_v1_1.outcome`
+  itself (through `chain-fixes/review_bridge.py`) on the fix's current state. Flow test on the pilot's real outputs: `reviews/ai/tools/__tests__/chain-review.test.ts`.
+- **Rule-checked ruling.** `stored_chain_checked_by_rule` is no longer added and is a lifted code in the decide rule. Nothing changed on production for it
+  in this milestone (the store was not re-decided; the overrides file is the 348 of batch 001).
+- **Quotes.** Evidence quotes stand when the letters are exact (harakat U+064B-0652, U+0670, tatweel, Qur'anic marks U+06D6-06ED ignored) and are stored as the
+  text writes them (`chain_fix_engine.locate_quotes`).
+- **Schema** `0023_chain_fix_ai_review` (additive; `prod-migrate-0023.log`, `prod-verify-after-0023.log`).
+- **Compiler marks** repaired through the pipeline (`npm run db:chain-fixes -- ... --repair-compiler-links --fix <id>`; dry run over all 76 multi-route fixes
+  found exactly these 4: `prod-repair-dry-run.log`, `prod-repair.log`, store `records/chain-fixes/repairs/2026-11-22.jsonl`): `chain:k6:2400:0001`,
+  `chain:k6:348:0001`, `chain:k6:6230:0001` direct -> indirect; `chain:k6:23555:0002` indirect -> direct.

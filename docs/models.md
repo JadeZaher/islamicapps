@@ -40,6 +40,7 @@ What its output may and may not be used for:
 | `Claude Opus 4.6 (1M context)` | coding_assistance | Co-authored data pipeline code (datasets/hadith-data, datasets), application code (src/app, src/lib, src/components, src/scripts) and track documentation (conductor, .omc) in 2 commits | 2 commits | not_applicable | namespaced_specific |
 | `qwen/qwen3.7-flash` | extraction_audit | Scored each of the 1,901 corrected OpenITI reports in production (Musnad al-Rabi 1,005, Musnad Zayd 691, Sahifat al-Rida 205) against a window of the OpenITI source, 0 to 3 for boundaries, cleanliness and sanad/matn split, with flags and verbatim-substring proposals | 1,014 verdict events (+3 more outputs) | candidate_only | namespaced_specific |
 | `claude-haiku-5-5` | chain_reading | Chain reading (chain-fix submissions): read each report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md) | 568 reader outputs (+4 more outputs) | applied_awaiting_final_review | namespaced_specific |
+| `claude-opus-5-5` | chain_review | AI first pass of final review of model-read chains (chain-reader/reviewer, prompt 1.1.0 sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6): reads the Arabic against both readers' readings and the tool's holds and confirms, corrects, prefers a reader, keeps the stored chain or refers to a person | 81 reviews | ai_reviewed_awaiting_human_review | namespaced_specific |
 
 Row counts for canonical data come from the full-schema master datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz (99,283 rows, streamed; fields translation_source, translation_model, translation_review_status, translation_status). The tracked all_hadiths_unified.csv.gz has the legacy 26-column schema and carries no model fields.
 
@@ -402,6 +403,30 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
 - Evidence:
   - `datasets/hadith-data/chain-reader/v3/rescore_v3.json`: whole file
   - `datasets/hadith-data/chain-reader/analysis-batch-001/numbers_b1.json`: whole file
+
+### claude-opus-5-5: chain review (`claude-opus-5-5-chain-reviewer`)
+
+- Runtime: Conduction workers, fresh context, one packet of 10 readings per job
+- Work: AI first pass of final review of model-read chains (chain-reader/reviewer, prompt 1.1.0 sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6): reads the Arabic against both readers' readings and the tool's holds and confirms, corrects, prefers a reader, keeps the stored chain or refers to a person. Its decision moves a fix only as review_rules_v1_1.outcome says (reviews/ai/tools/chain-review-record.ts): a confirmation labels an applied reading 'AI reviewed' or applies a held reading whose holds it may clear; a correction or referral never reverts an applied reading (labelled 'Disputed by the reviewer; awaiting second review'); a correction is applied only when a second independent review writes the same routes. Pilot (prompt 1.0.0, 81 tranche-02 readings) only; 1.1.0 not yet run.
+- Dates: 2026-11-22 to 2026-11-22 (pilot-001 RUN.txt)
+- Identity: namespaced_specific. The id each reviewer run writes in its RUN.txt line (chain-reader/reviewer/<set>/outputs/pass-N/RUN.txt); the recorder refuses a review whose packet has no such line.
+- Status: ai_reviewed_awaiting_human_review. ai_reviewed, awaiting human review: never 'verified'; a person's decision overrides it.
+- Inputs:
+  - `datasets/hadith-data/chain-reader/reviewer/pilot-001/packets/`
+- Outputs:
+  - `datasets/hadith-data/chain-reader/reviewer/pilot-001/outputs/pass-1/`: 81 reviews (prompt 1.0.0, pilot); not recorded in the fix store
+- May be used for:
+  - Recording reviews per item through chain-review-record.ts
+  - Labels 'AI reviewed (claude-opus-5-5), <date>' and 'Disputed by the reviewer; awaiting second review'
+  - Clearing the holds review_rules_v1_1 lists as clearable
+- May not be used for:
+  - Clearing a hold on a point the owner has not ruled
+  - Applying a correction on one review run
+  - Calling a chain verified
+- Quality findings:
+  - Pilot re-scored under the v1.1 rule against one Opus adjudicator (55 of 81 read, not blind, not a person): 26 of 26 wrong readings caught, 52 of 52 right readings confirmed (3 by a cosmetic correction), no harmful outcome. (source: datasets/hadith-data/chain-reader/reviewer/README-v1_1.md)
+- Evidence:
+  - `datasets/hadith-data/chain-reader/reviewer/pilot-001/rescore_v1_1.json`: whole file
 
 ## Coverage notes
 

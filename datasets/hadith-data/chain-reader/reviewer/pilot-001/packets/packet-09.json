@@ -1,0 +1,305 @@
+{
+ "format": "shura-chain-review-packet/1",
+ "packet_id": "pilot-001-p1-09",
+ "batch": "pilot-001",
+ "pass": 1,
+ "items": [
+  {
+   "id": "cr1-d685c3",
+   "text": "أخبرنا عمرو بن علي، قال حدثنا يحيى، قال حدثنا شعبة، قال أخبرني الوليد بن العيزار، قال سمعت أبا عمرو الشيباني، يقول حدثنا صاحب، هذه الدار وأشار إلى دار عبد الله قال سألت رسول الله صلى الله عليه وسلم أى العمل أحب إلى الله تعالى قال ‏\"‏ الصلاة على وقتها وبر الوالدين والجهاد في سبيل الله عز وجل ‏\"‏ ‏.‏",
+   "context": {
+    "work": {
+     "key": "sunni:nasai",
+     "name": "Sunan an-Nasa'i",
+     "tradition": "sunni",
+     "source": "SUN",
+     "compiler": {
+      "ar": "النسائي",
+      "en": "al-Nasa'i",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "The Book of the Times (of Prayer) - كتاب المواقيت",
+     "chapter": "The Book of the Times (of Prayer) - كتاب المواقيت",
+     "report_number": "617",
+     "convention": "Chains open «أخبرنا / أنبأنا»; many reports repeat the previous chain with «بهذا الإسناد»."
+    },
+    "sources_agree": {
+     "agree": false,
+     "differences": [
+      "K6I and HKG differ: K6I only: عمرو بن علي بن بحر الباهلي، الوليد بن العيزار بن حريث…; HKG only: عمرو بن علي بن بحر بن كنيز، وليد بن العيزار بن حريث، سعد بن…",
+      "K6I and RWY differ: K6I only: هارون بن عنتره بن عبد الرحمن الشيباني; RWY only: ابا عمرو الشيباني، عبد الله",
+      "HKG and RWY differ: HKG only: وليد بن العيزار بن حريث، سعد بن اياس; RWY only: الوليد بن العيزار، ابا عمرو الشيباني"
+     ]
+    },
+    "source_claims": [
+     {
+      "source": "K6I",
+      "what": "the K6 dataset's own narrator index, in source order (names are the lexicon's names for those ids; routes are not separated)",
+      "sequence": [
+       "عمرو بن علي بن بحر الباهلي",
+       "يحيى بن سعيد بن فروخ القطان",
+       "شعبة بن الحجاج",
+       "الوليد بن العيزار بن حريث العبدي الكوفي",
+       "هارون بن عنترة بن عبد الرحمن الشيباني"
+      ]
+     },
+     {
+      "source": "HKG",
+      "what": "hadith-kg's narrator list per sanad, nearest the compiler first (the compiler is dropped)",
+      "routes": [
+       [
+        "عمرو بن علي بن بحر بن كنيز",
+        "يحيى بن سعيد بن فروخ",
+        "شعبة بن الحجاج بن الورد",
+        "وليد بن العيزار بن حريث",
+        "سعد بن إياس",
+        "عبد الله بن مسعود بن حبيب بن شمخ بن مخزوم بن صاهلة بن كاهل بن الحارث بن تميم بن سعد بن هذيل بن مدركة بن إلياس بن مضر"
+       ]
+      ]
+     },
+     {
+      "source": "RWY",
+      "what": "the Riwayat corpus's chain mentions as it read them in its copy of the text (a machine reading; surfaces as in its text)",
+      "routes": [
+       [
+        "عمرو بن علي",
+        "يحيى",
+        "شعبة",
+        "الوليد بن العيزار",
+        "أبا عمرو الشيباني",
+        "عبد الله"
+       ]
+      ]
+     }
+    ],
+    "correspondences": [
+     {
+      "ref": "corr1",
+      "source": "SUN",
+      "found_by": "SWI",
+      "work": "Sunan an-Nasa'i",
+      "tradition": "sunni",
+      "number": "618",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "أخبرنا عبد الله بن محمد بن عبد الرحمن، قال حدثنا سفيان، قال حدثنا أبو معاوية النخعي، سمعه من أبي عمرو، عن عبد الله بن مسعود،"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: a stored name contains words that are not a name"
+     }
+    ],
+    "omitted_for_size": [
+     "name_facts"
+    ]
+   },
+   "status": "applied",
+   "holds": [
+    {
+     "code": "flag_one_reader",
+     "plain": "one reader marked a point the rules do not settle (needs_ruling); the other did not"
+    }
+   ],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "عمرو بن علي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "شعبة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "الوليد بن العيزار",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبا عمرو الشيباني",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "صاحب",
+          "kind": "unnamed"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«حدثنا صاحب، هذه الدار وأشار إلى دار عبد الله» names the Companion only as «صاحب»; «دار عبد الله» is the place he points to, not his name, so he stays unnamed",
+      "The Companion's words «قال سألت رسول الله» are the saying; he is the last link"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "النسائي",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "عمرو بن علي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "شعبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "الوليد بن العيزار",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبا عمرو الشيباني",
+         "kind": "narrator"
+        },
+        {
+         "surface": "صاحب",
+         "kind": "unnamed"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "عمرو بن علي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "شعبة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "الوليد بن العيزار",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبا عمرو الشيباني",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "صاحب",
+          "kind": "unnamed"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "ruling asked: «حدثنا صاحب، هذه الدار وأشار إلى دار عبد الله» names no one: «صاحب» is the owner of the house and the text points to Abdullah's house; «قال سألت رسول الله» is either said by «صاحب» or by Abdullah, and the text does not say which (rule 6 leaves Abdullah out)",
+      "«عبد الله» is written only as the place (rule 6); the last link is kept at «صاحب» and not completed"
+     ],
+     "needs_ruling": true,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "النسائي",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "عمرو بن علي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "شعبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "الوليد بن العيزار",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبا عمرو الشيباني",
+         "kind": "narrator"
+        },
+        {
+         "surface": "صاحب",
+         "kind": "unnamed"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "عمرو بن علي",
+      "يحيى",
+      "شعبة",
+      "الوليد بن العيزار",
+      "أبا عمرو الشيباني",
+      "صاحب هذه الدار"
+     ]
+    },
+    {
+     "branch": 1,
+     "surfaces": [
+      "عمرو بن علي",
+      "يحيى",
+      "شعبة",
+      "الوليد بن العيزار",
+      "أبا عمرو الشيباني",
+      "أشار إلى دار عبد الله"
+     ]
+    }
+   ]
+  }
+ ]
+}

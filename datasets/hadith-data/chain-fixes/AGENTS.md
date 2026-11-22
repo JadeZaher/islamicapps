@@ -90,3 +90,21 @@ with kind and origin. Every format returns `holds` and `proposals` (the reader's
   (`inherited_previous_report_unknown`), its chain not rule-checked or verified (`inherited_source_chain_uncertain`), a name not found
   in order in one of its branches (`inherited_name_not_in_source_chain`). Routes that open inherited come first. The v3 hold
   `inherited_links_not_applied` is lifted. Fix kinds are computed on the written links only.
+
+## tools v3.3 and v3.4 (0023)
+
+- `TOOLS` adds `v3_3` (`validate_v3_2`, `expand_v3_2`, `holds_v3_3_pipeline.compute_holds`) and `v3_4` (`validate_v3_4`, `expand_v3_4`,
+  `holds_v3_4.compute_holds`, whose `base` is set to the pipeline's v3.3). `VARIANT_TOOLS` (v3_2 to v3_4) read the second pass for the union of remarks;
+  agreement uses each tool's own `readings_agree` (v3.4: per saying).
+- **The v3.3 correction is engine-side, a patch module** (`chain-reader/v3_3/holds_v3_3_pipeline.py`, test `v3_3/tests/test_pipeline_correction.py`),
+  not an edit of `holds_v3_3.py`: the tool folder keeps the narrowing its README measured, and the pipeline names what it runs instead.
+- **Sayings** (`label_sayings`): each planned chain gets the saying of the expanded route whose written spans it holds; `planned.sayings` carries
+  label, opening words and their offsets. Engine flag `sayings_supported` drops `two_sayings_not_supported`. Replay passes `planned` through unchanged.
+- **Repair mode** (`mode: route_links`): the compiler mark each planned chain should carry, by `compiler_links_for` (the replay's rule), for
+  `chain-fix-apply.ts --repair-compiler-links`, which sets only `compiler_link` on a fix's own live chains and logs to `records/chain-fixes/repairs/`.
+
+## AI review (`review_bridge.py`)
+
+Per item of a reviewer set: validation (`review_io_v1_1.collect`), the second-run comparison (`record_reviews_v1_1.second_run_agrees`) and the
+outcome (`review_rules_v1_1.outcome`) are the reviewer's own modules, imported. The CLI passes the fix's current facts; the bridge returns the
+review, the run of its packet (from `RUN.txt`), the packet hash and, for a correction, the text it was read on (planned by the engine).

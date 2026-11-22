@@ -121,7 +121,7 @@ function familyStatement(relations: FamilyRelations, hadithId: string, cap: numb
       ) as tellings,
       ${chainNodesJson(relations.chains, sql`array(select id from members)`)} as nodes,
       (select json_object_agg(d.hadith_id, json_build_object('fix_id', d.fix_id, 'disposition', d.disposition, 'models', d.models,
-                'runs', d.runs, 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review))
+                'runs', d.runs, 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review, 'ai_review', d.ai_review))
        from public_chain_fix_dispositions d where d.hadith_id in (select id from members)) as dispositions
   `;
 }

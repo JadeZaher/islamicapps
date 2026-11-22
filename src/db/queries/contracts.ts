@@ -197,6 +197,24 @@ export interface ChainNode {
   chain_fix?: ChainFixLabel | null;
   /** 0021: in a model-read chain, `imam_in_text` (the source named in the report text) or `inherited`; null for a written name. */
   reader_link_kind?: string | null;
+  /** Tool v3.4: the saying whose chain this route is, with its page label and opening words; null for a one-saying report. */
+  chain_saying?: ChainSaying | null;
+}
+
+/** One saying of a two-saying report (owner ruling, 2026-11-22): each keeps its own chain, labelled with the saying. */
+export interface ChainSaying {
+  saying: number;
+  label: string;
+  opens: string;
+}
+
+/** An AI reviewer's mark on a model reading (0023): the model, its run and when; never "verified". */
+export interface ChainAiMark {
+  model_id: string;
+  run_id: string;
+  at: string;
+  outcome: string;
+  decision: string;
 }
 
 /** 0021: a report whose applied model reading found no isnad in the text (`public_chain_fix_dispositions`). */
@@ -207,6 +225,8 @@ export interface ChainDisposition {
   runs: number;
   decided_at: string;
   awaiting_final_review: boolean;
+  /** 0023: the AI reviewer confirmed the reading. */
+  ai_review?: ChainAiMark | null;
 }
 
 export type ChainStructureStatus = 'checked_by_rule' | 'uncertain' | 'read_by_model' | 'verified_by_reviewer';
@@ -252,6 +272,12 @@ export interface ChainFixLabel {
   human_confirmations: ChainFixConfirmation[];
   /** Remarks about another version the readers noted in the report; absent when none. */
   variant_remarks?: ChainVariantRemark[] | null;
+  /** 0023: the AI reviewer confirmed it; disputed it (it stays, awaiting a second review); or this reading is its correction (two runs). */
+  ai_review?: ChainAiMark | null;
+  ai_disputed?: ChainAiMark | null;
+  ai_corrected?: { runs: string[]; models: string[]; at: string } | null;
+  /** 0023: a primary witness the report's text was matched to (none exists yet: text witness matching is not built). */
+  witness_match?: { witness: string; locator: string; method: string; matched_at: string } | null;
 }
 
 export interface ChainEdge {

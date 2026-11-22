@@ -23,6 +23,7 @@ import {
   fixFieldProblems,
   NO_CHAIN_DISPOSITION,
   NO_CHAIN_ENVELOPE_FORMAT,
+  isV3Shaped,
   TOOL_VERSIONS,
   TOOLS_FOR_FORMAT,
   type InheritedSource,
@@ -55,7 +56,7 @@ import {
 import { sha256Hex } from './specialist-lib';
 
 const USAGE = `usage: npx tsx reviews/ai/tools/chain-fix-submit.ts --envelope <envelope.json> --reports <reports.jsonl>
-         [--database production] [--store <dir>] [--check-only] [--variant-notes-supported]
+         [--database production] [--store <dir>] [--check-only] [--variant-notes-supported] [--sayings-supported]
 
   --envelope   ${ENVELOPE_FORMAT}: {"format", "run": {model_id, provider_runtime, run_id, started_at, finished_at,
                prompt_sha256, view}, "packet": "<packet .jsonl path>", "fixes": [{"output": <reader JSON>, "reason",
@@ -65,8 +66,12 @@ const USAGE = `usage: npx tsx reviews/ai/tools/chain-fix-submit.ts --envelope <e
   --database   check the text hash and read the stored chain from production (read-only) instead of the snapshot
   --check-only validate and print, write nothing
   --variant-notes-supported
-               the pipeline carries a variant remark (reader tool v3.2): a reading with one is no longer held for it. The remark is
-               stored with the fix, shown under the chain, and counted as no route. Without the flag such a reading stays held.
+               the pipeline carries a variant remark (reader tool v3.2 and later): a reading with one is no longer held for it. The remark
+               is stored with the fix, shown under the chain, and counted as no route. Without the flag such a reading stays held. A RELEASE:
+               pass it only with an explicit owner decision to release variant readings.
+  --sayings-supported
+               the pipeline stores each route's saying (reader tool v3.4): a two-saying reading is no longer held for it; the page heads
+               each route "Chain of the first saying" / "Chain of the second saying".
 Exit 0: every fix recorded (or already recorded). Exit 1: nothing recorded; each line says what to correct.`;
 
 interface ReportRow {
@@ -135,12 +140,12 @@ async function main(): Promise<number> {
   // Any registered reader prompt is accepted, and the format follows from it; an unregistered hash is refused.
   const registered = registeredPrompt(run.prompt_sha256);
   const readerFormat = (registered?.format ?? (run.reader_format as ReaderFormat | undefined) ?? 'v1') as ReaderFormat;
-  const prompt = registered ?? readerPrompt(['v1', 'v2', 'v3', 'v3_1', 'v3_2', 'text'].includes(readerFormat) ? readerFormat : 'v1');
+  const prompt = registered ?? readerPrompt(['v1', 'v2', 'v3', 'v3_1', 'v3_2', 'v3_4', 'text'].includes(readerFormat) ? readerFormat : 'v1');
   problems.push(...runProblems(run, prompt.sha256));
   // The tool that expands and holds a v3-shaped reading: the prompt's own unless the run names another (batch 001: prompt v3, tool v3_1).
-  const v3Shaped = readerFormat === 'v3' || readerFormat === 'v3_1' || readerFormat === 'v3_2';
+  const v3Shaped = isV3Shaped(readerFormat);
   const toolVersion = (run.tool_version ?? (v3Shaped ? readerFormat : undefined)) as ToolVersion | undefined;
-  const toolsForFormat = v3Shaped ? TOOLS_FOR_FORMAT[readerFormat as keyof typeof TOOLS_FOR_FORMAT] : [];
+  const toolsForFormat = isV3Shaped(readerFormat) ? TOOLS_FOR_FORMAT[readerFormat] : [];
   if (run.tool_version !== undefined && (!TOOL_VERSIONS.includes(run.tool_version as ToolVersion) || !toolsForFormat.includes(run.tool_version as ToolVersion))) {
     problems.push(`run.tool_version: ${String(run.tool_version)} cannot read a ${readerFormat} reading (tools for it: ${toolsForFormat.join(', ') || 'none'})`);
   }
@@ -241,6 +246,7 @@ async function main(): Promise<number> {
       // The second pass's unchanged output (v3.2 envelopes): its variant remarks join the first pass's, its routes must agree.
       other_output: v3Shaped && !noChainEnvelope ? fix.reader_output_v3_b : undefined,
       variant_notes_supported: args.has('variant-notes-supported'),
+      sayings_supported: args.has('sayings-supported'),
       report,
       fix,
       live: live?.get(report.hadith_id),
@@ -287,7 +293,7 @@ async function main(): Promise<number> {
     key: item.key, text: item.text, expected_id: item.expected_id, output: item.output, base: item.base, record_id: item.record_id,
     source_work_id: item.source_work_id, evidence: item.evidence, require_coverage: item.require_coverage,
     reader_format: item.reader_format, tool_version: item.tool_version, context: item.context, previous: previousChains.get(item.key),
-    other_output: item.other_output, variant_notes_supported: item.variant_notes_supported,
+    other_output: item.other_output, variant_notes_supported: item.variant_notes_supported, sayings_supported: item.sayings_supported,
   })));
   // Each variant remark says which pass wrote it and under which run, so the union stays attributable.
   const passRuns: Record<'a' | 'b', { run_id: string; model_id: string }> = {
@@ -349,13 +355,9 @@ async function main(): Promise<number> {
     const key = routesKey(result.planned!);
     const fixId = fixIdOf(item.report.hadith_id, arabicSha256, readerTextSha256, key);
     const { fix_kinds: fixKinds, ...comparison } = result.comparison!;
-    // This round a reading replaces only uncertain chains: a report with a rule-checked chain (which may feed teacher and student
-    // lists) waits for the owner (reviews/ai/AGENTS.md §Chain fixes, hold `stored_chain_checked_by_rule`).
-    const checked = baseChains.filter((chain) => chain.structure_status === 'checked_by_rule');
+    // Owner ruling 2026-11-22: a report with a rule-checked chain is no longer held (the hold `stored_chain_checked_by_rule` is lifted);
+    // applying the reading makes all its chains model-read, so they leave teacher and student lists (reviews/ai/AGENTS.md §Rule-checked ruling).
     const holds = [...result.holds];
-    if (checked.length > 0 && !(fixKinds.length === 1 && fixKinds[0] === 'no_change' && checked.length === baseChains.length)) {
-      holds.push({ code: 'stored_chain_checked_by_rule', detail: `the report also has ${checked.length} rule-checked chain(s) (${checked.map((chain) => chain.chain_id).join(', ')}); a reading replaces only uncertain chains until the owner rules` });
-    }
     const citedBy = citing.get(item.report.hadith_id);
     if (citedBy && !(fixKinds.length === 1 && fixKinds[0] === 'no_change')) {
       holds.push({ code: 'cited_by_later_report', detail: `${citedBy.length} later report(s) repeat this report's chain (${citedBy.slice(0, 3).join(', ')}); rewriting it would break theirs` });
@@ -379,7 +381,7 @@ async function main(): Promise<number> {
       comparison,
       planned: result.planned!,
       reason: String(item.fix.reason).trim(),
-      evidence: item.evidence.map((quote) => ({ quote })),
+      evidence: (result.evidence_quotes ?? item.evidence).map((quote) => ({ quote })),
       computed_evidence: result.computed_evidence,
       external_citation: (item.fix.external_citation as Submission['external_citation']) ?? null,
       view,

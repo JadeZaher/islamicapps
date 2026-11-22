@@ -1,0 +1,199 @@
+{
+ "adjudicator": "single model reader (claude-opus-5-5), by hand; see README",
+ "items": 81,
+ "actual": {
+  "unruled": 3,
+  "assumed_right": 26,
+  "wrong": 26,
+  "right": 26
+ },
+ "actually_wrong": {
+  "n": 26,
+  "caught": {
+   "k": 26,
+   "n": 26,
+   "rate": 1.0,
+   "wilson95": [
+    0.871,
+    1.0
+   ]
+  },
+  "confirmed_missed": {
+   "k": 0,
+   "n": 26,
+   "rate": 0.0,
+   "wilson95": [
+    0.0,
+    0.129
+   ]
+  },
+  "by_decision": {
+   "confirm_with_correction": 19,
+   "refer_to_human": 7
+  }
+ },
+ "actually_right": {
+  "n": 52,
+  "read_by_adjudicator": 26,
+  "confirmed": {
+   "k": 49,
+   "n": 52,
+   "rate": 0.942,
+   "wilson95": [
+    0.844,
+    0.98
+   ]
+  },
+  "corrected_substantively": {
+   "k": 0,
+   "n": 52,
+   "rate": 0.0,
+   "wilson95": [
+    0.0,
+    0.069
+   ]
+  },
+  "corrected_cosmetically": {
+   "k": 3,
+   "n": 52,
+   "rate": 0.058,
+   "wilson95": [
+    0.02,
+    0.156
+   ]
+  },
+  "referred": {
+   "k": 0,
+   "n": 52,
+   "rate": 0.0,
+   "wilson95": [
+    0.0,
+    0.069
+   ]
+  }
+ },
+ "unruled": {
+  "n": 3,
+  "referred": 3
+ },
+ "corrections": {
+  "n": 22,
+  "valid": 21,
+  "checks": {
+   "right_medium": 4,
+   "right": 14,
+   "cosmetic": 3,
+   "right_invalid_format": 1
+  },
+  "right_of_valid": {
+   "k": 21,
+   "n": 21,
+   "rate": 1.0,
+   "wilson95": [
+    0.845,
+    1.0
+   ]
+  },
+  "right_in_substance_of_all": {
+   "k": 22,
+   "n": 22,
+   "rate": 1.0,
+   "wilson95": [
+    0.851,
+    1.0
+   ]
+  },
+  "substantive_and_right_of_valid": {
+   "k": 18,
+   "n": 21,
+   "rate": 0.857,
+   "wilson95": [
+    0.654,
+    0.95
+   ]
+  }
+ },
+ "referrals": {
+  "n": 10,
+  "justified": 10
+ },
+ "disagreements_judge_vs_reviewer": {
+  "unruled": 3,
+  "reviewer_right": 10,
+  "both_acceptable": 3
+ },
+ "both_right_reread": {
+  "sample_seed": 20261122,
+  "sample": [
+   "cr1-0fd844",
+   "cr1-18f33f",
+   "cr1-250b50",
+   "cr1-300e9b",
+   "cr1-448b02",
+   "cr1-6138e8",
+   "cr1-701f37",
+   "cr1-9203c4",
+   "cr1-972027",
+   "cr1-bc86da",
+   "cr1-c75278",
+   "cr1-d66a32",
+   "cr1-e3a079",
+   "cr1-e708f5",
+   "cr1-f24679"
+  ],
+  "plus_packet_04": 8,
+  "read": 23,
+  "right": {
+   "k": 23,
+   "n": 23,
+   "rate": 1.0,
+   "wilson95": [
+    0.857,
+    1.0
+   ]
+  }
+ },
+ "judge": {
+  "decided_and_ruled": 74,
+  "errors": {
+   "k": 6,
+   "n": 74,
+   "rate": 0.081,
+   "wilson95": [
+    0.038,
+    0.166
+   ]
+  },
+  "error_ids": [
+   "cr1-d695ec",
+   "cr1-23cc42",
+   "cr1-37ccb6",
+   "cr1-5415bf",
+   "cr1-80cd84",
+   "cr1-b567d7"
+  ],
+  "cannot_tell": 4,
+  "cannot_tell_decidable_now": 4
+ },
+ "applied_items_not_confirmed": [
+  {
+   "opaque": "cr1-d695ec",
+   "decision": "refer_to_human",
+   "actual": "wrong",
+   "correction": ""
+  },
+  {
+   "opaque": "cr1-80cd84",
+   "decision": "confirm_with_correction",
+   "actual": "wrong",
+   "correction": "right"
+  },
+  {
+   "opaque": "cr1-e87ace",
+   "decision": "confirm_with_correction",
+   "actual": "right",
+   "correction": "cosmetic"
+  }
+ ],
+ "packet_04_valid_reviews": 9
+}

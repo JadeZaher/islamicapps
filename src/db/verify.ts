@@ -23,9 +23,9 @@ import * as schema from './schema';
  * Views: the 5 launch views, public_chain_mention_candidates (0006), report_correspondence_shown_pairs,
  * report_correspondence_display and public_report_correspondences (0007), published_epochs (0008) and
  * public_chain_mention_candidates_v2 (0011). 0019: the five chain-fix tables, chain_fix_work_settings and
- * public_chain_fix_labels. 0021: public_chain_fix_dispositions, public_chain_fix_mention_kinds.
+ * public_chain_fix_labels. 0021: public_chain_fix_dispositions, public_chain_fix_mention_kinds. 0023: chain_fix_witness_matches.
  */
-const EXPECTED_TABLE_COUNT = 54;
+const EXPECTED_TABLE_COUNT = 55;
 const EXPECTED_VIEW_COUNT = 14;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];
@@ -324,6 +324,13 @@ async function main() {
       'public_chain_links does not end with chain_fix_id, chain_compiler_narrator_id, chain_compiler_link');
     expect(withheld.includes('chain_structure_status') && withheld.includes('chain_structure_reasons'),
       'public_chain_links does not expose chain_structure_status and chain_structure_reasons');
+    // 0023: the label view carries the AI reviewer's marks and the witness match (the "Agent verified" gate); tools v3_3 and v3_4.
+    const [{ labels }] = await sql<{ labels: string }[]>`select pg_get_viewdef('public_chain_fix_labels'::regclass) as labels`;
+    expect(/human_confirmations,[\s\S]*ai_review,[\s\S]*ai_disputed,[\s\S]*ai_corrected,[\s\S]*witness_match/.test(labels) && labels.includes('w.matched'),
+      'public_chain_fix_labels does not end with ai_review, ai_disputed, ai_corrected, witness_match (a matched row only)');
+    const [{ toolCheck }] = await sql<{ toolCheck: string }[]>`
+      select pg_get_constraintdef(oid) as "toolCheck" from pg_constraint where conname = 'chain_fix_submissions_tool_version_check'`;
+    expect(toolCheck.includes("'v3_3'") && toolCheck.includes("'v3_4'"), 'chain_fix_submissions_tool_version_check does not allow tools v3_3 and v3_4');
 
     console.log(
       [

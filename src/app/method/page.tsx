@@ -14,6 +14,8 @@ import {
   type Specialist,
 } from '@/lib/review/procedures';
 import { PERSPECTIVE_ASPECTS, PERSPECTIVE_ROW_KINDS } from '@/lib/review/perspectives';
+import { CHAIN_TIERS, getChainTierCoverage, type ChainTier } from '@/db/queries/chain-tiers';
+import { CHAIN_TIER_WORDING } from '@/lib/review/procedures';
 
 export const metadata: Metadata = {
   title: 'Method',
@@ -161,6 +163,53 @@ function SpecialistEntry({ specialist }: { specialist: Specialist }) {
 }
 
 /** What "AI-reviewed" means, kind by kind. Every AI-review label in the app links to an anchor here. */
+/** Live counts: the coverage table reads the database on every request. */
+export const dynamic = 'force-dynamic';
+
+const TIER_LABEL: Record<ChainTier, string> = {
+  rule_uncertain: 'Rule-built, uncertain',
+  rule_checked: 'Rule-built, checked',
+  read_by_two_models: 'Read by two models',
+  ai_reviewed: 'AI reviewed',
+  agent_verified: 'Agent verified',
+  verified_by_person: 'Verified by a person',
+  no_chain_by_reading: 'No chain, by reading (reports)',
+};
+const TRADITION_LABEL: Record<string, string> = { ibadi: 'Ibadi', imami: 'Imami', sunni: 'Sunni', zaydi: 'Zaydi' };
+
+/** Chains by tier, overall and per tradition, read live from the public views (src/db/queries/chain-tiers.ts). */
+async function ChainTierTable() {
+  let coverage: Awaited<ReturnType<typeof getChainTierCoverage>>;
+  try {
+    coverage = await getChainTierCoverage();
+  } catch {
+    return <p className="type-small text-ink-muted mt-[var(--archive-space-3)]">The counts could not be read just now.</p>;
+  }
+  const columns = ['all', ...coverage.traditions];
+  return (
+    <table className="data-table mt-[var(--archive-space-3)]" aria-describedby="chain-tiers-intro">
+      <thead>
+        <tr>
+          <th scope="col">Tier</th>
+          {columns.map((column) => (
+            <th key={column} scope="col" className="text-right">{column === 'all' ? 'All' : TRADITION_LABEL[column] ?? column}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {CHAIN_TIERS.map((tier) => (
+          <tr key={tier} data-tier={tier}>
+            <th scope="row">{TIER_LABEL[tier]}</th>
+            {columns.map((column) => (
+              <td key={column} className="text-right tabular-nums">{(coverage.counts[column]?.[tier] ?? 0).toLocaleString('en')}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 export default function MethodPage() {
   return (
     <main className="archive archive-column py-[var(--archive-space-5)]">
@@ -211,6 +260,21 @@ export default function MethodPage() {
           })}
         </section>
       ))}
+
+      <section id="chain-tiers" aria-labelledby="chain-tiers-heading" className="archive-rule mt-[var(--archive-space-6)] scroll-mt-16 pt-[var(--archive-space-4)]">
+        <h2 id="chain-tiers-heading" className="type-h2">
+          How far each chain has been checked
+        </h2>
+        <p id="chain-tiers-intro" className="type-small text-ink-muted mt-1">
+          The goal is that every chain is read by two independent models that agree, reviewed against the Arabic by a stronger model, and matched to a primary witness of the text. “Verified” is kept for a named person’s decision. Counts are of public chains, live.
+        </p>
+        <ul className="type-small mt-[var(--archive-space-2)] list-disc pl-5">
+          {CHAIN_TIER_WORDING.map((line) => (
+            <li key={line}>“{line}”</li>
+          ))}
+        </ul>
+        <ChainTierTable />
+      </section>
 
       <section id="perspectives" aria-labelledby="perspectives-heading" className="archive-rule mt-[var(--archive-space-6)] scroll-mt-16 pt-[var(--archive-space-4)]">
         <h2 id="perspectives-heading" className="type-h2">

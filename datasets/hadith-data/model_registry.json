@@ -978,6 +978,56 @@
           "locator": "whole file"
         }
       ]
+    },
+    {
+      "id": "claude-opus-5-5-chain-reviewer",
+      "model_id": "claude-opus-5-5",
+      "model_id_status": "namespaced_specific",
+      "model_id_note": "The id each reviewer run writes in its RUN.txt line (chain-reader/reviewer/<set>/outputs/pass-N/RUN.txt); the recorder refuses a review whose packet has no such line.",
+      "runtime": "Conduction workers, fresh context, one packet of 10 readings per job",
+      "kind": "chain_review",
+      "work": "AI first pass of final review of model-read chains (chain-reader/reviewer, prompt 1.1.0 sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6): reads the Arabic against both readers' readings and the tool's holds and confirms, corrects, prefers a reader, keeps the stored chain or refers to a person. Its decision moves a fix only as review_rules_v1_1.outcome says (reviews/ai/tools/chain-review-record.ts): a confirmation labels an applied reading 'AI reviewed' or applies a held reading whose holds it may clear; a correction or referral never reverts an applied reading (labelled 'Disputed by the reviewer; awaiting second review'); a correction is applied only when a second independent review writes the same routes. Pilot (prompt 1.0.0, 81 tranche-02 readings) only; 1.1.0 not yet run.",
+      "date_range": {
+        "start": "2026-11-22",
+        "end": "2026-11-22",
+        "basis": "pilot-001 RUN.txt"
+      },
+      "inputs": [
+        "datasets/hadith-data/chain-reader/reviewer/pilot-001/packets/"
+      ],
+      "outputs": [
+        {
+          "path": "datasets/hadith-data/chain-reader/reviewer/pilot-001/outputs/pass-1/",
+          "rows": 81,
+          "unit": "reviews (prompt 1.0.0, pilot)",
+          "note": "not recorded in the fix store"
+        }
+      ],
+      "output_status": "ai_reviewed_awaiting_human_review",
+      "review_state": "ai_reviewed, awaiting human review: never 'verified'; a person's decision overrides it.",
+      "pinned": false,
+      "allowed_uses": [
+        "Recording reviews per item through chain-review-record.ts",
+        "Labels 'AI reviewed (claude-opus-5-5), <date>' and 'Disputed by the reviewer; awaiting second review'",
+        "Clearing the holds review_rules_v1_1 lists as clearable"
+      ],
+      "prohibited_uses": [
+        "Clearing a hold on a point the owner has not ruled",
+        "Applying a correction on one review run",
+        "Calling a chain verified"
+      ],
+      "quality_findings": [
+        {
+          "finding": "Pilot re-scored under the v1.1 rule against one Opus adjudicator (55 of 81 read, not blind, not a person): 26 of 26 wrong readings caught, 52 of 52 right readings confirmed (3 by a cosmetic correction), no harmful outcome.",
+          "source": "datasets/hadith-data/chain-reader/reviewer/README-v1_1.md"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "datasets/hadith-data/chain-reader/reviewer/pilot-001/rescore_v1_1.json",
+          "locator": "whole file"
+        }
+      ]
     }
   ]
 }

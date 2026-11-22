@@ -1,0 +1,556 @@
+{
+ "dataset": "b1",
+ "status": "**Sample status: OUT OF SAMPLE for the v3.3 changes. The judged readings (301) were drawn from the readings eligible under v3 (the first judge), before any v3.2 or v3.3 hold existed.**",
+ "triage": {
+  "all": {
+   "v3_2": {
+    "reports": 500,
+    "valid_a": 497,
+    "valid_b": 497,
+    "both_valid": 494,
+    "agreed": 462,
+    "eligible": 387,
+    "eligible_chain": 354,
+    "eligible_no_chain": 33
+   },
+   "v3_3": {
+    "reports": 500,
+    "valid_a": 497,
+    "valid_b": 497,
+    "both_valid": 494,
+    "agreed": 462,
+    "eligible": 378,
+    "eligible_chain": 345,
+    "eligible_no_chain": 33
+   }
+  },
+  "sunni_six_books": {
+   "v3_2": {
+    "reports": 250,
+    "valid_a": 248,
+    "valid_b": 250,
+    "both_valid": 248,
+    "agreed": 229,
+    "eligible": 203,
+    "eligible_chain": 203,
+    "eligible_no_chain": 0
+   },
+   "v3_3": {
+    "reports": 250,
+    "valid_a": 248,
+    "valid_b": 250,
+    "both_valid": 248,
+    "agreed": 229,
+    "eligible": 206,
+    "eligible_chain": 206,
+    "eligible_no_chain": 0
+   }
+  },
+  "imami_faqih": {
+   "v3_2": {
+    "reports": 150,
+    "valid_a": 150,
+    "valid_b": 150,
+    "both_valid": 150,
+    "agreed": 143,
+    "eligible": 100,
+    "eligible_chain": 71,
+    "eligible_no_chain": 29
+   },
+   "v3_3": {
+    "reports": 150,
+    "valid_a": 150,
+    "valid_b": 150,
+    "both_valid": 150,
+    "agreed": 143,
+    "eligible": 88,
+    "eligible_chain": 59,
+    "eligible_no_chain": 29
+   }
+  },
+  "imami_other_not_kafi": {
+   "v3_2": {
+    "reports": 100,
+    "valid_a": 99,
+    "valid_b": 97,
+    "both_valid": 96,
+    "agreed": 90,
+    "eligible": 84,
+    "eligible_chain": 80,
+    "eligible_no_chain": 4
+   },
+   "v3_3": {
+    "reports": 100,
+    "valid_a": 99,
+    "valid_b": 97,
+    "both_valid": 96,
+    "agreed": 90,
+    "eligible": 84,
+    "eligible_chain": 80,
+    "eligible_no_chain": 4
+   }
+  }
+ },
+ "holds": {
+  "asker_not_a_link": {
+   "v3_2": 13,
+   "v3_3": 13,
+   "v3_2_per_group": "0 / 13 / 0",
+   "v3_3_per_group": "0 / 13 / 0"
+  },
+  "back_reference_only": {
+   "v3_2": 1,
+   "v3_3": 1,
+   "v3_2_per_group": "0 / 0 / 1",
+   "v3_3_per_group": "0 / 0 / 1"
+  },
+  "back_reference_without_previous_report": {
+   "v3_2": 28,
+   "v3_3": 28,
+   "v3_2_per_group": "7 / 18 / 3",
+   "v3_3_per_group": "7 / 18 / 3"
+  },
+  "empty_reading_unsettled_opening": {
+   "v3_2": 19,
+   "v3_3": 19,
+   "v3_2_per_group": "0 / 19 / 0",
+   "v3_3_per_group": "0 / 19 / 0"
+  },
+  "has_variant_group": {
+   "v3_2": 11,
+   "v3_3": 11,
+   "v3_2_per_group": "11 / 0 / 0",
+   "v3_3_per_group": "11 / 0 / 0"
+  },
+  "imami_single_narrator_without_source": {
+   "v3_2": 3,
+   "v3_3": 3,
+   "v3_2_per_group": "0 / 2 / 1",
+   "v3_3_per_group": "0 / 2 / 1"
+  },
+  "needs_ruling": {
+   "v3_2": 8,
+   "v3_3": 8,
+   "v3_2_per_group": "4 / 3 / 1",
+   "v3_3_per_group": "4 / 3 / 1"
+  },
+  "needs_ruling_faqih_route_statement": {
+   "v3_2": 0,
+   "v3_3": 19,
+   "v3_2_per_group": "0 / 0 / 0",
+   "v3_3_per_group": "0 / 19 / 0"
+  },
+  "needs_ruling_prophet_no_transmitter": {
+   "v3_2": 3,
+   "v3_3": 3,
+   "v3_2_per_group": "0 / 3 / 0",
+   "v3_3_per_group": "0 / 3 / 0"
+  },
+  "nested_jami": {
+   "v3_2": 5,
+   "v3_3": 5,
+   "v3_2_per_group": "2 / 3 / 0",
+   "v3_3_per_group": "2 / 3 / 0"
+  },
+  "nested_semicolon": {
+   "v3_2": 3,
+   "v3_3": 3,
+   "v3_2_per_group": "0 / 3 / 0",
+   "v3_3_per_group": "0 / 3 / 0"
+  },
+  "route_at_most_half_the_longest": {
+   "v3_2": 6,
+   "v3_3": 4,
+   "v3_2_per_group": "6 / 0 / 0",
+   "v3_3_per_group": "4 / 0 / 0"
+  },
+  "route_ends_inside_another_route": {
+   "v3_2": 0,
+   "v3_3": 2,
+   "v3_2_per_group": "0 / 0 / 0",
+   "v3_3_per_group": "2 / 0 / 0"
+  },
+  "routes_end_at_different_links": {
+   "v3_2": 4,
+   "v3_3": 0,
+   "v3_2_per_group": "4 / 0 / 0",
+   "v3_3_per_group": "0 / 0 / 0"
+  },
+  "second_isnad_not_same_saying": {
+   "v3_2": 0,
+   "v3_3": 0,
+   "v3_2_per_group": "0 / 0 / 0",
+   "v3_3_per_group": "0 / 0 / 0"
+  },
+  "semicolon_in_multi_route_isnad": {
+   "v3_2": 7,
+   "v3_3": 7,
+   "v3_2_per_group": "0 / 7 / 0",
+   "v3_3_per_group": "0 / 7 / 0"
+  }
+ },
+ "changed_holds": {
+  "mutabaa_marker": {
+   "hits": 0,
+   "eligible_v3_2": 0,
+   "W": [],
+   "R": [],
+   "CT": [],
+   "not_judged": [],
+   "eligible_v3_2_W": [],
+   "eligible_v3_2_R": [],
+   "eligible_v3_2_CT": []
+  },
+  "route_ends_inside_another_route": {
+   "hits": 2,
+   "eligible_v3_2": 0,
+   "W": [],
+   "R": [],
+   "CT": [],
+   "not_judged": [
+    "2bb6c",
+    "62ebe"
+   ],
+   "eligible_v3_2_W": [],
+   "eligible_v3_2_R": [],
+   "eligible_v3_2_CT": []
+  },
+  "route_at_most_half_the_longest": {
+   "hits": 4,
+   "eligible_v3_2": 0,
+   "W": [],
+   "R": [],
+   "CT": [],
+   "not_judged": [
+    "2bb6c",
+    "44adb",
+    "62ebe",
+    "b2042"
+   ],
+   "eligible_v3_2_W": [],
+   "eligible_v3_2_R": [],
+   "eligible_v3_2_CT": []
+  },
+  "inherited_from_far_report": {
+   "hits": 0,
+   "eligible_v3_2": 0,
+   "W": [],
+   "R": [],
+   "CT": [],
+   "not_judged": [],
+   "eligible_v3_2_W": [],
+   "eligible_v3_2_R": [],
+   "eligible_v3_2_CT": []
+  },
+  "needs_ruling_faqih_route_statement": {
+   "hits": 19,
+   "eligible_v3_2": 12,
+   "W": [],
+   "R": [
+    "03a20",
+    "05d58",
+    "0b019",
+    "20cad",
+    "28814",
+    "6d360",
+    "70d33",
+    "735be",
+    "97cae",
+    "bea49",
+    "c320a",
+    "f0528",
+    "fe523",
+    "ffeb4"
+   ],
+   "CT": [],
+   "not_judged": [
+    "00bf1",
+    "22b18",
+    "752cd",
+    "c29dc",
+    "e5c9a"
+   ],
+   "eligible_v3_2_W": [],
+   "eligible_v3_2_R": [
+    "03a20",
+    "05d58",
+    "0b019",
+    "20cad",
+    "28814",
+    "6d360",
+    "70d33",
+    "735be",
+    "97cae",
+    "bea49",
+    "ffeb4"
+   ],
+   "eligible_v3_2_CT": []
+  }
+ },
+ "released": {
+  "count": 3,
+  "judged": {}
+ },
+ "newly_held": {
+  "count": 12,
+  "judged": {
+   "70d33": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "bea49": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "6d360": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "97cae": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "20cad": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "0b019": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "03a20": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "28814": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "05d58": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "735be": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ],
+   "ffeb4": [
+    "R",
+    [
+     "needs_ruling_faqih_route_statement"
+    ]
+   ]
+  },
+  "all": {
+   "70d33": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "bea49": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "6d360": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "97cae": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "20cad": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "0b019": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "03a20": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "28814": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "05d58": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "735be": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "752cd": [
+    "needs_ruling_faqih_route_statement"
+   ],
+   "ffeb4": [
+    "needs_ruling_faqih_route_statement"
+   ]
+  }
+ },
+ "right_rate": {
+  "v3_2": {
+   "per_group": {
+    "sunni_six_books": {
+     "judged": 83,
+     "right": 83,
+     "wrong": 0,
+     "undecided": 0,
+     "text": "83/83 = 100.0% (95.6-100.0)"
+    },
+    "imami_faqih": {
+     "judged": 96,
+     "right": 94,
+     "wrong": 1,
+     "undecided": 1,
+     "text": "94/96 = 97.9% (92.7-99.4)"
+    },
+    "imami_other_not_kafi": {
+     "judged": 82,
+     "right": 79,
+     "wrong": 0,
+     "undecided": 3,
+     "text": "79/82 = 96.3% (89.8-98.7)"
+    }
+   },
+   "weighted": {
+    "p": 98.7,
+    "lo": 96.9,
+    "hi": 99.4,
+    "judged": 261
+   },
+   "weights": {
+    "sunni_six_books": 203,
+    "imami_faqih": 100,
+    "imami_other_not_kafi": 84
+   }
+  },
+  "v3_3": {
+   "per_group": {
+    "sunni_six_books": {
+     "judged": 83,
+     "right": 83,
+     "wrong": 0,
+     "undecided": 0,
+     "text": "83/83 = 100.0% (95.6-100.0)"
+    },
+    "imami_faqih": {
+     "judged": 85,
+     "right": 83,
+     "wrong": 1,
+     "undecided": 1,
+     "text": "83/85 = 97.6% (91.8-99.4)"
+    },
+    "imami_other_not_kafi": {
+     "judged": 82,
+     "right": 79,
+     "wrong": 0,
+     "undecided": 3,
+     "text": "79/82 = 96.3% (89.8-98.7)"
+    }
+   },
+   "weighted": {
+    "p": 98.6,
+    "lo": 96.9,
+    "hi": 99.4,
+    "judged": 250
+   },
+   "weights": {
+    "sunni_six_books": 206,
+    "imami_faqih": 88,
+    "imami_other_not_kafi": 84
+   }
+  }
+ },
+ "still_eligible_not_right": [
+  [
+   "b1-4cbe02",
+   "W"
+  ],
+  [
+   "b1-550aae",
+   "CT"
+  ],
+  [
+   "b1-941f93",
+   "CT"
+  ],
+  [
+   "b1-b2ad9c",
+   "CT"
+  ],
+  [
+   "b1-cb13de",
+   "CT"
+  ]
+ ],
+ "right_now_held": {
+  "b1-170d33": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-1bea49": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-26d360": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-297cae": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-520cad": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-60b019": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-703a20": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-928814": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-a05d58": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-a735be": [
+   "needs_ruling_faqih_route_statement"
+  ],
+  "b1-fffeb4": [
+   "needs_ruling_faqih_route_statement"
+  ]
+ },
+ "right_not_eligible_any_reason": 41,
+ "faqih_route_statement": {
+  "reports": 20,
+  "agreed": 19,
+  "eligible_under_v3_2": 12,
+  "judged": {
+   "c320a": "R",
+   "70d33": "R",
+   "bea49": "R",
+   "6d360": "R",
+   "97cae": "R",
+   "fe523": "R",
+   "20cad": "R",
+   "0b019": "R",
+   "03a20": "R",
+   "28814": "R",
+   "f0528": "R",
+   "05d58": "R",
+   "735be": "R",
+   "ffeb4": "R"
+  }
+ }
+}

@@ -302,6 +302,25 @@ states, rules: `docs/review/chain-fix-pipeline.md`; tools: `reviews/ai/tools/cha
   (which gates publication), so a revert, a rejection or a changed text removes it with the chain. `routes_key` and the structure
   gate ignore it. A view would have meant a migration and a load for no new data.
 
+## AI review tier (0023; owner rulings 2026-11-22)
+
+Goal state: every chain read by two agreeing models, reviewed against the Arabic by a stronger model, and its text matched to a primary witness.
+Tool and store rules: `reviews/ai/AGENTS.md` §AI review tier.
+
+- **`chain_fix_reviews`** keeps one row per review. A human row decides (`decision`, check); an AI reviewer-tier row has `decision` NULL and its own
+  vocabulary in `review_decision`, with `outcome` (review_rules_v1_1), `codes_at_review`, `status_at_review`, run, pass, packet hash, times,
+  `reasons`, `question`, `corrected_reading`, second run (check `chain_fix_reviews_ai_tier_check`). Older AI rows with a `decision` stay valid.
+- **`chain_fix_decisions`** gains `ai_review`, `ai_disputed`, `ai_corrected` (jsonb marks written by the mirror from the store) and the states
+  `awaiting_human`, `set_aside_by_ai`. A disputed reading stays `accepted` (check: `ai_disputed` only on accepted). A correction fix may be accepted
+  without a blind reader when two reviews wrote it (`ai_corrected`, agreement check widened).
+- **`chain_fix_witness_matches`** (curation, empty): a primary witness the report's text was matched to. The label view's `witness_match` is the
+  newest live matched row bound to the fix's reader text; "Agent verified" needs it, so no chain can say it until matching is built.
+- **Tiers on the page** (`chain-structure.ts`): "Read by two models (<model>), <date>"; "...; AI reviewed (<model>), <date>"; "Agent verified: two readers
+  agree, reviewed by <model>, text matched to <witness>"; "...; Disputed by the reviewer; awaiting second review"; "Corrected by AI review (<model>, 2
+  runs), <date>"; "Verified by <name>, <date>" (a person only). `/method#chain-tiers` counts public chains per tier and tradition live
+  (`queries/chain-tiers.ts`; `/method` is rendered per request for it).
+- **Sayings**: a route's saying lives in `chain_fixes.planned` (`chains[].saying`, `sayings`), read by `chainNodesJson` beside the label (no column).
+
 ## Compiler as first transmitter (0019; owner ruling 2026-11-22)
 
 Every chain of a work with a known compiler is headed by him: `chains.compiler_narrator_id` and `compiler_link` (`direct` |
@@ -374,7 +393,9 @@ with the structure guard and its two indexes; see §Chain structure gate) -> `00
   §Compiler as first transmitter) -> `0020_chain_fix_reader_v3_view` (the `text_and_context` view) -> `0021_chain_fix_dispositions` (generated:
   `chain_fixes.disposition`, `chain_fix_submissions.tool_version` / `inherited_from` and their checks; hand-written: views
   `public_chain_fix_dispositions`, `public_chain_fix_mention_kinds`; see §Chain fixes) -> `0022_chain_fix_tool_v3_2` (generated: the
-  `tool_version` check widened with `v3_2`). A `--custom` generate snapshots the previous schema: after promoting a
+  `tool_version` check widened with `v3_2`). -> `0023_chain_fix_ai_review` (generated: tool versions `v3_3`/`v3_4`, the AI reviewer's review columns, decision states
+  `awaiting_human`/`set_aside_by_ai` and the three AI marks, `chain_fix_submissions.corrects_fix_id`, the empty `chain_fix_witness_matches`; hand-written:
+  `public_chain_fix_labels` and `public_chain_fix_dispositions` appended; see §AI review tier). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

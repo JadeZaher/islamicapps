@@ -1,0 +1,862 @@
+{
+ "pass": 1,
+ "items": 81,
+ "scored": 71,
+ "invalid_outputs": [
+  "packet-04.json: 1 errors, first: corrected_reading: cr1-750b73 order: g0l2i0 'عكرمة بن عمار' occurs only before the previous level"
+ ],
+ "judge_wrong": {
+  "n": 14,
+  "caught (not confirmed)": 14,
+  "confirmed (missed)": 0,
+  "by_decision": {
+   "confirm_with_correction": 12,
+   "refer_to_human": 2
+  }
+ },
+ "judge_right": {
+  "n": 53,
+  "confirmed": 41,
+  "wrongly rejected (keep_stored / no_chain / prefer)": 0,
+  "needlessly corrected": 5,
+  "referred to a human": 7
+ },
+ "judge_cannot_tell": {
+  "n": 4,
+  "by_decision": {
+   "confirm_with_correction": 3,
+   "refer_to_human": 1
+  }
+ },
+ "agreement_with_judge": 0.821,
+ "by_set": {
+  "eligible_sample": {
+   "right / confirm_reading": 21,
+   "right / confirm_with_correction": 2,
+   "right / refer_to_human": 1
+  },
+  "shape_hold": {
+   "wrong / confirm_with_correction": 9,
+   "right / refer_to_human": 3,
+   "right / confirm_reading": 2,
+   "wrong / refer_to_human": 2,
+   "cannot_tell / confirm_with_correction": 2,
+   "cannot_tell / refer_to_human": 1
+  },
+  "variant_hold": {
+   "right / confirm_reading": 18,
+   "right / confirm_with_correction": 3,
+   "wrong / confirm_with_correction": 3,
+   "right / refer_to_human": 3,
+   "cannot_tell / confirm_with_correction": 1
+  }
+ },
+ "variant_group_verdicts_vs_judge": {
+  "agree (remark)": 22,
+  "differ (remark)": 2,
+  "agree (genuine_route)": 2,
+  "differ (genuine_route)": 1
+ },
+ "rule_outcomes_after_one_run": {
+  "right: label_ai_reviewed": 22,
+  "right: keep_held": 9,
+  "right: apply_reading": 16,
+  "wrong: keep_held": 3,
+  "wrong: queue_for_human": 11,
+  "right: revert_to_stored": 3,
+  "right: queue_for_human": 3,
+  "cannot_tell: keep_held": 4
+ },
+ "confusion": {
+  "cannot_tell / confirm_with_correction": 3,
+  "cannot_tell / refer_to_human": 1,
+  "right / confirm_reading": 41,
+  "right / confirm_with_correction": 5,
+  "right / refer_to_human": 7,
+  "wrong / confirm_with_correction": 12,
+  "wrong / refer_to_human": 2
+ },
+ "rows": [
+  {
+   "opaque": "cr1-cb858d",
+   "id": "t02-078f3f",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-dd467b",
+   "id": "t02-8b0565",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-2fc4ff",
+   "id": "t02-9a44c0",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-f4ad85",
+   "id": "t02-ef0fc9",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-1d4e8b",
+   "id": "t02-65b393",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-9203c4",
+   "id": "t02-b4a671",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-6dfc38",
+   "id": "t02-95272a",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-2cd568",
+   "id": "t02-3efbb5",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-723cba",
+   "id": "t02-80403f",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-d695ec",
+   "id": "t02-1552aa",
+   "set": "shape_hold",
+   "status": "applied",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "revert_to_stored",
+   "uncertainty": "high"
+  },
+  {
+   "opaque": "cr1-0041c9",
+   "id": "t02-b6cc8b",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-36837c",
+   "id": "t02-56b32a",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-9fcba5",
+   "id": "t02-09d9bc",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-593d35",
+   "id": "t02-6f7ef6",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-efd81b",
+   "id": "t02-0bcea2",
+   "set": "eligible_sample",
+   "status": "held",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-eedf77",
+   "id": "t02-0a8f48",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-c5386a",
+   "id": "t02-181bd0",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-23cc42",
+   "id": "t02-cad60b",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-61c3f2",
+   "id": "t02-1a3efc",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-f8eeeb",
+   "id": "t02-dca9f4",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-477dea",
+   "id": "t02-04d47d",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-360df2",
+   "id": "t02-cb109b",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-c785d5",
+   "id": "t02-09169c",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "cannot_tell",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-519567",
+   "id": "t02-03f4b1",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-a3a363",
+   "id": "t02-1b18c7",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-5415bf",
+   "id": "t02-5a4755",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "high"
+  },
+  {
+   "opaque": "cr1-37ccb6",
+   "id": "t02-a1550b",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-4d2d4d",
+   "id": "t02-8ea295",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-0ea0a3",
+   "id": "t02-1d48fc",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-7c8879",
+   "id": "t02-dee88c",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-250b50",
+   "id": "t02-a00810",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-ad25ec",
+   "id": "t02-8564bf",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "cannot_tell",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "high"
+  },
+  {
+   "opaque": "cr1-d66a32",
+   "id": "t02-387652",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-f24679",
+   "id": "t02-b838b7",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-274fc1",
+   "id": "t02-d1ac77",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-4d44fd",
+   "id": "t02-0aec9d",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-80cd84",
+   "id": "t02-d5ae72",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "revert_to_stored",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-d6c9cc",
+   "id": "t02-e91f5d",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-b567d7",
+   "id": "t02-8c3c1c",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "high"
+  },
+  {
+   "opaque": "cr1-d1ccde",
+   "id": "t02-a08782",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "cannot_tell",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-0fd844",
+   "id": "t02-888bb4",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-448b02",
+   "id": "t02-9932fc",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-bd84c1",
+   "id": "t02-6d238e",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-18f33f",
+   "id": "t02-0d88a6",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-300e9b",
+   "id": "t02-558c82",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-c0e535",
+   "id": "t02-30b092",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-2e4ef8",
+   "id": "t02-e83960",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-b61479",
+   "id": "t02-9c09ca",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-e3a079",
+   "id": "t02-378998",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-6583d4",
+   "id": "t02-03f8c64",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-bc86da",
+   "id": "t02-3d2d87",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-5c3307",
+   "id": "t02-899431",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-e708f5",
+   "id": "t02-a2d173",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-956680",
+   "id": "t02-9d7cca",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-40251d",
+   "id": "t02-a2db4f",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-61f6d5",
+   "id": "t02-cd27b8",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-c75278",
+   "id": "t02-17facf",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-f890c7",
+   "id": "t02-c3900f",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "cannot_tell",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-64e8bc",
+   "id": "t02-4f3b68",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-9c5eae",
+   "id": "t02-facedc",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-972027",
+   "id": "t02-71e084",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-6078be",
+   "id": "t02-4aae3c",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-cd74d5",
+   "id": "t02-99e913",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "queue_for_human",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-a494cc",
+   "id": "t02-6da700",
+   "set": "shape_hold",
+   "status": "held",
+   "judge": "wrong",
+   "decision": "refer_to_human",
+   "accepted": false,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-fe2482",
+   "id": "t02-d5e2b6",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "apply_reading",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-bd6df9",
+   "id": "t02-9d94c1",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-e87ace",
+   "id": "t02-24ee75",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_with_correction",
+   "accepted": false,
+   "rule_outcome_one_run": "revert_to_stored",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-845877",
+   "id": "t02-8863bf",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-701f37",
+   "id": "t02-b7a98f",
+   "set": "variant_hold",
+   "status": "held",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "keep_held",
+   "uncertainty": "low"
+  },
+  {
+   "opaque": "cr1-6138e8",
+   "id": "t02-5505a6",
+   "set": "shape_hold",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "medium"
+  },
+  {
+   "opaque": "cr1-d685c3",
+   "id": "t02-77ca1f",
+   "set": "eligible_sample",
+   "status": "applied",
+   "judge": "right",
+   "decision": "confirm_reading",
+   "accepted": true,
+   "rule_outcome_one_run": "label_ai_reviewed",
+   "uncertainty": "medium"
+  }
+ ]
+}

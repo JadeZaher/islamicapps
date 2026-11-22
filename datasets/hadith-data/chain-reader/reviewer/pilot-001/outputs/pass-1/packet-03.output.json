@@ -1,0 +1,141 @@
+{"format": "shura-chain-review-output/1", "specialist_id": "chain-reviewer", "prompt_version": "1.0.0", "packet_id": "pilot-001-p1-03",
+ "reviews": [
+  {"id": "cr1-477dea",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The asker is the first link and the Imam he asks and who answers is the last link (rulings 2 and 3).", "source": "text", "quote": "وَ سَأَلَ مُحَمَّدُ بْنُ اَلْفَيْضِ أَبَا عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ"},
+    {"claim": "The stored chain glued the question into the Imam's name, which the readers rightly drop.", "source": "stored", "quote": "أبا عبد الله فقال أجامع و أنا عريان"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-360df2",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The chain runs by «حدثنا» and «عن» to Jami' with his kunya written as one man.", "source": "text", "quote": "حدثنا شعبة، عن جامع بن شداد أبي صخرة"},
+    {"claim": "Abu Burda is only the audience of Humran's telling, so he is not a link (ruling 4), and Uthman hearing the Prophet is the last link.", "source": "text", "quote": "قال سمعت حمران، يحدث أبا بردة في المسجد"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-c785d5",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "Hudhayfa tells of an encounter in which the Imam is with him.", "source": "text", "quote": "كُنْتُ عِنْدَ أَبِي عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ بِالْحِيرَةِ"},
+    {"claim": "The Imam speaks inside the story, so under ruling 9 he is the last link after the narrator; the readers left him out only because they treated this as unruled.", "source": "text", "quote": "ثُمَّ قَالَ عَلَيْهِ اَلسَّلاَمُ «أَمَا إِنِّي أَلْبَسُهُ"},
+    {"claim": "The caliph's messenger is only present in the scene and is not a link (ruling 4).", "source": "text", "quote": "فَأَتَاهُ رَسُولُ أَبِي اَلْعَبَّاسِ"},
+    {"claim": "The named narrator is Hudhayfa, and the passive opening is not itself a name.", "source": "text", "quote": "فَقَدْ رُوِيَ عَنْ حُذَيْفَةَ بْنِ مَنْصُورٍ أَنَّهُ قَالَ"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-c785d5", "status": "read", "groups": [{"levels": [[{"surface": "حُذَيْفَةَ بْنِ مَنْصُورٍ", "kind": "narrator"}], [{"surface": "أَبِي عَبْدِ اَللَّهِ", "kind": "imam_in_text"}]]}], "shared_tail": null,
+    "needs_ruling": false, "notes": ["Narrated encounter (ruling 9): the Imam who speaks in Hudhayfa's story is the last link; the messenger is only present."], "fixes": []},
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-519567",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The «ح» opens a second route whose own names are Muhammad b. al-Sabbah and Isma'il; the names after them are written once and shared by both branches.", "source": "text", "quote": "حدثنا زهير، ح وحدثنا محمد بن الصباح البزاز"},
+    {"claim": "The shared tail is Suhayl, his father and Abu Hurayra, written once after the branches.", "source": "text", "quote": "عن سهيل، عن أبيه، عن أبي هريرة"},
+    {"claim": "Ibn Yunus's own wording of the same Prophetic saying is given, so his branch reaches the Prophet and cannot end at Zuhayr.", "source": "text", "quote": "وتم حديثه وقال ابن يونس"},
+    {"claim": "The father's advice is kept inside the report and not stored as a second route.", "source": "text", "quote": "قال فقال لي أبي يا بنى"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-519567", "status": "read", "groups": [{"levels": [[{"surface": "أحمد بن يونس", "kind": "narrator"}], [{"surface": "زهير", "kind": "narrator"}]]}, {"levels": [[{"surface": "محمد بن الصباح البزاز", "kind": "narrator"}], [{"surface": "إسماعيل بن زكريا", "kind": "narrator"}]]}], "shared_tail": [[{"surface": "سهيل", "kind": "narrator"}], [{"surface": "أبيه", "kind": "relation"}], [{"surface": "أبي هريرة", "kind": "narrator"}]],
+    "needs_ruling": false, "notes": ["The two «ح» branches meet at Suhayl; the tail written once after the second branch is shared by both."], "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The shared tail is the plain reading of «ح»; whether the father's closing advice should be stored as a second saying (ruling 10) is left aside because its transmission is implicit."},
+  {"id": "cr1-a3a363",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The report opens with the Imam's saying in the work's own convention, so the Imam is its only written link after the compiler (ruling 2).", "source": "text", "quote": "قَالَ أَبُو جَعْفَرٍ عَلَيْهِ اَلسَّلاَمُ"},
+    {"claim": "The bracketed heading is a chapter title, not names, so the stored chain built from it is wrong.", "source": "text", "quote": "نُكَتٌ فِي حَجِّ الْأَنْبِيَاءِ"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "An Imam's saying with no transmitter could instead be treated as no_chain; the work's convention lists «و قال الصادق (ع)» as a report opening, so the single-link reading is kept."},
+  {"id": "cr1-5415bf",
+   "decision": "refer_to_human",
+   "question": "Are «وذكر أبان أنه سمعه أيضا عن عمر بن أبي سلمة» and «قال معمر: وذكر أبو هارون العبدي أنه سمعه أيضا عن عمر بن أبي سلمة، عن سليم» extra routes of this saying (they say he heard this same report too), and if so where does Aban's route through Umar b. Abi Salama end, since the text names no one after Umar there? Separately, under ruling 9 Ali, who speaks in Sulaym's narrated encounter, should be the last link after Sulaym, which both readers omit.",
+   "reasons": [
+    {"claim": "Aban is said to have heard this same report also from Umar b. Abi Salama, which reads as a further route rather than a remark about another version.", "source": "text", "quote": "وذكر أبان أنه سمعه أيضا عن عمر بن أبي سلمة"},
+    {"claim": "Ma'mar adds a further route through Abu Harun and Umar to Sulaym for the same report.", "source": "text", "quote": "قال معمر: وذكر أبو هارون العبدي أنه سمعه أيضا عن عمر بن أبي سلمة، عن سليم"},
+    {"claim": "Sulaym narrates an encounter in which Ali is present and speaks, so under ruling 9 Ali is the last link, which neither reader writes.", "source": "text", "quote": "ونحن مع أمير المؤمنين علي بصفين"},
+    {"claim": "Ali's speech inside the encounter is what the report relays.", "source": "text", "quote": "قال: قد بلغتماني"},
+    {"claim": "The two main isnads are read rightly as two groups.", "source": "text", "quote": "وأخبرنا به من غير هذه الطرق هارون بن محمد"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g2", "verdict": "route_of_this_saying", "quote": "وذكر أبان أنه سمعه أيضا عن عمر بن أبي سلمة"},
+    {"group": "A.g3", "verdict": "route_of_this_saying", "quote": "قال معمر: وذكر أبو هارون العبدي أنه سمعه أيضا عن عمر بن أبي سلمة، عن سليم"},
+    {"group": "B.g2", "verdict": "route_of_this_saying", "quote": "وذكر أبان أنه سمعه أيضا عن عمر بن أبي سلمة"},
+    {"group": "B.g3", "verdict": "route_of_this_saying", "quote": "قال معمر: وذكر أبو هارون العبدي أنه سمعه أيضا عن عمر بن أبي سلمة، عن سليم"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "high",
+   "uncertainty_note": "The end of Aban's extra route and how the extra routes attach to the two heads cannot be settled from the text alone."},
+  {"id": "cr1-37ccb6",
+   "decision": "refer_to_human",
+   "question": "The chain here stops at Nafi' and says it continues by Malik's isnad from Nafi' («بمثل حديث مالك بن أنس بإسناده عن نافع»), and «كل هؤلاء» points to routes written in an earlier report; neither that earlier report nor Malik's isnad is in the packet, so the inherited continuation past Nafi' cannot be written here.",
+   "reasons": [
+    {"claim": "The route as written runs Shayban, Jarir, Abd al-Rahman al-Sarraj, then Nafi', with «كل هؤلاء» referring to routes outside this text.", "source": "text", "quote": "كل هؤلاء عن نافع"},
+    {"claim": "The chain past Nafi' is given only by reference to Malik's isnad, which the readers did not inherit and the packet does not supply.", "source": "text", "quote": "بمثل حديث مالك بن أنس بإسناده عن نافع"},
+    {"claim": "The Ali b. Mushir mention only reports an added wording in another version.", "source": "text", "quote": "وزاد، في حديث علي بن مسهر عن عبيد الله"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "remark_about_another_version", "quote": "بمثل حديث مالك بن أنس بإسناده عن نافع"},
+    {"group": "A.g2", "verdict": "remark_about_another_version", "quote": "وزاد، في حديث علي بن مسهر عن عبيد الله"},
+    {"group": "B.g1", "verdict": "remark_about_another_version", "quote": "بمثل حديث مالك بن أنس بإسناده عن نافع"},
+    {"group": "B.g2", "verdict": "remark_about_another_version", "quote": "وزاد، في حديث علي بن مسهر عن عبيد الله"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The route up to Nafi' is right as written; only its inherited continuation is missing."},
+  {"id": "cr1-4d2d4d",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Three co-transmitters join with «قالوا» at Abu Mu'awiya, and the dashes hold a wording gloss, not a name.", "source": "text", "quote": "وحدثنا أبو بكر بن أبي شيبة، وأبو كريب وابن أبي عمر - واللفظ لأبي كريب - قالوا حدثنا أبو معاوية"},
+    {"claim": "Abu Mas'ud is the last link and the man who comes is only in the story (ruling 4).", "source": "text", "quote": "عن أبي مسعود الأنصاري، قال جاء رجل"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-0ea0a3",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "Both shaykhs join with «قالا» at al-Walid, who narrates from al-Awza'i.", "source": "text", "quote": "حدثنا عبد الرحمن بن إبراهيم، ونصر بن عاصم، - وهذا لفظه - قالا حدثنا الوليد، حدثنا الأوزاعي"},
+    {"claim": "Nasr's aside inside the isnad gives Ibn Abi Dhi'b alongside al-Awza'i before the shared tail, so it adds a real route of this saying, not a remark about another version.", "source": "text", "quote": "عن ابن أبي ذئب، والأوزاعي، - عن الزهري"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "route_of_this_saying", "quote": "عن ابن أبي ذئب، والأوزاعي، - عن الزهري"},
+    {"group": "B.g1", "verdict": "route_of_this_saying", "quote": "عن ابن أبي ذئب، والأوزاعي، - عن الزهري"}
+   ],
+   "corrected_reading": {"id": "cr1-0ea0a3", "status": "read", "groups": [{"levels": [[{"surface": "عبد الرحمن بن إبراهيم", "kind": "narrator"}, {"surface": "نصر بن عاصم", "kind": "narrator"}], [{"surface": "الوليد", "kind": "narrator"}], [{"surface": "الأوزاعي", "kind": "narrator", "occurrence": 1}]]}, {"levels": [[{"surface": "نصر بن عاصم", "kind": "narrator"}], [{"surface": "الوليد", "kind": "narrator"}], [{"surface": "ابن أبي ذئب", "kind": "narrator"}]]}], "shared_tail": [[{"surface": "الزهري", "kind": "narrator"}], [{"surface": "عروة", "kind": "narrator"}], [{"surface": "عائشة", "kind": "narrator"}]],
+    "needs_ruling": false, "notes": ["«وقال نصر: عن ابن أبي ذئب، والأوزاعي» inside the isnad adds Nasr's route through Ibn Abi Dhi'b; both meet at al-Zuhri."], "fixes": []},
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-7c8879",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The «ح» gives two heads that meet at Sa'd b. Aws, and «المعنى» marks the two versions as one in sense, so the names after Waki' are shared by both branches.", "source": "text", "quote": "حدثنا محمد بن عبد الله بن الزبير، ح وحدثنا أحمد، حدثنا وكيع، - المعنى - عن سعد بن أوس"},
+    {"claim": "The phrase after «أبيه» only names the father as he appears in the report, so it is not a route or another version, and «أبيه» stays the relation link.", "source": "text", "quote": "عن أبيه، في حديث أبي أحمد شكل بن حميد"},
+    {"claim": "The father speaks to the Prophet, so he is the last link.", "source": "text", "quote": "قلت يا رسول الله علمني دعاء"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g2", "verdict": "remark_about_another_version", "quote": "في حديث أبي أحمد شكل بن حميد"}
+   ],
+   "corrected_reading": {"id": "cr1-7c8879", "status": "read", "groups": [{"levels": [[{"surface": "أحمد بن محمد بن حنبل", "kind": "narrator"}], [{"surface": "محمد بن عبد الله بن الزبير", "kind": "narrator"}]]}, {"levels": [[{"surface": "أحمد", "kind": "narrator", "occurrence": 2}], [{"surface": "وكيع", "kind": "narrator"}]]}], "shared_tail": [[{"surface": "سعد بن أوس", "kind": "narrator"}], [{"surface": "بلال العبسي", "kind": "narrator"}], [{"surface": "شتير بن شكل", "kind": "narrator"}], [{"surface": "أبيه", "kind": "relation"}]],
+    "needs_ruling": false, "notes": ["The two «ح» branches meet at Sa'd b. Aws; «في حديث أبي أحمد شكل بن حميد» names the father and is not a route."], "fixes": []},
+   "uncertainty": "low",
+   "uncertainty_note": ""}
+ ]}

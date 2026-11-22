@@ -1,0 +1,173 @@
+{"format": "shura-chain-review-output/1", "specialist_id": "chain-reviewer", "prompt_version": "1.0.0", "packet_id": "pilot-001-p1-02",
+ "reviews": [
+  {"id": "cr1-0041c9",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Two shaykhs of the compiler join at one level and meet at Ibn Wahb through «قالا».", "source": "text", "quote": "حدثني أبو الطاهر، وحرملة بن يحيى، قالا أخبرنا ابن وهب"},
+    {"claim": "Ibn Shihab transmits from two men at one level, a name then a kunya split by a comma, both from Abu Hurayra.", "source": "text", "quote": "عن سعيد بن المسيب، وأبي، سلمة بن عبد الرحمن عن أبي هريرة"},
+    {"claim": "The Prophet ends the chain and is not a link; both readers stop at Abu Hurayra and agree on four routes.", "source": "text", "quote": "عن أبي هريرة، عن  رسول الله"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-36837c",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The first branch stops at Isma'il b. Kathir and the text itself states his kunya before «ح», marking where the second branch rejoins him.", "source": "text", "quote": "عن إسماعيل بن كثير، وكان، يكنى أبا هاشم ح وأنبأنا محمد بن رافع"},
+    {"claim": "The second branch reaches that kunya and only then writes the rest of the chain once, so what follows it is the shared tail of both branches.", "source": "text", "quote": "عن أبي هاشم، عن عاصم بن لقيط، عن أبيه"},
+    {"claim": "The readers leave the first branch without any saying, ending at a man who stands inside the other route, which is the dropped shared tail the hold describes.", "source": "reader_a", "quote": "the saying belongs to the second branch after «ح», so the first is not extended"},
+    {"claim": "A parallel chain in the packet carries the same first-branch head on to Asim and his father.", "source": "context", "quote": "عن إسماعيل بن كثير، عن عاصم بن لقيط بن صبرة، عن أبيه،"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-36837c", "status": "read",
+    "groups": [
+     {"levels": [[{"surface": "إسحاق بن إبراهيم", "kind": "narrator"}], [{"surface": "يحيى بن سليم", "kind": "narrator"}], [{"surface": "إسماعيل بن كثير", "kind": "narrator"}]]},
+     {"levels": [[{"surface": "محمد بن رافع", "kind": "narrator"}], [{"surface": "يحيى بن آدم", "kind": "narrator"}], [{"surface": "سفيان", "kind": "narrator"}], [{"surface": "أبي هاشم", "kind": "narrator"}]]}
+    ],
+    "shared_tail": [[{"surface": "عاصم بن لقيط", "kind": "narrator"}], [{"surface": "أبيه", "kind": "relation"}]],
+    "needs_ruling": false,
+    "notes": ["«وكان، يكنى أبا هاشم» is the text's own statement that the first branch rejoins the second at «أبي هاشم»; the two names stay as written, and «عن عاصم بن لقيط، عن أبيه» is the tail shared by both branches"],
+    "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The join rests on the text's own kunya statement rather than on a «قالا» or a repeated name, so a person should confirm that the statement is meant as the meeting point."},
+  {"id": "cr1-9fcba5",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Abu Salama is the asker and a link, and Aisha, who is asked and answers, is the last link.", "source": "text", "quote": "عن أبي سلمة، أنه أخبره أنه، سأل عائشة"},
+    {"claim": "The words after the question are Aisha's own answer, so no further link follows her.", "source": "text", "quote": "فقالت ما كان رسول الله"},
+    {"claim": "The closing remark is the compiler's grading and adds no link.", "source": "text", "quote": "قال أبو عيسى هذا حديث حسن صحيح"},
+    {"claim": "The stored chain ends in words of the saying, not a name, so it is defective.", "source": "stored", "quote": "حسنهن"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-593d35",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "Two branches split by «ح» meet at al-Thawri through «قالا», and al-Thawri and Ayyub b. Musa are written once as their shared tail.", "source": "text", "quote": "قالا أخبرنا الثوري، عن أيوب بن موسى، في هذا الإسناد"},
+    {"claim": "The chain does not end at Ayyub b. Musa: «في هذا الإسناد» hands the rest of it to an earlier chain, so it must stand as a back reference rather than be dropped as reader B dropped it.", "source": "reader_b", "quote": "«في هذا الإسناد» and «بمعنى حديث ابن عيينة» are wording remarks, not routes"},
+    {"claim": "The mention of Ibn Uyayna only says this version follows the meaning of his report: a remark about another version, not a route.", "source": "text", "quote": "ثم ذكر بمعنى حديث ابن عيينة"},
+    {"claim": "Abd al-Razzaq's wording note names no new transmitter.", "source": "text", "quote": "وفي حديث عبد الرزاق فأنقضه للحيضة والجنابة"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g2", "verdict": "remark_about_another_version", "quote": "ثم ذكر بمعنى حديث ابن عيينة"}
+   ],
+   "corrected_reading": {"id": "cr1-593d35", "status": "read",
+    "groups": [
+     {"levels": [[{"surface": "عمرو الناقد", "kind": "narrator"}], [{"surface": "يزيد بن هارون", "kind": "narrator"}]]},
+     {"levels": [[{"surface": "عبد بن حميد", "kind": "narrator"}], [{"surface": "عبد الرزاق", "kind": "narrator", "occurrence": 1}]]}
+    ],
+    "shared_tail": [[{"surface": "الثوري", "kind": "narrator"}], [{"surface": "أيوب بن موسى", "kind": "narrator"}], [{"surface": "في هذا الإسناد", "kind": "back_reference"}]],
+    "needs_ruling": false,
+    "notes": ["«في هذا الإسناد» after Ayyub b. Musa continues the chain of an earlier report; that report is not in the packet, so the continuation is kept as a back reference and not written out as inherited links", "«ثم ذكر بمعنى حديث ابن عيينة» is a remark about another version, not a route"],
+    "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The earlier report that «في هذا الإسناد» points to is not in the packet, so the inherited continuation past Ayyub b. Musa cannot be written here."},
+  {"id": "cr1-efd81b",
+   "decision": "refer_to_human",
+   "question": "al-Faqih's statement of the compiler's routes («طرق») to a source with no saying is unruled: should these two routes to Muhammad b. Sinan be stored as a chain at all?",
+   "reasons": [
+    {"claim": "The report states the compiler's routes to what the book carries from Muhammad b. Sinan and relays no saying.", "source": "text", "quote": "و ما كان فيه عن محمّد بن سنان فقد رويته عن محمّد بن عليّ ماجيلويه"},
+    {"claim": "A second route opens with «و رويته عن», so if stored the readers' two groups match the text's structure.", "source": "text", "quote": "و رويته عن أبي- رضي اللّه عنه- عن عليّ بن إبراهيم، عن أبيه، عن محمّد بن سنان"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-eedf77",
+   "decision": "refer_to_human",
+   "question": "al-Faqih's statement of the compiler's routes («طرق») to the book of Ali b. Ja'far with no saying is unruled; if it is to be stored, the readers' reading also needs correcting (see reasons).",
+   "reasons": [
+    {"claim": "The report states the compiler's routes to everything the book carries from Ali b. Ja'far and relays no saying.", "source": "text", "quote": "و كلّ ما كان في هذا الكتاب عن عليّ بن جعفر فقد رويته"},
+    {"claim": "Al-Fadl b. Amir stands after «؛ و» beside Ahmad b. Muhammad b. Isa as a co-transmitter from Musa b. al-Qasim, not as the compiler's shaykh opening a third route, so both readers misplace him and cut the second route short of Ali b. Ja'far.", "source": "text", "quote": "و سعد بن عبد اللّه جميعا عن أحمد بن محمّد بن عيسى؛ و الفضل بن عامر"},
+    {"claim": "The closing «بهذا الإسناد» says the whole book is held by these routes; it is not a link of the last route as the readers write it.", "source": "text", "quote": "و كذلك جميع كتاب عليّ بن جعفر عليه السّلام فقد رويته بهذا الإسناد"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The nesting of «جميعا» and the two «؛» makes the placement of al-Fadl b. Amir a reading of the wording that a person should check."},
+  {"id": "cr1-c5386a",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The first branch stops at Shu'ba and «ح» opens the second, which reaches Shu'ba again before the rest of the chain is written once.", "source": "text", "quote": "حدثنا شعبة، ح وحدثنا"},
+    {"claim": "Everything after the second Shu'ba is the tail shared by both branches, so the first branch must continue to Aisha rather than end at Shu'ba as both readers have it.", "source": "text", "quote": "عن شعبة، عن عمرو بن، مرة قال سمعت الحسن بن مسلم، يحدث عن صفية بنت شيبة، عن عائشة"},
+    {"claim": "The dashed note only says whose wording this is and adds no link.", "source": "text", "quote": "- واللفظ له -"},
+    {"claim": "The stored chain has the right routes but ends each in a word of the saying, so it cannot be kept.", "source": "stored", "quote": "المستوصلة"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-c5386a", "status": "read",
+    "groups": [
+     {"levels": [[{"surface": "محمد بن المثنى", "kind": "narrator"}, {"surface": "ابن، بشار", "kind": "narrator"}], [{"surface": "أبو داود", "kind": "narrator"}], [{"surface": "شعبة", "kind": "narrator", "occurrence": 1}]]},
+     {"levels": [[{"surface": "أبو بكر بن أبي شيبة", "kind": "narrator"}], [{"surface": "يحيى بن أبي بكير", "kind": "narrator"}], [{"surface": "شعبة", "kind": "narrator", "occurrence": 2}]]}
+    ],
+    "shared_tail": [[{"surface": "عمرو بن، مرة", "kind": "narrator"}], [{"surface": "الحسن بن مسلم", "kind": "narrator"}], [{"surface": "صفية بنت شيبة", "kind": "narrator"}], [{"surface": "عائشة", "kind": "narrator"}]],
+    "needs_ruling": false,
+    "notes": ["both branches meet at «شعبة»; the chain from «عمرو بن، مرة» to «عائشة» is written once after «ح» and is shared by every route", "«- واللفظ له -» is a wording note, not a link"],
+    "fixes": []},
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-23cc42",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "Four transmitters at the first level, the last unnamed, meet at Abu Usama through «قالوا».", "source": "text", "quote": "وعثمان بن أبي شيبة، والحسن بن علي، وغيرهم، قالوا حدثنا أبو أسامة"},
+    {"claim": "The compiler says the wording written in the chain is Ibn al-Ala's.", "source": "text", "quote": "قال أبو داود وهذا لفظ ابن العلاء"},
+    {"claim": "Uthman and al-Hasan b. Ali name a different man at the link written as Muhammad b. Ja'far b. al-Zubayr, so their routes of this same saying run through that man: a route of this saying, not a remark about another version.", "source": "text", "quote": "وقال عثمان والحسن بن علي عن محمد بن عباد بن جعفر"},
+    {"claim": "Both readers send Uthman and al-Hasan through Muhammad b. Ja'far b. al-Zubayr, which the text says they did not say.", "source": "reader_b", "quote": "names a different transmitter for the same saying: a variant group"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "route_of_this_saying", "quote": "وقال عثمان والحسن بن علي عن محمد بن عباد بن جعفر"},
+    {"group": "B.g1", "verdict": "route_of_this_saying", "quote": "وقال عثمان والحسن بن علي عن محمد بن عباد بن جعفر"}
+   ],
+   "corrected_reading": {"id": "cr1-23cc42", "status": "read",
+    "groups": [
+     {"levels": [[{"surface": "محمد بن العلاء", "kind": "narrator"}, {"surface": "غيرهم", "kind": "unnamed"}], [{"surface": "أبو أسامة", "kind": "narrator"}], [{"surface": "الوليد بن كثير", "kind": "narrator"}], [{"surface": "محمد بن جعفر بن الزبير", "kind": "narrator"}]]},
+     {"levels": [[{"surface": "عثمان بن أبي شيبة", "kind": "narrator"}, {"surface": "الحسن بن علي", "kind": "narrator", "occurrence": 1}], [{"surface": "أبو أسامة", "kind": "narrator"}], [{"surface": "الوليد بن كثير", "kind": "narrator"}], [{"surface": "محمد بن عباد بن جعفر", "kind": "narrator"}]]}
+    ],
+    "shared_tail": [[{"surface": "عبد الله بن عبد الله بن عمر", "kind": "narrator"}], [{"surface": "أبيه", "kind": "relation"}]],
+    "needs_ruling": false,
+    "notes": ["«وهذا لفظ ابن العلاء» gives the written chain to Ibn al-Ala; «وقال عثمان والحسن بن علي عن محمد بن عباد بن جعفر» gives Uthman and al-Hasan the other name at that link; both routes meet again at «عبد الله بن عبد الله بن عمر»", "«وغيرهم» is left with the written chain because the remark names only Uthman and al-Hasan", "«قال أبو داود وهو الصواب» is the compiler's judgement, not a link"],
+    "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The text does not say which form the unnamed «وغيرهم» transmitted, so placing them on the written chain is a reading a person should check."},
+  {"id": "cr1-61c3f2",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The chain runs through Ali b. Ibrahim, his unnamed father and Abu Hashim, each by «عن».", "source": "text", "quote": "عَن أبِيهِ عَن أبي هاشِمٍ داود بن القاسم الجعفري"},
+    {"claim": "Abu Hashim heard the Imam speak, so the Imam whose words follow is the last link.", "source": "text", "quote": "قالَ سَمِعتُ أبا جَعفَر"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-f8eeeb",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "Two shaykhs of the compiler meet at Talq b. Ghannam through «قالا».", "source": "text", "quote": "حدثنا محمد بن العلاء، وأحمد بن إبراهيم، قالا حدثنا طلق بن غنام"},
+    {"claim": "The dashed note inside the isnad says that in Ibn al-Ala's version Talq names Qays beside Sharik, which adds a real route of this saying rather than a remark about another version.", "source": "text", "quote": "عن شريك، - قال ابن العلاء وقيس - عن أبي حصين"},
+    {"claim": "Reader A turns the note into a variant group and reader B drops it, so neither carries the Qays route.", "source": "reader_b", "quote": "The editor's gloss «- قال ابن العلاء وقيس -» names other versions and is left out"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "route_of_this_saying", "quote": "- قال ابن العلاء وقيس -"}
+   ],
+   "corrected_reading": {"id": "cr1-f8eeeb", "status": "read",
+    "groups": [
+     {"levels": [[{"surface": "محمد بن العلاء", "kind": "narrator"}], [{"surface": "طلق بن غنام", "kind": "narrator"}], [{"surface": "شريك", "kind": "narrator"}, {"surface": "قيس", "kind": "narrator"}]]},
+     {"levels": [[{"surface": "أحمد بن إبراهيم", "kind": "narrator"}], [{"surface": "طلق بن غنام", "kind": "narrator"}], [{"surface": "شريك", "kind": "narrator"}]]}
+    ],
+    "shared_tail": [[{"surface": "أبي حصين", "kind": "narrator"}], [{"surface": "أبي صالح", "kind": "narrator"}], [{"surface": "أبي هريرة", "kind": "narrator"}]],
+    "needs_ruling": false,
+    "notes": ["«- قال ابن العلاء وقيس -» gives Ibn al-Ala's version of the Talq level: from Sharik and Qays; Ahmad b. Ibrahim's version has Sharik alone; both continue «عن أبي حصين»"],
+    "fixes": []},
+   "uncertainty": "low",
+   "uncertainty_note": ""}
+ ]}

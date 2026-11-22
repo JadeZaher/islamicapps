@@ -1,0 +1,140 @@
+{
+ "format": "shura-chain-review-jobs/1",
+ "batch": "pilot-001",
+ "pass": 1,
+ "what": "pilot: tranche 02's agreed readings the judge read while held (hold_verdicts.tsv 21, variant_verdicts.tsv 30) and a random 30 of the judge's eligible sample (sample_verdicts.tsv, seed 20261601); scored against the judge by pilot-001/score_reviewer.py",
+ "prompt": {
+  "path": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md",
+  "version": "1.0.0",
+  "sha256": "46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77"
+ },
+ "model": "claude-opus-5-5 for every job; one fresh worker per packet, nothing shared between workers (reviews/ai/README.md §Isolation)",
+ "run_line_format": "run_id={RUNID} | packet={NN} | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews>",
+ "output_file_format": "one JSON object per packet (shura-chain-review-output/1), exactly as the prompt describes, at output_file",
+ "after": "validate each output: python -B -X utf8 reviewer/validate_review.py --packet <packet_file> --output <output_file>; then build pass 2: python -B -X utf8 reviewer/build_review_packets.py --second-pass --batch pilot-001",
+ "second_pass_rule": "pass 2 re-reviews, with a new worker, only the reports whose pass-1 decision is confirm_with_correction, or no_chain where the readers' reading has routes",
+ "expected": {
+  "jobs": 9,
+  "items": 81,
+  "run_txt_lines": 9
+ },
+ "jobs": [
+  {
+   "job_id": "pilot-001-review-p1-01",
+   "pass": 1,
+   "packet": "01",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-01.json",
+   "packet_sha256": "71a6afc4ff5b65816cc94ca319dbe5e9c06665b7e1c927753bb5ed41258bfefe",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-01.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-01",
+   "items": 10,
+   "input_chars": 103011,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-01.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-01.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-01 | packet=01 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-02",
+   "pass": 1,
+   "packet": "02",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-02.json",
+   "packet_sha256": "e4ff51942e9b721c61a18142aa19055a3316d754ba127d741148ad0c11a30c7a",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-02.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-02",
+   "items": 10,
+   "input_chars": 108319,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-02.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-02.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-02 | packet=02 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-03",
+   "pass": 1,
+   "packet": "03",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-03.json",
+   "packet_sha256": "661fe56e8731d75ce0fdb3e6022de75d09b5dc2557391c6a981bdcc64dfafcce",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-03.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-03",
+   "items": 10,
+   "input_chars": 105718,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-03.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-03.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-03 | packet=03 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-04",
+   "pass": 1,
+   "packet": "04",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-04.json",
+   "packet_sha256": "616fdd04eb75b952ab65458203050c9decf75b88bfe007d8b57fff6402ee5954",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-04.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-04",
+   "items": 10,
+   "input_chars": 88397,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-04.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-04.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-04 | packet=04 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-05",
+   "pass": 1,
+   "packet": "05",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-05.json",
+   "packet_sha256": "915159350b67aebba252ba19fc1273cabcac05d158cde8eeda3c6ed4bbfed357",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-05.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-05",
+   "items": 10,
+   "input_chars": 112102,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-05.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-05.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-05 | packet=05 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-06",
+   "pass": 1,
+   "packet": "06",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-06.json",
+   "packet_sha256": "a5a11bdd46dff9aafd1bfc07f33ddd825f77e807dfcc3701f04a98f369546751",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-06.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-06",
+   "items": 10,
+   "input_chars": 121119,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-06.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-06.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-06 | packet=06 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-07",
+   "pass": 1,
+   "packet": "07",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-07.json",
+   "packet_sha256": "8af97f32c0f8d3452120181bb557d658f999a9833fb68f43f82aa37ab6b8665a",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-07.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-07",
+   "items": 10,
+   "input_chars": 111733,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-07.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-07.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-07 | packet=07 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-08",
+   "pass": 1,
+   "packet": "08",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-08.json",
+   "packet_sha256": "589bc18ea39c860edb5c9c99c14bdb7a51eb272a055182a6dc38307097c0fc4a",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-08.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-08",
+   "items": 10,
+   "input_chars": 106063,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-08.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-08.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-08 | packet=08 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "pilot-001-review-p1-09",
+   "pass": 1,
+   "packet": "09",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-09.json",
+   "packet_sha256": "8358bc319153cb4da08e17c2121051e0c5f57ef33878ce6ddb96fd19e3fa111d",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-09.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt",
+   "run_id": "pilot-001-review-p1-09",
+   "items": 1,
+   "input_chars": 20114,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1.md\n(version 1.0.0, sha256 46606e814f56efaeec0c0f7e45e455cbd9b2a819561ab8b13ccbe092c7968f77). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\packets\\packet-09.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\packet-09.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\pilot-001\\outputs\\pass-1\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=pilot-001-review-p1-09 | packet=09 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  }
+ ]
+}

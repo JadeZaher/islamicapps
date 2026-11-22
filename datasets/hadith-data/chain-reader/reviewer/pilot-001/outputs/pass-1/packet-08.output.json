@@ -1,0 +1,172 @@
+{"format": "shura-chain-review-output/1", "specialist_id": "chain-reviewer", "prompt_version": "1.0.0", "packet_id": "pilot-001-p1-08",
+ "reviews": [
+  {"id": "cr1-972027",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The chain runs from the compiler's shaykh through Hajjaj, Ibn Jurayj and Ata to Abu Salih, each link written in order.", "source": "text", "quote": "أخبرني إبراهيم بن الحسن، عن حجاج، قال قال ابن جريج أخبرني عطاء، عن أبي صالح الزيات"},
+    {"claim": "Abu Hurayra is the Companion heard quoting the Prophet, so he is the last link and the Prophet ends the chain.", "source": "text", "quote": "أنه سمع أبا هريرة، يقول قال رسول الله"},
+    {"claim": "The stored chain stops at Hajjaj and drops four links the text writes.", "source": "stored", "quote": "حجاج"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-6078be",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The chain is the compiler's shaykh, his father, his grandfather named, that man's father, then Ibn Abi Umayr.", "source": "text", "quote": "عن أبيه، عن جده أحمد بن أبي عبد الله البرقي، عن أبيه، عن محمد بن أبي عمير"},
+    {"claim": "«يرفعه إلى» is a gap of unnamed transmitters, an unnamed link before the Imam.", "source": "text", "quote": "يرفعه إلى أبي عبد الله"},
+    {"claim": "The Imam is written inside the chain after «إلى», so he is the last link as a narrator, and «أبي عبد الله» there is the third time those words stand in the text.", "source": "text", "quote": "إلى أبي عبد الله عليه السلام قال"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-cd74d5",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The main chain of both readers is right: the gloss «هو ابن شقيق» is left out and Abdallah b. Amr, to whom the Prophet spoke, is the last link.", "source": "text", "quote": "عن وهب بن منبه، عن عبد الله بن عمرو، أن النبي"},
+    {"claim": "The second chain is Tirmidhi's remark about another version, never a route of this saying.", "source": "text", "quote": "وروى بعضهم عن معمر"},
+    {"claim": "In that version the chain stops at Wahb and Abdallah b. Amr is only the one the Prophet commanded, so both readers' variant groups wrongly add him as a link.", "source": "text", "quote": "عن وهب بن منبه أن النبي صلى الله عليه وسلم أمر عبد الله بن عمرو"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "remark_about_another_version", "quote": "وروى بعضهم عن معمر عن سماك بن الفضل عن وهب بن منبه أن النبي"},
+    {"group": "B.g1", "verdict": "remark_about_another_version", "quote": "وروى بعضهم عن معمر عن سماك بن الفضل عن وهب بن منبه أن النبي"}
+   ],
+   "corrected_reading": {"id": "cr1-cd74d5", "status": "read",
+    "groups": [
+     {"levels": [
+      [{"surface": "أبو بكر بن أبي النضر البغدادي", "kind": "narrator"}],
+      [{"surface": "علي بن الحسن", "kind": "narrator"}],
+      [{"surface": "عبد الله بن المبارك", "kind": "narrator"}],
+      [{"surface": "معمر", "kind": "narrator", "occurrence": 1}],
+      [{"surface": "سماك بن الفضل", "kind": "narrator", "occurrence": 1}],
+      [{"surface": "وهب بن منبه", "kind": "narrator", "occurrence": 1}],
+      [{"surface": "عبد الله بن عمرو", "kind": "narrator", "occurrence": 1}]
+     ]},
+     {"variant": true, "levels": [
+      [{"surface": "بعضهم", "kind": "unnamed"}],
+      [{"surface": "معمر", "kind": "narrator", "occurrence": 2}],
+      [{"surface": "سماك بن الفضل", "kind": "narrator", "occurrence": 2}],
+      [{"surface": "وهب بن منبه", "kind": "narrator", "occurrence": 2}]
+     ]}
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": ["«هو ابن شقيق» is a gloss and is left out.", "«وروى بعضهم» is a remark about another version; in it the chain stops at Wahb, and Abdallah b. Amr is only the one commanded, not a link."],
+    "fixes": []},
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-a494cc",
+   "decision": "refer_to_human",
+   "question": "Unruled: al-Faqih's statement of the compiler's routes to a source («فقد رويته عن ...») with no saying; also whether «و الحميريّ» joins Sa'd (both under the two shaykhs, «جميعا» from Ahmad) or is a third shaykh of the compiler.",
+   "reasons": [
+    {"claim": "The report states the compiler's route to a source and carries no saying, which is an unruled case.", "source": "text", "quote": "و ما كان فيه عن عائذ الأحمسيّ فقد رويته عن أبي"},
+    {"claim": "The two shaykhs of the compiler are closed by the dual blessing, and «و الحميريّ» then stands beside Sa'd before «جميعا», which reads most naturally as Sa'd and al-Himyari together from Ahmad, not as a third route from the compiler as both readers have it.", "source": "text", "quote": "رضي اللّه عنهما- عن سعد بن عبد اللّه؛ و الحميريّ جميعا عن أحمد"},
+    {"claim": "Reader A itself names the reading in which Sa'd and al-Himyari narrate together from Ahmad, yet does not write it.", "source": "reader_a", "quote": "The reading that «جميعا» makes Sa'd and al-Himyari narrate together from Ahmad is the text's own marker"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The semicolons leave the place of al-Himyari open, though the order of the text favours his standing beside Sa'd."},
+  {"id": "cr1-fe2482",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Four co-transmitters, the last an unnamed «غير واحد», share one shaykh through «قالوا».", "source": "text", "quote": "وسلمة بن شبيب، وغير، واحد، قالوا حدثنا أبو عاصم النبيل"},
+    {"claim": "Abu Humayd is the one heard and the last link; the ten Companions and Abu Qatada are only present.", "source": "text", "quote": "قال سمعت أبا حميد الساعدي، في عشرة من أصحاب النبي"},
+    {"claim": "Abu Asim's addition is a remark on wording and adds no route.", "source": "text", "quote": "وزاد فيه أبو عاصم عن عبد الحميد بن جعفر هذا الحرف"},
+    {"claim": "The stored chain ends on Abd al-Hamid repeated and drops Abu Humayd.", "source": "stored", "quote": "عبد الحميد بن جعفر"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g1", "verdict": "remark_about_another_version", "quote": "فذكر نحو حديث يحيى بن سعيد بمعناه"},
+    {"group": "B.g1", "verdict": "remark_about_another_version", "quote": "فذكر نحو حديث يحيى بن سعيد بمعناه"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-bd6df9",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The first branch has two co-transmitters joined by «قالا» from Sufyan.", "source": "text", "quote": "حدثنا أبو بكر بن أبي شيبة، وعمرو الناقد، قالا حدثنا سفيان"},
+    {"claim": "Three «ح» branches follow, the third with two co-transmitters from Abd al-Razzaq.", "source": "text", "quote": "وحدثنا إسحاق بن إبراهيم، وعبد بن حميد، قالا أخبرنا عبد الرزاق، أخبرنا معمر"},
+    {"claim": "The fourth branch runs through Ya'qub, his father and Salih, and «أبي» there is the second time the word stands in the text.", "source": "text", "quote": "حدثنا يعقوب بن إبراهيم بن سعد، حدثنا أبي، عن صالح"},
+    {"claim": "All branches meet at al-Zuhri and point back with «بهذا الإسناد», a tail written once; with no earlier report supplied it stays a back reference.", "source": "text", "quote": "كلهم عن الزهري، بهذا الإسناد"},
+    {"claim": "The addition in Salih's version is a remark on wording, not a route.", "source": "text", "quote": "وزاد في حديث صالح"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-e87ace",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {"claim": "The links to Muhammad b. Hamza are right, and «عمن سمع» is an unnamed link.", "source": "text", "quote": "عن محمد بن حمزة، عمن سمع"},
+    {"claim": "The Imam is named inside the chain as the one heard, before the saying opens, so he is the last link as a narrator, not an Imam named only after the chain (imam_in_text).", "source": "text", "quote": "عمن سمع أبا عبد الله الصادق (عليه السلام) يقول:"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {"id": "cr1-e87ace", "status": "read",
+    "groups": [
+     {"levels": [
+      [{"surface": "محمد بن موسى بن المتوكل", "kind": "narrator"}],
+      [{"surface": "محمد بن جعفر الاسدي", "kind": "narrator"}],
+      [{"surface": "سهل بن زياد الآدمي", "kind": "narrator"}],
+      [{"surface": "يعقوب بن يزيد", "kind": "narrator"}],
+      [{"surface": "محمد بن حمزة", "kind": "narrator"}],
+      [{"surface": "عمن سمع", "kind": "unnamed"}],
+      [{"surface": "أبا عبد الله الصادق", "kind": "narrator"}]
+     ]}
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": ["«عمن سمع» is an unnamed link; the Imam heard is named inside the chain, so he is the last link as a narrator.", "Blessings are left out of the surfaces."],
+    "fixes": []},
+   "uncertainty": "medium",
+   "uncertainty_note": "The links and their order are right in both readings; only the kind of the last link changes, and the line between narrator and imam_in_text is drawn from the wording of the rule."},
+  {"id": "cr1-845877",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Amr b. Dinar written with a comma is one man, followed by Amir as the one who told him.", "source": "text", "quote": "أخبرني عمرو، بن دينار أن عامر بن سعد، أخبره"},
+    {"claim": "Amir narrates an encounter in which the man who asks and Sa'd who is asked do not relay the saying; Usama speaks and relays the Prophet, so he is the last link.", "source": "text", "quote": "أن رجلا سأل سعد بن أبي وقاص عن الطاعون، فقال أسامة بن زيد أنا أخبرك عنه"},
+    {"claim": "The stored chain ends on a word of the question, not a name.", "source": "stored", "quote": "الطاعون"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-701f37",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "Two branches split by «ح» meet with «جميعا» at al-A'mash and point back with «بهذا الإسناد».", "source": "text", "quote": "ح وحدثني أبو سعيد، الأشج حدثنا وكيع، جميعا عن الأعمش، بهذا الإسناد"},
+    {"claim": "A kunya, a comma and a name are one man.", "source": "text", "quote": "أبو سعيد، الأشج"},
+    {"claim": "No earlier report is supplied, so the back reference stays as written and cannot be resolved here.", "source": "text", "quote": "بهذا الإسناد"}
+   ],
+   "variant_verdicts": [
+    {"group": "A.g2", "verdict": "remark_about_another_version", "quote": "نحو حديث أبي كريب عن أبي، معاوية إلى آخره"},
+    {"group": "B.g2", "verdict": "remark_about_another_version", "quote": "نحو حديث أبي كريب عن أبي، معاوية إلى آخره"}
+   ],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""},
+  {"id": "cr1-6138e8",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {"claim": "The report opens with a back reference and its own text adds no link before the Prophet.", "source": "text", "quote": "بِهذَا الإِسناد قالَ: قالَ رَسُولَ"},
+    {"claim": "The seven nearer reports only pass a back reference on, so the chain is inherited from prev8, the nearest report that writes one.", "source": "prev1", "quote": "221 - وَبِإِسْنادِهِ"},
+    {"claim": "prev8 writes each link with its own «حدثني», ending at Ali b. Abi Talib, whom both readers make the last link.", "source": "prev8", "quote": "حَدَّثَني أَبي عَلِىِّ بْنِ أَبِي طالِب"},
+    {"claim": "The two «الحسين بن علي» each stand behind their own «حدثني أبي», so as written they are two links, and both readers keep them.", "source": "prev8", "quote": "قالَ: حَدَّثَني أَبي الحُسَيْنِ بْنِ عَلِى"},
+    {"claim": "Reader A keeps «سيدي» and «أبي» before the names, which are an honorific and bare relations; reader B's names standing alone are the form to store, and the tool counts the two as equal.", "source": "prev8", "quote": "حَدَّثَني سَيِّدي عَلىِّ بْنِ مُوسَى الرِّضا"}
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The two successive «الحسين بن علي» are kept as written; whether one of them is a copying slip is for a person, not for structure."}
+ ]}

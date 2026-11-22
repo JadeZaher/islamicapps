@@ -16,6 +16,7 @@ import type {
   ChainCompiler,
   ChainDisposition,
   ChainFixLabel,
+  ChainSaying,
 } from './contracts';
 import { BASIS_ORDER, mentionIdentity } from './identity-groups';
 import { text } from './mappers';
@@ -163,8 +164,14 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              'chain_fix', case when fl.fix_id is not null then json_build_object(
                'fix_id', fl.fix_id, 'state', fl.state, 'effect', fl.effect, 'models', fl.models, 'runs', fl.runs,
                'decided_at', fl.decided_at, 'awaiting_final_review', fl.awaiting_final_review,
-               'human_confirmations', fl.human_confirmations, 'variant_remarks', cf.planned -> 'variant_remarks') end,
-             'reader_link_kind', mk.reader_kind)
+               'human_confirmations', fl.human_confirmations, 'variant_remarks', cf.planned -> 'variant_remarks',
+               'ai_review', fl.ai_review, 'ai_disputed', fl.ai_disputed, 'ai_corrected', fl.ai_corrected, 'witness_match', fl.witness_match) end,
+             'reader_link_kind', mk.reader_kind,
+             -- Tool v3.4: the saying this route belongs to, from the fix's plan (label and opening words of planned.sayings).
+             'chain_saying', (select jsonb_build_object('saying', s ->> 'saying', 'label', s ->> 'label', 'opens', s ->> 'opens')
+                              from jsonb_array_elements(cf.planned -> 'chains') pc
+                              join jsonb_array_elements(coalesce(cf.planned -> 'sayings', '[]'::jsonb)) s on s -> 'saying' = pc -> 'saying'
+                              where pc ->> 'id' = l.chain_id limit 1))
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
@@ -208,6 +215,7 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     chain_compiler: (node.chain_compiler as ChainCompiler | null) ?? null,
     chain_fix: (node.chain_fix as ChainFixLabel | null) ?? null,
     reader_link_kind: text(node.reader_link_kind),
+    chain_saying: node.chain_saying ? { ...(node.chain_saying as ChainSaying), saying: Number((node.chain_saying as ChainSaying).saying) } : null,
   };
 }
 
@@ -259,7 +267,7 @@ export async function getChainGraph(hadithId: string, visibility: ReadVisibility
       ) as verdicts,
       (
         select json_build_object('fix_id', d.fix_id, 'disposition', d.disposition, 'models', d.models, 'runs', d.runs,
-                                 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review)
+                                 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review, 'ai_review', d.ai_review)
         from public_chain_fix_dispositions d where d.hadith_id = ${hadithId}
         limit 1
       ) as disposition

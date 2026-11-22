@@ -1,6 +1,6 @@
 """Dry-run one tranche through the chain-fix pipeline, applying nothing (tranches/AGENTS.md §Dry run).
 
-    python -B -X utf8 tranches/dry_run_tranche.py --tranche 01 --reader-prompt v3_1 [--variant-notes-supported]
+    python -B -X utf8 tranches/dry_run_tranche.py --tranche 01 --reader-prompt v3_1 [--variant-notes-supported] [--tool v3_3 --only <ids file> --label <name>]
 
 Builds the envelopes with `v3_2/to_submission_v3_2.py`, checks each with `chain-fix-submit --check-only --database production` (read-only;
 a refused fix is dropped and its reason kept, so one bad fix does not hide the others), records the clean ones in a SCRATCH store,
@@ -76,17 +76,21 @@ def main() -> int:
     parser.add_argument("--variant-notes-supported", action="store_true")
     parser.add_argument("--out", default=str(ROOT / "datasets" / "hadith-data" / "development" / "tranche-dry-run-2026-11-22"))
     parser.add_argument("--jobs", type=int, default=4)
+    parser.add_argument("--tool", choices=("v3_2", "v3_3"), default="v3_2", help="the reader tool that builds the envelopes (v3_3: the pipeline engine runs its corrected holds)")
+    parser.add_argument("--only", help="ids file: build envelopes for these readings only (an apply list)")
+    parser.add_argument("--label", help="scratch folder name (default t<NN>-with|without)")
     parser.add_argument("--baseline", help="a finished run of the same tranche (the 'without' run): only the fixes it did not have are rehearsed, its plan stands for the rest")
     args = parser.parse_args()
-    label = f"t{args.tranche}-{'with' if args.variant_notes_supported else 'without'}"
+    label = args.label or f"t{args.tranche}-{'with' if args.variant_notes_supported else 'without'}"
     scratch = Path(args.out) / label
     scratch.mkdir(parents=True, exist_ok=True)
     tranche = READER / "tranches" / f"tranche-{args.tranche}"
     reports = tranche / "private" / "reports.jsonl"
     flag = ["--variant-notes-supported"] if args.variant_notes_supported else []
-    built = run([sys.executable, "-B", "-X", "utf8", "v3_2/to_submission_v3_2.py", "--packets", str(tranche / "packets"), "--reports", str(reports),
+    only = ["--only", str(Path(args.only).resolve())] if args.only else []
+    built = run([sys.executable, "-B", "-X", "utf8", f"{args.tool}/to_submission_{args.tool}.py", "--packets", str(tranche / "packets"), "--reports", str(reports),
                  "--pass-a", str(tranche / "outputs" / "pass-a"), "--pass-b", str(tranche / "outputs" / "pass-b"), "--out", str(scratch),
-                 "--batch", f"t{args.tranche}", "--reader-prompt", args.reader_prompt, *flag], cwd=READER)
+                 "--batch", f"t{args.tranche}", "--reader-prompt", args.reader_prompt, *flag, *only], cwd=READER)
     print(built.stderr.strip(), file=sys.stderr)
     report_rows = {row["id"]: row for row in (json.loads(l) for l in reports.read_text(encoding="utf-8").splitlines() if l.strip())}
     envelopes = sorted(scratch.glob("packet-*.envelope.json"))

@@ -1,5 +1,5 @@
 /** Reader wording for the chain structure gate (0017), model readings (0019) and the compiler head (0019; src/db/AGENTS.md). */
-import type { ChainCompiler, ChainDisposition, ChainFixLabel, ChainNode, ChainVariantRemark } from '@/db/queries/contracts';
+import type { ChainCompiler, ChainDisposition, ChainFixLabel, ChainNode, ChainSaying, ChainVariantRemark } from '@/db/queries/contracts';
 
 /** Why a chain's structure is uncertain (0017; codes from `pg_export/chain_structure.py`), in plain words. */
 export const CHAIN_STRUCTURE_REASON_LABEL: Record<string, string> = {
@@ -29,10 +29,17 @@ export function structureNote(node: Pick<ChainNode, 'chain_structure_status' | '
 }
 
 const day = (value: string) => value.slice(0, 10);
+const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five'];
+/** "two models": the independent reader runs that agree (owner wording, 2026-11-22). */
+const readers = (runs: number) => `${COUNT_WORDS[runs] ?? runs} model${runs === 1 ? '' : 's'}`;
+
+/** The tier line of a reading read by agreeing models: "Read by two models (claude-haiku-5-5), 2026-11-22". */
+export const readByModelsLine = (fix: Pick<ChainFixLabel, 'models' | 'runs' | 'decided_at'>) =>
+  `Read by ${readers(fix.runs)} (${[...new Set(fix.models)].join(', ')}), ${day(fix.decided_at)}`;
 
 /**
- * The line under a chain a model reader read (docs/review/chain-fix-pipeline.md §States). "Verified" only names a person:
- * a reading awaiting final review never says it.
+ * The lines under a chain a model reader read (docs/review/chain-fix-pipeline.md §States; tiers in src/db/AGENTS.md §AI review tier).
+ * "Verified" names a person only. The goal-state line ("Agent verified") needs a witness match row, which nothing writes yet.
  */
 export function chainFixNote(fix: ChainFixLabel | null | undefined, status: ChainNode['chain_structure_status']): string | null {
   if (!fix) return null;
@@ -41,15 +48,25 @@ export function chainFixNote(fix: ChainFixLabel | null | undefined, status: Chai
     return fix.human_confirmations.map((confirmation) => `Verified by ${confirmation.reviewer}, ${day(confirmation.reviewed_at)}`).join('; ');
   }
   if (fix.effect === 'annotate') return `A model reader read the same routes (${models}, ${day(fix.decided_at)})`;
-  return `Read by model (${models}), ${day(fix.decided_at)}; awaiting final review`;
+  if (fix.ai_corrected) return `Corrected by AI review (${fix.ai_corrected.models.join(', ')}, ${fix.ai_corrected.runs.length} runs), ${day(fix.ai_corrected.at)}`;
+  if (fix.ai_disputed) return `${readByModelsLine(fix)}; Disputed by the reviewer; awaiting second review`;
+  if (fix.ai_review && fix.witness_match) {
+    return `Agent verified: ${COUNT_WORDS[fix.runs] ?? fix.runs} readers agree, reviewed by ${fix.ai_review.model_id}, text matched to ${fix.witness_match.witness}`;
+  }
+  if (fix.ai_review) return `${readByModelsLine(fix)}; AI reviewed (${fix.ai_review.model_id}), ${day(fix.ai_review.at)}`;
+  return readByModelsLine(fix);
 }
 
 /** The line for a report whose applied model reading found no isnad in the text (0021): instead of stored junk names. */
 export function noChainNote(disposition: ChainDisposition | null | undefined): string | null {
   if (!disposition) return null;
-  const models = [...new Set(disposition.models)].join(', ');
-  const review = disposition.awaiting_final_review ? '; awaiting final review' : '';
-  return `No chain is written in this report (read by model (${models}), ${day(disposition.decided_at)}${review}).`;
+  const review = disposition.ai_review ? `; AI reviewed (${disposition.ai_review.model_id}), ${day(disposition.ai_review.at)}` : '';
+  return `No chain is written in this report (${readByModelsLine(disposition).replace(/^Read/, 'read')}${review}).`;
+}
+
+/** The heading of a route of a two-saying report: "Chain of the first saying" (a second route of the same saying is numbered). */
+export function sayingHeading(saying: ChainSaying, routeOfSaying: number, routesOfSaying: number): string {
+  return routesOfSaying > 1 ? `${saying.label}, route ${routeOfSaying}` : saying.label;
 }
 
 /** The plain label of the compiler heading a chain: derived from the work, never written in the text. */
