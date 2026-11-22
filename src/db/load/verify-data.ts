@@ -352,6 +352,20 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     `select count(*)::int as value from narrator_transmissions
      where temporal_plausibility is null or confidence is null or cardinality(extraction_methods) = 0`,
   );
+  // Chain structure gate (src/db/AGENTS.md §Chain structure gate): every live chain is assessed, and every pair in the
+  // network stands in at least one live chain checked by rule.
+  await check(
+    'every live chain carries a structure status',
+    `select count(*)::int as value from chains where retired_at is null and structure_status is null`,
+  );
+  await check(
+    'every narrator_transmissions pair stands in a live chain checked by rule',
+    `select count(*)::int as value from narrator_transmissions nt
+     where not exists (select 1 from chain_mentions a
+                       join chain_mentions b on b.chain_id = a.chain_id and b.position = a.position + 1 and b.retired_at is null
+                       join chains c on c.id = a.chain_id and c.retired_at is null and c.structure_status = 'checked_by_rule'
+                       where a.retired_at is null and a.narrator_id = nt.student_id and b.narrator_id = nt.teacher_id)`,
+  );
   // Chain chronology guard (src/db/AGENTS.md §Chain chronology guard): a withheld identity keeps its candidates.
   await check(
     'a withheld identity has no automatic narrator_id and keeps a confirmed candidate',

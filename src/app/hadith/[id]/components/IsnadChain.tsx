@@ -22,6 +22,7 @@ import type { ChainGraph, ChainMentionCandidate, ChainNode, HadithTraditionCode 
 import { groupCandidates, type IdentityGroup, type IdentityRecord } from '@/db/queries/identity-groups';
 import { sourceForLatinName, sourcesForIdentityClaim } from '@/lib/sources/registry';
 import { ChainSourceCredits } from './family/SourceCredits';
+import { structureNote } from './chain-structure';
 
 /** Which registry a record belongs to, in words, for a second record of the same person. */
 const RECORD_SOURCE: Record<string, string> = {
@@ -269,6 +270,11 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                         <p className="mb-2 type-small text-ink-muted" data-chain-missing-link>
                             A link is missing after name {branch.nodes[0].chain_missing_link_after + 1}: the next name lived too
                             early to be heard directly
+                        </p>
+                    )}
+                    {structureNote(branch.nodes[0]) && (
+                        <p className="mb-2 type-small text-ink-muted" data-chain-structure="uncertain">
+                            {structureNote(branch.nodes[0])}
                         </p>
                     )}
                     {branch.nodes[0].chain_suspension && (

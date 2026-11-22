@@ -187,7 +187,13 @@ export interface ChainNode {
   chain_suspension?: string | null;
   /** A link is missing after this position (0016); no name is invented for it. */
   chain_missing_link_after?: number | null;
+  /** 0017: `uncertain` chains feed no teacher or student list; null on a row loaded before the gate. */
+  chain_structure_status?: ChainStructureStatus | null;
+  /** Reason codes of an uncertain chain (`pg_export/chain_structure.py`); empty otherwise. */
+  chain_structure_reasons?: string[];
 }
+
+export type ChainStructureStatus = 'checked_by_rule' | 'uncertain';
 
 export interface ChainEdge {
   source: string;

@@ -234,6 +234,29 @@ chains are cut. The builder, not rows by hand, is fixed: `datasets/hadith-data/p
   basis that stands over the source index it corrects, so it is exempt from the uncontested check; Sunni lexicon rows only, detail
   required) and `chains.missing_link_after` (check: inside the chain). `public_chain_links` appends `chain_missing_link_after`.
 
+## Chain structure gate (0017; owner request 2026-11-22, round 4)
+
+Three rounds of builder rules did not move the Sunni strict chain-defect rate (10.7% -> 17.3% -> 18.0%), and the owner's
+complaint is wrong teachers and students. So the goal changed to the precision of what is asserted: a chain whose structure
+no tested rule stands behind is shown as stored, says so, and forms no teacher-student pair. Detectors, measurement and the
+operating point: `datasets/hadith-data/pg_export/AGENTS.md` §Chain structure gate; numbers in
+`datasets/hadith-data/chain-audit/structure-gate/`.
+
+- `chains.structure_status` (`checked_by_rule` | `uncertain`) and `chains.structure_reasons` (text[] of stable codes from
+  `pg_export/chain_structure.py`), one check: checked has no reasons, uncertain has at least one. NULL only on rows loaded
+  before 0017: the view treats NULL as before the gate, so production kept its network between the migration and the load.
+  `checked_by_rule` is never worded "verified" ("verified" is reserved for a human decision).
+- `narrator_transmissions` (0015 body) adds one guard: `c.structure_status IS DISTINCT FROM 'uncertain'`. The seams CTE is
+  computed from the same standing set, so an uncertain chain neither forms pairs nor moves a seam. Narrator page lists and
+  totals read the view, so they follow.
+- `public_chain_links` appends `chain_structure_status` and `chain_structure_reasons`; the chain view shows one plain line
+  under an uncertain chain ("The reading of this chain's routes has not been checked; it is not used for teacher and student
+  lists") and the reasons in words (`src/app/hadith/[id]/components/chain-structure.ts`).
+- Retired, not flagged: every chain of Kitab al-Duafa and Risalat al-Huquq (prose and rijal entries), and chains read from a
+  Sunni chapter heading («باب …» as the report text). The loader retires their earlier rows; reports stay.
+- `db:verify` checks both view changes; `db:verify-data` checks every live chain has a status and every network pair stands
+  in a live checked chain. Flow test: `queries/__tests__/structure-flows.test.ts`.
+
 ## Report correspondences (0007; design §5.5.1)
 
 Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
@@ -281,7 +304,9 @@ write decisions.
   `chains.suspension` and its check; hand-written: `public_chain_links` appended, `narrator_transmissions` dropped and recreated
   with the anonymous-gap guard and its two indexes) -> `0016_chain_builder_sunni` (generated: enum value
   `edition_identification`, `chains.missing_link_after` and its check; hand-written: `public_chain_links` appended,
-  `public_chain_mention_candidates_v2` counts the new basis). A `--custom` generate snapshots the previous schema: after promoting a
+  `public_chain_mention_candidates_v2` counts the new basis) -> `0017_chain_structure_gate` (generated: `chains.structure_status`,
+`structure_reasons` and their check; hand-written: `public_chain_links` appended, `narrator_transmissions` dropped and recreated
+with the structure guard and its two indexes; see §Chain structure gate). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

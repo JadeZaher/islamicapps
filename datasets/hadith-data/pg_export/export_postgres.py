@@ -37,6 +37,7 @@ from chain_chronology import IRSAL_YEARS as CHRONOLOGY_IRSAL_YEARS  # noqa: E402
 from chain_chronology import Lifespan, contest_chain  # noqa: E402
 from imam_kunya import ImamKunyaRegister, CONVENTIONS_PATH  # noqa: E402
 import chain_builder  # noqa: E402
+import chain_structure  # noqa: E402
 from mention_text import PlainText, locate_mentions  # noqa: E402
 from provider_english import ProviderEnglish  # noqa: E402
 from transliteration import latin_name  # noqa: E402
@@ -47,7 +48,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.8"
+PROJECTION_VERSION = "2026.11.22.9"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -93,7 +94,8 @@ IMAMI_ENGLISH_LEXICON = DIAGNOSTICS_DIR / "chain-reconciliation" / "output" / "i
 HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
 ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
 MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py",
-                "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json", "edition_identifications.json")
+                "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json", "edition_identifications.json",
+                "chain_structure.py")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
 OPENING_ISNAD_LICENCE = ("Shura wa Istehsan register (opening_isnad_rules.json); the name as the work's opening isnad writes "
@@ -1230,6 +1232,21 @@ def project(args: argparse.Namespace) -> dict:
         if not rebuilt:
             del branches_by_hadith[hadith_id]
     counts["sunni_chain_builder"] = dict(sorted(sunni_counts.items()))
+
+    # Chain structure gate (chain_structure.py, AGENTS.md §Chain structure gate): prose and rijal works and chapter
+    # headings store no chain at all; the loader retires their earlier rows.
+    structure_counts: Counter = Counter()
+    retired_by_gate: set[str] = set()       # mention id prefixes of reports whose chains the gate retires
+    pure_canon_rows = sidecars["pure_canon_chain.jsonl.gz"]
+    for hadith_id in sorted(branches_by_hadith):
+        info = hadith_info[hadith_id]
+        from_text = info["record_id"] not in pure_canon_rows
+        reason = chain_structure.retire_reason(info["source_work_id"], tradition_names[info["tradition_id"]],
+                                               hadith_text[hadith_id], from_text)
+        if reason:
+            structure_counts[f"retired_chains:{reason}"] += len(branches_by_hadith.pop(hadith_id))
+            structure_counts[f"retired_reports:{reason}"] += 1
+            retired_by_gate.add(f"mention:{info['record_id']}:")
     edition_ids = chain_builder.load_edition_identifications()
     death_year = {narrator: span.death for narrator, span in lifespans.items()}
 
@@ -1275,13 +1292,25 @@ def project(args: argparse.Namespace) -> dict:
         tradition = tradition_names[owner["tradition_id"]]
         source = source_alignment.get(hadith_id)
         report_text = PlainText(hadith_text[hadith_id])
+        pure_canon_row = pure_canon_rows.get(owner["record_id"])
+        extraction = openiti_extraction.get(owner["record_id"])
+        detection_text = (pure_canon_row["chain"] if pure_canon_row else None) or (
+            extraction.get("sanad_ar") if extraction else None) or hadith_text[hadith_id]
+        structure = chain_structure.assess(chain_structure.ReportChains(
+            detection_text, [[surface for _, surface, _ in branch["mentions"]] for branch in branches], tradition,
+            [bool(branch.get("built")) and any(mention.inherited_from for mention in branch["built"]) for branch in branches],
+            hadith_id.startswith("hadith:thaqalayn:"), work, pure_canon_row is None))
         # Thaqalayn's English sanad lexicon covers its own Imami works only.
         provider_text = tradition == "Imami" and hadith_id.startswith("hadith:thaqalayn:")
-        for branch in branches:
+        for branch, reasons in zip(branches, structure):
             rows = branch["mentions"]
             built_mentions = branch.get("built")
+            status = chain_structure.UNCERTAIN if reasons else chain_structure.CHECKED
+            structure_counts[f"{tradition}:{status}"] += 1
+            structure_counts.update(f"reason:{tradition}:{reason}" for reason in reasons)
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
-                           branch["extraction_method"], None, branch["sanad_confidence"], branch.get("suspension"), None])
+                           branch["extraction_method"], None, branch["sanad_confidence"], branch.get("suspension"), None,
+                           status, pg_array(reasons) if reasons else None])
             if built_mentions and any(mention.inherited_from for mention in built_mentions):
                 # An inherited name is not written in this report: only the written ones are located in its text.
                 written_at = [position for position, mention in enumerate(built_mentions) if not mention.inherited_from]
@@ -1446,8 +1475,10 @@ def project(args: argparse.Namespace) -> dict:
                     confidence, method, latin[0] if latin else None, latin[1] if latin else None,
                     latin[2] if latin else None, withheld, inherited_from,
                 ])
+    counts["chain_structure"] = dict(sorted(structure_counts.items()))
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
-                               "sanad_confidence", "suspension", "missing_link_after"], chains)
+                               "sanad_confidence", "suspension", "missing_link_after", "structure_status",
+                               "structure_reasons"], chains)
     canonical.write("chain_mentions", [
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",
@@ -1458,7 +1489,12 @@ def project(args: argparse.Namespace) -> dict:
                                                  "source_position", "source_ref", "source_assertion_origin"],
                     identity_rows)
     unused_claims = set(external.claims_by_mention) - {row[0] for row in mentions}
+    # A claim on a chain the gate retires (prose work, chapter heading) goes with it, counted; any other is a refusal.
+    gate_dropped = {claim for claim in unused_claims if claim.startswith(tuple(retired_by_gate))} if retired_by_gate else set()
+    counts["chain_structure"]["external_claims_dropped_with_retired_chains"] = len(gate_dropped)
+    unused_claims -= gate_dropped
     if unused_claims:
+        print(f"unused external claim, e.g. {min(unused_claims)}", file=sys.stderr)
         raise ProjectionError(f"{len(unused_claims)} external claims name a mention the projection does not have")
     counts["latin_names"] = dict(sorted(latin_counts.items()))
     counts["external_claims"] = dict(sorted(external_counts.items()))

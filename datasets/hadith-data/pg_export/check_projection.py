@@ -63,6 +63,9 @@ def main(directory: Path) -> int:
             fail("missing_link_after outside the chain", chain_id)
         if chain["hadith_id"] not in hadiths:
             fail("chain on a missing hadith", chain_id)
+        status, reasons = chain["structure_status"], chain["structure_reasons"]
+        if not (status == "checked_by_rule" and not reasons or status == "uncertain" and reasons not in ("", "{}")):
+            fail("structure status missing, or reasons that do not match it", chain_id)
     for candidate in rows(directory, "chain_mention_candidates"):
         mention = mentions.get(candidate["mention_id"])
         candidates_by_mention[candidate["mention_id"]].append(candidate)

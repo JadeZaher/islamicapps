@@ -12,6 +12,7 @@ import type {
   IdentityBasis,
   NameLatinBasis,
   NarratorAuthority,
+  ChainStructureStatus,
 } from './contracts';
 import { BASIS_ORDER, mentionIdentity } from './identity-groups';
 import { text } from './mappers';
@@ -84,7 +85,8 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
            m.name_latin, m.name_latin_basis, m.name_latin_narrator_id,
            case when link.id is not null then m.extraction_method end as standing_basis,
            m.identity_withheld_reason, m.inherited_from_mention_id, c.suspension as chain_suspension,
-           c.missing_link_after as chain_missing_link_after
+           c.missing_link_after as chain_missing_link_after,
+           c.structure_status as chain_structure_status, c.structure_reasons as chain_structure_reasons
     from chain_mentions m
     join chains c on c.id = m.chain_id and c.retired_at is null
     join hadiths h on h.id = m.hadith_id and h.retired_at is null
@@ -149,7 +151,8 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              'name_latin_narrator_id', l.name_latin_narrator_id, 'standing_basis', l.standing_basis,
              'identity_withheld_reason', l.identity_withheld_reason,
              'inherited_from_mention_id', l.inherited_from_mention_id,
-             'chain_suspension', l.chain_suspension, 'chain_missing_link_after', l.chain_missing_link_after)
+             'chain_suspension', l.chain_suspension, 'chain_missing_link_after', l.chain_missing_link_after,
+             'chain_structure_status', l.chain_structure_status, 'chain_structure_reasons', l.chain_structure_reasons)
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
@@ -184,6 +187,8 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     inherited_from_mention_id: text(node.inherited_from_mention_id),
     chain_suspension: text(node.chain_suspension),
     chain_missing_link_after: node.chain_missing_link_after == null ? null : Number(node.chain_missing_link_after),
+    chain_structure_status: text(node.chain_structure_status) as ChainStructureStatus | null,
+    chain_structure_reasons: Array.isArray(node.chain_structure_reasons) ? node.chain_structure_reasons.map(String) : [],
   };
 }
 

@@ -1,0 +1,320 @@
+0|defect|missing_route|second route «قال الأعمش وحدثني مسلم، عن مسروق، عن عائشة» not stored (only b0)
+1|ok||
+2|ok||
+3|ok||
+4|ok||
+5|ok||
+6|ok||
+7|ok||
+8|defect|non_narrator_verb_link|«ابن عمر نهى النبي > لحوم الحمر الأهلية يوم خيبر»: verb kept in surface and matn stored as a narrator (both branches)
+9|ok||
+10|ok||
+11|defect|missing_link|text «أن أبا المليح، حدثه قال كنا مع بريدة»: Buraida (reporter from the Prophet) not stored, chain ends at أبا المليح
+12|defect|false_link|«نافع > عن عبد الله بن دينار > ابن عمر»: the second route «وعن عبد الله بن دينار، عن ابن عمر» flattened into one chain with «عن» in surface
+13|ok||
+14|defect|truncated_route+false_link|Muslim 5575 (11 chains): no route reaches «كل هؤلاء عن نافع، عن ابن عمر»; b3/b4 «عبيد الله > أيوب» false link across «ح»; b8 [قتيبة] alone; b9 «ابن رمحعن الليث بن سعد» merged
+15|ok_minor|surface_gloss|surface «إسماعيل - يعنون ابن جعفر» keeps the gloss
+16|defect|truncated_route|three routes stop at عبد الرزاق; text «جميعا عن عبد الرزاق ... عن معمر، عن الزهري، عن علي بن حسين، عن عمرو بن عثمان، عن أسامة بن زيد» tail not stored anywhere
+17|defect|name_lost|chain ends at أبيه; text «عن أبيه، أن أبا هريرة، قال قال رسول الله»: أبو هريرة lost
+18|defect|false_link+truncated|«محمد بن رافع > ابن رافع» (attribution «وقال ابن رافع واللفظ له» stored as a link); chain ends at معمر, text «قال الزهري أخبرني حميد بن عبد الرحمن عن أبي هريرة» lost
+19|ok||
+20|ok||
+21|defect|name_lost+non_narrator|«ابن شهاب» (أن ابن شهاب حدثه) not stored; «أبي ثعلبة الخشني أنالله عليه» and b1 «سلم نهى», non-narrator «أكل» as last link
+22|defect|false_split|Turath prints «بهذا الإسناد نحو حديث عفان. وقال: عون بن عتبة» and Ahmad «عن قتادة، عن سعيد بن أبي بردة، وعون بن عتبة»: عون is a co-transmitter beside سعيد, not an alternative to قتادة (b1/b3 [همام > عون بن عتبة]); https://api.turath.io/search?q= (fetched/turath_9e0c52db84.json)
+23|ok||
+24|defect|non_narrator_verb_link|last link «فأحرقهم» (verb of the matn) after أنس
+25|ok||
+26|ok||
+27|ok||
+28|ok||
+29|ok||
+30|ok||
+31|defect|false_link|b0/b1 «الزهري > سعيد > عمه»: text «سعيد - يعني ابن المسيب - وعباد بن تميم عن عمه»; the uncle belongs to عباد only (b2 right)
+32|defect|name_lost|three routes end at the co-transmitters; text «قالوا سمعنا أبا أمامة الباهلي، يقول سمعت عمرو بن عبسة» not stored
+33|ok||
+34|ok||
+35|ok||
+36|ok||
+37|defect|non_narrator+truncated_name|Tirmidhi 46 is the author's comment «قال أبو عيسى وروى وكيع ... حدثنا بذلك هناد وقتيبة قالا حدثنا وكيع عن ثابت»: stored [أبو عيسى>ثابت] [روى>ثابت] [كيع>ثابت]; هناد/قتيبة route and the tail to جابر not stored
+38|ok||
+39|ok||
+40|ok||
+41|ok||
+42|ok||
+43|ok||
+44|ok||
+45|ok||
+46|ok_minor|companion_addressed|chain stops at أبيه (عروة) «قلت لعائشة»; Aisha, the authority addressed, not stored
+47|ok_minor|truncated_letters|b1 surface «رقاء» for «ورقاء» (و taken as conjunction)
+48|ok||
+49|ok||
+50|ok||
+51|defect|false_split|«رجل من مزينة ونحن عند سعيد بن المسيب عن أبي هريرة»: one route stored twice, the second with the clause «نحن عند سعيد بن المسيب» as narrator
+52|ok||
+53|ok||
+54|ok_minor|name_over_extended|«مؤذن لعمر يقال له مسروح أذن قبل الصبح فأمره عمر» keeps matn clause
+55|ok||
+56|ok||
+57|ok||
+58|ok||
+59|ok||
+60|ok||sampled route b4 complete; REPORT-level: b0-b2 stop at شاذان / محمد بن جعفر before the shared «عن شعبة عن قتادة ...»
+61|ok||
+62|defect|non_narrator|last link «الرجل يصلي قاعدا» (the question put to the Prophet, «أنه سأل رسول الله عن الرجل يصلي قاعدا») stored as a narrator
+63|ok||
+64|defect|truncated_route|b0-b4 (أبو كريب and 5 co-transmitters) stop before «عن هشام بن عروة، عن أبيه، عن عبد الله بن عمرو»; only the سويد routes continue
+65|ok||
+66|ok||
+67|ok||
+68|ok||
+69|ok_minor|non_name_from_source|first link «تابع/» (as in the source sanad field «تابع/, أسود ابن عامر, ...»)
+70|ok||
+71|ok||
+72|ok||
+73|ok||
+74|ok||
+75|ok||
+76|ok||
+77|ok||
+78|ok||
+79|ok||
+80|ok||
+81|ok||
+82|ok||
+83|ok||
+84|ok||
+85|ok||
+86|ok_minor|non_name_from_source|b1 «أثنى عليها خيرا» stored as a narrator exactly as in the source sanad field
+87|ok||
+88|ok_minor|merged_names_from_source|«يزيد ابن هارون أنبأ عاصم» one mention (two narrators) as in the source field
+89|ok||
+90|ok||
+91|ok||
+92|ok||
+93|ok||
+94|defect|ghayr_wahid_split|source field «مالك, عن غير, ... | مالك, احد, ...»: «غير واحد» split in two false routes «غير» / «احد» (6 chains for 2 real routes)
+95|ok||
+96|ok||
+97|ok||
+98|ok_minor|surface_has_an|b1 surface «عن عروة ابن الزبير»
+99|ok||
+100|ok_minor|imam_not_stored|«عن الحلبي قال سألت أبا عبد الله»: Imam addressed, not stored (round2 convention: not a defect)
+101|defect|false_link|Noor 111651 lists two routes (علي>أبيه>ابن أبي عمير>معاوية) and (محمد بن إسماعيل>الفضل>صفوان>معاوية); stored b0-b2 cross them: [علي>أبيه>محمد بن إسماعيل>الفضل...] (sampled b3). Kafi 167: «علي بن إبراهيم عن أبيه عن ابن أبي عمير ومحمد بن إسماعيل عن الفضل بن شاذان عن صفوان وابن أبي عمير عن معاوية»; stored 4 Cartesian chains incl. [علي>أبيه>محمد بن إسماعيل>الفضل]
+102|ok||
+103|ok||
+104|ok||
+105|ok_minor|imam_unnamed|«عن أحدهما» not stored
+106|defect|false_link|same sanad as Kafi 167 (Noor 111651): b0 [علي>أبيه>ابن أبي عمير>الفضل>...] and b1 [علي>أبيه>محمد بن إسماعيل>الفضل>...] cross two routes. Kafi 141 same shape as 101 (b1 [علي>أبيه>محمد بن إسماعيل>الفضل...])
+107|ok||
+108|ok||
+109|ok||
+110|ok||
+111|ok||sampled b0 right; REPORT-level: b1/b2 [رفاعة>سأله بعضهم>الحلي فيه زكاة فقال لا] and [...>لو بلغ مائة ألف] matn stored as routes
+112|ok||
+113|ok||
+114|ok_minor|imam_not_stored|«عن زرارة قال كنت مع أبي جعفر» Imam not stored
+115|ok||
+116|ok_minor|imam_not_stored|«قال لي أبو عبد الله» not stored
+117|ok||
+118|ok||
+119|ok_minor|imam_not_stored|«رفعه قال قال أمير المؤمنين» speaker not stored
+120|ok||
+121|ok_minor|imam_not_stored|«قال سألت أبا عبد الله»
+122|ok_minor|imam_not_stored|«قال سألت أبا عبد الله»
+123|ok||
+124|ok_minor|imam_not_stored|«قال قلت له»
+125|defect|merged_names|Kafi 17: «عن الحلبي و زرارة و محمد بن مسلم و حمران بن أعين» stored as two mentions «الحلبي و زرارة» and «محمد بن مسلم و حمران بن أعين» (four co-transmitters, two mentions)
+126|ok||
+127|ok||
+128|ok||
+129|ok||
+130|ok_minor|imam_not_stored|«قال سأل أبو بصير أبا عبد الله وأنا حاضر»
+131|ok||
+132|ok||
+133|ok||
+134|ok||
+135|ok||
+136|ok||
+137|ok||
+138|ok_minor|imam_not_stored|«قالوا قال أبو عبد الله» not stored
+139|ok_minor|imam_not_stored|«قيل لأبي عبد الله» not stored
+140|ok_minor|imam_not_stored|«قلت لأبي عبد الله»
+141|ok||
+142|ok_minor|alternative_lost|«عن يونس بن ظبيان أو المعلى بن خنيس»: second alternative not stored
+143|ok||
+144|ok||
+145|ok||
+146|ok||
+147|ok||
+148|ok||
+149|ok||
+150|ok||
+151|ok||
+152|ok||
+153|defect|non_narrator|Faqih 3286 «و في خبر آخر: أنه لا تقبل شهادة الولد على والده» stored as chains [آخر] and [الده] (no isnad in the text)
+154|ok||
+155|ok||
+156|ok||
+157|ok||
+158|defect|merged_names|Faqih 5633 «عن بكير و الحلبي عن أحدهما» stored as one mention «بكير و الحلبي»
+159|ok||
+160|ok||
+161|ok||
+162|defect|name_lost|Thawab 123 text «أبی ره قال حدثنی سعد بن عبد الله عن أحمد بن محمد بن خالد»: سعد بن عبد الله not stored [أبی > أحمد بن محمد بن خالد > ...] (claimed fixed in milestone B)
+163|ok||
+164|ok_minor|honorific_in_surface|«أبی عبد الله ع» keeps ع
+165|ok_minor|imam_not_stored|«عن أبی الحسن العبدی قال قال أبو عبد الله ع» speaker not stored
+166|ok||
+167|ok||
+168|ok||
+169|ok||
+170|defect|name_lost|«عن التيمي، قال: دخلت على عائشة فحدثتنا أنها رأت رسول الله»: عائشة (the source) not stored
+171|ok||
+172|defect|missing_link|Khisal 8 «حدثنا محمد بن علي ما جيلويه رضي الله عنه، عن عمه محمد بن أبي القاسم»: first link ما جيلويه missing, chain opens at «عمه محمد بن أبي القاسم»
+173|defect|missing_link|Khisal 1 «قال: حدثني أبوعبد الله الرازي، عن أبي الحسن عيسى بن محمد بن عيسى بن عبد الله المحمدي من ولد محمد بن الحنفية، عن محمد بن جابر»: عيسى المحمدي not stored
+174|ok||
+175|ok||
+176|ok||
+177|defect|truncated|Fadail 19 «أبي رحمه الله، قال: حدثني سعد بن عبد الله قال: حدثنى عباد بن سليمان عن محمد بن سليمان، عن أبيه، عن أبان بن تغلب، عن أبى عبد الله»: chain stops at سعد (ى in «حدثنى»), 5 links lost
+178|ok_minor|surface_gloss|«محمد بن - يحيى العطار», «المفضل - الجعفي أظنه» keep dash/«أظنه»
+179|ok||
+180|defect|merged_names|Kamil 79 «حدثني أبي و علي بن الحسين و محمد بن الحسن جميعا»: b1 is one mention «علي بن الحسين و محمد بن الحسن» (two people)
+181|ok||sampled b0 right; REPORT-level: b1 «علي بن الحسين و محمد بن الحسن» one mention (merged)
+182|defect|non_narrator|Kitab al-Duafa 26 is a rijal entry «المعلى بن محمد، البصري... يعرف حديثه، وينكر. ويروي عن الضعفاء» stored as 6 chains [ينكر>الضعفاء] etc.
+183|defect|non_narrator|Kitab al-Duafa 3 rijal entry «إسحاق بن عبد العزيز ... يلقب أبا السفاتج. روى عن أبي عبد الله» stored as chains incl. [يلقب أبا السفاتج روى > أبي عبد الله]
+184|defect|missing_link|Ghayba Numani «قال حدثني محمد بن أحمد القلانسي بمكة سنة سبع وستين ومائتين قال حدثنا علي بن الحسن»: b1 omits القلانسي, b0 keeps «بمكة سنة سبع» in the surface
+185|ok||
+186|defect|non_narrator|b1 last link «ساق الحديث بطوله» (text «وساق الحديث بطوله»)
+187|defect|non_narrator|Ghayba Tusi 24 biography «ومنهم محصن بن غسان بن ظالم الزبيدي،عاش مائتي سنة وستا وخمسين سنة» stored as chains «...عاش مائتي سنة» and «ستا»
+188|ok_minor|surface_prefix|«وعن أبي عبد الله» single-mention chain keeps «وعن»
+189|ok_minor|surface_prefix|«وعن أبي عبد الله»
+190|ok||
+191|ok||
+192|ok||
+193|ok||
+194|ok||
+195|defect|non_narrator+wrong_split|Mujam 9 heading «الرسالة المؤلفة في احوال احاديث اصحابنا واثبات صحتها لسعد بن هبة الله الراوندي: عن محمد وعلي ابني علي بن عبد الصمد»: title words stored as two head narrators, «محمد وعلي ابني علي بن عبد الصمد» split into «محمد» / «علي ابني علي بن عبد الصمد» (4 chains)
+196|ok||
+197|ok||
+198|ok||
+199|ok_minor|source_typo|«أبيها لرضا» (source typo)
+200|ok||
+201|defect|missing_link|Rabi 644 «عن ابن الزبير أن أسماء بنت أبي بكر ... وقالت: كان رسول الله يأمرنا»: chain stops at ابن الزبير, أسماء (the source of the prophetic report) not stored
+202|ok||
+203|defect|chain_missing|Rabi 913 «الإمام عن أبي غانم الخراساني عن حاتم بن منصور عن أبي يزيد الخوارزمي عن مجاهد ... عن ابن عمر»: written isnad, no chain stored
+204|defect|non_narrator|Rabi 774 «وسئل النبيء ... عن الإيمان وكان متقنعا بردائه»: two chains [الإيمان]
+205|ok||
+206|ok||
+207|ok||
+208|ok||
+209|ok||
+210|ok||
+211|ok||
+212|ok||
+213|ok||
+214|ok||
+215|ok||
+216|ok||
+217|ok||
+218|defect|chain_missing|Rabi 17 «قال الربيع عن يحيى بن كثير عن شعيب عن قتادة عن عكرمة عن ابن عباس قال»: written isnad, no chain stored
+219|ok||
+220|ok||
+221|ok||
+222|defect|missing_link|Rabi 229 «عن ابن عباس قال: سمعتني أم الفضل ... فقالت ... آخر ما سمعت من رسول الله»: أم الفضل not stored (same class as 644)
+223|ok||
+224|defect|chain_missing|Rabi 853 «قال الربيع: بلغني عن جويبر عن الضحاك عن ابن عباس»: written isnad, no chain stored
+225|ok||
+226|ok||
+227|ok||
+228|defect|non_narrator+name_lost|Rabi 370 «عن جابر بن زيد قال: قالت عائشة»: stored [أبو عبيدة > جابر بن زيد > ت]; the verb remnant «ت» is a link and عائشة is lost
+229|ok||
+230|ok||
+231|ok||
+232|ok||
+233|defect|missing_link|Rabi 174 «قال أبو عبيدة: قال جابر بن زيد: وبلغني عن قوم»: only [أبو عبيدة] stored, جابر lost
+234|ok||
+235|defect|chain_missing|Rabi 833 «قال: وأخبرنا سفيان بن عيينة عن مجاهد بن سعيد عن الشعبي عن جابر بن عبد الله»: no chain stored
+236|ok||
+237|ok||
+238|ok||
+239|ok||
+240|ok||
+241|ok||
+242|ok||
+243|ok||
+244|ok||
+245|ok||
+246|ok||
+247|ok||
+248|ok||
+249|ok||
+250|ok||
+251|ok||
+252|ok||
+253|ok||
+254|ok||
+255|ok||
+256|ok||
+257|ok||
+258|ok||
+259|ok||
+260|ok||
+261|ok||
+262|ok||
+263|ok||
+264|ok||
+265|ok||
+266|defect|missing_link|Zayd 16 «حدثني زيد بن علي ابيه عن جهد عن علي» (source typos for «عن أبيه عن جده»): only [زيد بن علي] stored
+267|ok||
+268|ok||
+269|ok||
+270|ok||
+271|ok||
+272|ok||
+273|ok||
+274|ok||
+275|ok_minor|source_typo|surface «زيد به على»
+276|ok||
+277|ok||
+278|ok||
+279|ok||
+280|ok||
+281|ok||
+282|ok||
+283|ok||
+284|ok||
+285|ok||
+286|ok||
+287|ok||
+288|ok||
+289|ok||
+290|ok||
+291|ok||
+292|ok||
+293|ok||
+294|ok||
+295|ok||
+296|ok||
+297|ok||
+298|ok||
+299|ok||
+300|ok||
+301|ok||
+302|ok||
+303|ok||
+304|ok||
+305|ok||
+306|ok||
+307|ok||
+308|ok||
+309|ok||
+310|ok||
+311|ok||
+312|ok||
+313|ok||
+314|ok||
+315|ok||
+316|ok||
+317|ok||
+318|ok||
+319|ok||

@@ -308,6 +308,11 @@ async function main() {
     expect(tier.includes("'edition_identification'"), 'public_chain_mention_candidates_v2 does not count edition_identification');
     expect(network.includes("'anonymous'") && network.includes("'not_a_narrator'") && network.includes('first_pos'),
       'narrator_transmissions lost the 0015 anonymous-gap guard or the 0013 seam guard');
+    // 0017: only a chain whose structure a tested rule stands behind forms pairs; the chain view carries status and reasons.
+    expect(network.includes('structure_status') && network.includes("'uncertain'"),
+      'narrator_transmissions lost the 0017 chain structure gate');
+    expect(withheld.includes('chain_structure_status') && withheld.includes('chain_structure_reasons'),
+      'public_chain_links does not expose chain_structure_status and chain_structure_reasons');
 
     console.log(
       [

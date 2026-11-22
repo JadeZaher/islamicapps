@@ -52,12 +52,20 @@ export const chains = pgTable(
     suspension: text('suspension'),
     /** A link is missing after this position (0016; Sunni audit `missing_link`): flagged, no name invented. */
     missingLinkAfter: integer('missing_link_after'),
+    /** `checked_by_rule` or `uncertain` (0017; src/db/AGENTS.md §Chain structure gate); NULL only on rows loaded before it. */
+    structureStatus: text('structure_status'),
+    /** Why an uncertain chain is uncertain: stable codes from `pg_export/chain_structure.py`. */
+    structureReasons: text('structure_reasons').array(),
   },
   (table) => [
     unique('chains_hadith_id_branch_key').on(table.hadithId, table.branch),
     check(
       'chains_suspension_check',
       sql`${table.suspension} is null or ${table.suspension} in ('back_reference', 'mid_chain_start', 'route_given_elsewhere')`,
+    ),
+    check(
+      'chains_structure_status_check',
+      sql`${table.structureStatus} is null or (${table.structureStatus} = 'checked_by_rule' and ${table.structureReasons} is null) or (${table.structureStatus} = 'uncertain' and cardinality(${table.structureReasons}) > 0)`,
     ),
     check('chains_missing_link_after_check', sql`${table.missingLinkAfter} is null or (${table.missingLinkAfter} >= 0 and ${table.missingLinkAfter} < ${table.length} - 1)`),
     restrictForeignKey('chains_hadith_id_fk', table.hadithId, hadiths.id),
@@ -287,6 +295,9 @@ export const publicChainLinks = pgView('public_chain_links', {
   chainSuspension: text('chain_suspension'),
   /** Appended in 0016: a link is missing after this position of the chain. */
   chainMissingLinkAfter: integer('chain_missing_link_after'),
+  /** Appended in 0017: the chain's structure status and reasons (an uncertain chain feeds no teacher or student list). */
+  chainStructureStatus: text('chain_structure_status'),
+  chainStructureReasons: text('chain_structure_reasons').array(),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */

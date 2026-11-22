@@ -1,0 +1,237 @@
+0|ok||
+1|ok||
+2|defect|false_link|Bukhari 7601 «حدثنا موسى، حدثنا معتمر ... وقال خليفة حدثنا معتمر»: b1 [موسى > خليفة > معتمر] chains Musa to Khalifa
+3|ok||
+4|ok||
+5|ok||
+6|ok_minor|surface_verb|b0 head «وحدثناه عثمان بن أبي شيبة» keeps the verb
+7|ok||
+8|ok||
+9|defect|false_link+name_lost|Muslim 288: all 6 chains end «... إبراهيم > الأسود > أبي معشر»; text «عن إبراهيم، عن الأسود، عن عائشة، في حت المني ... نحو حديث خالد عن أبي معشر»: عائشة lost, the closing «نحو حديث خالد عن أبي معشر» stored as the last link
+10|ok||
+11|ok||
+12|defect|false_link|Muslim 397: b0/b1 [أبو بكر > أبو أسامة|عبد الله بن نمير > أبي > عبيد الله]: «أبي» (father of ابن نمير, belonging only to the route «حدثنا ابن نمير، حدثنا أبي») shared into the other routes
+13|ok||
+14|ok||
+15|ok||
+16|ok||
+17|defect|duplicate_link|Muslim 3527 «عن إسماعيل بن جعفر، - قال ابن أيوب حدثنا إسماعيل»: all 3 chains store «إسماعيل بن جعفر > إسماعيل» (one person twice)
+18|ok||
+19|ok||
+20|ok_minor|surface_verb|b0 head «وحدثنيه سويد بن سعيد»
+21|ok||
+22|defect|duplicate_link|Muslim 427 «كلهم عن حماد، - قال خلف حدثنا حماد بن زيد»: [..> حماد > حماد بن زيد > ...] in all 3 chains
+23|ok||
+24|ok||
+25|defect|duplicate_link|Muslim 6539 «كلهم عن سفيان، قال عمرو حدثنا سفيان بن عيينة»: [.. > سفيان > سفيان بن عيينة > ...] in all 3 chains
+26|ok||
+27|ok||
+28|defect|truncated_route+false_link|Muslim 3680: b0/b1 stop at محمد بن جعفر (text continues «حدثنا شعبة ... كلهم عن أشعث»); b2 [عبيد الله بن معاذ > أبي > شعبة > سفيان] joins شعبة to سفيان across «جميعا ... ح»; b2-b5 last link «أشعث بن أبي الشعثاء بإسناد أبي الأحوص كمعنى» keeps the clause
+29|defect|missing_route|Bukhari 6386 «وحدثنا آدم حدثنا شعبة حدثنا أبو إسحاق الهمداني عن البراء بن عازب»: only the two routes of the first sentence stored, آدم route missing
+30|defect|name_lost|Nasai 376 «عن بدية، - وكان الليث يقول ندبة - مولاة ميمونة عن ميمونة قالت»: both chains end at بدية, ميمونة lost
+31|ok_minor|surface_verb|b1 head «حدثنيه إسحاق بن منصور»
+32|defect|false_link|Abu Dawud 4581: three routes (مسدد>يحيى بن سعيد، «وحدثنا إسماعيل عن هشام»، عثمان بن أبي شيبة>يعلى>حجاج) flattened into ONE chain «مسدد > يحيى بن سعيد > إسماعيل > هشام > عثمان بن أبي شيبة > يعلى بن عبيد > حجاج الصواف > يحيى بن أبي كثير > عكرمة > ابن عباس»
+33|ok_minor|surface_verb|b1 head «حدثنيه محمد بن رافع»
+34|ok_minor|surface_verb|b1 head «حدثنيه عبد الله بن عبد الرحمن الدارمي»
+35|ok_minor|surface_verb|heads «وحدثناه ...», «حدثناه ...»
+36|defect|false_link|Muslim 6148: b0/b2 [محمد بن المثنى|ابن بشار > محمد بن جعفر > خالد > شعبة]: خالد (route «وحدثنيه يحيى بن حبيب، حدثنا خالد») inserted into the other route
+37|defect|false_link|Muslim 1715 (10 chains): b3/b4/b6 flatten routes: [وحدثنيه علي بن حجر > علي يعني ابن مسهر > ابن نمير > عبد الله بن نمير > وكيع > هشام], [... > حدثناه عمرو الناقد > وكيع], [وحدثنيه علي بن حجر > حدثناه أبو كريب > أبو كريب > ...]
+38|defect|false_link+non_narrator|Muslim 4054: routes carry the comparison clauses as links («عمار > أبي معاوية فقالا > أم مبشر > امرأة زيد بن حارثة > أبي معاوية»), b1 [أبو كريب > أبي معاوية > أم مبشر ...] has no Al-A'mash tail
+39|defect|false_link|Nasai 3437: b1 [عمرو > عبد الله بن مسلمة > الحارث بن مسكين > ابن القاسم > مالك ...] and b0 [... > مالك > ابن القاسم > مالك > يحيى] cross the two routes; extra «عمر» after عمر بن الخطاب
+40|defect|false_link+non_narrator|Muslim 2906: matn clauses stored as links («حبيب أهدي للنبي شق حمار», «الحكم أهدى الصعب بن جثامة إلى النبي رجل حمار», «حش فرده»)
+41|defect|non_narrator|Ibn Majah 3621: «صاحبه», «ما أملك له», «لا لنفسي شيئا», «ما أدركت رجلا منا به شبيها» stored as narrators (8 chains)
+42|defect|name_lost|Nasai 289: same as 376, ميمونة lost after بدية
+43|defect|false_link|Muslim 7029: b0 [محمد بن عبد الله بن نمير > أبي > أبو أسامة > الأعمش]: أبو أسامة (route of نصر بن علي) inserted into the ابن نمير route
+44|ok||
+45|ok||
+46|defect|missing_link|Nasai 4926 «عن يحيى بن سعيد، وعبد ربه ورزيق ... أنهم سمعوا عمرة عن عائشة»: b0 [قتيبة > سفيان > يحيى بن سعيد > عائشة] lacks عمرة (sampled b1 is right)
+47|ok||
+48|defect|name_lost|Tirmidhi 3503 «أن أباه حدثه قال قلنا لابن عباس أرأيت قول الله»: ابن عباس (source) not stored
+49|ok||
+50|defect|duplicate_link|Muslim 2357 «كلاهما عن حماد بن زيد، - قال أبو الربيع حدثنا حماد»: [.. > حماد بن زيد > حماد > أيوب]
+51|ok||
+52|defect|false_link|Muslim 4041 b0 [ابن أبي عمر > الثقفي > أيوب > وكيع > سفيان > عمرو بن دينار ...]: أيوب joined to the next route (وكيع) across «ح»
+53|defect|name_lost|Bukhari 2036 «سمعت أبا سلمة بن عبد الرحمن، قال سألت أبا سعيد الخدري ... قال نعم اعتكفنا مع رسول الله»: أبو سعيد not stored
+54|defect|non_narrator|Muslim 2903 b5 [حسن الحلواني > يعقوب > أبي > صالح > حش كما] (from «حمار وحش كما قال مالك»)
+55|ok||
+56|defect|name_lost|Muslim 4176 «عن مغيرة، قال سأل شباك إبراهيم فحدثنا عن علقمة، عن عبد الله»: إبراهيم > علقمة > عبد الله lost, chains end at مغيرة
+57|ok||
+58|defect|duplicate_link|Muslim 2165 «عن إسماعيل بن جعفر، - قال ابن أيوب حدثنا إسماعيل»: [.. > إسماعيل بن جعفر > إسماعيل > ..] in all 3 chains
+59|ok||
+60|ok||
+61|ok||
+62|ok||
+63|ok||
+64|ok||
+65|ok||
+66|ok||
+67|ok||
+68|ok||
+69|ok||
+70|defect|duplicate_link|Muslim 3922 «أخبرنا إسماعيل بن جعفر، وقال علي حدثنا إسماعيل»: [.. > إسماعيل بن جعفر > إسماعيل > ..] in both chains
+71|ok_minor|surface_gloss|b2 «إبراهيم بن خالد - إمام مسجد صنعاء»
+72|ok||
+73|ok||
+74|defect|false_link+concatenated|Kafi 28 «عنه عن عبد الله بن جبلة عن علي بن أبي حمزة و محمد بن يحيى عن أحمد بن محمد عن علي بن الحسكم عن علي بن أبي حمزة عن أبي بصير مثله. حميد بن زياد عن ابن سماعة ...»: three isnads flattened into 2 chains [.. > علي بن أبي حمزة > علي بن الحكم > علي بن أبي حمزة > أبي بصير > ابن سماعة > وهيب بن حفص > أبي بصير]
+75|ok||
+76|ok||
+77|ok||
+78|ok||
+79|ok||Noor 111677: two routes (علي>أبيه>صفوان>معاوية), (محمد بن إسماعيل>الفضل>صفوان>معاوية); our extra IAU chains follow the written «وابن أبى عمير»
+80|ok||Noor 113776 two routes meeting at ابن أبي نجران, same as stored
+81|defect|ghayr_wahid_split|Kafi 1 «غير واحد من أصحابنا عن أحمد بن أبي عبد الله»: two routes «غير» and «احد من أصحابنا»
+82|ok||
+83|defect|truncated_name+non_narrator|Kafi 77 «عن القنبري رجل من ولد قنبر الكبير مولى أبي الحسن الرضا»: stored «القنبري رجل من» and «لد قنبر الكبير مولى أبي الحسن الرضا» (letters cut) as separate links
+84|defect|non_narrator|Kafi 35 «قال سمعت أبا عبد الله وقد سئل عن كسب النائحة»: «كسب النائحة» stored as a narrator (b0 after أبا عبد الله, b1 instead of him)
+85|ok||
+86|defect|false_link+concatenated|Kafi 6 two isnads «... عن مسعدة بن صدقة عن أبي عبد الله وعلي بن إبراهيم عن أبيه عن ابن محبوب رفعه عن أمير المؤمنين» flattened: [.. > أبي عبد الله > أبيه > ابن محبوب ...], [.. > مسعدة > علي بن إبراهيم > أبيه > ابن محبوب]
+87|ok||
+88|ok||Noor 112730: (محمد بن يحيى>محمد بن الحسين>صفوان>العيص), (محمد بن إسماعيل>الفضل>صفوان>العيص) = stored
+89|ok||
+90|ok||
+91|ok||
+92|ok||
+93|ok||
+94|ok||
+95|ok||
+96|ok||
+97|ok||
+98|ok||
+99|ok||
+100|ok||
+101|ok||
+102|ok||
+103|ok||
+104|defect|merged_names|Thawab 68 «عن زراره و حمران عن أبی جعفر ع»: one mention «زراره و حمران»
+105|ok||
+106|ok||
+107|ok||
+108|ok||
+109|ok||
+110|ok||
+111|ok||
+112|ok||
+113|ok_minor|imam_not_stored|speaker after the last stored link («قال قال أبو جعفر ع» / «دخلت علی») not added
+114|ok||
+115|ok||
+116|ok||
+117|ok||
+118|ok||
+119|ok_minor|imam_not_stored|speaker after the last stored link («قال قال أبو جعفر ع» / «دخلت علی») not added
+120|ok_minor|imam_not_stored|speaker after the last stored link («قال قال أبو جعفر ع» / «دخلت علی») not added
+121|ok||
+122|ok||
+123|ok||
+124|ok||
+125|ok||
+126|ok||
+127|ok||
+128|ok||
+129|ok||
+130|ok||
+131|ok||
+132|defect|ghayr_wahid_split|Thawab 125 «قال حدثنی غیر واحد عن أبی عبد الله ع» (Persian ya): two routes «غیر» and «احد» (the B fix does not match ی)
+133|ok||
+134|ok||
+135|ok||
+136|defect|ghayr_wahid_split|Tirmidhi 3611 «وغير، واحد، - المعنى واحد قالوا»: b1 «غير واحد - المعنى» plus b2 «احد»
+137|ok||
+138|ok||
+139|ok||
+140|ok||
+141|defect|name_lost|Tirmidhi 1474 «عن وهب أبي خالد، قال حدثتني أم حبيبة بنت العرباض ... عن أبيها»: chains end at وهب, أم حبيبة and أبيها lost (the «غير واحد» head itself is right)
+142|ok_minor|surface_clause|«غير واحد» surface keeps a clause or verb («ذكر أبا نضرة», «لقي ذاك الوفد», «منهم عمر بن الخطاب», «رفعوه إلى أمير المؤمنين»)
+143|ok_minor|surface_clause|«غير واحد» surface keeps a clause or verb («ذكر أبا نضرة», «لقي ذاك الوفد», «منهم عمر بن الخطاب», «رفعوه إلى أمير المؤمنين»)
+144|ok||
+145|ok||
+146|ok||
+147|ok_minor|surface_clause|«غير واحد» surface keeps a clause or verb («ذكر أبا نضرة», «لقي ذاك الوفد», «منهم عمر بن الخطاب», «رفعوه إلى أمير المؤمنين»)
+148|defect|ghayr_wahid_split|Tirmidhi 4068 «وغير، واحد المعنى، واحد، قالوا»: b2 «غير واحد المعنى» plus b3 «احد»
+149|ok||
+150|ok||
+151|defect|ghayr_wahid_split|Kafi 1 «غير واحد من أصحابنا عن أحمد بن أبي عبد الله»: two routes «غير» and «احد من أصحابنا»
+152|ok||
+153|ok||
+154|ok||
+155|ok||
+156|ok||
+157|ok||
+158|ok||
+159|ok||
+160|ok_minor|surface_clause|«غير واحد» surface keeps a clause or verb («ذكر أبا نضرة», «لقي ذاك الوفد», «منهم عمر بن الخطاب», «رفعوه إلى أمير المؤمنين»)
+161|ok||
+162|ok||
+163|ok||
+164|ok||
+165|defect|non_narrator+name_lost|Rabi 147 «عن جابر بن زيد قال: قالت أسماء بنت أبي بكر»: stored [أبو عبيدة > جابر بن زيد > ت], أسماء lost
+166|ok||
+167|defect|name_lost|Rabi 579 «عن جابر بن زيد عن عن أبي سعيد الخدري أن رسول الله» (doubled «عن» in the source): أبو سعيد lost
+168|ok||
+169|ok||
+170|ok||
+171|ok||
+172|ok||
+173|defect|missing_link|Rabi 229 «عن ابن عباس قال: سمعتني أم الفضل ... فقالت ... آخر ما سمعت من رسول الله»: أم الفضل not stored
+174|ok_minor|unstored_remainder|«بلغني أن عمر ...» not a link / a second isnad in the same report («حدثني زيد عن آبائه ...») has no chain
+175|ok||
+176|ok||
+177|ok||
+178|ok||
+179|ok||
+180|ok||
+181|ok||
+182|ok||
+183|ok||
+184|ok||
+185|ok||
+186|ok||
+187|ok||
+188|ok||
+189|ok||
+190|ok||
+191|ok_minor|unstored_remainder|«بلغني أن عمر ...» not a link / a second isnad in the same report («حدثني زيد عن آبائه ...») has no chain
+192|ok||
+193|ok||
+194|ok||
+195|ok||
+196|ok||
+197|ok||
+198|ok||
+199|ok||
+200|ok||
+201|ok||
+202|ok||
+203|ok||
+204|ok||
+205|defect|explosion+false_link|Muslim 3689: 96 chains for one report; surfaces «أبي سلمة أو», «سعيد أو», «مرة», chains concatenating the three wordings of the same isnad (b0 has 17 links)
+206|ok||
+207|defect|false_link+non_narrator|Muslim 1248: 3 isnads flattened into one chain «... معيقيب > المسح > خالد > هشام > معيقيب > الحسن بن موسى ...» with «المسح», «احدة», «فيه» as links
+208|defect|false_link+non_narrator|Muslim 4054: comparison clauses «عمار > أبي معاوية فقالا > أم مبشر > امرأة زيد بن حارثة» appended as links in b0, b2-b5
+209|ok||
+210|defect|false_link|Nasai 3437 b1 [عمرو > عبد الله بن مسلمة > الحارث بن مسكين > ابن القاسم > مالك ...]: عبد الله بن مسلمة joined to the Harith route; extra «عمر» after عمر بن الخطاب
+211|ok||
+212|defect|false_link|Muslim 4803 b0 [زهير بن حرب > عبد الرحمن بن مهدي > مالك > عبد الله بن وهب > مالك بن أنس > ...]: second route (أبو الطاهر > ابن وهب > مالك بن أنس) appended to the first
+213|defect|truncated_route|Muslim 1779 b1 [هارون بن معروف > عبد الله بن وهب > عبد الرحمن بن عبد القاري]: يونس > ابن شهاب > السائب/عبيد الله skipped
+214|defect|false_link|Muslim 1560 «حدثني ابن أبي ذباب، في رواية هارون - وفي حديث الأنصاري حدثني الحارث»: two wordings of one narrator stored as «ابن أبي ذباب > الحارث»
+215|defect|false_link+non_narrator|Muslim 404: [.. سعيد بن أبي عروبة > قتادة > سليمان > قتادة من الزيادة] and [.. > قتادة > سليمان > ليس]: routes flattened, clause «قتادة من الزيادة» as a link
+216|ok||
+217|ok||
+218|defect|name_lost|Nasai 2492 «عبد الجليل بن حميد اليحصبي، أن ابن شهاب، حدثه قال حدثني أبو أمامة بن سهل»: ابن شهاب not stored
+219|ok||
+220|defect|non_narrator|Muslim 0 chapter heading «باب وجوب المبيت بمنى ليالي أيام التشريق والترخيص في تركه لأهل السقاية» stored as chains [جوب المبيت بمنى ...] and [الترخيص]
+221|ok||
+222|defect|name_lost|Abu Dawud 1251 «عن عبد الله بن شقيق، قال سألت عائشة ... فقالت كان يصلي»: عائشة not stored
+223|defect|false_link+non_narrator|Muslim 2906 (13 chains): «حبيب أهدي للنبي شق حمار», «الحكم عجز حمار», «الحكم أهدى الصعب بن جثامة إلى النبي رجل حمار» as links
+224|defect|non_narrator|Muslim 6490: «أبي معاوية قدم معاذا قبل أبى», «الأعمش بإسناد جرير» stored as links
+225|defect|truncated_route+false_link|Abu Dawud 930 b0 [مسدد > يحيى > هلال بن أبي ميمونة > ...]: «عن حجاج الصواف، حدثني يحيى بن أبي كثير» only on the second route
+226|ok||
+227|ok||
+228|defect|non_narrator|Kitab al-Duafa 1 rijal entry «صالح بن سهل ... غال، كذاب، وضاع للحديث. روى عن أبي عبد الله»: chain [ضاع للحديث روى > أبي عبد الله]
+229|ok||
+230|ok||
+231|defect|non_narrator|Kitab al-Duafa 3 rijal entry: chain [يلقب أبا السفاتج روى > أبي عبد الله]
+232|ok||
+233|ok||
+234|ok||
+235|ok||
+236|ok||

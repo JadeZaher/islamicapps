@@ -689,3 +689,44 @@ rows are identical to B. External claims rebuilt as before (`reconciled-interim-
   معاوية > أبو معاوية» collapsed, the rest co-transmitter routes completed), 422 s, every check passed; preview approval re-recorded
   at once (`approve-b2.log`). Sunni standing identities 136,551 -> 136,549; `narrator_transmissions` 27,992 -> 27,993.
   Rollback: load `projection-b` again, then re-record the approval.
+
+## Chain structure gate (round 4, 2026-11-22)
+
+Three rounds of builder rules left the Sunni strict defect rate at 10.7% -> 17.3% -> 18.0%, so round 4 gates what is asserted
+instead: every chain is `checked_by_rule` or `uncertain` with reasons; an uncertain chain is shown as stored with one plain line
+and forms no teacher-student pair. Detail: `src/db/AGENTS.md` §Chain structure gate, `datasets/hadith-data/pg_export/AGENTS.md`
+§Chain structure gate, measurement and operating point `datasets/hadith-data/chain-audit/structure-gate/README.md`. Logs, dumps,
+projection: `datasets/hadith-data/development/chain-structure-gate-2026-11-22/`.
+
+- **Schema**: `0017_chain_structure_gate` (additive: `chains.structure_status`, `structure_reasons` and a check;
+  `public_chain_links` appends `chain_structure_status`, `chain_structure_reasons`; `narrator_transmissions` recreated with
+  `structure_status IS DISTINCT FROM 'uncertain'`, so rows loaded before the gate kept their pairs until the load). Applied to
+  production before the export (`prod-migrate-0017.log`); catalog `catalog-0017.json`.
+- **Projection `2026.11.22.9`**: 110,999 chains (258 retired by the gate: Kitab al-Duafa and Risalat al-Huquq 238, chapter
+  headings 20; one external claim on a retired Duafa chain dropped, counted; «غیر واحد» with Persian letters merged: 1 chain).
+  Checked by rule: Sunni 55,821 of 76,262 (73.2%; K6 text works 68.0%, Sahih Muslim 47.4%, Pure Canon 80.9%), Imami 20,348 of
+  33,229 (61.2%; al-Kafi 91.3%, the 15 small works 0%), al-Rabi 95.0%, Musnad Zayd 99.3%, Sahifat al-Rida 99.5%.
+  `check_projection.py` passed before the load.
+- **Gate on the read verdicts** (round-3 random sample, strict, before -> among checked): Sunni 18.0% -> 2.6%, K6 25.4% -> 4.3%,
+  Imami 17.0% -> 3.2%, al-Rabi 16.1% -> 7.7% (cannot be shown below 5%), Zayd 2.5% -> 0%, Rida 0% -> 0%.
+
+### Deploy
+
+1. Order: `0017` before the code (the code reads `public_chain_links.chain_structure_status`). It is applied; the pre-deploy
+   `migrate.mjs` finds it recorded.
+2. Checks: `python -I datasets/hadith-data/pg_export/test_chain_structure.py`; `npx tsc --noEmit`; `DATABASE_URL=<production> npm
+   run db:verify`; `npm run db:verify-data -- --database production --confirm-production`; `npx tsx --conditions=react-server
+   src/db/queries/__tests__/structure-flows.test.ts`.
+3. Push to `refactor/postgres-drizzle` and `main`.
+4. Live: `/narrator/narrator%3Arawi%3A3`; `/hadith/k6/10685/chains`, `/hadith/k6/19535/chains`, `/hadith/k6/5344/chains` show
+   "The reading of this chain's routes has not been checked ..." with reasons; a clean Bukhari chain (`/hadith/k6/4643/chains`)
+   shows no such line.
+
+### Rollback
+
+- Code: redeploy the round-3 commit (`f6a73fe`); it ignores the two new columns, and the network stays gated (the view is data).
+- Network only: a new migration recreating `narrator_transmissions` with the 0015 body (drop, create, two indexes). Never edit 0017.
+- Data: an export from before this round cannot load (the loader refuses a header without the two 0017 columns). To restore the
+  retired Duafa, Huquq and heading chains, export from this commit with `PROSE_WORKS` empty and `retire_reason` returning None
+  (and, for an ungated network without a migration, `GATE_REASONS` empty), load it, then re-record the preview approval at once.
+  Curation rows before the load: `curation-dump-before/`.

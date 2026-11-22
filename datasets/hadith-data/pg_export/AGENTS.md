@@ -346,3 +346,33 @@ never recomputed on the new branches). The rules are the audit's detectors, port
   verified. The 95 medium «أبي» rows after Ibn Numayr are not stored.
 - **Missing link** (`missing_link_after`): the last name is a person who died more than 120 years before the fully named student
   beside him; the chain says a link is missing, no name is invented.
+
+## Chain structure gate (projection `2026.11.22.9`; `src/db/AGENTS.md` §Chain structure gate)
+
+Round 4 stops adding builder rules (three rounds left Sunni at 10.7% -> 17.3% -> 18.0% strict) and gates what is asserted.
+`chain_structure.py` (table-tested in `test_chain_structure.py` on the re-checks' rows, `chain-audit/structure-gate/fixtures.json`)
+runs per report after every builder and before identities: `assess` returns reason codes per chain; none means
+`checked_by_rule`. Inputs: the stored surfaces, which chains are inherited (their names are in the parent's text), and the
+detection text: Pure Canon's own chain field, else the OpenITI `sanad_ar`, else `text_ar`. Persian ya/kaf are read as Arabic
+for detection only.
+
+- **Detectors in the gate** (codes): `duplicated_link` (neighbours one man: «حماد > حماد بن زيد», a bare name or «ابن X»
+  only, since «أحمد بن محمد > أحمد بن محمد بن أبي نصر» are two men), `joined_names` («الحلبي و زرارة»), `ghayr_wahid_half`,
+  `short_beside_long` (<= 3 beside >= 5), `repeated_name` (one name key twice, not adjacent; relations and labels excepted),
+  `text_between_links` (words between two stored neighbours that are no link word, aside, wording attribution, year phrase or
+  name the report stores elsewhere), `text_names_more_after` (a link word naming someone after the last stored link, before
+  the matn reaches the Prophet; not for Thaqalayn, where «قال سألت أبا عبد الله» is the unruled Imam convention),
+  `not_a_name` (a verb, clause or formula word, digits, one letter, six words without a nasab), `unaccounted_route_marker`
+  (more «ح» than routes, or «جميعا/كلهم/كلاهما» with one route), `crossed_routes` (al-Kafi «أبيه > محمد بن إسماعيل», «ابن أبي
+  عمير > الفضل بن شاذان»), `many_routes` (a K6 report with three or more routes read from its text) and `work_not_checked`
+  (the 15 small Imami works of `UNCHECKED_WORKS`: 11 of 32 sampled chains defective).
+- **Measured only, not in the gate** (`assess(..., measure_all=True)`): `order_not_in_text`, `route_break_inside`, `long_chain`:
+  on the labelled set they flagged no defect the gate's detectors had not already flagged, at a cost of correct chains.
+- **Retired** (`retire_reason`): every chain of Kitab al-Duafa and Risalat al-Huquq, and a K6 report whose text is a chapter
+  heading («باب …»; a Pure Canon report keeps the chain its source's chain field gives).
+- **Measurement** (`chain-audit/structure-gate/measure.py`, results beside it): labelled units are the round-3 sample (random
+  and populations) plus round-2 items whose report is unchanged since round 2 read it. The greedy curve and the per-tradition
+  rates before and after the gate are in `results.json`; the operating point and why: `chain-audit/structure-gate/README.md`.
+- **«غير واحد»** merge now also matches Persian letters («غیر») in `merge_ghayr_wahid`.
+- Output: `chains.structure_status`, `chains.structure_reasons` (a pg array); `counts.chain_structure` gives status and
+  reasons per tradition and the retired chains.

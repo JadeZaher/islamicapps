@@ -189,6 +189,26 @@ Every candidate identity for a name is kept with its basis. Where sources disagr
 
 **Code.** `datasets/hadith-data/reconciled/external_source_logic.py`.
 
+### Which chains feed teacher and student lists {#chain-structure-gate}
+
+`chain-structure-gate` version `2026.11.22` · Checked by rule · In use
+
+**Rule.** Each stored chain is tested for shapes that the re-checks found wrong: a name stored twice in a row, two names in one position, words that are not a name, text that names more than the chain holds, more «ح» or «جميعا» than stored routes, three or more routes in one six-books report, and the 15 small Imami works whose chains were read wrong most often. A chain that trips any test is still shown as stored, marked unchecked with its reasons, and forms no teacher–student pair. Chains of Kitab al-Duafa, Risalat al-Huquq and chapter headings are not stored as chains.
+
+**Evidence.** The chain as stored; The report’s Arabic (the source’s own chain field for Pure Canon); The other routes of the report.
+
+**Measured.** Re-check of 2026-11-22 (round 3), random sample, strict defects before the gate → among chains left checked: Sunni 18.0% → 2.6% (76 of 100 chains kept; six-books text works 25.4% → 4.3%, 47 of 67); Imami 17.0% → 3.2% (63 of 100); al-Rabiʿ 16.1% → 7.7% (26 of 31: not shown below 5%); Musnad Zayd 2.5% → 0% (39 of 40); Sahifat al-Rida 0% → 0% (40 of 40). Over all 980 read units: 12.1% → 2.2%. Share of stored chains checked (projection 2026.11.22.9): Sunni 73.2% (six-books text works 68.0%, Pure Canon 80.9%), Imami 61.0% (al-Kafi 91.3%), al-Rabiʿ 95.0%, Musnad Zayd 99.3%, Sahifat al-Rida 99.5%. Sample: 980 chains read against the Arabic by the round-2 and round-3 re-checks (the round-3 random 320, its changed populations, and round-2 items unchanged since). Where: `datasets/hadith-data/chain-audit/structure-gate/README.md`.
+
+**Known failure modes.** A name lost where the text names no one with a link word («أن X حدثه» alone); A Companion’s source named only in the matn («سمعتني أم الفضل»); Correct chains in many-route reports and the 15 small Imami works are left unchecked with the wrong ones.
+
+**Reader sees.** “The reading of this chain’s routes has not been checked; it is not used for teacher and student lists”
+
+**Excluded.** Three measured tests that removed no further defect: names out of order, a break inside one chain, length 12 or more.
+
+**Credited.** `SWI` Shura wa Istehsan (this archive).
+
+**Code.** `datasets/hadith-data/pg_export/chain_structure.py`.
+
 ### Isnad identity reviewer {#specialist-isnad-identity}
 
 `isnad-identity` version `1.0.0` · AI specialist review · Ready for its pilot

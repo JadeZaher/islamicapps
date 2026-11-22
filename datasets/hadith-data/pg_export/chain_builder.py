@@ -503,8 +503,9 @@ def merge_ghayr_wahid(branches: list[list], surface=lambda item: item) -> tuple[
         for j, other in enumerate(out):
             if i == j or not branch or len(branch) != len(other):
                 continue
-            keys_i = [_plain(surface(item)) for item in branch]
-            keys_j = [_plain(surface(item)) for item in other]
+            # Persian letters read as Arabic for the test only («غیر واحد», Thawab al-Aʿmal; round 4); stored letters unchanged.
+            keys_i = [_plain(surface(item)).translate(PERSIAN_LETTERS) for item in branch]
+            keys_j = [_plain(surface(item)).translate(PERSIAN_LETTERS) for item in other]
             differ = [p for p, (a, b) in enumerate(zip(keys_i, keys_j)) if a != b]
             if len(differ) == 1 and GHAYR.match(keys_i[differ[0]]) and WAHID.match(keys_j[differ[0]]):
                 p = differ[0]
