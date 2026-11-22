@@ -260,7 +260,31 @@ because label status counts claims across the corpus).
 - **Anonymous gaps**: «X رفعه», «X عمن ذكره», «X عن رجل» become X and an `anonymous` mention; a standalone «رجل», «بعض أصحابه»
   is `anonymous`. A label position never carries an identity (its candidates stay), and `narrator_transmissions` excludes it.
 - **Fused co-transmitters** «أبي و محمد بن الحسن» become one level of two branches; in al-Kafi a fused name whose second half
-  is a shaykh of the compiler starts a second isnad instead. Concatenated isnads (D07) are not split (deferred).
+  is a shaykh of the compiler starts a second isnad instead, and (round 3) the first isnad takes the name both reach: the second
+  isnad is the shaykh and his teacher, so the shared name is its third («… عن محمد بن إسماعيل و علي بن إبراهيم عن أبيه عن حنان
+  بن سدير»). Concatenated isnads (D07) are not split (deferred: telling where a second isnad starts needs the compiler's route
+  list; a count rule would cut true long chains).
+- **Round 3 (re-check patterns 6-8).**
+  - *Persian letters* (Thawab al-Aʿmal writes «حَدَّثَنِی»): the extractor's verbs miss them, so names after them were lost. The
+    text is re-read on a copy with ی/ک folded to ي/ك (one letter for one, so offsets agree) and every surface is cut back out of
+    the original (`persian_safe_branches`); the stored letters stay the source's. If one surface cannot be located, the bundle's
+    branches stay.
+  - *Not names*: a lone «و» left by «وَ حَدَّثَنِي»; «و قد روى X» and a leading «حدثني/حدثنا» (the verb goes, X stays); «ره»
+    (رحمه الله) after a name; an Imam's name followed by his words or blessing in one surface («أمير المؤمنين نعم البيت …» ->
+    «أمير المؤمنين»; never «أبي الحسن الرضا», whose qualifier decides the Imam, nor «أبو عبد الله أحمد بن عمار», a kunya and a
+    name: `IMAM_SPEECH_START`, or three or more words with no nasab); a sibling that differs from a chain ending at an Imam only
+    in its last surface, which names nobody («يتدلك بالزيت», `drop_matn_beside_imam`); a chain that is exactly the start of
+    another. A branch that opens with a sentence and names nobody (no report verb or back-reference opens it, no nasab, no Imam)
+    is matn, not an isnad (`is_prose_opening`; Amali al-Saduq 93 had 192 such chains).
+  - *Links the extractor stopped short of*: «… عن أبي عبد الله عليه السلام» after the last stored link (`with_imam_tail`; the
+    honorific must follow, so «قال سألت أبا عبد الله» is not used: owner, not ruled); «… و الحسن بن محبوب جميعا عن X» at the end
+    (`with_jamian_tail`), shared by the co-transmitters of that last level.
+  - *«جميعا» groups*: commas and «؛» around the links are allowed, the hanging group's opening name is cut from the original
+    letters (round 2 wrote the folded «ابراهيم»), and the shaykh list ignores spacing («أبوعلي الاشعري»). al-Kafi «A عن B و C عن
+    D عن E» with no «جميعا», A and C both shaykhs of al-Kulayni, is two routes meeting at E (`kulayni_parallel_groups`; Kafi 19
+    matches Noor 118532; Kafi 7 has the same shape and gets the same reading).
+  - *«غير واحد»* (an unnamed collective) split at the waw of «واحد» into sibling branches «غير» / «احد …» is one mention, marked
+    unnamed (`merge_ghayr_wahid`, also for Sunni chains, where the sibling's origin is dropped with it).
 
 ### Sunni chains (projection `2026.11.22.5`; audit `chain-audit/sunni/`)
 
@@ -299,9 +323,15 @@ never recomputed on the new branches). The rules are the audit's detectors, port
   stores next («سمعا جابرا» before «جابر», accusative alif allowed: `same_name`) is not repeated. «أبي ومحمد بن بشر» in one
   surface is two co-transmitters (`split_fused_names`).
 - **Asides that are not names.** «وأنا أسمع» (of «قراءة عليه وأنا أسمع»), «في حديث X», «في رواية X», «إنما هو», «الآخران»,
-  «كل هؤلاء» join the formula class; a position left empty drops only the position unless a sibling branch differs from this one
-  only there (then the branch was the aside's artefact): round 2 dropped any branch with an emptied position and k6:21409 and
-  pc_20809 lost their only chain.
+  «كل هؤلاء» join the formula class; a position left empty drops only the position unless a sibling branch holds a name at one of
+  this branch's emptied positions and equals it elsewhere (then the branch was the aside's artefact): round 2 dropped any branch
+  with an emptied position and k6:21409 and pc_20809 lost their only chain.
+- **Clause after a name (round 3, milestone B; re-check pattern 3, `clause_trim`).** The name ends before the first word that never
+  stands in one (`CLAUSE_WORD`: «يحدث», «يقول», «أنها», «قراءة», «أما», «إذا», «في», «كانت», «باب» …): «زرارة بن أوفى يحدث», «عائشة
+  أنها», «الحارث بن مسكين قراءة عليه», «الزهري أما ابن منصور فقال». A surface that opens with one is no name, except «قال/قالت X»,
+  which keeps X. «مرة» cuts only after a name word («سفيان مرة»; «مرة الهمداني», «عمرو بن مرة» stay). A cut that would leave a
+  connector («بن») last leaves the surface as written. Long names without such a word are never trimmed. 40 sampled trims: no
+  name lost.
 - **Formula words** (the audit's high-confidence list: «بهذا الإسناد», «كلاهما», «مثله», «نحوه», «اللفظ», «حدثنا» ...) are cut out
   of a name; a surface with nothing of a name left is dropped; a branch that existed only because an aside («اللفظ لعمرو»,
   «تقاربا في اللفظ») was read as a co-transmitter is dropped (dropping just the aside would join its neighbours). The

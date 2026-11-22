@@ -361,12 +361,103 @@ class SunniRound3(unittest.TestCase):
             with self.subTest(surface):
                 self.assertEqual(cb.split_link_verbs(surface), expected)
 
+    def test_clause_after_a_name(self):
+        # Re-check pattern 3: the clause goes, the name stays; a surface that opens with one is no name. Long real names stay.
+        cases = [("زرارة بن أوفى يحدث", "زرارة بن أوفى"), ("الحارث بن مسكين قراءة عليه", "الحارث بن مسكين"),
+                 ("عائشة أنها", "عائشة"), ("الزهري أما ابن منصور فقال", "الزهري"), ("سفيان مرة", "سفيان"),
+                 ("مرة الهمداني", "مرة الهمداني"), ("عمرو بن مرة", "عمرو بن مرة"), ("كانت من المهاجرات", None),
+                 ("قال زهير", "زهير"), ("قالت زينب", "زينب"), ("أبي هريرة إذا قضى الله الأمر", "أبي هريرة"),
+                 ("باب نحر البدن قياما مقيدة", None),
+                 ("عمارة ابن عثمان ابن سهل ابن حنيف يحدث", "عمارة ابن عثمان ابن سهل ابن حنيف"),
+                 ("عبد الرحمن بن عبد الله بن عبد الرحمن بن أبي صعصعة", "عبد الرحمن بن عبد الله بن عبد الرحمن بن أبي صعصعة")]
+        for surface, expected in cases:
+            with self.subTest(surface):
+                self.assertEqual(cb.clause_trim(surface), expected)
+
+    def test_ghayr_wahid_is_one_collective(self):
+        # Re-check pattern 8: «وغير، واحد» was two co-transmitters «غير» and «احد».
+        routes = self.rebuilt("hadith:k6:24036")
+        self.assertIn(["غير واحد", "محمد بن بشر", "هانئ بن عثمان", "أمه حميضة بنت ياسر", "جدتها يسيرة"], routes)
+        self.assertFalse(any(route[0] in ("غير", "احد") for route in routes))
+
+    def test_a_route_is_kept_when_its_sibling_also_lost_that_position(self):
+        # k6:9123: both branches end in a non-name («ذلك», «أخبروه»): the route stays (each is no artefact of the other).
+        self.assertEqual(self.rebuilt("hadith:k6:9123"), [["محمد بن المثنى العنزي", "محمد بن أبي عدي", "سعيد", "قتادة", "زرارة"]])
+
     def test_same_written_name(self):
         cases = [("جابرا", "جابر", True), ("أبا هريرة", "أبي هريرة", True), ("الليث", "ليث", True),
                  ("ابن نمير", "عبد الله بن نمير", False), ("عمر", "عمرو", False)]
         for a, b, expected in cases:
             with self.subTest((a, b)):
                 self.assertEqual(cb.same_name(a, b), expected)
+
+
+class ImamiRound3(unittest.TestCase):
+    """The round 2 re-check's Imami patterns 6-8 and its Imami regression rows, on the builder's real input
+    (chain-audit/round2/r3_fixtures.json `imami_reports`, cut from projection-m1)."""
+
+    WORK = {"f02c69a8": "thawab-al-amal", "1cee2284": "thawab-al-amal", "b0c303b3": "al-amali-saduq",
+            "9dec2b99": "kamil-al-ziyarat", "2c8be848": "man-la-yahduruhu-al-faqih", "a1472a2b": "man-la-yahduruhu-al-faqih",
+            "120a39aa": "man-la-yahduruhu-al-faqih", "5416571b": "man-la-yahduruhu-al-faqih", "19446c62": "man-la-yahduruhu-al-faqih",
+            "f324c6f0": "mujam-al-ahadith-al-mutabara", "a8b7fa84": "mujam-al-ahadith-al-mutabara",
+            "51c6afe4": "mujam-al-ahadith-al-mutabara"}
+
+    @classmethod
+    def setUpClass(cls):
+        data = json.loads((HERE.parent / "chain-audit" / "round2" / "r3_fixtures.json").read_text(encoding="utf-8"))
+        cls.reports = data["imami_reports"]
+
+    def built(self, short: str) -> list[cb.ImamiChain]:
+        hadith_id = next(h for h in self.reports if h.split(":")[2].startswith(short))
+        report = self.reports[hadith_id]
+        return cb.build_imami_chains(report["text_ar"], report["branches"], self.WORK.get(short, "al-kafi"), Counter())
+
+    def routes(self, short: str) -> list[list[str]]:
+        return [[cb.imami_fold(m.surface) for m in chain.mentions] for chain in self.built(short)]
+
+    def test_exact_routes(self):
+        cases = [
+            # Persian ya/kaf (Thawab): read on a folded copy, surfaces cut back out of the original letters
+            ("f02c69a8", [["ابي", "سعد بن عبد الله", "محمد بن عرفه", "الرضا ع"]]),
+            ("9dec2b99", [["محمد بن جعفر الرزاز", "محمد بن الحسين بن ابي الخطاب", "صفوان بن يحيي", "حنان بن سدير",
+                           "مالك الجهني", "ابي عبد الله ع"]]),                                    # no lone «و»
+            ("2c8be848", [["علي بن رئاب", "بريد العجلي", "ابي جعفر"]]),                        # «و قد روى»
+            # «جميعا» absent (Noor 118532) or written with commas: separate routes meeting at the shared name
+            ("1adbb3bc", [["علي بن ابراهيم", "ابيه", "ابن محبوب", "ابي حمزة", "ابي جعفر"],
+                          ["عدة من اصحابنا", "سهل بن زياد", "ابن محبوب", "ابي حمزة", "ابي جعفر"]]),
+            ("a38d215b", [["علي بن ابراهيم", "ابيه", "ابن ابي عمير", "هشام بن الحكم", "ابي الحسن"],
+                          ["محمد بن اسماعيل", "الفضل بن شاذان", "ابن ابي عمير", "هشام بن الحكم", "ابي الحسن"]]),
+            ("a8b7fa84", [["محمد بن اسماعيل", "الفضل بن شاذان", "صفوان بن يحيي", "عبدالرحمن بن الحجاج"],
+                          ["ابوعلي الاشعري", "محمد بن عبدالجبار", "صفوان بن يحيي", "عبدالرحمن بن الحجاج"]]),
+            ("07b3c908", [["علي بن ابراهيم", "ابيه", "حماد بن عيسي", "حريز", "زرارة"],
+                          ["محمد بن اسماعيل", "الفضل بن شاذان", "حماد بن عيسي", "حريز", "زرارة"]]),   # round 2 right: stays
+            # the re-check's Imami regression rows
+            ("4087da29", [["محمد بن يحيي", "احمد بن محمد", "محمد بن اسماعيل", "حنان بن سدير", "ابا عبد الله"],
+                          ["علي بن ابراهيم", "ابيه", "حنان بن سدير", "ابا عبد الله"]]),
+            ("120a39aa", [["احمد بن محمد بن يحيي العطار", "ابيه", "احمد بن محمد بن عيسي", "ابن ابي عمير",
+                           "عبد الرحمن بن الحجاج البجلي الكوفي"],
+                          ["احمد بن محمد بن يحيي العطار", "ابيه", "احمد بن محمد بن عيسي", "الحسن بن محبوب",
+                           "عبد الرحمن بن الحجاج البجلي الكوفي"]]),
+            ("5416571b", [["علي بن رئاب", "مسمع بن عبد الملك", "ابي عبد الله"]]),
+            ("51c6afe4", [["محمد", "احمد", "ابن فضال", "الرضا"]]),
+            ("a1472a2b", [["عبد الله بن المغيرة", "غير واحد من اصحابنا", "ابي عبد الله"]]),
+            ("19446c62", [["امير المؤمنين"]]),                                                  # the speaker, not his words
+            ("b0c303b3", []),                                                                    # a ruling, no isnad
+        ]
+        for short, expected in cases:
+            with self.subTest(short):
+                self.assertEqual(self.routes(short), expected)
+
+    def test_stored_letters_are_the_source_s(self):
+        # Matching folds ی and ک; stored surfaces keep them («سعد بن عبد الله» has none, «محمد بن عرفه» comes back as written).
+        surfaces = [m.surface for m in self.built("1cee2284")[0].mentions]
+        self.assertIn("علی بن موسی", surfaces)
+        self.assertEqual(surfaces[0], "أبی")                                                   # «ره» is not part of the name
+
+    def test_labels(self):
+        self.assertEqual([m.link_kind for m in self.built("a1472a2b")[0].mentions], [None, "anonymous", None])
+        back = self.built("e07ff81a")
+        self.assertEqual([(c.suspension, c.mentions[0].link_kind) for c in back], [("back_reference", "not_a_narrator")])
 
 
 if __name__ == "__main__":

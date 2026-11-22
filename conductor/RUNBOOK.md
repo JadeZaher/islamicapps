@@ -640,3 +640,41 @@ Deploy: no migration and no app code change; push to both branches. Live: `/hadi
 Rollback: data, load `development/chain-builder-r2-2026-11-22/projection-m3` again (exported with the same `0016` catalog, so it
 loads as it stands), then re-record the preview approval; the `*.20261122_r3a.bak` sidecars restore the external claims it was
 built with. Code: the builder change is export-time only; `40264df` rebuilds `projection-m3`.
+
+### Milestone B: remaining patterns (projection `2026.11.22.7`)
+
+- **Sunni surfaces** (re-check pattern 3): a clause after a name goes, the name stays (`clause_trim`: «زرارة بن أوفى يحدث»,
+  «عائشة أنها», «الحارث بن مسكين قراءة عليه»); a surface that opens with one is no name, except «قال/قالت X». Chapter headings
+  («باب …») stored as chains are gone. 40 sampled trims: no name lost.
+- **Imami** (pattern 6): Thawab al-Aʿmal is re-read with its Persian ya/kaf folded for matching only (stored letters unchanged);
+  a lone «و», «و قد روى», a leading «حدثني», «ره» and an Imam's words after his name are not names; a branch opening with a
+  sentence that names nobody is matn (Amali al-Saduq 93: 192 chains -> 0); the Imam the text names after the last stored link is
+  added (486).
+- **«جميعا»** (pattern 7): commas and «؛» allowed; al-Kafi's «A عن B و C عن D عن E» with two of al-Kulayni's shaykhs is two routes
+  meeting at E (Kafi 19 now matches Noor 118532); the hanging group keeps its own letters.
+- **«غير واحد»** (pattern 8) is one unnamed collective in both traditions.
+- **Not done**: concatenated isnads (pattern 9, 400 mentions in 181 reports): telling where a second isnad starts needs the
+  compiler's route list, and a count rule would cut true long chains.
+- **External claims** rebuilt against an interim projection without Sunni and Thaqalayn claims (`reconciled-interim-b`; sidecars
+  backed up as `*.20261122_r3b.bak`): 375,415 -> 374,373 claims. OpenITI chains, mentions and candidates identical to milestone A.
+- **Numbers** (production `2026.11.22.5` -> A -> B): Sunni mentions carrying a verb, aside or clause word 6,699 -> 5,376 -> 902;
+  Sunni «غير/احد» halves 233 -> 48; Imami lone «و» 785 -> 1, «حدثني» inside a name 459 -> 0, «ره» 549 -> 11, «غير/احد» halves
+  522 -> 31, reports with more than 30 chains 1 -> 0; K6 short-beside-long 817 -> 372 -> 337. Standing identities: Sunni 135,381 ->
+  136,551, Imami 27,744 -> 28,515 (Ibadi 525, Zaydi 2,566 unchanged); `narrator_transmissions` 27,586 -> 27,992 rows.
+- **Loaded**: dataset version `62bcf443…`, 74,282 rows changed (chains +18 ~2,014 retired 2,693; mentions +1,604 ~23,304 retired
+  12,531; candidates +9,200 ~3,624 retired 10,935), 505 s, every check passed; preview approval re-recorded at once (`approve-b.log`).
+  Curation rows before the load: `curation-dump-before-b/`.
+
+Deploy: no migration and no app code change; push to both branches. Live: `/hadith/thaqalayn/1adbb3bc592355214cdb0be0/chains`
+(Kafi 19: two routes meeting at Ibn Mahbub), `/hadith/thaqalayn/f02c69a82883b8f2aa7763ce/chains` (Thawab: «سعد بن عبد الله» back, no
+matn), `/hadith/thaqalayn/a1472a2b00e9f4b54e31e78f/chains` («غير واحد من أصحابنا», one unnamed collective), `/hadith/k6/27269/chains`
+(no «أنا أسمع» route, «الحارث بن مسكين» without «قراءة عليه»).
+
+Rollback: data, load `projection-a` again (same catalog), then re-record the preview approval; `*.20261122_r3b.bak` restores the
+external claims it was built with. Code: redeploy the milestone A commit (`cc91b0e`); the builder change is export-time only.
+
+For the owner (not changed, round 3): al-Kafi 7 (`8a5b2230`) has the Kafi 19 shape and now reads two routes meeting at Ibn Mahbub
+(Noor could not be reached for it); 42 al-Rabi/Zayd reports whose opening is not the work's fixed shape («قال الربيع عن X», «سألت
+زيدا», the book's later sections) still store no chain; Faqih «وَ قَالَ الصادق» statements whose only stored mention was «و» now
+have no chain (the extractor never read the Imam; adding him from the text is the same kind of rule as the deferred «قال سألت أبا
+عبد الله»); the Ibn Numayr «أبي» stitch (`identity_rule:abdallah_ibn_numayr_father`) still waits on your ruling.
