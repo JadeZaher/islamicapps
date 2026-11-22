@@ -41,6 +41,7 @@ export const ACCEPTED_LOCATORS: Readonly<Record<ClaimKind | 'review' | 'post', r
   history: ['print'],
   quran_citation: ['quran'],
   numbering: ['dataset', 'web', 'print'],
+  chain_structure: ['dataset', 'print', 'web'],
   review: ['print', 'web', 'dataset', 'quran'],
   post: ['print', 'web', 'dataset', 'quran'],
 };

@@ -1,0 +1,51 @@
+{
+ "built_at_utc": "2026-11-22T15:10:03.425Z",
+ "kind": "chain",
+ "reports": 284,
+ "packets": 12,
+ "packet_size": 25,
+ "context_chars": {
+  "median": 1618,
+  "p95": 2783,
+  "max": 2905,
+  "budget": 3000
+ },
+ "reports_with_context_kind": {
+  "sources_agree": 82,
+  "source_claims": 261,
+  "name_facts": 111,
+  "sources_absent": 132,
+  "archive_flags": 122,
+  "correspondences": 104,
+  "previous_reports": 31,
+  "source_notes": 2,
+  "needs_previous_report": 4
+ },
+ "omitted_for_size": {
+  "name_facts": 36,
+  "correspondences": 7,
+  "archive_flags": 2,
+  "source_claims": 1
+ },
+ "inputs": {
+  "pilot_reports_sha256": "8ce4cfd20ee94cfc30b1fb74fd136871de9bf4d937fc40d128f92c8545cf408a",
+  "work_profiles_sha256": "0855c34abef5cfcd9ba1fd94674e861c86cff660ed1cfe1e7e7e9bfcabecc471",
+  "builder_sha256": "7a69b52ae4547ca2bd0221c84fee40a458ae5b680d2b183a1c804d131129bc42",
+  "sidecars": {
+   "k6_source_index.jsonl.gz": "ba11245dc758db5c8f661ffcbd16f9f8592e5a163ae86346e0ed08fddf26c4d4",
+   "pure_canon_chain.jsonl.gz": "5b335f0e81853c65ca05761ea188abf3772256a86897afbc8a3c43396371bb19",
+   "no_chain_in_source.jsonl.gz": "59b98699b696002998df43bcd5d0626d69a4aa46caf443d12ce8400f384c15c5",
+   "openiti_extraction.jsonl.gz": "2832dedfb72b22e1549f171bffb0e2eeb9db3e152c0d04683794e2307e895662",
+   "external_report_crosswalk.jsonl.gz": "74c25512e3d5b98296fad06b7767aa5cd4b673ad92dbe43f607819b1edb43c8a"
+  },
+  "external_databases": {
+   "hadith-kg.db": "sha256 d528084321e715006712e0e2461809a3afc9408065a1d1af90238c8b723815a6 (datasets/sources/external/hadith-kg/README.md)",
+   "hadith_master.db (Riwayat)": "bound by reconciled/external_identity_sidecars.manifest.json inputs_sha256"
+  },
+  "production_dataset_version": {
+   "id": "bc798caea6e47ce45c4493d912d5f9104c30eaecedbf32d08fa76ff0103212a0",
+   "git_head": "83c5e2f6b46b5a0de1a93270a622db391c396d87",
+   "completed_at": "2026-11-22T14:02:58.756Z"
+  }
+ }
+}

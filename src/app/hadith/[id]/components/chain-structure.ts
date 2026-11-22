@@ -1,5 +1,5 @@
-/** Reader wording for the chain structure gate (0017; src/db/AGENTS.md §Chain structure gate). */
-import type { ChainNode } from '@/db/queries/contracts';
+/** Reader wording for the chain structure gate (0017), model readings (0019) and the compiler head (0019; src/db/AGENTS.md). */
+import type { ChainCompiler, ChainFixLabel, ChainNode } from '@/db/queries/contracts';
 
 /** Why a chain's structure is uncertain (0017; codes from `pg_export/chain_structure.py`), in plain words. */
 export const CHAIN_STRUCTURE_REASON_LABEL: Record<string, string> = {
@@ -26,4 +26,27 @@ export function structureNote(node: Pick<ChainNode, 'chain_structure_status' | '
     "The reading of this chain's routes has not been checked; it is not used for teacher and student lists.",
     reasons.length > 0 ? `Why: ${reasons.join('; ')}.` : null,
   ].filter(Boolean).join(' ');
+}
+
+const day = (value: string) => value.slice(0, 10);
+
+/**
+ * The line under a chain a model reader read (docs/review/chain-fix-pipeline.md §States). "Verified" only names a person:
+ * a reading awaiting final review never says it.
+ */
+export function chainFixNote(fix: ChainFixLabel | null | undefined, status: ChainNode['chain_structure_status']): string | null {
+  if (!fix) return null;
+  const models = [...new Set(fix.models)].join(', ');
+  if (status === 'verified_by_reviewer' && fix.human_confirmations.length > 0) {
+    return fix.human_confirmations.map((confirmation) => `Verified by ${confirmation.reviewer}, ${day(confirmation.reviewed_at)}`).join('; ');
+  }
+  if (fix.effect === 'annotate') return `A model reader read the same routes (${models}, ${day(fix.decided_at)})`;
+  return `Read by model (${models}), ${day(fix.decided_at)}; awaiting final review`;
+}
+
+/** The plain label of the compiler heading a chain: derived from the work, never written in the text. */
+export function compilerNote(compiler: ChainCompiler): string {
+  return compiler.link === 'direct'
+    ? 'Compiler of the work; not written in the text'
+    : 'Compiler of the work; not written in the text, and this chain does not start from his own teacher, so no teacher link is drawn';
 }

@@ -22,7 +22,7 @@ import type { ChainGraph, ChainMentionCandidate, ChainNode, HadithTraditionCode 
 import { groupCandidates, type IdentityGroup, type IdentityRecord } from '@/db/queries/identity-groups';
 import { sourceForLatinName, sourcesForIdentityClaim } from '@/lib/sources/registry';
 import { ChainSourceCredits } from './family/SourceCredits';
-import { structureNote } from './chain-structure';
+import { chainFixNote, compilerNote, structureNote } from './chain-structure';
 
 /** Which registry a record belongs to, in words, for a second record of the same person. */
 const RECORD_SOURCE: Record<string, string> = {
@@ -30,6 +30,7 @@ const RECORD_SOURCE: Record<string, string> = {
     hadith_kg: 'hadith-kg',
     riwayat: 'Riwayat',
     imam_register: 'Imam register',
+    work_register: 'record credited to the work',
     imami_rijal: 'Imami rijal',
 };
 
@@ -221,6 +222,35 @@ function nodeKind(node: ChainNode): NarratorNodeKind {
     return node.identity === 'differ' || node.identity_withheld_reason ? 'contested' : 'identified';
 }
 
+/** The work's compiler as the chain's first transmitter (owner ruling 2026-11-22): derived from the work, not written. */
+function CompilerHead({ compiler }: { compiler: NonNullable<ChainNode['chain_compiler']> }) {
+    const { latin, arabic } = narratorNameParts(compiler.name_en, compiler.name_ar);
+    return (
+        <li className="grid grid-cols-[1.5rem_0.75rem_minmax(0,1fr)] items-start gap-x-3" data-chain-compiler={compiler.link}>
+            <span aria-hidden="true" />
+            <span
+                aria-hidden="true"
+                className="relative self-stretch before:absolute before:inset-y-0 before:start-[calc(50%-0.5px)] before:top-4 before:w-px before:bg-ink-faint"
+            >
+                <NarratorNode kind="identified" decorative size={12} className="relative mx-auto mt-[calc(1rem-6px)] text-ink" />
+            </span>
+            <div className="border-b border-rule pb-3">
+                <p className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <Link href={narratorHref(compiler.narrator_id)} className="link-row type-small font-semibold text-ink">
+                        {latin || <ArabicText>{arabic || compiler.narrator_id}</ArabicText>}
+                    </Link>
+                    {latin && arabic && (
+                        <bdi lang="ar" dir="rtl" className="ms-auto font-arabic text-[1.0625rem] text-ink-muted">
+                            {arabic}
+                        </bdi>
+                    )}
+                </p>
+                <p className="mt-0.5 text-xs leading-4 text-ink-muted">{compilerNote(compiler)}</p>
+            </div>
+        </li>
+    );
+}
+
 interface IsnadChainProps {
     chain: ChainGraph | null;
     sourceSanadText?: string | null;
@@ -277,6 +307,30 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                             {structureNote(branch.nodes[0])}
                         </p>
                     )}
+                    {chainFixNote(branch.nodes[0].chain_fix, branch.nodes[0].chain_structure_status) && (
+                        <p className="mb-2 type-small text-ink-muted" data-chain-fix={branch.nodes[0].chain_fix?.fix_id}>
+                            {chainFixNote(branch.nodes[0].chain_fix, branch.nodes[0].chain_structure_status)}
+                        </p>
+                    )}
+                    {branch.nodes[0].chain_fix?.human_confirmations.map((confirmation) => (
+                        <p key={`${confirmation.reviewer}:${confirmation.reviewed_at}`} className="mb-2 type-small text-ink-muted">
+                            {confirmation.note}
+                            {confirmation.citation && (
+                                <>
+                                    {' · '}
+                                    {confirmation.citation.url ? (
+                                        <a href={confirmation.citation.url} className="link-row">
+                                            {confirmation.citation.edition_locator ?? 'source'}
+                                        </a>
+                                    ) : (
+                                        confirmation.citation.edition_locator
+                                    )}
+                                    {': '}
+                                    <bdi>{confirmation.citation.quote}</bdi>
+                                </>
+                            )}
+                        </p>
+                    ))}
                     {branch.nodes[0].chain_suspension && (
                         <p className="mb-2 type-small text-ink-muted" data-chain-suspension={branch.nodes[0].chain_suspension}>
                             {CHAIN_SUSPENSION_LABEL[branch.nodes[0].chain_suspension] ?? 'Chain relies on another report'}
@@ -288,6 +342,9 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                             branches.length > 1 ? `chain branch ${branchIndex + 1}` : 'narrators in this chain',
                         ].filter(Boolean).join(', ').replace(/^./, (first) => first.toUpperCase())}
                     >
+                        {branch.nodes[0].chain_compiler && (
+                            <CompilerHead compiler={branch.nodes[0].chain_compiler} />
+                        )}
                         {branch.nodes.map((node, nodeIndex) => (
                             <li key={node.node_id} className="group/position grid grid-cols-[1.5rem_0.75rem_minmax(0,1fr)] items-start gap-x-3">
                                 <span aria-hidden="true" className="text-end text-xs leading-8 tabular-nums text-ink-muted">

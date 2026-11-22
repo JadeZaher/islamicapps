@@ -220,7 +220,8 @@ export function promptInfo(path: string): { version: string; specialist: string;
   if (!front) throw new Error(`${path}: no front matter`);
   const field = (name: string) => new RegExp(`^${name}:\\s*(.+)$`, 'm').exec(front[1])?.[1].trim();
   const version = field('version');
-  const specialist = field('specialist');
+  // The chain reader's prompt lives in datasets/hadith-data/chain-reader/ and names itself `reader:` (referenced, never copied).
+  const specialist = field('specialist') ?? field('reader');
   if (!version || !specialist) throw new Error(`${path}: front matter needs specialist and version`);
   return { version, specialist, sha256: sha256Hex(bytes) };
 }

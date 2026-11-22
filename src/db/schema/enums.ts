@@ -55,7 +55,7 @@ export const translationStateEnum = pgEnum('translation_state', [
 ]);
 
 /** `hadith_kg`, `riwayat`: an external dataset's own narrator record; `imam_register`: the Imams (0010, src/db/AGENTS.md §External identity). */
-export const narratorAuthorityEnum = pgEnum('narrator_authority', ['rawi', 'imami_rijal', 'hadith_kg', 'riwayat', 'imam_register']);
+export const narratorAuthorityEnum = pgEnum('narrator_authority', ['rawi', 'imami_rijal', 'hadith_kg', 'riwayat', 'imam_register', 'work_register']);
 
 export const tabaqahClassEnum = pgEnum('tabaqah_class', [
   'PROPHET',

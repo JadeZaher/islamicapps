@@ -1,0 +1,294 @@
+"""The tool side of a v3 chain reading: levels to routes, offsets from surfaces, the compiler head, matn_start (copy of context/expand.py; see v3/AGENTS.md §expand).
+
+The reader writes {"groups": [{"levels": [[item, ...], ...], "variant": true?}, ...], "shared_tail": [[item, ...], ...] | null}; an item is
+{"surface", "kind", "occurrence"?, "from"?}. Changes from v2: surfaces are found after a spelling fold (alif-maqsura/ya, Persian letters, hamza carriers,
+kunya case, a space after «و», diacritics) and returned in the text's own characters; a stray `occurrence` on a surface that stands once is ignored; the
+compiler head is not added when the route's first written name is the compiler under any spelling of the work profile; the same man written twice in
+succession is one link; a group may carry `"variant": true` (a second route that names a different transmitter).
+"""
+
+from __future__ import annotations
+
+import itertools
+import json
+import re
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent))
+from norm import MARKS  # noqa: E402
+from norm_v3 import KUNYA_PATTERN, fold_chars, fold_v3, folded_cursor, link_key, same_man  # noqa: E402
+
+READER_KINDS = ("narrator", "unnamed", "back_reference", "relation", "imam_in_text", "inherited")
+DERIVED_KINDS = ("compiler_head", "inherited")       # no offsets
+MAX_EXPANSION = 400                                  # beyond this the reading is held, not expanded
+ITEM_KEYS = {"surface", "kind", "occurrence", "from"}
+GROUP_KEYS = {"levels", "variant"}
+PROFILES = {key: value for key, value in json.loads((HERE / "work_profiles_v3.json").read_text(encoding="utf-8")).items() if not key.startswith("_")}
+IGNORED_IN_COMPARISON = ("الحديث",)                  # «بهذا الحديث» points at the saying, not at an isnad
+
+
+def _token_pattern(token: str) -> str:
+    if token in KUNYA_PATTERN:
+        return KUNYA_PATTERN[token]
+    if len(token) > 2 and token.startswith("و"):
+        return "و\\s?" + re.escape(token[1:])          # an attached «و» may stand apart in the text
+    return re.escape(token)
+
+
+def _needle_pattern(surface: str) -> re.Pattern | None:
+    folded, _ = fold_chars(surface)
+    words = re.sub(r"[\s،,]+", " ", folded).strip().split()
+    merged: list[str] = []
+    for index, word in enumerate(words):                # a lone «و» belongs to the next word: «و بهذا» = «وبهذا»
+        if merged and merged[-1] == "و":
+            merged[-1] = "و" + word
+        else:
+            merged.append(word)
+    if not merged:
+        return None
+    return re.compile(r"[\s،,]+".join(_token_pattern(word) for word in merged))
+
+
+def strict_chars(text: str) -> tuple[str, list[int]]:
+    """v2's view of the text: only marks and tatweel removed, letters as written."""
+    kept = [i for i, ch in enumerate(text) if not MARKS.match(ch)]
+    return "".join(text[i] for i in kept), kept
+
+
+def _strict_pattern(surface: str) -> re.Pattern | None:
+    words = "".join(ch for ch in surface if not MARKS.match(ch)).split()
+    return re.compile(r"[\s،,]+".join(re.escape(word) for word in words)) if words else None
+
+
+def _find(view: str, pattern: re.Pattern, cursor: int, occurrence: int | None) -> tuple[tuple[int, int] | None, str]:
+    """((start, end) in the view, note). The first match at/after `cursor`, or the Nth match overall; a stray occurrence is ignored when the surface stands once."""
+    matches = list(pattern.finditer(view))
+    if occurrence:
+        if len(matches) >= occurrence:
+            return (matches[occurrence - 1].start(), matches[occurrence - 1].end()), ""
+        if len(matches) == 1:
+            return (matches[0].start(), matches[0].end()), f"occurrence {occurrence} ignored: the surface stands once"
+        return None, ""
+    for match in matches:
+        if match.start() >= cursor:
+            return (match.start(), match.end()), ""
+    return None, ""
+
+
+class TextViews:
+    """The text twice: as written (marks removed: v2's reading, tried first, so an `occurrence` counts the reader's own spelling) and folded (the fallback for a spelling the text does not use)."""
+
+    def __init__(self, text: str):
+        self.text = text
+        self.strict, self.strict_index = strict_chars(text)
+        self.folded, self.folded_index = fold_chars(text)
+
+    def locate(self, surface: str, cursor: int, occurrence: int | None) -> tuple[tuple[int, int] | None, str, bool]:
+        """((start, end) in the original text, note, found anywhere). `cursor` is an offset in the original text."""
+        anywhere = False
+        for view, index, pattern in ((self.strict, self.strict_index, _strict_pattern(surface)), (self.folded, self.folded_index, _needle_pattern(surface))):
+            if pattern is None:
+                return None, "", False
+            found, note = _find(view, pattern, folded_cursor(index, cursor), occurrence)
+            if found:
+                return (index[found[0]], index[found[1] - 1] + 1), note, True
+            if _find(view, pattern, 0, None)[0] is not None:
+                anywhere = True
+        return None, "", anywhere
+
+
+def _locate(item: dict, views: TextViews, cursor: int, where: str, errors: list[str], notes: list[str]) -> dict | None:
+    """The item as a link: offsets in the text found from the surface (as written first, then folded), the first occurrence at/after `cursor` (an original offset) or the stated one; the surface is the text's own characters."""
+    kind = item["kind"]
+    if kind == "inherited":
+        return {"surface": item["surface"], "start": None, "end": None, "kind": "inherited", "from": item.get("from")}
+    if not "".join(ch for ch in item["surface"] if not MARKS.match(ch)).strip():
+        errors.append(f"surface: {where} is empty")
+        return None
+    occurrence = item.get("occurrence")
+    found, note, anywhere = views.locate(item["surface"], cursor, occurrence)
+    if found is None:
+        errors.append(f"occurrence: {where} {item['surface']!r} occurrence {occurrence} is not in the text" if not anywhere and occurrence else
+                      f"surface_not_in_text: {where} {item['surface']!r}" if not anywhere else f"order: {where} {item['surface']!r} occurs only before the previous level")
+        return None
+    if note:
+        notes.append(f"{where} {item['surface']!r}: {note}")
+    start, end = found
+    text = views.text
+    while end < len(text) and MARKS.match(text[end]):
+        end += 1
+    return {"surface": text[start:end], "start": start, "end": end, "kind": kind}
+
+
+def check_shape(output: dict) -> list[str]:
+    errors = []
+    if not isinstance(output.get("groups"), list):
+        return ["shape: groups must be a list"]
+    levels_lists = [("g%d" % g, group.get("levels") if isinstance(group, dict) else None) for g, group in enumerate(output["groups"])]
+    for g, group in enumerate(output["groups"]):
+        if isinstance(group, dict) and (set(group) - GROUP_KEYS or "levels" not in group or ("variant" in group and not isinstance(group["variant"], bool))):
+            errors.append(f"shape: g{g} must be an object with levels (and optionally variant: true)")
+    if output.get("shared_tail") is not None:
+        levels_lists.append(("tail", output["shared_tail"]))
+    for name, levels in levels_lists:
+        if not isinstance(levels, list) or not levels:
+            errors.append(f"shape: {name} needs a non-empty list of levels")
+            continue
+        for l, level in enumerate(levels):
+            if not isinstance(level, list) or not level:
+                errors.append(f"shape: {name}l{l} needs a non-empty list of items")
+                continue
+            for i, item in enumerate(level):
+                at = f"{name}l{l}i{i}"
+                if not isinstance(item, dict) or not {"surface", "kind"} <= set(item) or not set(item) <= ITEM_KEYS:
+                    errors.append(f"shape: {at} must be an object with surface and kind (occurrence, from optional)")
+                elif item["kind"] not in READER_KINDS:
+                    errors.append(f"kind: {at} {item['kind']!r} is not one of {', '.join(READER_KINDS)}")
+                elif not isinstance(item["surface"], str):
+                    errors.append(f"shape: {at} surface must be a string")
+                elif item["kind"] == "inherited" and not item.get("from"):
+                    errors.append(f"inherited: {at} needs `from` (the ref of the previous report it comes from)")
+                elif "occurrence" in item and not (isinstance(item["occurrence"], int) and not isinstance(item["occurrence"], bool) and item["occurrence"] >= 1):
+                    errors.append(f"occurrence: {at} must be a whole number from 1")
+    return errors
+
+
+def profile_for(context: dict | None) -> dict:
+    """The work profile (compiler aliases) for a packet: by `context.work.key`; otherwise only the packet's own compiler name."""
+    work = ((context or {}).get("work") or {})
+    profile = PROFILES.get(work.get("key") or "")
+    if profile:
+        return profile
+    compiler = work.get("compiler") or {}
+    return {"compiler_head": bool(compiler.get("head_of_every_chain")), "compiler_ar": compiler.get("ar"), "compiler_aliases": [compiler["ar"]] if compiler.get("ar") else [],
+            "compiler_alias_runs": [], "compiler_alias_scope": "first"}
+
+
+def compiler_written(route_links: list[dict], profile: dict) -> bool:
+    """True when the route's first written name (or any written name, for scope 'any') is the compiler under some spelling of the profile."""
+    aliases = {link_key(a) for a in [profile.get("compiler_ar"), *(profile.get("compiler_aliases") or [])] if a}
+    runs = [" " + link_key(r) + " " for r in profile.get("compiler_alias_runs") or []]
+    written = [l for l in route_links if l["start"] is not None and l["kind"] not in DERIVED_KINDS]
+    for link in (written[:1] if profile.get("compiler_alias_scope", "first") == "first" else written):
+        if link["kind"] not in ("narrator", "imam_in_text"):
+            continue
+        key = link_key(link["surface"])
+        if key in aliases or any(run in " " + key + " " for run in runs):
+            return True
+    return False
+
+
+def collapse_repeats(links: list[dict], tail_from: int | None, notes: list[str]) -> tuple[list[dict], int | None]:
+    """One link for the same man written twice in succession (two narrator links whose names are one name, or the short and the full form)."""
+    result: list[dict] = []
+    origins: list[int] = []                                   # index in `links` where each kept link began
+    for position, link in enumerate(links):
+        previous = result[-1] if result else None
+        if previous and previous["kind"] == "narrator" and link["kind"] == "narrator" and previous["start"] is not None and link["start"] is not None                 and same_man(previous["surface"], link["surface"]):
+            notes.append(f"one link: {previous['surface']!r} and {link['surface']!r} are one man written twice")
+            if len(link_key(link["surface"])) > len(link_key(previous["surface"])):
+                result[-1] = link
+            continue
+        result.append(link)
+        origins.append(position)
+    new_tail = None if tail_from is None else sum(1 for origin in origins if origin < tail_from)
+    return result, new_tail
+
+
+def expand(output: dict, text: str, context: dict | None = None) -> tuple[dict | None, list[str]]:
+    """(stored-shape reading, errors). The reading is None when the shape or a surface is wrong."""
+    errors = check_shape(output)
+    if errors:
+        return None, errors
+    views = TextViews(text)
+    notes: list[str] = []
+    group_routes: list[list[list[dict]]] = []
+    variant_groups: list[bool] = []
+    furthest = 0
+    for g, group in enumerate(output["groups"]):
+        cursor, levels = 0, []
+        for l, level in enumerate(group["levels"]):
+            located = [_locate(item, views, cursor, f"g{g}l{l}i{i}", errors, notes) for i, item in enumerate(level)]
+            if any(x is None for x in located):
+                levels.append([])
+                continue
+            ends = [x["end"] for x in located if x["end"] is not None]
+            if ends:
+                cursor = max(ends)
+            levels.append(located)
+        furthest = max(furthest, cursor)
+        group_routes.append(levels)
+        variant_groups.append(bool(group.get("variant")))
+    tail_levels = []
+    if output.get("shared_tail"):
+        cursor = furthest
+        for l, level in enumerate(output["shared_tail"]):
+            located = []
+            for i, item in enumerate(level):
+                trial: list[str] = []
+                link = _locate(item, views, cursor, f"tail l{l}i{i}", trial, notes) or _locate(item, views, 0, f"tail l{l}i{i}", errors, notes)
+                located.append(link)
+            if any(x is None for x in located):
+                tail_levels.append([])
+                continue
+            ends = [x["end"] for x in located if x["end"] is not None]
+            if ends:
+                cursor = max(ends)
+            tail_levels.append(located)
+    if errors:
+        return None, errors
+    size = sum(_product_size(levels) for levels in group_routes) * max(1, _product_size(tail_levels) if tail_levels else 1)
+    if size > MAX_EXPANSION:
+        return None, [f"too_many_routes: the levels expand to {size} routes (limit {MAX_EXPANSION}); split the reading into groups or file it"]
+    routes, seen = [], set()
+    tails = list(itertools.product(*tail_levels)) if tail_levels else [()]
+    for group_index, levels in enumerate(group_routes):
+        for head in itertools.product(*levels):
+            for tail in tails:
+                links, tail_from = collapse_repeats(list(head) + list(tail), len(head) if tail_levels else None, notes)
+                key = tuple((l["start"], l["end"], l["surface"]) for l in links)
+                if key in seen:
+                    continue
+                seen.add(key)
+                routes.append({"links": links, "shared_tail_from": tail_from, "group": group_index, "variant": variant_groups[group_index]})
+    profile = profile_for(context)
+    if profile.get("compiler_head") and profile.get("compiler_ar"):
+        for route in routes:
+            if compiler_written(route["links"], profile):
+                continue                                          # the text writes the compiler itself, under some spelling: that link stands
+            route["links"].insert(0, {"surface": profile["compiler_ar"], "start": None, "end": None, "kind": "compiler_head", "from": "work"})
+            if route["shared_tail_from"] is not None:
+                route["shared_tail_from"] += 1
+    ends = [l["end"] for r in routes for l in r["links"] if l["end"] is not None and l["kind"] != "imam_in_text"]
+    result = {"id": output.get("id"), "routes": routes, "matn_start": max(ends) if ends else 0, "notes": output.get("notes", []), "tool_notes": sorted(set(notes))}
+    return result, []
+
+
+def _product_size(levels: list[list]) -> int:
+    size = 1
+    for level in levels:
+        size *= max(1, len(level))
+    return size
+
+
+def route_keys(reading: dict) -> list[tuple[str, ...]]:
+    """Each route as the comparison keys of its non-derived links (a back reference to the saying, «بهذا الحديث», dropped; the same man twice is one)."""
+    keyed = []
+    for route in reading["routes"]:
+        keys: list[str] = []
+        for link in route["links"]:
+            if link["kind"] in DERIVED_KINDS or (link["kind"] == "back_reference" and any(word in link_key(link["surface"]).split() for word in IGNORED_IN_COMPARISON)):
+                continue
+            key = link_key(link["surface"])
+            if key and (not keys or keys[-1] != key or len(key.split()) < 2):
+                keys.append(key)
+        keyed.append(tuple(keys))
+    return keyed
+
+
+def canonical(reading: dict) -> frozenset:
+    """Order-free form of a reading for agreement: the set of routes, each the link keys of its non-derived links (v3: nisba, epithets, attached «و», spelling folded)."""
+    return frozenset(route_keys(reading))

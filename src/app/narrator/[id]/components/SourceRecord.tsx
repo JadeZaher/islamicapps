@@ -10,6 +10,7 @@ const SOURCE_TITLE: Record<string, string> = {
   hadith_kg: 'Record in hadith-kg',
   riwayat: 'Record in the Riwayat corpus',
   imam_register: 'Record in the Imam register',
+  work_register: 'Record credited to the work',
 };
 
 /** Why an id names a label rather than a person, in words (narrator_source_profiles.label_reason). */
@@ -112,7 +113,7 @@ export function SourceRecord({ record }: { record: NarratorSourceRecord }) {
           {record.name_latin && (
             <span className="block text-ink">
               {record.name_latin}
-              {record.name_latin_basis && record.authority !== 'imam_register' && (
+              {record.name_latin_basis && record.authority !== 'imam_register' && record.authority !== 'work_register' && (
                 <span className="ms-2 inline-flex items-center gap-1 text-xs text-ink-muted">
                   <NameBasisMark basis={record.name_latin_basis} decorative />
                   {NAME_LATIN_BASIS_LABEL[record.name_latin_basis]}

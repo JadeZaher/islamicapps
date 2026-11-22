@@ -259,6 +259,46 @@ operating point: `datasets/hadith-data/pg_export/AGENTS.md` §Chain structure ga
 - `db:verify` checks both view changes; `db:verify-data` checks every live chain has a status and every network pair stands
   in a live checked chain. Flow test: `queries/__tests__/structure-flows.test.ts`.
 
+## Chain fixes (0019, 0020; owner 2026-11-22)
+
+Model readers read a report's Arabic and write its routes; agreeing, unheld readings replace the rule-built chain, labelled. Design,
+states, rules: `docs/review/chain-fix-pipeline.md`; tools: `reviews/ai/tools/chain-fix-*.ts`, `reviews/ai/AGENTS.md`.
+
+- **Tables** (`schema/chain-fixes.ts`): `chain_fixes` (immutable reading bound to the Arabic and the reader text),
+  `chain_fix_submissions` (one reader run, with model, prompt hash, packet, quotes), `chain_fix_decisions` (curation; retired rows are
+  the transitions; states add `held` with `hold_codes`), `chain_fix_reviews` (one row per reviewer; AI rows name model and prompt),
+  `chain_fix_applications` (every database write with `base_rows`, so a revert is exact), `chain_fix_work_settings` (per work: may a
+  chain read by model feed lists; seeded `false` for every work). One writer for all: `ops/chain-fix-apply.ts` (`npm run db:chain-fixes`;
+  flow test `ops/__tests__/chain-fix-apply.test.ts`). They are curation-class: never in the load contract, never block a load.
+- **`chains.chain_fix_id`** (content column) and two structure statuses, `read_by_model` and `verified_by_reviewer` (check: no
+  reasons, a fix named). "Verified" only after a named person's confirmation. The projection replays the overrides file after every
+  builder and before the gate (`pg_export/AGENTS.md` §Chain fixes); an absent file is a no-op.
+- **Ids are reused**: the unique keys on (hadith, branch) and (chain, position) span retired rows, so a fix writes the projection's own
+  ids and keeps the rows it replaced in `base_rows` instead of retiring them beside new ones.
+- **Network guard** (`narrator_transmissions` `feeding` CTE): rule-checked and reviewer-verified chains feed lists; a chain read by
+  model only where `chain_fix_work_settings.read_by_model_in_network` is true for its collection (false everywhere at 0019).
+- **0020** widens `chain_fix_submissions.view` with `text_and_context` (reader v3: text and the sources' context, never the stored
+  chain; blind for the agreement rule).
+- **Not applied by any tool**: readers' other findings (identity, lexicon dates, duplicates, text, translation, metadata). They are a
+  file store only this round (`reviews/ai/records/chain-fixes/proposals/`), listed by `chain-fix-status --proposals`; no table yet.
+- `db:verify` checks the widened status check, the network guard and the view tails; `db:verify-data` holds nine chain-fix checks and
+  reports (not fatal) a rejected fix still applied.
+
+## Compiler as first transmitter (0019; owner ruling 2026-11-22)
+
+Every chain of a work with a known compiler is headed by him: `chains.compiler_narrator_id` and `compiler_link` (`direct` |
+`indirect`, check: both or neither). Derived, never a mention: mention ids, positions and the structure gate's text checks are
+untouched. Rules: `datasets/hadith-data/pg_export/AGENTS.md` §Compiler as first transmitter.
+
+- **Pairs**: `narrator_transmissions` adds (compiler, position 0) for a `direct`, unsuspended, feeding chain whose position 0 stands,
+  student position -1, method `compiler_of_work`; the same chronology CASE applies. `db:verify-data` accepts such a pair as standing.
+- **Records**: `narrator_authority.work_register` (`narrator:work:<slug>`), a person the work credits (its compiler, or a transmitter
+  it names in full: Abu ʿUbayda Muslim b. Abi Karima in Musnad al-Rabiʿ), with a `work_register` profile naming the work. Reused rows
+  where a standing rule of that tradition already identifies the person (Malik, Ahmad, al-Darimi, Abu Dawud; al-Kulayni and
+  al-Husayn b. Saʿid as Riwayat records). `named_in_opening_isnad` may now target `work_register` rows, in Musnad al-Rabiʿ too.
+- `public_chain_links` appends `chain_fix_id`, `chain_compiler_narrator_id`, `chain_compiler_link`; the chain view shows the compiler
+  above position 0 with "Compiler of the work; not written in the text".
+
 ## Report correspondences (0007; design §5.5.1)
 
 Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
@@ -309,7 +349,11 @@ write decisions.
   `public_chain_mention_candidates_v2` counts the new basis) -> `0017_chain_structure_gate` (generated: `chains.structure_status`,
 `structure_reasons` and their check; hand-written: `public_chain_links` appended, `narrator_transmissions` dropped and recreated
 with the structure guard and its two indexes; see §Chain structure gate) -> `0018_machine_english_gate` (hand-written: the machine branch
-  of `public_translations` also needs a recorded model and provenance; see §Public English). A `--custom` generate snapshots the previous schema: after promoting a
+  of `public_translations` also needs a recorded model and provenance; see §Public English) -> `0019_chain_fixes_compiler` (generated:
+  the six chain-fix tables, `chains.chain_fix_id`/`compiler_narrator_id`/`compiler_link`, the widened structure check, enum value
+  `work_register`, the widened profile source check; hand-written: settings seeded off, `public_chain_links` appended,
+  `public_chain_fix_labels`, `narrator_transmissions` dropped and recreated with the feeding guard and compiler pairs; see §Chain fixes,
+  §Compiler as first transmitter) -> `0020_chain_fix_reader_v3_view` (the `text_and_context` view). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

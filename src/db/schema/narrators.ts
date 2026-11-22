@@ -148,7 +148,7 @@ export const narratorSourceProfiles = pgTable(
   },
   (table) => [
     restrictForeignKey('narrator_source_profiles_narrator_id_fk', table.narratorId, narrators.id),
-    check('narrator_source_profiles_source_check', sql`${table.source} in ('hadith_kg', 'riwayat', 'imam_register')`),
+    check('narrator_source_profiles_source_check', sql`${table.source} in ('hadith_kg', 'riwayat', 'imam_register', 'work_register')`),
     check('narrator_source_profiles_review_state_check', sql`${table.reviewState} = 'source_unverified'`),
     ...pipelineBookkeepingForeignKeys('narrator_source_profiles', table),
   ],

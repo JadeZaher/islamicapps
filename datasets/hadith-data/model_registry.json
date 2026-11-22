@@ -894,6 +894,63 @@
           "locator": "whole file (run_id, model, prompt_sha256, started_utc, finished_utc, cost_usd); the rida and rabi retry manifests sit beside it"
         }
       ]
+    },
+    {
+      "id": "claude-haiku-5-5-chain-reader-pilots",
+      "model_id": "claude-haiku-5-5",
+      "model_id_status": "namespaced_specific",
+      "model_id_note": "The id each reader run wrote in its RUN.txt line (chain-reader/outputs/*/RUN.txt, context/outputs-v2/*/RUN.txt).",
+      "runtime": "Claude Code subagents, fresh context per run, two independent passes",
+      "kind": "chain_reading",
+      "work": "Chain reading (chain-fix submissions): read each pilot report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md). Pilot v1 (prompt.md) and v2 (context/prompt-v2.md) over the 284 labelled pilot reports; v3 (v3/prompt-v3.md) batch 001 of 500 reports is being read. No reading has been submitted to the fix store or applied to any chain.",
+      "date_range": {
+        "start": "2026-11-22",
+        "end": "2026-11-22",
+        "basis": "RUN.txt start and end times"
+      },
+      "inputs": [
+        "datasets/hadith-data/chain-reader/pilot/ (284 labelled reports)",
+        "datasets/hadith-data/chain-reader/context/pilot-v2/packets/",
+        "datasets/hadith-data/chain-reader/v3/batch-001/packets/"
+      ],
+      "outputs": [
+        {
+          "path": "datasets/hadith-data/chain-reader/outputs/",
+          "rows": 568,
+          "unit": "reader outputs (v1, two passes)",
+          "note": ""
+        },
+        {
+          "path": "datasets/hadith-data/chain-reader/context/outputs-v2/",
+          "rows": 568,
+          "unit": "reader outputs (v2, two passes)",
+          "note": ""
+        }
+      ],
+      "output_status": "candidate_only",
+      "review_state": "ai_reviewed, awaiting final review: an agreed, unheld reading may be applied as 'Read by model, awaiting final review' only through the fix pipeline; none has been.",
+      "pinned": false,
+      "allowed_uses": [
+        "Chain-fix submissions under the agreement and hold rules (reviews/ai/tools/chain-fix-*.ts)",
+        "Proposals beyond the chain for a person to decide"
+      ],
+      "prohibited_uses": [
+        "Writing a chain without two agreeing independent readings and no hold",
+        "Feeding teacher and student lists before the work's agreed-reading error rate is measured (chain_fix_work_settings)",
+        "Calling a reading verified"
+      ],
+      "quality_findings": [
+        {
+          "finding": "Pilot v2 re-scored under the v3 tool: 213 of 279 applied, 210 right (99 percent, 96 to 100), measured on the readings the holds were tuned on (in-sample); batch 001 is the out-of-sample measurement.",
+          "source": "datasets/hadith-data/chain-reader/v3/README.md"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "datasets/hadith-data/chain-reader/v3/rescore_v3.json",
+          "locator": "whole file"
+        }
+      ]
     }
   ]
 }

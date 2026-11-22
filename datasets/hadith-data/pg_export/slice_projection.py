@@ -73,6 +73,18 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
                   for row in tables["report_correspondence_cluster_members"][1]}
         for hadith_id in (cross_pair["hadith_id_a"], cross_pair["hadith_id_b"]):
             chosen.update((hadith_id, centre[hadith_id]))
+    # A continuation needs the report whose chain it repeats (OpenITI sanad_inherits_from, a written mention it copies).
+    inherits = {row["id"]: row.get("sanad_inherits_from") for row in hadiths}
+    mention_hadith = {row["id"]: row["hadith_id"] for row in tables["chain_mentions"][1]}
+    pending = list(chosen)
+    while pending:
+        hadith_id = pending.pop()
+        parents = {inherits.get(hadith_id)} | {mention_hadith.get(row["inherited_from_mention_id"])
+                                               for chain in chains_by_hadith.get(hadith_id, [])
+                                               for row in mentions_by_chain[chain["id"]] if row.get("inherited_from_mention_id")}
+        for parent in parents - {None} - chosen:
+            chosen.add(parent)
+            pending.append(parent)
     if omit_hadith is not None:
         if omit_hadith not in chosen:
             raise SystemExit(f"--omit-hadith {omit_hadith} is not in the slice")
@@ -111,6 +123,9 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
                     if row["chain_id"] in full_chains and row["narrator_id"]}
     narrator_ids |= {row["narrator_id"] for row in tables["chain_mention_candidates"][1]
                      if row["hadith_id"] in full_chosen}
+    # The work's compiler heading each chain (0019) is a narrator the slice must carry too.
+    narrator_ids |= {row["compiler_narrator_id"] for row in tables["chains"][1]
+                     if row["id"] in full_chains and row.get("compiler_narrator_id")}
     full_hadiths = [row for row in hadiths if row["id"] in full_chosen]
     collection_ids = {row["collection_id"] for row in full_hadiths}
     chapter_ids = {row["chapter_id"] for row in full_hadiths if row["chapter_id"]}

@@ -21,6 +21,7 @@ import {
   pipelineBookkeepingForeignKeys,
   restrictForeignKey,
 } from './columns';
+import { chainFixes } from './chain-fixes';
 import { collections, hadiths } from './corpus';
 import {
   decisionScopeEnum,
@@ -56,6 +57,12 @@ export const chains = pgTable(
     structureStatus: text('structure_status'),
     /** Why an uncertain chain is uncertain: stable codes from `pg_export/chain_structure.py`. */
     structureReasons: text('structure_reasons').array(),
+    /** The fix whose reading this chain shows (0019; src/db/AGENTS.md §Chain fixes); set with `read_by_model` / `verified_by_reviewer`. */
+    chainFixId: text('chain_fix_id'),
+    /** The work's compiler, the derived first transmitter (0019; owner 2026-11-22): never written in the text, never a mention. */
+    compilerNarratorId: text('compiler_narrator_id'),
+    /** `direct`: the compiler heard position 0 (a pair forms); `indirect`: he gives the report without that link. */
+    compilerLink: text('compiler_link'),
   },
   (table) => [
     unique('chains_hadith_id_branch_key').on(table.hadithId, table.branch),
@@ -65,8 +72,16 @@ export const chains = pgTable(
     ),
     check(
       'chains_structure_status_check',
-      sql`${table.structureStatus} is null or (${table.structureStatus} = 'checked_by_rule' and ${table.structureReasons} is null) or (${table.structureStatus} = 'uncertain' and cardinality(${table.structureReasons}) > 0)`,
+      sql`${table.structureStatus} is null or (${table.structureStatus} = 'checked_by_rule' and ${table.structureReasons} is null) or (${table.structureStatus} = 'uncertain' and cardinality(${table.structureReasons}) > 0) or (${table.structureStatus} in ('read_by_model', 'verified_by_reviewer') and ${table.structureReasons} is null and ${table.chainFixId} is not null)`,
     ),
+    check(
+      'chains_compiler_check',
+      sql`(${table.compilerNarratorId} is null) = (${table.compilerLink} is null) and (${table.compilerLink} is null or ${table.compilerLink} in ('direct', 'indirect'))`,
+    ),
+    restrictForeignKey('chains_chain_fix_id_fk', table.chainFixId, chainFixes.id),
+    restrictForeignKey('chains_compiler_narrator_id_fk', table.compilerNarratorId, narrators.id),
+    index('chains_chain_fix_id_idx').on(table.chainFixId).where(sql`${table.chainFixId} is not null`),
+    index('chains_compiler_narrator_id_idx').on(table.compilerNarratorId).where(sql`${table.compilerNarratorId} is not null`),
     check('chains_missing_link_after_check', sql`${table.missingLinkAfter} is null or (${table.missingLinkAfter} >= 0 and ${table.missingLinkAfter} < ${table.length} - 1)`),
     restrictForeignKey('chains_hadith_id_fk', table.hadithId, hadiths.id),
     ...pipelineBookkeepingForeignKeys('chains', table),
@@ -298,6 +313,10 @@ export const publicChainLinks = pgView('public_chain_links', {
   /** Appended in 0017: the chain's structure status and reasons (an uncertain chain feeds no teacher or student list). */
   chainStructureStatus: text('chain_structure_status'),
   chainStructureReasons: text('chain_structure_reasons').array(),
+  /** Appended in 0019: the fix a model-read chain shows, and the work's compiler heading the chain (derived, not written). */
+  chainFixId: text('chain_fix_id'),
+  chainCompilerNarratorId: text('chain_compiler_narrator_id'),
+  chainCompilerLink: text('chain_compiler_link'),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */

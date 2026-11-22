@@ -18,6 +18,7 @@ model and the time. Rule procedures (deterministic code) are the other kind of A
 | `packets/<specialist>/<batch>/batch.json` | How the batch was drawn: seed, strata, dataset version, builder code hash, prompt hash |
 | `records/<specialist>/<batch>.jsonl` | One review record per claim (format below), loadable into `ai_reviews` (`docs/review/schema-proposal.ts`) |
 | `tools/` | Builders, the output validator and recorder, the registry builder, tests |
+| `records/chain-fixes/` | Chain-reader submissions, reviews, transitions and applications (`chain-fix-*.ts`; `prompts/chain-fix-submission.md`; design `docs/review/chain-fix-pipeline.md`) |
 
 ## Packets
 

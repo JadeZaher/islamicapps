@@ -797,3 +797,65 @@ The owner topped up OpenRouter and asked for the translations to be finished and
 - Remove the rows: load `development/gate-recalibration-2026-11-22/projection` (projection `2026.11.22.10`; the 32,576 machine rows leave the projection and are retired, the 731 replaced rows return to
   their old failing text), then re-record the approval at once. Curation rows before this load: `development/machine-english-2026-11-22/curation-dump-before/`.
 - Never edit `0018`; a later migration restores the 0009 view body if the gate must be dropped.
+
+## Chain fix pipeline integration and compiler ruling (2026-11-22)
+
+Two lanes in one load. (A) The chain-fix pipeline (`docs/review/chain-fix-pipeline.md`, all twelve checklist steps) is integrated and
+**applies nothing yet**: no reading has been submitted; the overrides file is absent. (B) Owner rulings of 2026-11-22: the compiler heads
+every chain of his work; Abu ʿUbayda's own record in Musnad al-Rabiʿ; the bare kunya rule in every tradition. Detail: `src/db/AGENTS.md`
+§Chain fixes, §Compiler as first transmitter; `datasets/hadith-data/pg_export/AGENTS.md` (same sections and §Bare kunya rule);
+`reviews/ai/AGENTS.md` §Chain fixes; numbers and readings `datasets/hadith-data/chain-audit/compiler-ruling/README.md`. Logs, projection,
+snapshots, curation dump: `datasets/hadith-data/development/compiler-chain-fix-2026-11-22/` (local).
+
+- **Schema**: `0019_chain_fixes_compiler` (six chain-fix tables, `chains.chain_fix_id`/`compiler_narrator_id`/`compiler_link`, the two
+  fix statuses, `work_register`, `public_chain_links` and `public_chain_fix_labels`, `narrator_transmissions` with the feeding guard and
+  compiler pairs) and `0020_chain_fix_reader_v3_view` (view `text_and_context`), both additive, applied to production before the export
+  (`prod-migrate-0019.log`, `prod-migrate-0020.log`). Every chain, mention and candidate row and the whole network hashed identical
+  before and after the migration (`rows-hash-before-0019.json`, `rows-hash-after-0019.json`).
+- **Projection `2026.11.22.12`** (dataset version `dbff1b417a74...`): 124,645 rows changed, 525 s, every loader check passed, approval
+  re-recorded at once (`approve.log`). Chains: only `compiler_narrator_id`/`compiler_link` (and `missing_link_after` on 10 Sunni chains,
+  from identities) changed; `chain_fix_id` is null on all 110,999; structure statuses identical (88,349 checked). Mentions: 5,250 rows,
+  identity and Latin columns only; no surface or position moved (`chain-audit/compiler-ruling/row_diff.json`).
+- **Network**: `narrator_transmissions` 25,893 -> 27,659 (Sunni 22,578 -> 24,264, Imami 3,302 -> 3,373, Ibadi 11 -> 21, Zaydi 3 -> 4);
+  2,584 compiler pairs; 802 pairs lost to the bare kunya rule. 1,347 narrators gained a first student, 13 a first teacher; 112 lost all
+  teachers and 84 all students (kunya rule). Standing identities: Sunni 136,549 -> 132,215, Imami 28,489 -> 28,467, Ibadi 525 -> 1,303,
+  Zaydi 2,566. Readings: 30/30 compiler pairs right, 30/30 kunya gains right, 28 of 30 kunya losses removed a right identity (owner
+  decision needed, `README.md` §3).
+
+### Operating the fix pipeline (once a batch is judged)
+
+1. Readers write outputs; `chain-reader/v3/triage_v3.py`, then `v3/to_submission.py` (envelopes) — see `v3/batch-001/RUN.md`.
+2. `npx tsx reviews/ai/tools/chain-fix-submit.ts --envelope <e> --reports <private reports> [--database production]` (check with
+   `--check-only` first); `npx tsx reviews/ai/tools/chain-fix-decide.ts` writes `state.json`, `queue.json` (accepted, held, disputed)
+   and `datasets/hadith-data/chain-fixes/accepted_overrides.jsonl.gz`.
+3. `npm run db:chain-fixes -- --database production --confirm-production --dry-run`, then without `--dry-run`: mirrors the store into
+   the tables and writes each accepted fix (one transaction per report, under the data-write lock). Never during a load.
+4. Commit the store and the overrides file; the next export replays them (`counts.chain_fixes`).
+5. Final review: `npx tsx reviews/ai/tools/chain-fix-review.ts --fix <id> --decision confirmed|rejected --reviewer <name> --note ...`,
+   then `npm run db:chain-fixes -- ... --revert-rejected` in the same sitting. Proposals: `chain-fix-status.ts --proposals`,
+   `chain-fix-review.ts --proposal <id> --decision accepted|rejected`.
+6. Lifting the network exclusion for one work (owner only, after its agreed-reading error rate is published on `/method`):
+   `update chain_fix_work_settings set read_by_model_in_network = true, note = '<measurement and date>', updated_at = now(), updated_by = '<name>' where collection_id = '<collection>'`,
+   then `select refresh_network()`.
+
+### Deploy
+
+1. Order: `0019`, `0020` (applied), the load (done), the approval (done); then push the code to `refactor/postgres-drizzle` and `main`
+   (the chain view reads `chain_compiler_*` and `public_chain_fix_labels`; the pre-deploy `migrate.mjs` finds both migrations recorded).
+2. Checks: `npx tsc --noEmit`; `npm run build`; `DATABASE_URL=<production> npm run db:verify`; `npm run db:verify-data -- --database production --confirm-production`;
+   `npx tsx reviews/ai/tools/__tests__/chain-fix.test.ts`; `npx tsx --test src/db/ops/__tests__/chain-fix-apply.test.ts`; the Python suites in
+   `pg_export/`, `chain-fixes/`, `chain-reader/`.
+3. Live: an al-Rabiʿ chain (`/hadith/openiti/ibadi/rabi_0021%7C21%7CV01P011/chains`) reads al-Rabiʿ (compiler, not written) -> Abu ʿUbayda (own
+   record) -> Jabir b. Zayd; `/narrator/narrator%3Awork%3Aal-bukhari` lists teachers; `/narrator/narrator%3Arawi%3A3` shows no al-Awzaʿi;
+   `/method#chain-fix-agreement`, `#compiler-of-the-work`, `#identity-bare-kunya`.
+
+### Rollback
+
+- Bare kunya rule only: `KUNYA_RULE_AUTHORITIES = {}` in `pg_export/external_identity.py` (the OpenITI demotion of round 2 does not return),
+  export, `check_projection.py`, load, approve.
+- Compiler heads only: empty `compilers` in `pg_export/work_register.json`, export, load, approve (the view forms no compiler pair once the
+  columns are null). Abu ʿUbayda: empty `named_in_full`.
+- Everything in the data: load `development/machine-english-2026-11-22/projection` after re-exporting it with the 0019 catalog (its `chains.csv`
+  lacks the three 0019 columns), then re-record the approval. Curation rows before this load: `curation-dump-before/`.
+- Code: redeploy `f9cc5e1` (it ignores the new columns and views). Never edit 0019 or 0020; a later migration restores the 0017 body of
+  `narrator_transmissions` if compiler pairs must go without a load.

@@ -124,7 +124,7 @@ export type IdentityBasis =
   | 'edition_identification';
 
 /** Narrator record authority: the lexicon, an external dataset's own record, or the Imam register (0010). */
-export type NarratorAuthority = 'rawi' | 'imami_rijal' | 'hadith_kg' | 'riwayat' | 'imam_register';
+export type NarratorAuthority = 'rawi' | 'imami_rijal' | 'hadith_kg' | 'riwayat' | 'imam_register' | 'work_register';
 
 /** How a chain name's Latin form was obtained (never an identification; src/db/AGENTS.md §Latin names). */
 export type NameLatinBasis = 'provider_english' | 'identity_name' | 'transliteration_vocalized' | 'transliteration_table';
@@ -191,9 +191,41 @@ export interface ChainNode {
   chain_structure_status?: ChainStructureStatus | null;
   /** Reason codes of an uncertain chain (`pg_export/chain_structure.py`); empty otherwise. */
   chain_structure_reasons?: string[];
+  /** 0019: the work's compiler heading the chain, derived (never written in the text); null when the text writes him. */
+  chain_compiler?: ChainCompiler | null;
+  /** 0019: the model reading this chain shows, and its review state (`public_chain_fix_labels`); null for a rule-built chain. */
+  chain_fix?: ChainFixLabel | null;
 }
 
-export type ChainStructureStatus = 'checked_by_rule' | 'uncertain';
+export type ChainStructureStatus = 'checked_by_rule' | 'uncertain' | 'read_by_model' | 'verified_by_reviewer';
+
+/** The compiler of the work as the first transmitter (owner ruling 2026-11-22). `direct`: he heard position 0. */
+export interface ChainCompiler {
+  narrator_id: string;
+  name_ar: string | null;
+  name_en: string | null;
+  link: 'direct' | 'indirect';
+}
+
+/** One human confirmation of a model reading: who, when, what they said, and the source they cite. */
+export interface ChainFixConfirmation {
+  reviewer: string;
+  reviewed_at: string;
+  note: string;
+  citation: { url?: string; edition_locator?: string; quote: string } | null;
+}
+
+/** A model reading a chain shows (0019; docs/review/chain-fix-pipeline.md). "Verified" only with a human confirmation. */
+export interface ChainFixLabel {
+  fix_id: string;
+  state: string;
+  effect: 'replace_routes' | 'set_status' | 'annotate';
+  models: string[];
+  runs: number;
+  decided_at: string;
+  awaiting_final_review: boolean;
+  human_confirmations: ChainFixConfirmation[];
+}
 
 export interface ChainEdge {
   source: string;

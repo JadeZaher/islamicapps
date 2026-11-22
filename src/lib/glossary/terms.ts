@@ -1371,10 +1371,23 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     definition:
       'A work often writes its full chain once, in its first report, and later writes only «from his father, from his grandfather». The first report says who they are.',
     inArchive:
-      'In Musnad Zayd only, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.',
+      'In Musnad Zayd, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. In Musnad al-Rabiʿ, «Abu ʿUbayda» is the man the work’s report No. 1 names in full, Abu ʿUbayda Muslim b. Abi Karima al-Tamimi; he has his own record credited to the work, and Riwayat’s record for the name stays an unconfirmed candidate. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.',
     related: ['imam-kunya', 'confirmed-by-source-and-text'],
     aliases: ['abihi', 'jaddihi', 'his father, his grandfather'],
     enumValues: ['mention_candidate_basis.named_in_opening_isnad'],
+  },
+  {
+    slug: 'compiler-of-the-work',
+    section: 'archive',
+    term: 'Compiler of the work',
+    english: 'e.g. al-Bukhari heading every chain of his Sahih',
+    definition:
+      'The compiler is the last transmitter of every report in his book: he heard it from the first name of the chain and wrote it down. Most texts do not write his name, because the book is his.',
+    inArchive:
+      'Every chain of a work with a known compiler is headed by him, marked as derived from the work and never as written in the text (owner, 2026-11-22). He forms a teacher link with the first name only when the chain opens with his own hearing («حدثنا», or the work’s fixed opening) and does not rely on another chain. His record is the archive’s existing record where a standing rule of that tradition already identifies him (Malik, Ahmad, al-Darimi, Abu Dawud, al-Kulayni, al-Husayn b. Saʿid); otherwise a record credited to the work. Not done for works whose compiler is not a transmitter (Sahifat al-Rida, the modern Muʿjam, Nahj al-Balagha). The list is a reviewable file.',
+    related: ['opening-isnad'],
+    aliases: ['compiler', 'musannif', 'author of the collection'],
+    enumValues: ['narrator_authority.work_register'],
   },
   {
     slug: 'edition-identification',

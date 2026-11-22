@@ -160,5 +160,34 @@ class RiwayatLabels(unittest.TestCase):
                 self.assertEqual(xid.riwayat_label_reason(row, shared), expected)
 
 
+class OwnerRulings20261122(unittest.TestCase):
+    """The bare kunya rule and the compiler head (owner rulings 2026-11-22; AGENTS.md)."""
+
+    def test_only_a_kunya_counts_as_bare(self):
+        for surface, expected in [("أبي هريرة", "ابو هريره"), ("أَبُو عُبَيْدَةَ", "ابو عبيده"), ("أبي عبد الله", "ابو عبد الله"),
+                                  ("أم سلمة", "ام سلمه"), ("أبو بكر بن أبي شيبة", None), ("أبو عبيدة الأنصاري", None), ("ابن عباس", None)]:
+            with self.subTest(surface=surface):
+                self.assertEqual(xid.bare_kunya_key(surface), expected)
+
+    def test_the_compiler_heads_a_chain_unless_the_text_writes_him_and_pairs_only_when_he_heard_it(self):
+        from work_register import WorkRegister
+        register = WorkRegister()
+        cases = [
+            # work, surfaces, suspension, opening, expected
+            ("sunni:bukhari", ["الحميدي", "سفيان"], None, "حدثنا الحميدي", ("narrator:work:al-bukhari", "direct")),
+            ("sunni:bukhari", ["ابن عباس"], None, "وقال ابن عباس", ("narrator:work:al-bukhari", "indirect")),
+            ("sunni:bukhari", ["محمد بن إسماعيل البخاري", "x"], None, "حدثنا", None),           # a longer spelling: written
+            ("sunni:muwatta", ["يحيى", "مالك", "نافع"], None, "حدثني يحيى عن مالك", None),         # any position in the Muwatta
+            ("imami:al-amali-mufid", ["الجعابي"], None, "1 - قال: أخبرني أبو بكر", ("narrator:work:al-mufid", "direct")),
+            ("imami:man-la-yahduruhu-al-faqih", ["الحسن بن محبوب"], "route_given_elsewhere", "و روى الحسن", ("narrator:work:al-saduq", "indirect")),
+            ("ibadi:musnad-rabi", ["أبو عبيدة", "جابر بن زيد"], None, "أبو عبيدة عن جابر", ("narrator:work:al-rabi-ibn-habib", "direct")),
+            ("ibadi:musnad-rabi", ["جابر بن زيد"], None, "جابر بن زيد عن", ("narrator:work:al-rabi-ibn-habib", "indirect")),
+            ("imami:sahifat-al-imam-ali-al-rida", ["علي بن موسى الرضى"], None, "وباسناده", None),     # no compiler who transmits
+        ]
+        for work, surfaces, suspension, opening, expected in cases:
+            with self.subTest(work=work, opening=opening):
+                self.assertEqual(register.head(work, surfaces, [None] * len(surfaces), suspension, opening), expected)
+
+
 if __name__ == "__main__":
     unittest.main()

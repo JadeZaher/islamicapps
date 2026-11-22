@@ -15,7 +15,7 @@ Definitions of the terms used in the Shura wa Istehsan app, its documentation an
 - [Report grading](#section-report-grading) (16)
 - [Works and genres](#section-works) (10)
 - [Comparative study and history](#section-comparative) (13)
-- [Archive terms](#section-archive) (56)
+- [Archive terms](#section-archive) (57)
 - [Needs the owner’s review](#owner-review)
 - [Enum values without an entry](#enum-values-without-an-entry)
 
@@ -1045,9 +1045,19 @@ In Imami chains the Imams are often named by kunya alone, followed by the honori
 
 A work often writes its full chain once, in its first report, and later writes only «from his father, from his grandfather». The first report says who they are.
 
-- **In this archive:** In Musnad Zayd only, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.
+- **In this archive:** In Musnad Zayd, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. In Musnad al-Rabiʿ, «Abu ʿUbayda» is the man the work’s report No. 1 names in full, Abu ʿUbayda Muslim b. Abi Karima al-Tamimi; he has his own record credited to the work, and Riwayat’s record for the name stays an unconfirmed candidate. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.
 - **Related:** [Imam’s conventional kunya](#imam-kunya), [Machine-reviewed](#confirmed-by-source-and-text)
 - **Data values:** `mention_candidate_basis.named_in_opening_isnad`
+
+<a id="compiler-of-the-work"></a>
+
+### Compiler of the work (e.g. al-Bukhari heading every chain of his Sahih)
+
+The compiler is the last transmitter of every report in his book: he heard it from the first name of the chain and wrote it down. Most texts do not write his name, because the book is his.
+
+- **In this archive:** Every chain of a work with a known compiler is headed by him, marked as derived from the work and never as written in the text (owner, 2026-11-22). He forms a teacher link with the first name only when the chain opens with his own hearing («حدثنا», or the work’s fixed opening) and does not rely on another chain. His record is the archive’s existing record where a standing rule of that tradition already identifies him (Malik, Ahmad, al-Darimi, Abu Dawud, al-Kulayni, al-Husayn b. Saʿid); otherwise a record credited to the work. Not done for works whose compiler is not a transmitter (Sahifat al-Rida, the modern Muʿjam, Nahj al-Balagha). The list is a reviewable file.
+- **Related:** [Named in the opening isnad](#opening-isnad)
+- **Data values:** `narrator_authority.work_register`
 
 <a id="edition-identification"></a>
 

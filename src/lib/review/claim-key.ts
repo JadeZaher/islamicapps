@@ -16,6 +16,7 @@ export const CLAIM_KINDS = [
   'history',
   'quran_citation',
   'numbering',
+  'chain_structure',
 ] as const;
 export type ClaimKind = (typeof CLAIM_KINDS)[number];
 
@@ -34,6 +35,7 @@ export const FIELD_FOR_CLAIM: Readonly<Record<ClaimKind, ReviewField>> = {
   history: 'history',
   quran_citation: 'quran',
   numbering: 'text',
+  chain_structure: 'identity',
 };
 
 const HADITH = String.raw`hadith:[a-z0-9-]+:[^|\s]+(?:\|[^|\s]*\|[^|\s]*)?`;
@@ -56,6 +58,8 @@ const KEY_PATTERNS: Readonly<Record<ClaimKind, RegExp>> = {
   history: new RegExp(`^history\\|(event|epoch):${TOKEN}\\|(start|end|date|place|participant)$`),
   quran_citation: new RegExp(`^quran_citation\\|${HADITH}\\|\\d+\\|\\d+\\|\\d{1,3}:\\d{1,3}(-\\d{1,3})?$`),
   numbering: new RegExp(`^numbering\\|${HADITH}\\|[a-z0-9_]+$`),
+  /** 0019: which routes a report's Arabic writes (the chain reader's claim; datasets/hadith-data/chain-reader). */
+  chain_structure: new RegExp(`^chain_structure\\|${HADITH}$`),
 };
 
 export function isClaimKind(value: unknown): value is ClaimKind {

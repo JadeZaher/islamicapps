@@ -22,10 +22,11 @@ import * as schema from './schema';
  * narrator_source_profiles, narrator_external_ids, narrator_link_candidates (0010).
  * Views: the 5 launch views, public_chain_mention_candidates (0006), report_correspondence_shown_pairs,
  * report_correspondence_display and public_report_correspondences (0007), published_epochs (0008) and
- * public_chain_mention_candidates_v2 (0011).
+ * public_chain_mention_candidates_v2 (0011). 0019: the five chain-fix tables, chain_fix_work_settings and
+ * public_chain_fix_labels.
  */
-const EXPECTED_TABLE_COUNT = 48;
-const EXPECTED_VIEW_COUNT = 11;
+const EXPECTED_TABLE_COUNT = 54;
+const EXPECTED_VIEW_COUNT = 12;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];
 /** Indexes created by hand-written migrations, not by drizzle-kit. */
@@ -308,9 +309,19 @@ async function main() {
     expect(tier.includes("'edition_identification'"), 'public_chain_mention_candidates_v2 does not count edition_identification');
     expect(network.includes("'anonymous'") && network.includes("'not_a_narrator'") && network.includes('first_pos'),
       'narrator_transmissions lost the 0015 anonymous-gap guard or the 0013 seam guard');
-    // 0017: only a chain whose structure a tested rule stands behind forms pairs; the chain view carries status and reasons.
-    expect(network.includes('structure_status') && network.includes("'uncertain'"),
-      'narrator_transmissions lost the 0017 chain structure gate');
+    // 0017/0019: only rule-checked or human-verified chains form pairs; a model-read chain only where its work's setting allows.
+    expect(network.includes("'checked_by_rule'") && network.includes("'verified_by_reviewer'")
+      && network.includes('read_by_model_in_network') && !network.includes("'uncertain'"),
+      'narrator_transmissions lost the 0019 chain structure guard (checked, verified, or model-read only where the work allows)');
+    // 0019: the compiler heads every chain of his work; he forms a pair only with position 0 of a direct, unsuspended chain.
+    expect(network.includes("'compiler_of_work'") && network.includes("'direct'") && network.includes('suspension IS NULL'),
+      'narrator_transmissions lost the 0019 compiler pair rule');
+    const [{ structureCheck }] = await sql<{ structureCheck: string }[]>`
+      select pg_get_constraintdef(oid) as "structureCheck" from pg_constraint where conname = 'chains_structure_status_check'`;
+    expect(structureCheck.includes("'read_by_model'") && structureCheck.includes("'verified_by_reviewer'") && structureCheck.includes('chain_fix_id'),
+      'chains_structure_status_check does not allow the two fix statuses (with their fix named)');
+    expect(/chain_structure_reasons,[\s\S]*chain_fix_id,[\s\S]*chain_compiler_narrator_id,[\s\S]*chain_compiler_link\s*FROM/.test(withheld),
+      'public_chain_links does not end with chain_fix_id, chain_compiler_narrator_id, chain_compiler_link');
     expect(withheld.includes('chain_structure_status') && withheld.includes('chain_structure_reasons'),
       'public_chain_links does not expose chain_structure_status and chain_structure_reasons');
 

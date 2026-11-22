@@ -39,6 +39,9 @@ from chain_chronology import Lifespan, contest_chain  # noqa: E402
 from imam_kunya import ImamKunyaRegister, CONVENTIONS_PATH  # noqa: E402
 import chain_builder  # noqa: E402
 import chain_structure  # noqa: E402
+import chain_fix_projection  # noqa: E402
+from work_register import WorkRegister  # noqa: E402
+import work_register as work_register_module  # noqa: E402
 from mention_text import PlainText, locate_mentions  # noqa: E402
 from provider_english import ProviderEnglish  # noqa: E402
 from transliteration import latin_name  # noqa: E402
@@ -49,7 +52,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.11"
+PROJECTION_VERSION = "2026.11.22.12"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -96,7 +99,8 @@ HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
 ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
 MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py",
                 "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json", "edition_identifications.json",
-                "chain_structure.py", "machine_english.py")
+                "chain_structure.py", "machine_english.py", "work_register.py", "work_register.json",
+                "chain_fix_projection.py")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
 OPENING_ISNAD_LICENCE = ("Shura wa Istehsan register (opening_isnad_rules.json); the name as the work's opening isnad writes "
@@ -1032,10 +1036,20 @@ def project(args: argparse.Namespace) -> dict:
             {"known_as": person["known_as"], "tradition": person["tradition"], "named_by": person["asserted_by"]},
             ensure_ascii=False, sort_keys=True), OPENING_ISNAD_LICENCE, None, person["asserted_by"],
             "source_unverified"])
+    # Persons a work credits (work_register.json): compilers heading its chains, a transmitter it names in full.
+    work_register = WorkRegister()
+    for row in work_register.narrator_rows(arabic_norm):
+        narrator_ids.add(row[0])
+        narrator_english[row[0]] = row[9]
+        narrators.append(row)
+    imam_profiles.extend(work_register.profile_rows())
     external = xid.ExternalSources(args.reconciled)
     for row in external.narrator_rows(arabic_norm):
         narrator_ids.add(row[0])
         narrators.append(row)
+    missing_compilers = sorted({c.narrator_id for c in work_register.compilers.values()} - narrator_ids)
+    if missing_compilers:
+        raise ProjectionError(f"work_register.json names compilers the projection does not load: {missing_compilers}")
     canonical.write("narrators", ["id", "authority", "authority_key", "scholar_indx", "name", "name_ar", "name_en",
                                   "name_ar_normalized", "placeholder_reason", "name_latin", "name_latin_basis"], narrators)
     external_profiles = external.profile_rows()
@@ -1262,6 +1276,16 @@ def project(args: argparse.Namespace) -> dict:
             del branches_by_hadith[hadith_id]
     counts["sunni_chain_builder"] = dict(sorted(sunni_counts.items()))
 
+    # Accepted chain fixes (chain_fix_projection.py, AGENTS.md §Chain fixes): after every builder, before the gate.
+    # An absent or empty overrides file is a no-op.
+    chain_fix_counts: Counter = Counter()
+    chain_fix_overrides = chain_fix_projection.replay.load_overrides(args.chain_fixes)
+    chain_field = {record_to_hadith[record_id]: row["chain"] for record_id, row in sidecars["pure_canon_chain.jsonl.gz"].items()
+                   if record_id in record_to_hadith and row.get("chain")}
+    chain_fix_projection.apply_overrides(chain_fix_overrides, branches_by_hadith, hadith_info, hadith_text, chain_field,
+                                         external, chain_fix_counts)
+    counts["chain_fixes"] = {"overrides": len(chain_fix_overrides), **dict(sorted(chain_fix_counts.items()))}
+
     # Chain structure gate (chain_structure.py, AGENTS.md §Chain structure gate): prose and rijal works and chapter
     # headings store no chain at all; the loader retires their earlier rows.
     structure_counts: Counter = Counter()
@@ -1301,6 +1325,50 @@ def project(args: argparse.Namespace) -> dict:
             name_cache[surface] = match
         return name_cache[surface]
 
+    def source_claims(hadith_id: str, branch: dict, position: int, mention_id: str, surface_ar: str, owner: dict,
+                      dropped: Counter, external_tally: Counter) -> list[xid.Candidate]:
+        """The sources' own claims at one written mention: the K6 source index through the mention's origin, then hadith-kg
+        and Riwayat claims bound to its surface and the report's Arabic."""
+        found: list[xid.Candidate] = []
+        source = source_alignment.get(hadith_id)
+        if source is not None:
+            row, alignment = source
+            origin = branch["origins"][position] if branch.get("origins") else (branch["branch"], position)
+            hit = alignment.get(origin) if origin else None
+            if hit is not None:
+                source_position, shared_trunk = hit
+                scholar = row["source_ids"][source_position]
+                basis = "source_index_confirmed_by_text" if row["basis"] == K6_CONFIRMED_BASIS else "source_index"
+                if f"narrator:rawi:{scholar}" not in narrator_ids:
+                    dropped[f"{basis}:narrator_not_in_bundle"] += 1
+                elif placeholders.get(scholar):
+                    # Owner decision (d): a placeholder row is never a match target, whoever names it.
+                    dropped[f"{basis}:placeholder:{placeholders[scholar]}"] += 1
+                else:
+                    detail = row["agreement_class"] + (":shared_trunk" if shared_trunk else "")
+                    found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail, source_position))
+        found.extend(external.candidates_for(mention_id, hadith_id, surface_ar, owner["arabic_sha256"], external_tally))
+        return found
+
+    # Bare kunya rule (owner 2026-11-22, all traditions; AGENTS.md §Bare kunya rule): a surface that is only a kunya stands
+    # as an identity only when exactly one person in that work's own source carries it. Carriers are counted per work,
+    # kunya and source over every written bare-kunya mention before any identity is decided.
+    kunya_carriers: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+    for hadith_id, report_branches in branches_by_hadith.items():
+        owner = hadith_info[hadith_id]
+        for branch in report_branches:
+            built_mentions = branch.get("built")
+            for position, (mention_id, surface_ar, _) in enumerate(branch["mentions"]):
+                if built_mentions and built_mentions[position].inherited_from:
+                    continue
+                key = xid.bare_kunya_key(surface_ar)
+                if key is None:
+                    continue
+                for claim in source_claims(hadith_id, branch, position, mention_id, surface_ar, owner, Counter(), Counter()):
+                    if not claim.placeholder and not claim.label_like:
+                        kunya_carriers[(owner["source_work_id"], key, xid.authority_of(claim.narrator_id))].add(claim.narrator_id)
+    compiler_counts: Counter = Counter()
+
     provider_english = ProviderEnglish(args.imami_english_lexicon)
     chains = []
     mentions = []
@@ -1319,7 +1387,6 @@ def project(args: argparse.Namespace) -> dict:
         owner = hadith_info[hadith_id]
         work = owner["source_work_id"]
         tradition = tradition_names[owner["tradition_id"]]
-        source = source_alignment.get(hadith_id)
         report_text = PlainText(hadith_text[hadith_id])
         pure_canon_row = pure_canon_rows.get(owner["record_id"])
         extraction = openiti_extraction.get(owner["record_id"])
@@ -1335,11 +1402,15 @@ def project(args: argparse.Namespace) -> dict:
             rows = branch["mentions"]
             built_mentions = branch.get("built")
             status = chain_structure.UNCERTAIN if reasons else chain_structure.CHECKED
+            fix = branch.get("chain_fix")
+            if fix and fix["structure_status"]:
+                # A fix's reading is not re-gated: its status is the fix's (read_by_model, verified_by_reviewer).
+                status, reasons = fix["structure_status"], []
             structure_counts[f"{tradition}:{status}"] += 1
             structure_counts.update(f"reason:{tradition}:{reason}" for reason in reasons)
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
                            branch["extraction_method"], None, branch["sanad_confidence"], branch.get("suspension"), None,
-                           status, pg_array(reasons) if reasons else None])
+                           status, pg_array(reasons) if reasons else None, fix["fix_id"] if fix else None, None, None])
             if built_mentions and any(mention.inherited_from for mention in built_mentions):
                 # An inherited name is not written in this report: only the written ones are located in its text.
                 written_at = [position for position, mention in enumerate(built_mentions) if not mention.inherited_from]
@@ -1374,32 +1445,19 @@ def project(args: argparse.Namespace) -> dict:
                             else:
                                 found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail,
                                                            placeholder=placeholders.get(scholar)))
-                    if source is not None:
-                        row, alignment = source
-                        origin = branch["origins"][position] if branch.get("origins") else (branch["branch"], position)
-                        hit = alignment.get(origin) if origin else None
-                        if hit is not None:
-                            source_position, shared_trunk = hit
-                            scholar = row["source_ids"][source_position]
-                            basis = "source_index_confirmed_by_text" if row["basis"] == K6_CONFIRMED_BASIS else "source_index"
-                            if f"narrator:rawi:{scholar}" not in narrator_ids:
-                                identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
-                            elif placeholders.get(scholar):
-                                # Owner decision (d): a placeholder row is never a match target, whoever names it.
-                                identity["dropped"][f"{basis}:placeholder:{placeholders[scholar]}"] += 1
-                            else:
-                                detail = row["agreement_class"] + (":shared_trunk" if shared_trunk else "")
-                                found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail, source_position))
-
-                    # External source claims (hadith-kg, Riwayat) at this mention, bound to its surface and Arabic.
-                    external_found = external.candidates_for(mention_id, hadith_id, surface_ar, owner["arabic_sha256"],
-                                                             external_counts)
-                    if work in chain_builder.OPENITI_WORKS:
-                        demoted = [xid.demote_kunya_only(candidate, surface_ar) for candidate in external_found]
-                        identity["kunya_only_demoted"][tradition] += sum(
-                            1 for before, after in zip(external_found, demoted) if before.basis != after.basis)
-                        external_found = demoted
-                    found.extend(external_found)
+                    claims = source_claims(hadith_id, branch, position, mention_id, surface_ar, owner, identity["dropped"],
+                                           external_counts)
+                    named = work_register.named_person(work, surface_ar)
+                    if named is not None:
+                        # The work names this transmitter in full (work_register.json): its own record stands; a source's
+                        # confirmed claim stays beside it as an unconfirmed candidate (owner 2026-11-22, Abu Ubayda).
+                        lowered = [xid.demote_kunya_only(claim, surface_ar) for claim in claims]
+                        identity["named_in_full_claims_unconfirmed"][tradition] += sum(
+                            1 for before, after in zip(claims, lowered) if before.basis != after.basis)
+                        claims = lowered
+                        found.append(xid.Candidate(named.narrator_id, xid.OPENING_ISNAD_BASIS, named.detail))
+                        identity["named_in_full"][f"{tradition}:{named.narrator_id}"] += 1
+                    found.extend(claims)
                     if built_mention is not None and built_mention.rule_identity:
                         narrator_id, detail = built_mention.rule_identity
                         found.append(xid.Candidate(narrator_id, xid.OPENING_ISNAD_BASIS, detail))
@@ -1427,18 +1485,31 @@ def project(args: argparse.Namespace) -> dict:
                 agreement = candidate_agreement(candidate.narrator_id for candidate in found)
                 identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
                 standing = xid.standing_identity(found, person_keys)
+                kunya_reason = None
+                kunya = xid.bare_kunya_key(surface_ar) if standing and standing[1] in xid.KUNYA_RULE_AUTHORITIES else None
+                if kunya:
+                    carriers = max(len(kunya_carriers[(work, kunya, authority)])
+                                   for authority in xid.KUNYA_RULE_AUTHORITIES[standing[1]])
+                    if carriers != 1:
+                        kunya_reason = (f"kunya only: {carriers} people carry «{surface_ar}» in this work's source, so the "
+                                        "name alone cannot say which")
+                        identity["standing_withheld_by_kunya_rule"][f"{tradition}:{standing[1]}"] += 1
+                        standing = None
+                    else:
+                        identity["standing_bare_kunya_one_carrier"][f"{tradition}:{standing[1]}"] += 1
                 if built_mention is not None and built_mention.link_kind in ("not_a_narrator", "anonymous"):
                     # A back-reference or an unnamed transmitter is a label: its candidates stay, no identity stands.
                     if standing:
                         identity["standing_blocked_on_label_position"][f"{tradition}:{built_mention.link_kind}"] += 1
                     standing = None
+                    kunya_reason = None
                 if standing is None and any(c.basis in xid.CONFIRMED_SOURCE_BASES for c in found):
                     identity["confirmed_but_contested_or_not_counted"][tradition] += 1
-                resolved.append((found, standing))
+                resolved.append((found, standing, kunya_reason))
 
             # Chain chronology guard (chain_chronology.py, AGENTS.md §Chain chronology): a standing identity may not
             # make an adjacent pair impossible on the lexicon's years; seams of a repeated narrator are only counted.
-            contest = contest_chain([standing[0] if standing else None for _, standing in resolved], lifespans,
+            contest = contest_chain([standing[0] if standing else None for _, standing, _ in resolved], lifespans,
                                     lexicon_pairs)
             chronology["pairs_decided_against_one_name"] += contest.decided
             chronology["pairs_undecided_both_withheld"] += contest.undecided
@@ -1447,19 +1518,20 @@ def project(args: argparse.Namespace) -> dict:
             chronology["seam_pairs_never_a_transmission"] += contest.seam_pairs
             chronology["seam_chains"] += 1 if contest.seam_pairs else 0
             if tradition == "Sunni":
-                gap = chain_builder.missing_link_after([standing[0] if standing else None for _, standing in resolved],
+                gap = chain_builder.missing_link_after([standing[0] if standing else None for _, standing, _ in resolved],
                                                        death_year, [surface for _, surface, _ in rows])
                 if gap is not None:
                     chains[-1][9] = gap
                     identity["chains_with_missing_link"][tradition] += 1
+            final_ids: list[str | None] = []
             for position, (mention_id, surface_ar, normalized) in enumerate(rows):
-                found, standing = resolved[position]
+                found, standing, kunya_reason = resolved[position]
                 surface = Verbatim(normalized)
                 teacher = Verbatim(rows[position + 1][2]) if position + 1 < len(rows) else None
                 student = Verbatim(rows[position - 1][2]) if position > 0 else None
                 coarse, fine = review_unit_ids(surface, teacher, student, work)
-                withheld = contest.withheld.get(position)
-                if withheld:
+                withheld = contest.withheld.get(position) or kunya_reason
+                if withheld and not kunya_reason:
                     kind = "undecided" if "cannot tell" in withheld else "decided"
                     chronology[f"mentions_withheld:{tradition}:{kind}"] += 1
                     identity["standing_withheld_by_chronology"][f"{tradition}:{standing[1]}"] += 1
@@ -1504,10 +1576,21 @@ def project(args: argparse.Namespace) -> dict:
                     confidence, method, latin[0] if latin else None, latin[1] if latin else None,
                     latin[2] if latin else None, withheld, inherited_from,
                 ])
+                final_ids.append(narrator_id)
+            # The work's compiler heads the chain as its first transmitter, derived, never a mention (owner 2026-11-22;
+            # work_register.py): not when the text already writes him; 'direct' only when he heard position 0.
+            head = work_register.head(work, [surface for _, surface, _ in rows], final_ids, branch.get("suspension"),
+                                      detection_text)
+            if head is not None:
+                chains[-1][13], chains[-1][14] = head
+                compiler_counts[f"{tradition}:{work}:{head[1]}"] += 1
+            elif work in work_register.compilers:
+                compiler_counts[f"{tradition}:{work}:written_in_text"] += 1
     counts["chain_structure"] = dict(sorted(structure_counts.items()))
+    counts["compiler_heads"] = dict(sorted(compiler_counts.items()))
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
                                "sanad_confidence", "suspension", "missing_link_after", "structure_status",
-                               "structure_reasons"], chains)
+                               "structure_reasons", "chain_fix_id", "compiler_narrator_id", "compiler_link"], chains)
     canonical.write("chain_mentions", [
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",
@@ -1629,6 +1712,11 @@ def project(args: argparse.Namespace) -> dict:
             "external_identity_sidecars": {f"reconciled/{name}": digest for name, digest in sorted(external.hashes.items())},
             "imam_kunya_conventions_sha256": sha256_file(CONVENTIONS_PATH),
             "machine_english": machine_english_input(args),
+            "reader_v3_work_profiles": {"work_profiles_v3.json": sha256_file(work_register_module.PROFILES_V3_PATH),
+                                        "expand_v3.py": sha256_file(work_register_module.EXPAND_V3_PATH)},
+            "chain_fixes": ({"path": display_path(args.chain_fixes), "sha256": sha256_file(args.chain_fixes),
+                             "replay_sha256": sha256_file(chain_fix_projection.REPLAY_PATH)}
+                            if args.chain_fixes.is_file() else None),
             "imami_english_lexicon": {"path": display_path(args.imami_english_lexicon),
                                       "sha256": sha256_file(args.imami_english_lexicon)},
             "name_modules_sha256": {name: sha256_file(HERE / name) for name in MODULE_FILES},
@@ -1683,6 +1771,8 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="gated machine English (translate_gap_fill.py finalize); a missing file means none")
     parser.add_argument("--imami-english-lexicon", type=Path, default=IMAMI_ENGLISH_LEXICON,
                         help="Thaqalayn English-sanad surface lexicon (diagnostics/chain-reconciliation)")
+    parser.add_argument("--chain-fixes", type=Path, default=chain_fix_projection.OVERRIDES_PATH,
+                        help="accepted chain-fix overrides (chain-fixes/accepted_overrides.jsonl.gz); absent means none")
     return parser
 
 

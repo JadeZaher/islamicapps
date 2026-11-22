@@ -21,8 +21,11 @@ interface Run {
   last_finished_at: string;
 }
 
+/** Specialists whose records live elsewhere than records/<id>/ (the chain reader's runs are chain-fix submissions, one file per run). */
+const RECORD_DIRECTORIES: Readonly<Record<string, string>> = { 'chain-reader': path.join('chain-fixes', 'submissions') };
+
 function runsFor(specialistId: string): Run[] {
-  const directory = path.join(REPOSITORY_ROOT, 'reviews', 'ai', 'records', specialistId);
+  const directory = path.join(REPOSITORY_ROOT, 'reviews', 'ai', 'records', RECORD_DIRECTORIES[specialistId] ?? specialistId);
   if (!existsSync(directory)) return [];
   const runs = new Map<string, Run>();
   for (const file of readdirSync(directory).filter((name) => name.endsWith('.jsonl')).sort()) {

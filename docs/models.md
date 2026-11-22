@@ -39,6 +39,7 @@ What its output may and may not be used for:
 | `Claude Opus 4.7 (1M context)` | coding_assistance | Co-authored application code (src/app, src/lib, src/scripts), data pipeline code (datasets/hadith-data, datasets/archive) and track documentation (conductor, .omc) in 6 commits | 6 commits | not_applicable | namespaced_specific |
 | `Claude Opus 4.6 (1M context)` | coding_assistance | Co-authored data pipeline code (datasets/hadith-data, datasets), application code (src/app, src/lib, src/components, src/scripts) and track documentation (conductor, .omc) in 2 commits | 2 commits | not_applicable | namespaced_specific |
 | `qwen/qwen3.7-flash` | extraction_audit | Scored each of the 1,901 corrected OpenITI reports in production (Musnad al-Rabi 1,005, Musnad Zayd 691, Sahifat al-Rida 205) against a window of the OpenITI source, 0 to 3 for boundaries, cleanliness and sanad/matn split, with flags and verbatim-substring proposals | 1,014 verdict events (+3 more outputs) | candidate_only | namespaced_specific |
+| `claude-haiku-5-5` | chain_reading | Chain reading (chain-fix submissions): read each pilot report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md) | 568 reader outputs (+1 more outputs) | candidate_only | namespaced_specific |
 
 Row counts for canonical data come from the full-schema master datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz (99,283 rows, streamed; fields translation_source, translation_model, translation_review_status, translation_status). The tracked all_hadiths_unified.csv.gz has the legacy 26-column schema and carries no model fields.
 
@@ -369,6 +370,32 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
   - Reports with all three scores 3: 1,195 of 1,898 (63 percent). Lowest sub-score 0 for 209 reports, 1 for 101, 2 for 393. Most frequent flags: markup_leak 217, sanad_matn_split_wrong 184, merged_records 153, commentary_tail 120. The worst reports are mostly Musnad al-Rabi reports that open with the compiler's own 'qal al-Rabi' (judged commentary, not a report). (source: datasets/hadith-data/extraction-quality/output/score_summary_corrected.json)
 - Evidence:
   - `datasets/hadith-data/extraction-quality/output/run_manifest_corrected_zayd.json`: whole file (run_id, model, prompt_sha256, started_utc, finished_utc, cost_usd); the rida and rabi retry manifests sit beside it
+
+### claude-haiku-5-5: chain reading (`claude-haiku-5-5-chain-reader-pilots`)
+
+- Runtime: Claude Code subagents, fresh context per run, two independent passes
+- Work: Chain reading (chain-fix submissions): read each pilot report's Arabic and wrote its routes name by name, for the chain-fix pipeline (docs/review/chain-fix-pipeline.md). Pilot v1 (prompt.md) and v2 (context/prompt-v2.md) over the 284 labelled pilot reports; v3 (v3/prompt-v3.md) batch 001 of 500 reports is being read. No reading has been submitted to the fix store or applied to any chain.
+- Dates: 2026-11-22 to 2026-11-22 (RUN.txt start and end times)
+- Identity: namespaced_specific. The id each reader run wrote in its RUN.txt line (chain-reader/outputs/*/RUN.txt, context/outputs-v2/*/RUN.txt).
+- Status: candidate_only. ai_reviewed, awaiting final review: an agreed, unheld reading may be applied as 'Read by model, awaiting final review' only through the fix pipeline; none has been.
+- Inputs:
+  - `datasets/hadith-data/chain-reader/pilot/ (284 labelled reports)`
+  - `datasets/hadith-data/chain-reader/context/pilot-v2/packets/`
+  - `datasets/hadith-data/chain-reader/v3/batch-001/packets/`
+- Outputs:
+  - `datasets/hadith-data/chain-reader/outputs/`: 568 reader outputs (v1, two passes)
+  - `datasets/hadith-data/chain-reader/context/outputs-v2/`: 568 reader outputs (v2, two passes)
+- May be used for:
+  - Chain-fix submissions under the agreement and hold rules (reviews/ai/tools/chain-fix-*.ts)
+  - Proposals beyond the chain for a person to decide
+- May not be used for:
+  - Writing a chain without two agreeing independent readings and no hold
+  - Feeding teacher and student lists before the work's agreed-reading error rate is measured (chain_fix_work_settings)
+  - Calling a reading verified
+- Quality findings:
+  - Pilot v2 re-scored under the v3 tool: 213 of 279 applied, 210 right (99 percent, 96 to 100), measured on the readings the holds were tuned on (in-sample); batch 001 is the out-of-sample measurement. (source: datasets/hadith-data/chain-reader/v3/README.md)
+- Evidence:
+  - `datasets/hadith-data/chain-reader/v3/rescore_v3.json`: whole file
 
 ## Coverage notes
 

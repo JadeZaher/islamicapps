@@ -13,6 +13,8 @@ import type {
   NameLatinBasis,
   NarratorAuthority,
   ChainStructureStatus,
+  ChainCompiler,
+  ChainFixLabel,
 } from './contracts';
 import { BASIS_ORDER, mentionIdentity } from './identity-groups';
 import { text } from './mappers';
@@ -86,7 +88,8 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
            case when link.id is not null then m.extraction_method end as standing_basis,
            m.identity_withheld_reason, m.inherited_from_mention_id, c.suspension as chain_suspension,
            c.missing_link_after as chain_missing_link_after,
-           c.structure_status as chain_structure_status, c.structure_reasons as chain_structure_reasons
+           c.structure_status as chain_structure_status, c.structure_reasons as chain_structure_reasons,
+           c.chain_fix_id, c.compiler_narrator_id as chain_compiler_narrator_id, c.compiler_link as chain_compiler_link
     from chain_mentions m
     join chains c on c.id = m.chain_id and c.retired_at is null
     join hadiths h on h.id = m.hadith_id and h.retired_at is null
@@ -152,10 +155,19 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              'identity_withheld_reason', l.identity_withheld_reason,
              'inherited_from_mention_id', l.inherited_from_mention_id,
              'chain_suspension', l.chain_suspension, 'chain_missing_link_after', l.chain_missing_link_after,
-             'chain_structure_status', l.chain_structure_status, 'chain_structure_reasons', l.chain_structure_reasons)
+             'chain_structure_status', l.chain_structure_status, 'chain_structure_reasons', l.chain_structure_reasons,
+             'chain_compiler', case when cn.id is not null then json_build_object(
+               'narrator_id', cn.id, 'name_ar', cn.name_ar, 'name_en', coalesce(cn.name_en, cn.name_latin, cn.name),
+               'link', l.chain_compiler_link) end,
+             'chain_fix', case when fl.fix_id is not null then json_build_object(
+               'fix_id', fl.fix_id, 'state', fl.state, 'effect', fl.effect, 'models', fl.models, 'runs', fl.runs,
+               'decided_at', fl.decided_at, 'awaiting_final_review', fl.awaiting_final_review,
+               'human_confirmations', fl.human_confirmations) end)
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
+    left join narrators cn on cn.id = l.chain_compiler_narrator_id and cn.retired_at is null
+    left join public_chain_fix_labels fl on fl.chain_id = l.chain_id
     left join candidates k on k.mention_id = l.id
     where l.hadith_id = any (${hadithIds})
   )`;
@@ -189,6 +201,8 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     chain_missing_link_after: node.chain_missing_link_after == null ? null : Number(node.chain_missing_link_after),
     chain_structure_status: text(node.chain_structure_status) as ChainStructureStatus | null,
     chain_structure_reasons: Array.isArray(node.chain_structure_reasons) ? node.chain_structure_reasons.map(String) : [],
+    chain_compiler: (node.chain_compiler as ChainCompiler | null) ?? null,
+    chain_fix: (node.chain_fix as ChainFixLabel | null) ?? null,
   };
 }
 

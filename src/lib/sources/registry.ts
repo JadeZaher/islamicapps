@@ -307,7 +307,7 @@ export function sourceForLatinName(basis: string, narratorId: string | null | un
 export function sourceForNarratorAuthority(authority: string): SourceCode {
   if (authority === 'hadith_kg') return 'HKG';
   if (authority === 'riwayat') return 'RWY';
-  if (authority === 'imam_register') return 'SWI';
+  if (authority === 'imam_register' || authority === 'work_register') return 'SWI';
   return 'MSD';
 }
 

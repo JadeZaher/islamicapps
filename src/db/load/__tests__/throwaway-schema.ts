@@ -13,6 +13,13 @@ const SUPPORT_TABLES = [
   'narrator_assessments',
   'historical_events',
   'cross_parallels',
+  // 0019: read by narrator_transmissions (the per-work setting) and written by src/db/ops/chain-fix-apply.ts.
+  'chain_fix_work_settings',
+  'chain_fixes',
+  'chain_fix_submissions',
+  'chain_fix_decisions',
+  'chain_fix_reviews',
+  'chain_fix_applications',
 ];
 /** Created in dependency order; definitions read from `public` so they track the migrations. */
 const VIEWS = ['narrator_lifespans', 'public_hadiths', 'public_translations', 'public_chain_links'];

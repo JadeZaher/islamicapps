@@ -321,6 +321,73 @@ const IDENTITY: readonly RuleProcedure[] = [
     covers: [],
     glossary: [],
   },
+  {
+    kind: 'rule',
+    id: 'chain-fix-agreement',
+    version: '2026.11.22',
+    claimKind: 'chain_structure',
+    title: 'Chains read by model readers: when a reading replaces the stored chain',
+    status: 'adopted_not_loaded',
+    rule:
+      'A model reader reads one report’s Arabic and writes its routes, name by name; a tool checks that every name is written in the text and in order, and compares the reading with the stored chain. A reading replaces the stored chain only when at least two independent reader runs gave exactly the same routes, at least one of them blind to the stored chain, with at least twice the runs of every other reading together, and the tool holds nothing against it. A held reading (it drops a name the stored chain has and the text writes; more than eight routes; nested «جميعا» or several «؛»; a back-reference with no previous report; a point the owner’s rulings do not settle) is never applied: it waits for a third reader or a person. The page then says "Read by model (<model>), <date>; awaiting final review". A chain read by model forms no teacher–student pair in any work until that work’s agreed-reading error rate is measured and the owner lifts it. Only a named person’s confirmation turns it into "Verified by <name>, <date>"; one person’s rejection restores the rule-built chain. Readers’ other findings (identity, lexicon dates, duplicate records, text, translation, metadata) are filed for reviewers and never applied by a tool.',
+    evidence: ['The report’s Arabic (Pure Canon: the source’s chain field, then the text)', 'Two or more independent readings of it, each with the reader’s model, prompt and quotes', 'The stored chain, for comparison only'],
+    measured: null,
+    unmeasured:
+      'Not measured, and no reading has been applied. The figure this rule needs is how often an agreed reading is wrong, per work, on the 284 labelled pilot reports; two readers can share a mistake, so agreement alone is not that figure. Until it is measured and published here, nothing read by model reaches teacher and student lists.',
+    failureModes: [
+      'Two readers sharing one mistake (the same model under the same prompt drops the same Companion named in a matn)',
+      'A reading of an older text: refused, re-read against the current text',
+      'A report whose chain repeats an earlier report’s names: out of scope for a reader of one text',
+    ],
+    readerLabel: 'Read by model (<model>), <date>; awaiting final review',
+    excluded: ['Readers’ findings other than the chain: filed as proposals for reviewers, never applied', 'An Imam named in the text as the last link, and the Prophet as the end of a chain: not applied this round'],
+    sources: ['SWI'],
+    code: ['reviews/ai/tools/chain-fix-lib.ts', 'datasets/hadith-data/chain-fixes/chain_fix_engine.py', 'datasets/hadith-data/chain-reader/context/holds.py', 'src/db/ops/chain-fix-apply.ts'],
+    covers: [],
+    glossary: [],
+  },
+  {
+    kind: 'rule',
+    id: 'compiler-of-the-work',
+    version: '2026.11.22',
+    claimKind: 'identity',
+    title: 'The compiler heads every chain of his work',
+    status: 'in_use',
+    rule:
+      'The compiler of a work is the last transmitter of every report in it (owner ruling, 2026-11-22). Each chain of a work with a known compiler is headed by him, marked as derived from the work and never as a name written in the text; where the text already writes him (Malik in the Muwatta, al-Husayn b. Saʿid in his own books) nothing is added. He forms a teacher–student pair with the chain’s first name only when the chain opens with his own hearing («حدثنا», «أخبرنا», or the work’s fixed opening), does not rely on another chain, and passes the same chronology test as every pair. His record is the archive’s existing record where a standing rule of that tradition already identifies him (Malik, Ahmad b. Hanbal, al-Darimi, Abu Dawud, al-Kulayni, al-Husayn b. Saʿid); otherwise a record credited to the work, never merged across traditions.',
+    evidence: ['The work and its compiler (chain-reader/context/work_profiles.json; owner ruling for Musnad Zayd: Abu Khalid al-Wasiti)', 'The opening words of the report', 'The chain’s structure status and whether it relies on another'],
+    measured: null,
+    unmeasured: 'A sample of 30 new compiler pairs was read against the text when the rule was loaded (datasets/hadith-data/chain-audit/compiler-ruling/README.md); no wider measurement yet.',
+    failureModes: [
+      'A report the compiler gives without his route but opens with a hearing verb of someone else’s words',
+      'A work-credited record with no dates: the chronology test cannot check its pairs',
+    ],
+    readerLabel: 'Compiler of the work; not written in the text',
+    excluded: ['Sahifat al-Rida, the modern Muʿjam al-ahadith al-muʿtabara, Nahj al-Balagha, Kitab al-Duafa, Risalat al-Huquq, al-Shafiʿi’s Musnad: no compiler who transmits the reports, or no chains'],
+    sources: ['SWI'],
+    code: ['datasets/hadith-data/pg_export/work_register.py', 'datasets/hadith-data/pg_export/work_register.json'],
+    covers: [],
+    glossary: ['compiler-of-the-work'],
+  },
+  {
+    kind: 'rule',
+    id: 'identity-bare-kunya',
+    version: '2026.11.22',
+    claimKind: 'identity',
+    title: 'A name that is only a kunya',
+    status: 'in_use',
+    rule:
+      'A name written as a kunya alone («أبو هريرة», «أبي عبد الله») stands as an identity only when exactly one person carries that kunya in the source that identifies it, across that work’s chains; when the source names two or more people for it, every claim stays a candidate with the reason shown (owner ruling, 2026-11-22, all traditions). An Imam’s kunya with the honorific follows its own register, and a name the work itself gives in full follows the work.',
+    evidence: ['Every claim the work’s sources make for that kunya in that work'],
+    measured: null,
+    unmeasured: 'Changes were counted and 30 of each direction read when the rule was loaded (datasets/hadith-data/chain-audit/compiler-ruling/README.md).',
+    failureModes: ['A source that gives one person a kunya another man of the same work also carries: the name stands though the text alone could not tell'],
+    readerLabel: 'kunya only: several people carry this name in this work’s source',
+    sources: ['K6I', 'HKG', 'RWY'],
+    code: ['datasets/hadith-data/pg_export/external_identity.py', 'datasets/hadith-data/pg_export/export_postgres.py'],
+    covers: [],
+    glossary: ['kunya'],
+  },
 ];
 
 // ── Correspondence ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -621,7 +688,29 @@ const NUMBERING: readonly RuleProcedure[] = [
 
 // ── Specialists ────────────────────────────────────────────────────────────────────────────────────────────────────
 
+/** The chain reader (0019): its prompt is referenced in place and hashed on every submission (reviews/ai/AGENTS.md). */
+export const CHAIN_READER_SPECIALIST: Specialist = {
+  kind: 'specialist',
+  id: 'chain-reader',
+  version: '2.0.0',
+  claimKinds: ['chain_structure'],
+  title: 'Isnad reader',
+  status: 'pilot_ready',
+  question: 'Which routes of transmission does this report’s Arabic write, name by name?',
+  prompt: 'datasets/hadith-data/chain-reader/context/prompt-v2.md',
+  packet: [
+    'The report’s Arabic exactly as stored (Pure Canon: the source’s chain field, a blank line, then the text)',
+    'The work’s conventions and the sources’ own claims for the report (v2), never the stored chain or another reader',
+  ],
+  recommendedModel: 'claude-haiku-5-5',
+  modelReason: 'A mechanical reading checked by a validator, held by the tool where it is known to fail, and read by a second independent reader; disputes go to a person.',
+  notThisModel: [],
+  measured: null,
+  unmeasured: 'Pilots v1 and v2 run on the 284 labelled reports (datasets/hadith-data/chain-reader/); the agreed-reading error rate per work is not yet established.',
+};
+
 export const SPECIALISTS: readonly Specialist[] = [
+  CHAIN_READER_SPECIALIST,
   {
     kind: 'specialist',
     id: 'isnad-identity',

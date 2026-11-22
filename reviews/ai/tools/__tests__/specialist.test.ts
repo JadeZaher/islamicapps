@@ -53,12 +53,18 @@ const goodOutput = () => ({
 });
 
 check('a well-formed output passes', () => assert.deepEqual(validateSpecialistOutput(packet, goodOutput(), '1.0.0'), []));
+check('contested is recorded with any reading, even one that maps to another outcome', () => {
+  const output = goodOutput();
+  output.verdicts[0].reading = 'unrelated';
+  assert.deepEqual(validateSpecialistOutput(packet, output, '1.0.0'), []);
+});
 
 const cases: readonly [string, (output: ReturnType<typeof goodOutput>) => void, RegExp][] = [
   ['a quote that is not in the text (fabricated or normalised)', (output) => (output.verdicts[0].evidence[0].quote = 'لعن رسول الله ﷺ الواصلة'), /not an exact substring/],
   ['a quote attributed to the wrong text', (output) => (output.verdicts[0].evidence[1].passage_id = 'A'), /not an exact substring of A/],
   ['an outcome outside the vocabulary', (output) => ((output.verdicts[0] as { outcome: string }).outcome = 'likely'), /outcome/],
-  ['a reading that contradicts the outcome', (output) => (output.verdicts[0].reading = 'unrelated'), /goes with outcome contradicts/],
+  // `contested` goes with any reading (correspondence.md §How to judge); a decided outcome must match its reading.
+  ['a decided outcome that contradicts the reading', (output) => Object.assign(output.verdicts[0], { outcome: 'supports', reading: 'unrelated' }), /goes with outcome contradicts/],
   ['a missing verdict', (output) => (output.verdicts = []), /no verdict for claim_id I1/],
   ['a claim id not in the packet', (output) => (output.verdicts[0].claim_id = 'I9'), /not in the packet/],
   ['a stale prompt version', (output) => (output.prompt_version = '0.9.0'), /prompt_version/],

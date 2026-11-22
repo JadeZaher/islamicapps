@@ -96,6 +96,11 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     const value = await scalar(sql, query);
     checks.push({ name, ok: expectZero ? value === 0 : value > 0, detail: `${expectZero ? 'violations' : 'value'}: ${value}` });
   };
+  /** A chain `c` that may feed teacher and student lists (0019): the same rule as narrator_transmissions' `feeding` CTE. */
+  const FEEDING = `(c.structure_status in ('checked_by_rule', 'verified_by_reviewer')
+    or (c.structure_status = 'read_by_model' and exists (
+          select 1 from hadiths fh join chain_fix_work_settings fs on fs.collection_id = fh.collection_id
+          where fh.id = c.hadith_id and fs.retired_at is null and fs.read_by_model_in_network)))`;
 
   const current = await sql.unsafe<
     { id: string; attribution_disclaimer: string; release_class: string; public_override_by: string | null; source_release_state: string; curation_manifest_sha256: string | null }[]
@@ -260,20 +265,21 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and (h.tradition_id <> 'tradition:sunni' or n.authority::text <> 'rawi' or nullif(trim(c.detail), '') is null)`,
   );
   await check(
-    'the opening-isnad rule (named_in_opening_isnad) names only register rows, only in Musnad Zayd',
+    'the opening-isnad rule (named_in_opening_isnad) names only register rows, only in the works whose opening isnad is read (Musnad Zayd, Musnad al-Rabi)',
     `select count(*)::int as value from chain_mention_candidates c
      join hadiths h on h.id = c.hadith_id join narrators n on n.id = c.narrator_id
      where c.retired_at is null and c.basis::text = 'named_in_opening_isnad'
-       and (h.collection_id <> 'collection:zaydi:musnad-zayd' or n.authority::text <> 'imam_register')`,
+       and (h.collection_id not in ('collection:zaydi:musnad-zayd', 'collection:ibadi:musnad-rabi')
+            or n.authority::text not in ('imam_register', 'work_register'))`,
   );
   await check(
     'external-authority narrators carry their source: one live profile naming that source, and no profile on a lexicon row',
     `select (select count(*) from narrators n
              left join narrator_source_profiles p on p.narrator_id = n.id and p.retired_at is null
-             where n.retired_at is null and n.authority::text in ('hadith_kg', 'riwayat', 'imam_register')
+             where n.retired_at is null and n.authority::text in ('hadith_kg', 'riwayat', 'imam_register', 'work_register')
                and (p.narrator_id is null or p.source <> n.authority::text or nullif(trim(p.licence), '') is null))
           + (select count(*) from narrator_source_profiles p join narrators n on n.id = p.narrator_id
-             where p.retired_at is null and n.authority::text not in ('hadith_kg', 'riwayat', 'imam_register'))
+             where p.retired_at is null and n.authority::text not in ('hadith_kg', 'riwayat', 'imam_register', 'work_register'))
           + (select count(*) from chain_mention_candidates c join narrators n on n.id = c.narrator_id
              where c.retired_at is null and c.source_ref is not null
                and n.authority::text <> case when c.basis::text like 'source_hadith_kg%' then 'hadith_kg' else 'riwayat' end)
@@ -369,14 +375,104 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     'every live chain carries a structure status',
     `select count(*)::int as value from chains where retired_at is null and structure_status is null`,
   );
+  // 0019: checked by rule or verified by a reviewer; a chain read by model only where its work's setting allows it (off for
+  // every work at 0019); and a compiler pair only from a direct, unsuspended chain whose position 0 is the teacher.
   await check(
-    'every narrator_transmissions pair stands in a live chain checked by rule',
+    'every narrator_transmissions pair stands in a live chain that may feed lists (adjacent mentions, or the compiler and position 0)',
     `select count(*)::int as value from narrator_transmissions nt
      where not exists (select 1 from chain_mentions a
                        join chain_mentions b on b.chain_id = a.chain_id and b.position = a.position + 1 and b.retired_at is null
-                       join chains c on c.id = a.chain_id and c.retired_at is null and c.structure_status = 'checked_by_rule'
-                       where a.retired_at is null and a.narrator_id = nt.student_id and b.narrator_id = nt.teacher_id)`,
+                       join chains c on c.id = a.chain_id and c.retired_at is null
+                       where a.retired_at is null and a.narrator_id = nt.student_id and b.narrator_id = nt.teacher_id
+                         and ${FEEDING})
+       and not exists (select 1 from chains c
+                       join chain_mentions b on b.chain_id = c.id and b.position = 0 and b.retired_at is null
+                       where c.retired_at is null and c.compiler_narrator_id = nt.student_id and b.narrator_id = nt.teacher_id
+                         and c.compiler_link = 'direct' and c.suspension is null and ${FEEDING})`,
   );
+  // Compiler as first transmitter (0019; src/db/AGENTS.md §Compiler as first transmitter).
+  await check(
+    'a compiler head names a live narrator, never a position the chain already writes, and only in a work with a compiler',
+    `select count(*)::int as value from chains c
+     left join narrators n on n.id = c.compiler_narrator_id and n.retired_at is null
+     where c.retired_at is null and c.compiler_narrator_id is not null
+       and (n.id is null
+            or exists (select 1 from chain_mentions m where m.chain_id = c.id and m.retired_at is null
+                         and m.narrator_id = c.compiler_narrator_id))`,
+  );
+  await check(
+    'a work-register record carries its own profile and is named on a mention only by the work itself (named_in_opening_isnad)',
+    `select (select count(*) from chain_mention_candidates c join narrators n on n.id = c.narrator_id
+             where c.retired_at is null and n.authority::text = 'work_register' and c.basis::text <> 'named_in_opening_isnad')
+          + (select count(*) from narrators n
+             left join narrator_source_profiles p on p.narrator_id = n.id and p.retired_at is null and p.source = 'work_register'
+             where n.retired_at is null and n.authority::text = 'work_register' and p.narrator_id is null)
+          as value`,
+  );
+  // Chain fixes (0019; src/db/AGENTS.md §Chain fixes, docs/review/chain-fix-pipeline.md §Invariants).
+  await check(
+    'chain fixes: a live chain that names a fix reads the report\'s current Arabic',
+    `select count(*)::int as value from chains c
+     join chain_fixes f on f.id = c.chain_fix_id join hadiths h on h.id = c.hadith_id
+     where c.retired_at is null and f.arabic_sha256 is distinct from h.arabic_sha256`,
+  );
+  await check(
+    'chain fixes: a live chain names a fix only while that fix\'s live decision has an effect',
+    `select count(*)::int as value from chains c
+     left join chain_fix_decisions d on d.fix_id = c.chain_fix_id and d.retired_at is null and d.effect is not null
+     where c.retired_at is null and c.chain_fix_id is not null and d.id is null`,
+  );
+  await check(
+    'chain fixes: a model-read or reviewer-verified report names one fix, applied and not rejected',
+    `select count(*)::int as value from (
+       select c.hadith_id from chains c
+       where c.retired_at is null and c.structure_status in ('read_by_model', 'verified_by_reviewer')
+       group by c.hadith_id
+       having count(distinct c.chain_fix_id) <> 1
+           or not exists (select 1 from chain_fix_applications a
+                          where a.fix_id = min(c.chain_fix_id) and a.action = 'applied'
+                            and a.id = (select max(b.id) from chain_fix_applications b where b.fix_id = a.fix_id))
+           or exists (select 1 from chain_fix_decisions d where d.fix_id = min(c.chain_fix_id) and d.retired_at is null
+                        and d.state = 'rejected')) bad`,
+  );
+  await check(
+    'chain fixes: a chain\'s fix status is the one its live decision gives',
+    `select count(*)::int as value from chains c
+     join chain_fix_decisions d on d.fix_id = c.chain_fix_id and d.retired_at is null
+     where c.retired_at is null and d.effect in ('replace_routes', 'set_status') and c.structure_status is distinct from d.structure_status`,
+  );
+  await check(
+    'chain fixes: "verified" (verified_by_reviewer) only with a named human whose latest review confirms, and none rejecting',
+    `with latest as (
+       select distinct on (fix_id, reviewer) fix_id, reviewer, decision from chain_fix_reviews
+       where reviewer_kind = 'human' order by fix_id, reviewer, reviewed_at desc, id desc)
+     select count(*)::int as value from chains c
+     where c.retired_at is null and c.structure_status = 'verified_by_reviewer'
+       and (not exists (select 1 from latest l where l.fix_id = c.chain_fix_id and l.decision = 'confirmed')
+            or exists (select 1 from latest l where l.fix_id = c.chain_fix_id and l.decision = 'rejected'))`,
+  );
+  await check(
+    'chain fixes: an automatically accepted changed reading has two reader runs, one blind to the stored chain',
+    `select count(*)::int as value from chain_fix_decisions d
+     where d.retired_at is null and d.state = 'accepted' and d.effect <> 'annotate'
+       and ((select count(distinct s.orchestrator_run_id) from chain_fix_submissions s where s.fix_id = d.fix_id) < 2
+            or not exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.view in ('text_only', 'text_and_context')))`,
+  );
+  await check(
+    'chain fixes: in a chain a fix rewrote, an identity always has its carried candidate (a new name never invents one)',
+    `select count(*)::int as value from chain_mentions m
+     join chains c on c.id = m.chain_id and c.retired_at is null and c.extraction_method = 'chain_fix_reader'
+     where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
+       and not exists (select 1 from chain_mention_candidates k where k.mention_id = m.id and k.narrator_id = m.narrator_id
+                         and k.retired_at is null)`,
+  );
+  await check(
+    'chain fixes: every review names its reviewer, a note and a date; an AI review names its model and prompt',
+    `select count(*)::int as value from chain_fix_reviews
+     where btrim(reviewer) = '' or btrim(note) = '' or reviewed_at is null
+        or (reviewer_kind = 'ai' and (model_id is null or prompt_path is null or prompt_sha256 is null))`,
+  );
+
   // Chain chronology guard (src/db/AGENTS.md §Chain chronology guard): a withheld identity keeps its candidates.
   await check(
     'a withheld identity has no automatic narrator_id and keeps a confirmed candidate',
@@ -385,8 +481,11 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and (m.resolution_basis = 'source_index'
             or not exists (select 1 from chain_mention_candidates c
                            where c.mention_id = m.id and c.retired_at is null
-                             and c.basis::text in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
-                                                   'source_riwayat_confirmed_by_text', 'imam_kunya_convention')))`,
+                             and (c.basis::text in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
+                                                    'source_riwayat_confirmed_by_text', 'imam_kunya_convention')
+                                  -- 0019 bare kunya rule: withheld from the source's own claim, confirmed or not
+                                  or (m.identity_withheld_reason like 'kunya only:%'
+                                      and c.basis::text in ('source_index', 'source_hadith_kg', 'source_riwayat')))))`,
   );
   await check(
     'no machine-reviewed pair in narrator_transmissions is impossible on the lexicon years outside irsal range',
@@ -492,6 +591,17 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
   }
 
   const reported: Record<string, unknown> = {
+    // Not fatal: a rejected fix stays applied only until the revert runs in the same operator step as the review sync.
+    chain_fixes_rejected_but_applied: await scalar(
+      sql,
+      `select count(*)::int as value from chain_fix_decisions d
+       where d.retired_at is null and d.state = 'rejected'
+         and 'applied' = (select a.action from chain_fix_applications a where a.fix_id = d.fix_id order by a.id desc limit 1)`,
+    ),
+    compiler_heads: await sql.unsafe(
+      `select compiler_link, count(*)::int as chains from chains where retired_at is null and compiler_narrator_id is not null
+       group by 1 order by 1`,
+    ),
     orphaned_decisions: await scalar(
       sql,
       `select count(*)::int as value from narrator_surface_decisions d where d.retired_at is null and not exists (

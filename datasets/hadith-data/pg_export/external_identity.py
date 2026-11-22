@@ -49,6 +49,25 @@ KUNYA_ONLY_DEMOTION = {
 }
 
 
+# A surface that is only a kunya, the theophoric «أبو عبد الله» included (owner, 2026-11-22: the bare kunya rule).
+BARE_KUNYA_SURFACE = re.compile(r"^(?:أبو|ابو|أبي|ابي|أبا|ابا|أم|ام)\s+(?:عبد\s+)?\S+$")
+# Which source's claims a standing method rests on; the bare kunya rule counts carriers in each (exempt methods absent).
+KUNYA_RULE_AUTHORITIES = {
+    "source_index_confirmed_by_text": ("rawi",), "two_sources_agree": ("rawi", "hadith-kg"),
+    "source_hadith_kg_confirmed_by_text": ("hadith-kg",), "source_riwayat_confirmed_by_text": ("riwayat",),
+}
+
+
+def bare_kunya_key(surface_ar: str) -> str | None:
+    """«أبي هريرة» -> «ابو هريره»: the kunya alone in one case and spelling, or None when the surface is more than a kunya."""
+    text = " ".join(strip_marks(surface_ar).split())
+    if not BARE_KUNYA_SURFACE.match(text):
+        return None
+    text = re.sub("[أإآٱ]", "ا", text).replace("ى", "ي").replace("ة", "ه")
+    head, rest = text.split(" ", 1)
+    return ("ام" if head == "ام" else "ابو") + " " + rest
+
+
 def demote_kunya_only(candidate: "Candidate", surface_ar: str) -> "Candidate":
     """A kunya-only surface cannot confirm a source's identity: the candidate stays, without the confirmation."""
     lowered = KUNYA_ONLY_DEMOTION.get(candidate.basis)
@@ -379,6 +398,20 @@ class ExternalSources:
                          external, target, link["basis"], json.dumps(evidence, ensure_ascii=False, sort_keys=True),
                          "unreviewed"])
         return rows, dropped
+
+    def remap_report_claims(self, old_mention_ids: Iterable[str], mapping: dict[str, str]) -> tuple[int, int]:
+        """Move a replaced report's claims to the new mention id of each kept name; drop the rest. (moved, dropped)."""
+        taken = {mention_id: self.claims_by_mention.pop(mention_id) for mention_id in old_mention_ids
+                 if mention_id in self.claims_by_mention}
+        moved = dropped = 0
+        for mention_id, claims in taken.items():
+            target = mapping.get(mention_id)
+            if target is None:
+                dropped += len(claims)
+                continue
+            self.claims_by_mention[target] = [{**claim, "mention_id": target} for claim in claims]
+            moved += len(claims)
+        return moved, dropped
 
     # -- mention claims ----------------------------------------------------------------------------------------------
     def candidates_for(self, mention_id: str, hadith_id: str, surface_ar: str, arabic_sha256: str,

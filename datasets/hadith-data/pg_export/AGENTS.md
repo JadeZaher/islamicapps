@@ -406,3 +406,44 @@ chain readings; every change is reversible by name.
   new tests in `test_chain_structure.py`.
 - The recalibrated gate is NOT measured out of sample: its held-out gains rest on shapes read from the same items. Public wording (`/method`) says so.
 
+
+## Chain fixes (projection `2026.11.22.12`; `src/db/AGENTS.md` §Chain fixes)
+
+`chain_fix_projection.py` replays `chain-fixes/accepted_overrides.jsonl.gz` (`--chain-fixes`; absent or empty: nothing changes,
+`counts.chain_fixes = {"overrides": 0}`) after every builder and before the gate, through `chain-fixes/replay.py`: a broken binding
+(Arabic or reader text changed) drops the row and counts it; `replace_routes` takes the planned branches (kept names bring their
+`origins`, so K6 and edition claims follow them; external claims move to the new mention id or are dropped and counted);
+`set_status` / `annotate` mark the rule-built branches. A replayed branch is not gated: its status is the fix's, `chains.chain_fix_id`
+names it. The manifest binds the overrides file and `replay.py` by SHA-256 (`inputs.chain_fixes`).
+
+## Compiler as first transmitter (projection `2026.11.22.12`; owner ruling 2026-11-22)
+
+`work_register.py` with `work_register.json` (owner-reviewable). Every chain of a work with a compiler gets `compiler_narrator_id`
+and `compiler_link`; no mention is added, so ids, positions, review units and the gate's text checks are unchanged.
+
+- **Not doubled**: no head when the text already writes him: the reader tool's own alias rule (`chain-reader/v3/expand_v3.py`
+  `compiler_written` over `v3/work_profiles_v3.json`: the first written link under any listed spelling, any link for the Muwatta),
+  the register's forms, or a standing identity on his record. Both files are bound in the manifest (`inputs.reader_v3_work_profiles`).
+- **direct / indirect**: `direct` (a pair forms in the view) when the chain is not suspended and its opening is his own hearing:
+  Sunni works and Musnad Zayd open with a hearing verb (`DIRECT_VERB`; «قال: أخبرني» quoting him counts, al-Mufid's Amali);
+  works that open with the shaykh's name (al-Kafi, al-Saduq, al-Husayn b. Saʿid ...) are direct unless the opening is «قال»,
+  «روى», «وعن», «عنه», «بهذا الإسناد» ... (`INDIRECT_OPENING`); al-Rabiʿ only when the first link is Abu ʿUbayda (the work's fixed
+  shape). Otherwise `indirect`: the head is shown, no pair.
+- **Records** (`narrators` with authority `work_register`, profile `work_register` naming the work): reused only where a standing
+  rule of the tradition already identifies the person (counted on production; `reuse_basis` in the JSON), else created and credited
+  to the work. Works without a compiler and why: `works_without_compiler`.
+- **Named in full** (`named_in_full`): a transmitter the work's own opening report names in full where no source identity stands
+  gets a work record and the basis `named_in_opening_isnad` (detail quotes the report). Musnad al-Rabiʿ: «أبو عبيدة» = Abu ʿUbayda
+  Muslim b. Abi Karima al-Tamimi (rabi_0001); a source's confirmed claim on those mentions (Riwayat N0013779 «مسلم بن أيمن») is kept
+  as an unconfirmed candidate (`demote_kunya_only`, detail says why).
+
+## Bare kunya rule (projection `2026.11.22.12`; owner ruling 2026-11-22, all traditions)
+
+A surface that is only a kunya (`external_identity.bare_kunya_key`: «أبو/أبي/أبا/أم X», «أبو عبد X») stands as an identity only when
+exactly one person carries it in the source the identity rests on, counted over that work's written bare-kunya mentions per source
+(`KUNYA_RULE_AUTHORITIES`: K6 for `source_index_confirmed_by_text`, hadith-kg, Riwayat; both K6 and hadith-kg for
+`two_sources_agree`; placeholder and label-like records not counted). Otherwise the identity is withheld with
+`identity_withheld_reason` «kunya only: N people carry «X» in this work's source ...»; the candidates stay unchanged. Exempt:
+`imam_kunya_convention` (the honorific marks the Imam), `named_in_opening_isnad`, `edition_identification`. This replaces the
+OpenITI-only demotion (round 2) and the Sunni/Imami acceptance. Counts: `identity_candidates.standing_withheld_by_kunya_rule`,
+`standing_bare_kunya_one_carrier`. Measured effect and readings: `chain-audit/compiler-ruling/README.md`.

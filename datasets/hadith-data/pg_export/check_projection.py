@@ -15,6 +15,10 @@ csv.field_size_limit(2**31 - 1)
 NAME_BASES = {"name_exact", "name_spelling_fold", "name_kunya_only"}
 TIER_BASES = {"source_index_confirmed_by_text", "source_hadith_kg_confirmed_by_text", "source_riwayat_confirmed_by_text",
               "imam_kunya_convention"}
+SOURCE_BASES = {"source_index", "source_index_confirmed_by_text", "source_hadith_kg", "source_hadith_kg_confirmed_by_text",
+                "source_riwayat", "source_riwayat_confirmed_by_text"}
+# The works whose own opening isnad names a transmitter (opening_isnad_rules.json, work_register.json named_in_full).
+OPENING_ISNAD_COLLECTIONS = {"collection:zaydi:musnad-zayd", "collection:ibadi:musnad-rabi"}
 
 
 def rows(directory: Path, table: str):
@@ -24,7 +28,8 @@ def rows(directory: Path, table: str):
 
 def main(directory: Path) -> int:
     hadiths = {row["id"]: (row["tradition_id"], row["collection_id"], row["sanad_inherits_from"]) for row in rows(directory, "hadiths")}
-    narrators = {row["id"] for row in rows(directory, "narrators")}
+    authority = {row["id"]: row["authority"] for row in rows(directory, "narrators")}
+    narrators = set(authority)
     chains = {row["id"]: row for row in rows(directory, "chains")}
     mentions = {row["id"]: row for row in rows(directory, "chain_mentions")}
     candidates_by_mention: dict[str, list[dict]] = defaultdict(list)
@@ -64,8 +69,14 @@ def main(directory: Path) -> int:
         if chain["hadith_id"] not in hadiths:
             fail("chain on a missing hadith", chain_id)
         status, reasons = chain["structure_status"], chain["structure_reasons"]
-        if not (status == "checked_by_rule" and not reasons or status == "uncertain" and reasons not in ("", "{}")):
+        if not (status == "checked_by_rule" and not reasons or status == "uncertain" and reasons not in ("", "{}")
+                or status in ("read_by_model", "verified_by_reviewer") and not reasons and chain["chain_fix_id"]):
             fail("structure status missing, or reasons that do not match it", chain_id)
+        compiler, link = chain["compiler_narrator_id"], chain["compiler_link"]
+        if bool(compiler) != bool(link) or (link and link not in ("direct", "indirect")):
+            fail("compiler head without its link kind, or the reverse", chain_id)
+        if compiler and compiler not in narrators:
+            fail("compiler head names no narrator", chain_id)
     for candidate in rows(directory, "chain_mention_candidates"):
         mention = mentions.get(candidate["mention_id"])
         candidates_by_mention[candidate["mention_id"]].append(candidate)
@@ -80,14 +91,19 @@ def main(directory: Path) -> int:
             fail("name candidate on a non-Sunni report", candidate["id"])
         if basis == "edition_identification" and tradition != "tradition:sunni":
             fail("edition identification outside a Sunni report", candidate["id"])
-        if basis == "named_in_opening_isnad" and collection != "collection:zaydi:musnad-zayd":
-            fail("opening-isnad rule outside Musnad Zayd", candidate["id"])
+        if basis == "named_in_opening_isnad" and (collection not in OPENING_ISNAD_COLLECTIONS or authority.get(
+                candidate["narrator_id"]) not in ("imam_register", "work_register")):
+            fail("opening-isnad rule outside Musnad Zayd and Musnad al-Rabi, or on a non-register row", candidate["id"])
+        if authority.get(candidate["narrator_id"]) == "work_register" and basis != "named_in_opening_isnad":
+            fail("a work-register record named by anything but the work's own naming", candidate["id"])
         if basis.startswith("imam_kunya") and tradition != "tradition:imami":
             fail("Imam kunya outside an Imami report", candidate["id"])
     for mention in mentions.values():
-        if mention["identity_withheld_reason"] and not any(
-                c["basis"] in TIER_BASES for c in candidates_by_mention.get(mention["id"], [])):
-            fail("withheld identity without a confirmed candidate", mention["id"])
+        withheld = mention["identity_withheld_reason"]
+        # A chronology-withheld identity keeps a confirmed candidate; a kunya-withheld one keeps the source's claim.
+        needed = SOURCE_BASES if withheld and withheld.startswith("kunya only:") else TIER_BASES
+        if withheld and not any(c["basis"] in needed for c in candidates_by_mention.get(mention["id"], [])):
+            fail("withheld identity without the candidate it was withheld from", mention["id"])
         if mention["narrator_id"] and mention["resolution_basis"] == "source_index" and not any(
                 c["narrator_id"] == mention["narrator_id"] for c in candidates_by_mention.get(mention["id"], [])):
             fail("standing identity without its candidate", mention["id"])
