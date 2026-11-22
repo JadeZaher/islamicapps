@@ -454,8 +454,8 @@ All 34 works are cleared with `english_policy = 'source_provided_and_machine_all
 `public_translations` then exposes reviewed English, `source_provided` English and `machine_unreviewed` English, each row
 with its `state`, `source`, `translator` and `model`; `unknown_provenance` never (it cannot be credited). The page labels
 each row through `englishLabel`/`englishReference` (`src/lib/sources/report-credit.ts`): "Source-provided English, not
-reviewed here" credited to the text source and its translator (`WORK_CREDITS`), or "Unreviewed machine translation
-(<model>)" / "(model not recorded)" credited to `SWI`.
+reviewed here" credited to the text source and its translator (`WORK_CREDITS`), or "Unreviewed machine translation.
+May contain errors that change the meaning; the Arabic is authoritative." (owner 2026-11-22) credited to `SWI`, the model in the credit line.
 
 - **Why the policy is compared as text.** The migrator runs every pending migration in one transaction, and Postgres
   refuses an enum value as a literal in the transaction that added it ("unsafe use of new value"), so `0009` and the load

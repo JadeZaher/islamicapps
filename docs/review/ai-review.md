@@ -251,15 +251,15 @@ Every candidate identity for a name is kept with its basis. Where sources disagr
 
 ### A name that is only a kunya {#identity-bare-kunya}
 
-`identity-bare-kunya` version `2026.11.22` · Checked by rule · In use
+`identity-bare-kunya` version `2026.11.22.1` · Checked by rule · In use
 
-**Rule.** A name written as a kunya alone («أبو هريرة», «أبي عبد الله») stands as an identity only when exactly one person carries that kunya in the source that identifies it, across that work’s chains; when the source names two or more people for it, every claim stays a candidate with the reason shown (owner ruling, 2026-11-22, all traditions). An Imam’s kunya with the honorific follows its own register, and a name the work itself gives in full follows the work.
+**Rule.** A name written as a kunya alone («أبو هريرة», «أبي عبد الله») is not allowed to stand as an identity when it is ambiguous (owner ruling, 2026-11-22). Where a work has no curated per-report narrator index (Musnad al-Rabiʿ, Musnad Zayd, Sahifat al-Rida) it stands only when exactly one person carries that kunya in the source that identifies it, across that work’s chains; when the source names two or more people for it, every claim stays a candidate with the reason shown. Where the source gives its own per-report assertion (the six Sunni books, Musnad Ahmad and the other Pure Canon works, the Imami works) that assertion stands: a large work’s source names a second bearer of almost every common kunya somewhere, and a count over the whole work withheld right identities far more often than wrong ones (read on 135 reports). An Imam’s kunya with the honorific follows its own register, and a name the work itself gives in full follows the work.
 
 **Evidence.** Every claim the work’s sources make for that kunya in that work.
 
-**Measured.** No measured accuracy. Changes were counted and 30 of each direction read when the rule was loaded (datasets/hadith-data/chain-audit/compiler-ruling/README.md).
+**Measured.** No measured accuracy. Four forms of the rule were counted and 135 reports read when it was narrowed (datasets/hadith-data/chain-audit/compiler-ruling/README.md §3a); no accuracy is published.
 
-**Known failure modes.** A source that gives one person a kunya another man of the same work also carries: the name stands though the text alone could not tell.
+**Known failure modes.** A source that gives one person a kunya another man of the same work also carries: the name stands though the text alone could not tell (about 4 in 100 of the identities this rule no longer withholds read wrong).
 
 **Reader sees.** “kunya only: several people carry this name in this work’s source”
 
@@ -351,7 +351,7 @@ English supplied by a source is credited to its translator. English made here is
 
 **Known failure modes.** A changed meaning in fluent English (a gift rendered as an oath); A speaker dropped or added; Name spellings drift between rows.
 
-**Reader sees.** “Unreviewed machine translation (model named); the screen checks form, not meaning”
+**Reader sees.** “Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.”
 
 **Excluded.** Source-provided English is the source’s own and is credited to its translator; it is not AI-reviewed.
 

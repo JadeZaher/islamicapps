@@ -859,3 +859,40 @@ snapshots, curation dump: `datasets/hadith-data/development/compiler-chain-fix-2
   lacks the three 0019 columns), then re-record the approval. Curation rows before this load: `curation-dump-before/`.
 - Code: redeploy `f9cc5e1` (it ignores the new columns and views). Never edit 0019 or 0020; a later migration restores the 0017 body of
   `narrator_transmissions` if compiler pairs must go without a load.
+
+## Bare kunya rule narrowed (2026-11-22)
+
+The first form of the ruling (`9532839`: one carrier in the work's source, every work) withheld 4,431 Sunni and Imami identities the sources assert
+per report; 28 of 30 read were right, and Musnad Ahmad's «أبي هريرة» failed the ruling's own example. Four forms were measured on those mentions
+(`datasets/hadith-data/chain-audit/compiler-ruling/README.md` §3a, `kunya_options/`): (a) the rule only in the three OpenITI works, (b) 90, 95 or
+98 percent dominance, (c) dominance or chronology support. A stratified fresh reading of 135 (not the 30 of before): every stratum at 90 percent
+dominance or more 90/90 right, the low stratum 39/45; (b) and (c) withhold 557 to 2,298 right identities to keep out about 74 to 159 wrong ones,
+so **(a) ships**. Detail: `pg_export/AGENTS.md` §Bare kunya rule; public rule `identity-bare-kunya` (`/method`) rewritten, version `2026.11.22.1`.
+
+- **Projection `2026.11.22.13`** (dataset version `54f7591d915d...`): 12,681 rows changed, 553 s load; every loader check passed; approval re-recorded at
+  once (`development/bare-kunya-narrowed-2026-11-22/approve.log`). Against `.12` only identity columns of mentions (4,472 rows: narrator, resolution,
+  method, confidence, link kind, withheld reason, Latin name) and, on chains, `missing_link_after` (10, from identities) and the compiler head of three
+  Abu Dawud chains changed (`kunya_options/table_diff.json`; the other 21 tables identical). Against `.11` (before the ruling) Sunni and Imami standing
+  identities are identical row for row; only the OpenITI changes remain (Ibadi 525 -> 1,303).
+- **Standing identities** `.12` -> now: Sunni 132,215 -> 136,549; Imami 28,467 -> 28,489; Ibadi 1,303 -> 1,303; Zaydi 2,566 -> 2,566.
+  **Teacher-student pairs** (`narrator_transmissions`): 27,659 -> 28,468 (Sunni 24,264 -> 25,068, Imami 3,373 -> 3,378, Ibadi 21, Zaydi 4); 815 pairs gained,
+  6 lost to the chronology guard; 112 narrators regained teachers, 86 regained students, 1 lost his only teacher.
+- **Found, not changed**: three Abu Dawud chains (`chain:k6:15470:0000`, `15600`, `18811`) read «أبو داود» (al-Tayalisi) as Abu Dawud al-Sijistani, the
+  compiler, so the compiler head (direct) is no longer added to them (3 pairs); the source's assertion is wrong there (read verdicts in `reading_135.tsv`).
+- Machine English label (owner, same day): "Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative."
+  (`MACHINE_ENGLISH_LABEL` in `src/lib/sources/report-credit.ts`); the model stays in the credit line (`englishReference`), SWI credit kept.
+- Housekeeping: `chain-reader/analysis-v2/`, `chain-reader/v3/batch-001/{packets,outputs,triage,RUN.md,draw.json}` committed; `v3/batch-001/private/` is
+  git-ignored; `v3/to_submission.py` no longer refuses inherited-link readings nor re-validates the v1-shaped copy (the submit tool reads `reader_output_v3`).
+
+### Deploy
+
+1. Data is loaded and approved (`prod-load.log`, `approve.log`); then push the code to `refactor/postgres-drizzle` and `main` (label, `/method` text).
+2. Checks run: `npx tsc --noEmit`; `npm run build`; `npm run db:verify`; `npm run db:verify-data -- --database production --confirm-production` (54 checks pass); Python suites; review and glossary tests.
+3. Live: a Musnad Ahmad chain with «أبي هريرة» (`mention:pure-canon:pc_87025:0000:0005`) shows Abu Hurayra; `rabi_0021` reads al-Rabiʿ <- Abu ʿUbayda (own record) <- Jabir b. Zayd;
+   `/narrator/narrator%3Arawi%3A3` lists no al-Awzaʿi; an al-Rabiʿ report with machine English shows the new label.
+
+### Rollback
+
+- Back to the first form of the rule: in `external_identity.py` set `KUNYA_RULE_WORKS` to every work id (or restore `9532839`), export, `check_projection.py`, load, approve.
+- No rule at all: `KUNYA_RULE_AUTHORITIES = {}`, export, load, approve (OpenITI keeps its one-carrier gains only if the rule stays; with `{}` they stand too).
+- Data of the previous version: load `development/compiler-chain-fix-2026-11-22/projection` (`.12`), then re-record the approval. Code: redeploy `9532839` (label back to the model-named form).

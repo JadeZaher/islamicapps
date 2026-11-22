@@ -9,9 +9,8 @@ Only reports that are eligible (v3/triage_v3.py: both valid, canonical-equal, st
 <out>/not_submitted.tsv with the reason. Provenance in each envelope's `run`: model id from the pass's RUN.txt (one line per agent run; the packet's line), run id, prompt version
 and sha256 (checked against v3/prompt-v3.json), packet id, UTC times, the second pass's run id; each fix also carries `reader_output_v3` (the unchanged output of pass A).
 
-What the submit tool does not take yet (v3/AGENTS.md §submission): it pins the v1 prompt hash (`run.prompt_sha256` = chain-reader/prompt.md), its views are text_only and
-text_and_stored_chain (these readers saw text and context: `view` is `text_and_context`), it reads v1-shaped `output` (routes with offsets; this converter writes that shape from the
-v3 reading: compiler head dropped, `imam_in_text` as `narrator`), and it refuses a stored chain that repeats earlier names; readings with inherited links are therefore not submitted.
+The submit tool reads the v3 reading itself (`reader_output_v3`, expanded, validated and held by v3/); `output` is the v1-shaped copy (compiler head and inherited links dropped,
+`imam_in_text` as `narrator`) kept for the envelope's reader. Readings with inherited links are submitted (v3/AGENTS.md §submission).
 """
 
 from __future__ import annotations
@@ -28,7 +27,6 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
-import validate as v1  # noqa: E402  (the submit tool's own reader validator, read-only)
 from triage_v3 import load_packets, triage  # noqa: E402
 
 ENVELOPE_FORMAT = "shura-chain-fix-envelope/1"
@@ -65,12 +63,10 @@ def run_for(runs: list[dict], packet_file: str, label: str, batch: str) -> dict 
 
 
 def v1_shape(expanded: dict) -> tuple[dict | None, str | None]:
-    """The reading as the v1 reader output the submit tool validates: compiler head and inherited links dropped (None, reason when a route has inherited links), imam_in_text as narrator."""
+    """The reading as a v1-shaped output: compiler head and inherited links dropped, imam_in_text as narrator (None, reason when no route has a written link)."""
     routes, seen = [], set()
     for route in expanded["routes"]:
-        if any(link["kind"] == "inherited" for link in route["links"]):
-            return None, "inherited links: the submit tool refuses chains that repeat earlier names"
-        links = [{"surface": l["surface"], "start": l["start"], "end": l["end"], "kind": KEPT_KINDS[l["kind"]]} for l in route["links"] if l["kind"] != "compiler_head"]
+        links = [{"surface": l["surface"], "start": l["start"], "end": l["end"], "kind": KEPT_KINDS[l["kind"]]} for l in route["links"] if l["kind"] in KEPT_KINDS]
         if not links:
             continue
         key = tuple((l["start"], l["end"]) for l in links)
@@ -78,7 +74,7 @@ def v1_shape(expanded: dict) -> tuple[dict | None, str | None]:
             continue
         seen.add(key)
         tail = route.get("shared_tail_from")
-        dropped_before_tail = sum(1 for l in route["links"][: tail or 0] if l["kind"] == "compiler_head") if isinstance(tail, int) else 0
+        dropped_before_tail = sum(1 for l in route["links"][: tail or 0] if l["kind"] not in KEPT_KINDS) if isinstance(tail, int) else 0
         new_tail = tail - dropped_before_tail if isinstance(tail, int) else None
         routes.append({"links": links, "shared_tail_from": new_tail if new_tail is not None and 0 <= new_tail < len(links) else None})
     if not routes:
@@ -133,10 +129,6 @@ def main(argv: list[str] | None = None) -> int:
             skipped.append((row["id"], reason or "not submittable"))
             continue
         text = packets[row["id"]]["text"]
-        invalid = v1.validate(shaped, text, row["id"])
-        if invalid:
-            skipped.append((row["id"], "fails the submit tool's validator: " + invalid[0][:120]))
-            continue
         by_packet.setdefault(row["packet"], []).append({"row": row, "shaped": shaped, "quote": quote_of(text, shaped)})
     written = 0
     for packet_file, items in sorted(by_packet.items()):

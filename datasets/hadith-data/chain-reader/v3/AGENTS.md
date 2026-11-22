@@ -47,9 +47,8 @@ The prompt names no pilot id. Rules that changed: 3 (tail), 4 (second isnad, var
 The manifest binds the sample, the profiles, the builder, the lib and the sidecars by sha256; rebuild the packets if any of them changes.
 
 ## submission
-The submit tool (`reviews/ai/tools/chain-fix-submit.ts`, being integrated by another agent) pins three things the v3 readers cannot satisfy yet: the prompt hash (`chain-reader/prompt.md`), the views (`text_only`, `text_and_stored_chain`; these readers saw text and context),
-and the blind-packet rule of a `text_only` view. It also validates v1-shaped outputs, so `to_submission.py` writes that shape (compiler head dropped, `imam_in_text` as `narrator`; `reader_output_v3` rides along) and refuses to submit readings with inherited links
-(the tool refuses stored chains that repeat earlier names). Provenance is in `run`: prompt version and sha256, model id and run id from the pass's RUN.txt line for the packet, packet id, UTC times, the second reader's run.
+The submit tool (`reviews/ai/tools/chain-fix-submit.ts`) reads the v3 reading itself (`reader_output_v3`: expanded, validated and held by this directory), so `to_submission.py` no longer re-validates a v1-shaped copy and no longer refuses readings with inherited links.
+`output` stays in the envelope as a v1-shaped copy (compiler head and inherited links dropped, `imam_in_text` as `narrator`). Provenance is in `run`: prompt version and sha256, model id and run id from the pass's RUN.txt line for the packet, packet id, UTC times, the second reader's run.
 
 ## deferred
 - A judged out-of-sample measurement of the three new holds and of the tool changes: batch 001 (trigger: the batch is run and read).

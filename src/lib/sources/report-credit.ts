@@ -56,9 +56,13 @@ export function isMachineEnglish(english: EnglishInput): boolean {
   return english.state === 'machine_unreviewed' || Boolean(english.model);
 }
 
-/** The label shown above English text (owner, 2026-11-21): machine with its model, or source-provided, or reviewed. */
+/** Machine English label (owner, 2026-11-22); its model is named in the credit line (`englishReference`). */
+export const MACHINE_ENGLISH_LABEL =
+  'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.';
+
+/** The label shown above English text: machine, or source-provided, or reviewed. */
 export function englishLabel(english: EnglishInput): string {
-  if (isMachineEnglish(english)) return `Unreviewed machine translation (${english.model ?? 'model not recorded'})`;
+  if (isMachineEnglish(english)) return MACHINE_ENGLISH_LABEL;
   if (english.state === 'human_verified' || english.state === 'source_verified') return 'English translation, reviewed';
   return 'Source-provided English, not reviewed here';
 }

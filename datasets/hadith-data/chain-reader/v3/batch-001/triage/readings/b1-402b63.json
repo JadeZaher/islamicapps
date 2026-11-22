@@ -1,0 +1,205 @@
+{
+ "expanded_a": {
+  "id": "b1-402b63",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "النسائي",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "عثمان بن عبد الله",
+      "start": 7,
+      "end": 24,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عباد بن موسى",
+      "start": 36,
+      "end": 48,
+      "kind": "narrator"
+     },
+     {
+      "surface": "إسماعيل بن جعفر",
+      "start": 60,
+      "end": 75,
+      "kind": "narrator"
+     },
+     {
+      "surface": "إسرائيل",
+      "start": 87,
+      "end": 94,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عثمان الشحام",
+      "start": 99,
+      "end": 111,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عكرمة",
+      "start": 148,
+      "end": 153,
+      "kind": "narrator"
+     },
+     {
+      "surface": "ابن عباس",
+      "start": 177,
+      "end": 185,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "matn_start": 185,
+  "notes": [
+   "«كنت أقود رجلا أعمى» is the narrator's scene: the blind man is not a link",
+   "«فانتهيت إلى عكرمة فأنشأ يحدثنا» — Ikrima narrates to them and transmits Ibn Abbas's report, so he is a link",
+   "The last link is the Companion Ibn Abbas; the Prophet is not a link"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "b1-402b63",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "عثمان بن عبد الله",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عباد بن موسى",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "إسماعيل بن جعفر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "إسرائيل",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عثمان الشحام",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عكرمة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن عباس",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«كنت أقود رجلا أعمى» is the narrator's scene: the blind man is not a link",
+   "«فانتهيت إلى عكرمة فأنشأ يحدثنا» — Ikrima narrates to them and transmits Ibn Abbas's report, so he is a link",
+   "The last link is the Companion Ibn Abbas; the Prophet is not a link"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "K6I's index goes from عثمان الشحام straight to Ibn Abbas and omits Ikrima, whom the text names between them; HKG and RWY both carry him.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "فأنشأ يحدثنا قال حدثني ابن عباس"
+     },
+     {
+      "source": "K6I",
+      "quote": "عثمان الشحام العدوي أبو سلمة البصري يقال"
+     }
+    ],
+    "confidence": "high"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "b1-402b63",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "عثمان بن عبد الله",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عباد بن موسى",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "إسماعيل بن جعفر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "إسرائيل",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عثمان الشحام",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عكرمة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن عباس",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«كنت أقود رجلا أعمى» — the blind man is in the story, not a link (rule 6)",
+   "«فأنشأ يحدثنا» makes Ikrima a link (rule 6); «قال حدثني ابن عباس» makes Ibn Abbas the last link"
+  ],
+  "fixes": []
+ }
+}

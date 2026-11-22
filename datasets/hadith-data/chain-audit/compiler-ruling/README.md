@@ -60,3 +60,36 @@ al-Muqriʾ, stood as Ibn Lahiʿa). **For the owner:** as ruled, the rule costs a
 Sunni chains, because the sources name a second person for almost every common kunya somewhere in a large work ("5 people carry
 «أبي هريرة»" in Musnad Ahmad's source). Reversal is one line (`KUNYA_RULE_AUTHORITIES = {}` in `external_identity.py`), or a
 narrower count (carriers among confirmed claims only, or a share threshold) can be measured on these samples.
+
+## 3a. Bare kunya rule narrowed (projection `2026.11.22.13`)
+
+The first form (§3) counted people per kunya over the whole work's source and withheld 4,431 Sunni and Imami identities (4,379 in the
+loaded projection) that the source asserted per report; 28 of 30 read were right. Four forms were measured on the same data: every bare-kunya
+mention with a standing identity before the rule, 14,942 (4,431 withheld by the first form outside OpenITI, 60 in al-Rabiʿ that stand, 10,451
+that stood anyway with one carrier). `kunya_options/` holds the scripts (`instrumentation.patch` dumps the per-mention carrier counts from the
+export; `analyze.py`, `draw.py`, `show.py`), `reading_135.tsv` the verdicts. The reading is stratified, not 30 per side per option: the 4,431
+were split into eight strata (dominance share of the asserted person among the kunya's assertions in the work's source, at least 98, 95 to 98,
+90 to 95, below 90 percent; each with and without chronology support against a neighbour), 15 read per stratum and 30 in the largest-risk
+one (below 90, no chronology support), 135 in all, excluding the 30 of §3. Each option's restored and withheld sides are the union of
+strata, so every side's sample is at least 30, and population figures weight the sample by stratum size (the one unclear counted half).
+
+| Option | Restored (of 4,431) | Read right (sample) | Still withheld | Read right (sample) | Right identities withheld | Wrong identities kept out |
+| --- | --- | --- | --- | --- | --- | --- |
+| (a) OpenITI only | 4,431 | 129.5 / 135 | 0 | - | 0 | 0 (about 159 wrong stand) |
+| (b) 90% dominance | 3,158 | 90 / 90 | 1,273 | 39.5 / 45 | about 1,114 | about 159 |
+| (b) 95% | 2,605 | 60 / 60 | 1,826 | 69.5 / 75 | about 1,667 | about 159 |
+| (b) 98% | 1,974 | 30 / 30 | 2,457 | 99.5 / 105 | about 2,298 | about 159 |
+| (c) 90% or chronology | 3,800 | 103 / 105 | 631 | 26.5 / 30 | about 557 | about 74 |
+| (c) 95% or chronology | 3,536 | 88 / 90 | 895 | 41.5 / 45 | about 821 | about 74 |
+| (c) 98% or chronology | 3,119 | 73 / 75 | 1,312 | 56.5 / 60 | about 1,238 | about 74 |
+
+The 70 gains (al-Rabiʿ and four Sunni) have one carrier, so every option keeps them. Share does not separate the wrong from the right in
+the low stratum (right at 0.05 to 0.41, wrong at 0.03 to 0.59), and chronology support does not either (Abu Dawud al-Tayalisi against
+al-Sijistani, Abu Salih al-Samman against Abu Salih mawla ʿUthman). Every option that withholds buys back its wrong identities at seven to
+seventeen right ones each, so **(a) ships**: the rule applies only in the three OpenITI works, with the source's per-report assertion standing
+everywhere else, as before `9532839`. In the three OpenITI works the rule withholds nothing today (every bare-kunya identity there has one
+carrier); it is the guard for those works.
+
+Not done, and where to look: the 5 wrong of 45 in the low-share strata could be caught by a per-kunya list (Abu Dawud, Abu Salih, Abu Burda
+with two bearers) read by an owner or scholar, which is a curation task, not a count.
+

@@ -70,7 +70,7 @@ class SubmissionFlow(unittest.TestCase):
             self.assertIn(run["packet_id"], envelope["packet"])
             self.assertTrue(run["second_reader"]["run_id"])
 
-    def test_held_disagreeing_and_inherited_reports_are_not_submitted_with_their_reason(self):
+    def test_held_and_disagreeing_reports_are_not_submitted_with_their_reason(self):
         self.assertEqual(self.skipped["cr-0193"], "held: back_reference_only")          # previous report supplied, chain not taken
         self.assertEqual(self.skipped["cr-0133"], "held: routes_end_at_different_links")  # shared tail dropped from a route
         self.assertEqual(self.skipped["cr-0010"], "readings differ")
@@ -78,12 +78,12 @@ class SubmissionFlow(unittest.TestCase):
         self.assertFalse(submitted & set(self.skipped))
         self.assertNotIn("cr-0133", submitted)
 
-    def test_a_reading_with_inherited_links_is_not_converted(self):
+    def test_a_reading_with_inherited_links_is_converted_without_them(self):
         reading = {"id": "x", "routes": [{"links": [{"surface": "أ", "start": None, "end": None, "kind": "inherited", "from": "prev1"}, {"surface": "ب", "start": 0, "end": 1, "kind": "narrator"}], "shared_tail_from": None}],
                    "matn_start": 1, "notes": []}
         shaped, reason = to_submission.v1_shape(reading)
-        self.assertIsNone(shaped)
-        self.assertIn("inherited", reason)
+        self.assertIsNone(reason)
+        self.assertEqual([link["surface"] for link in shaped["routes"][0]["links"]], ["ب"])
 
 
 @unittest.skipUnless(POPULATION.is_file(), "population.jsonl not built")

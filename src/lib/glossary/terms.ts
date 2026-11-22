@@ -1805,7 +1805,7 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     term: 'Machine-proposed',
     definition: 'Produced by software, such as a translation model or an automated comparison, and not yet reviewed by a person.',
     inArchive:
-      'Always labelled. A machine translation is shown only for works whose recorded English policy allows it, as “Unreviewed machine translation” with the model that produced it, or “model not recorded”. No identity, grade, date or translation is asserted by a machine.',
+      'Always labelled. A machine translation is shown only for works whose recorded English policy allows it, labelled “Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.”, with the model that produced it named in the credit line (or “model not recorded”). No identity, grade, date or translation is asserted by a machine.',
     related: ['candidate', 'unreviewed', 'parallel'],
     aliases: ['machine translation', 'ai'],
     enumValues: [

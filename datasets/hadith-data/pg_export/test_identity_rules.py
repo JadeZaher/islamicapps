@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import csv
+import gzip
+import json
+import os
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -158,6 +163,67 @@ class RiwayatLabels(unittest.TestCase):
         for row, expected in cases:
             with self.subTest(name=row["name_ar"]):
                 self.assertEqual(xid.riwayat_label_reason(row, shared), expected)
+
+
+HADITH_DATA = Path(__file__).resolve().parent.parent
+CLAIMS = HADITH_DATA / "reconciled" / "external_mention_claims.jsonl.gz"
+PROJECTION = Path(os.environ.get("PG_PROJECTION", HADITH_DATA / "development" / "bare-kunya-narrowed-2026-11-22" / "projection"))
+
+
+def riwayat_carriers(work: str, kunya_key: str) -> int:
+    """People the Riwayat source names for a bare kunya in one work (the count the rule uses), read from the real claims."""
+    people = set()
+    with gzip.open(CLAIMS, "rt", encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            if row["dataset"] == "riwayat" and row["source_work_id"] == work and xid.bare_kunya_key(row["surface_ar"]) == kunya_key:
+                people.add(row["external_narrator_id"])
+    return len(people)
+
+
+@unittest.skipUnless(CLAIMS.is_file(), "external claims sidecar not built")
+class BareKunyaRuleNarrowed(unittest.TestCase):
+    """The bare kunya rule applies only where no curated per-report narrator index exists (the three OpenITI works)."""
+
+    def test_the_rule_withholds_only_in_a_work_without_a_per_report_index_and_only_when_the_kunya_is_shared(self):
+        abu_hurayra = xid.bare_kunya_key("أبي هريرة")
+        # (work, carriers counted from the real Riwayat claims, withheld)
+        for work, carriers, withheld in [
+            ("sunni:ahmad", riwayat_carriers("sunni:ahmad", abu_hurayra), False),        # 5 people in Ahmad's source: its per-report claim stands
+            ("ibadi:musnad-rabi", riwayat_carriers("ibadi:musnad-rabi", abu_hurayra), False),  # one person in al-Rabi's source: stands
+            ("ibadi:musnad-rabi", riwayat_carriers("sunni:ahmad", abu_hurayra), True),   # the same shared kunya in a work with no index: candidate only
+            ("zaydi:musnad-zayd", 2, True),
+            ("imami:sahifat-al-imam-ali-al-rida", 2, True),
+            ("imami:al-kafi", 22, False),                                                # Imami works keep their source's assertions
+            ("sunni:muslim", 2, False),
+        ]:
+            with self.subTest(work=work, carriers=carriers):
+                self.assertEqual(xid.bare_kunya_withheld(work, carriers), withheld)
+
+    def test_the_rule_works_are_the_builder_openiti_works(self):
+        sys.path[:0] = [str(HADITH_DATA), str(HADITH_DATA / "reconciled")]   # chain_builder imports the extractor beside the dataset
+        import chain_builder
+        self.assertEqual(xid.KUNYA_RULE_WORKS, chain_builder.OPENITI_WORKS)
+
+    @unittest.skipUnless((PROJECTION / "canonical" / "manifest.json").is_file(), "projection not built")
+    def test_real_mentions_of_the_projection(self):
+        wanted = {
+            "mention:pure-canon:pc_87025:0000:0005": "narrator:riwayat:N0000518",    # أبي هريرة in Musnad Ahmad: Abu Hurayra stands
+            "mention:pure-canon:pc_20395:0000:0000": "narrator:riwayat:N0005500",    # أبو سعيد, one of several in Ahmad's source: stands
+            "mention:k6:34441:0000:0003": "narrator:rawi:11161",                     # أبي صالح after al-A'mash: Abu Salih al-Samman stands
+            "mention:openiti:ibadi:rabi_0021|21|V01P011:0000:0002": "narrator:riwayat:N0000518",  # أبي هريرة in al-Rabi: one carrier
+            "mention:openiti:ibadi:rabi_0021|21|V01P011:0000:0000": "narrator:work:abu-ubayda-muslim-ibn-abi-karima",  # his own record
+        }
+        found: dict[str, dict] = {}
+        with (PROJECTION / "canonical" / "chain_mentions.csv").open(encoding="utf-8", newline="") as handle:
+            csv.field_size_limit(2**31 - 1)
+            for row in csv.DictReader(handle):
+                if row["id"] in wanted:
+                    found[row["id"]] = row
+        for mention_id, narrator_id in wanted.items():
+            with self.subTest(mention=mention_id):
+                self.assertEqual(found[mention_id]["narrator_id"], narrator_id)
+                self.assertEqual(found[mention_id]["identity_withheld_reason"], "")
 
 
 class OwnerRulings20261122(unittest.TestCase):

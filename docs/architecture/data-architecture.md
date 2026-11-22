@@ -2136,7 +2136,7 @@ non-release dataset version (question 13). The owner recorded both on
 (`npm run db:record-rights`), and the development snapshot approved as a preview.
 Widened English is never unlabelled: source-provided English shows "Source-provided
 English, not reviewed here" with its source and translator, machine English shows
-"Unreviewed machine translation (<model>)" or "(model not recorded)".
+"Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative." (model in the credit line).
 `unknown_provenance` is never public: it cannot be credited.
 
 ### 11.1 Facets

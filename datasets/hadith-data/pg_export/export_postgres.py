@@ -52,7 +52,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.12"
+PROJECTION_VERSION = "2026.11.22.13"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -1350,12 +1350,14 @@ def project(args: argparse.Namespace) -> dict:
         found.extend(external.candidates_for(mention_id, hadith_id, surface_ar, owner["arabic_sha256"], external_tally))
         return found
 
-    # Bare kunya rule (owner 2026-11-22, all traditions; AGENTS.md §Bare kunya rule): a surface that is only a kunya stands
-    # as an identity only when exactly one person in that work's own source carries it. Carriers are counted per work,
-    # kunya and source over every written bare-kunya mention before any identity is decided.
+    # Bare kunya rule (AGENTS.md §Bare kunya rule): in a work with no curated per-report narrator index (xid.KUNYA_RULE_WORKS) a
+    # surface that is only a kunya stands only when exactly one person in that work's own source carries it. Carriers are counted
+    # per work, kunya and source over every written bare-kunya mention before any identity is decided.
     kunya_carriers: dict[tuple[str, str, str], set[str]] = defaultdict(set)
     for hadith_id, report_branches in branches_by_hadith.items():
         owner = hadith_info[hadith_id]
+        if owner["source_work_id"] not in xid.KUNYA_RULE_WORKS:
+            continue
         for branch in report_branches:
             built_mentions = branch.get("built")
             for position, (mention_id, surface_ar, _) in enumerate(branch["mentions"]):
@@ -1486,11 +1488,11 @@ def project(args: argparse.Namespace) -> dict:
                 identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
                 standing = xid.standing_identity(found, person_keys)
                 kunya_reason = None
-                kunya = xid.bare_kunya_key(surface_ar) if standing and standing[1] in xid.KUNYA_RULE_AUTHORITIES else None
+                kunya = xid.bare_kunya_key(surface_ar) if standing and work in xid.KUNYA_RULE_WORKS                     and standing[1] in xid.KUNYA_RULE_AUTHORITIES else None
                 if kunya:
                     carriers = max(len(kunya_carriers[(work, kunya, authority)])
                                    for authority in xid.KUNYA_RULE_AUTHORITIES[standing[1]])
-                    if carriers != 1:
+                    if xid.bare_kunya_withheld(work, carriers):
                         kunya_reason = (f"kunya only: {carriers} people carry «{surface_ar}» in this work's source, so the "
                                         "name alone cannot say which")
                         identity["standing_withheld_by_kunya_rule"][f"{tradition}:{standing[1]}"] += 1

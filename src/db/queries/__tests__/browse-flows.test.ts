@@ -130,8 +130,8 @@ flow('report context: previous/next within the work, with none before the first 
 flow('English label and credit: source-provided credits the translator; machine names its model or says it is missing', async () => {
   const cases: Array<[{ state: string; translator: string | null; model: string | null }, string, string, string]> = [
     [{ state: 'source_provided', translator: null, model: null }, 'Source-provided English, not reviewed here', 'SUN', 'Translation: Muhammad Muhsin Khan'],
-    [{ state: 'machine_unreviewed', translator: null, model: 'tencent/hy-mt2-30b-a3b' }, 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)', 'SWI', 'Machine translation (tencent/hy-mt2-30b-a3b), not reviewed'],
-    [{ state: 'machine_unreviewed', translator: null, model: null }, 'Unreviewed machine translation (model not recorded)', 'SWI', 'Machine translation (model not recorded), not reviewed'],
+    [{ state: 'machine_unreviewed', translator: null, model: 'tencent/hy-mt2-30b-a3b' }, 'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.', 'SWI', 'Machine translation (tencent/hy-mt2-30b-a3b), not reviewed'],
+    [{ state: 'machine_unreviewed', translator: null, model: null }, 'Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.', 'SWI', 'Machine translation (model not recorded), not reviewed'],
   ];
   for (const [english, label, code, detail] of cases) {
     assert.equal(m.credit.englishLabel(english), label);

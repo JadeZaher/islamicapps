@@ -60,7 +60,7 @@ export interface EnglishAttribution {
   source: string | null;
   translator: string | null;
   model: string | null;
-  /** "Source-provided English, not reviewed here" or "Unreviewed machine translation (<model> | model not recorded)". */
+  /** "Source-provided English, not reviewed here" or "Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative." (model in the credit line). */
   label: string;
   reference: SourceReference | null;
 }

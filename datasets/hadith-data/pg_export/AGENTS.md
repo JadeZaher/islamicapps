@@ -437,13 +437,25 @@ and `compiler_link`; no mention is added, so ids, positions, review units and th
   Muslim b. Abi Karima al-Tamimi (rabi_0001); a source's confirmed claim on those mentions (Riwayat N0013779 «مسلم بن أيمن») is kept
   as an unconfirmed candidate (`demote_kunya_only`, detail says why).
 
-## Bare kunya rule (projection `2026.11.22.12`; owner ruling 2026-11-22, all traditions)
+## Bare kunya rule (projection `2026.11.22.13`; owner ruling 2026-11-22, narrowed the same day)
 
-A surface that is only a kunya (`external_identity.bare_kunya_key`: «أبو/أبي/أبا/أم X», «أبو عبد X») stands as an identity only when
-exactly one person carries it in the source the identity rests on, counted over that work's written bare-kunya mentions per source
-(`KUNYA_RULE_AUTHORITIES`: K6 for `source_index_confirmed_by_text`, hadith-kg, Riwayat; both K6 and hadith-kg for
-`two_sources_agree`; placeholder and label-like records not counted). Otherwise the identity is withheld with
-`identity_withheld_reason` «kunya only: N people carry «X» in this work's source ...»; the candidates stay unchanged. Exempt:
-`imam_kunya_convention` (the honorific marks the Imam), `named_in_opening_isnad`, `edition_identification`. This replaces the
-OpenITI-only demotion (round 2) and the Sunni/Imami acceptance. Counts: `identity_candidates.standing_withheld_by_kunya_rule`,
-`standing_bare_kunya_one_carrier`. Measured effect and readings: `chain-audit/compiler-ruling/README.md`.
+The ruling: a bare kunya (`external_identity.bare_kunya_key`: «أبو/أبي/أبا/أم X», «أبو عبد X») stands as an identity only when it is not
+ambiguous: Abu Hurayra passes, a kunya genuinely shared by several narrators stays a candidate. **It applies where no curated per-report
+narrator index exists: the three OpenITI works** (`KUNYA_RULE_WORKS` = `chain_builder.OPENITI_WORKS`: Musnad al-Rabiʿ, Musnad Zayd, Sahifat
+al-Rida). There a standing identity on a bare kunya needs exactly one person carrying it in the work's own source (counted per work, kunya and
+source over the written bare-kunya mentions: `KUNYA_RULE_AUTHORITIES`: K6, hadith-kg, Riwayat; placeholder and label-like records not counted);
+else it is withheld with `identity_withheld_reason` «kunya only: N people carry «X» in this work's source ...», candidates unchanged. Everywhere
+else (K6, Pure Canon and the Imami works) the source's own per-report assertion stands, as before `9532839`. Exempt in all works:
+`imam_kunya_convention`, `named_in_opening_isnad`, `edition_identification`. Counts: `identity_candidates.standing_withheld_by_kunya_rule`,
+`standing_bare_kunya_one_carrier`.
+
+**Why not "one carrier in the work" everywhere (the first form, `9532839`).** A large work's source names a second bearer of almost every
+common kunya somewhere (Musnad Ahmad's source gives 5 people for «أبي هريرة»), so the count failed the ruling's own example: it withheld 4,357
+Sunni and 22 Imami identities of which 28 of 30 read were right. Options measured on those 4,431 (a bare-kunya identity with a standing source
+claim, count by the same data) against a stratified fresh reading of 135 (`chain-audit/compiler-ruling/kunya_options/`): (a) OpenITI only;
+(b) stands when one person holds at least 90, 95 or 98 percent of the kunya's assertions in the work's source; (c) as (b), or when the asserted
+person is chronologically possible or attested against a neighbour (`chain_chronology`). Every stratum at 90 percent dominance or more read
+90 of 90 right; the low-share stratum 39 of 45 (5 wrong, 1 unclear); share does not separate the wrong ones (right: 0.05 to 0.41; wrong: 0.03
+to 0.59). Each of (b) and (c) withholds hundreds to thousands of right identities to catch the same ~160 wrong ones, so (a) ships.
+In the three OpenITI works the rule withholds nothing today: every bare-kunya identity there has one carrier (60 Abu Hurayra mentions in
+al-Rabiʿ, plus Abu Saʿid, Umm Salama), so the withholding case is covered by the pure rule and real claim counts (`test_identity_rules.py`).

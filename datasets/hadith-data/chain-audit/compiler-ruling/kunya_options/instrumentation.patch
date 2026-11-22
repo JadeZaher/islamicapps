@@ -1,0 +1,98 @@
+--- /c/Users/atooz/AppData/Local/Temp/claude/8b9ecadf913d98e6/95b7dde3-527e-49ce-8f56-83c964db48b2/scratchpad/export_postgres.orig.py	2026-11-22 09:55:44.565387000 -0700
++++ pg_export/export_postgres.py	2026-11-22 09:55:48.937427600 -0700
+@@ -35,7 +35,8 @@
+ import machine_english  # noqa: E402
+ from chain_chronology import DEATH_GAP_YEARS as CHRONOLOGY_DEATH_GAP_YEARS  # noqa: E402
+ from chain_chronology import IRSAL_YEARS as CHRONOLOGY_IRSAL_YEARS  # noqa: E402
+-from chain_chronology import Lifespan, contest_chain  # noqa: E402
++from chain_chronology import Lifespan, contest_chain, transmission_chronology  # noqa: E402
++EVAL_DUMP = [] if __import__('os').environ.get('KUNYA_EVAL_DUMP') else None   # EVAL-TEMP
+ from imam_kunya import ImamKunyaRegister, CONVENTIONS_PATH  # noqa: E402
+ import chain_builder  # noqa: E402
+ import chain_structure  # noqa: E402
+@@ -1353,7 +1354,7 @@
+     # Bare kunya rule (owner 2026-11-22, all traditions; AGENTS.md §Bare kunya rule): a surface that is only a kunya stands
+     # as an identity only when exactly one person in that work's own source carries it. Carriers are counted per work,
+     # kunya and source over every written bare-kunya mention before any identity is decided.
+-    kunya_carriers: dict[tuple[str, str, str], set[str]] = defaultdict(set)
++    kunya_carriers: dict[tuple[str, str, str], Counter] = defaultdict(Counter)
+     for hadith_id, report_branches in branches_by_hadith.items():
+         owner = hadith_info[hadith_id]
+         for branch in report_branches:
+@@ -1366,7 +1367,7 @@
+                     continue
+                 for claim in source_claims(hadith_id, branch, position, mention_id, surface_ar, owner, Counter(), Counter()):
+                     if not claim.placeholder and not claim.label_like:
+-                        kunya_carriers[(owner["source_work_id"], key, xid.authority_of(claim.narrator_id))].add(claim.narrator_id)
++                        kunya_carriers[(owner["source_work_id"], key, xid.authority_of(claim.narrator_id))][claim.narrator_id] += 1
+     compiler_counts: Counter = Counter()
+ 
+     provider_english = ProviderEnglish(args.imami_english_lexicon)
+@@ -1421,6 +1422,7 @@
+             else:
+                 spans = locate_mentions(report_text, [surface_ar for _, surface_ar, _ in rows])
+             resolved = []   # per position: (found, standing), before the chronology contest
++            pre_rule = []   # EVAL-TEMP
+             for position, (mention_id, surface_ar, normalized) in enumerate(rows):
+                 # A surface such as a bare conjunction 'و' normalizes to '': keep '' (known empty), never NULL.
+                 if normalized == "":
+@@ -1485,6 +1487,7 @@
+                 agreement = candidate_agreement(candidate.narrator_id for candidate in found)
+                 identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
+                 standing = xid.standing_identity(found, person_keys)
++                pre_rule.append(standing[0] if standing else None)   # EVAL-TEMP
+                 kunya_reason = None
+                 kunya = xid.bare_kunya_key(surface_ar) if standing and standing[1] in xid.KUNYA_RULE_AUTHORITIES else None
+                 if kunya:
+@@ -1507,6 +1510,42 @@
+                     identity["confirmed_but_contested_or_not_counted"][tradition] += 1
+                 resolved.append((found, standing, kunya_reason))
+ 
++            if EVAL_DUMP is not None:   # EVAL-TEMP
++                for position, (mention_id, surface_ar, _) in enumerate(rows):
++                    key = xid.bare_kunya_key(surface_ar)
++                    standing = resolved[position][1]
++                    if key is None or pre_rule[position] is None or built_mentions and built_mentions[position].inherited_from:
++                        continue
++                    stand_id = pre_rule[position]
++                    # method: recompute
++                    method = xid.standing_identity(resolved[position][0], person_keys)[1]
++                    if method not in xid.KUNYA_RULE_AUTHORITIES:
++                        continue
++                    stats = []
++                    for authority in xid.KUNYA_RULE_AUTHORITIES[method]:
++                        counter = kunya_carriers[(work, key, authority)]
++                        total = sum(counter.values())
++                        mine = sum(n for i, n in counter.items() if person_keys.key(i) == person_keys.key(stand_id))
++                        top = max(counter.values()) if counter else 0
++                        stats.append((authority, mine, total, len(counter), top))
++                    def neigh(other):
++                        if other < 0 or other >= len(rows) or pre_rule[other] is None:
++                            return "none"
++                        a, b = (position, other) if other > position else (other, position)
++                        sa, sb = lifespans.get(pre_rule[a]), lifespans.get(pre_rule[b])
++                        if sa is None or sb is None:
++                            return "undated"
++                        if (pre_rule[a], pre_rule[b]) in lexicon_pairs:
++                            return "attested"
++                        why = transmission_chronology(sa, sb, False, True)
++                        return "conflict" if why else "possible"
++                    EVAL_DUMP.append({"mention_id": mention_id, "hadith_id": hadith_id, "tradition": tradition, "work": work,
++                                      "position": position, "surface": surface_ar, "key": key, "method": method,
++                                      "standing": stand_id, "stats": stats, "prev": neigh(position - 1), "next": neigh(position + 1),
++                                      "now_standing": bool(standing), "chain": branch["id"],
++                                      "prev_id": pre_rule[position - 1] if position > 0 else None,
++                                      "next_id": pre_rule[position + 1] if position + 1 < len(rows) else None})
++
+             # Chain chronology guard (chain_chronology.py, AGENTS.md §Chain chronology): a standing identity may not
+             # make an adjacent pair impossible on the lexicon's years; seams of a repeated narrator are only counted.
+             contest = contest_chain([standing[0] if standing else None for _, standing, _ in resolved], lifespans,
+@@ -1736,6 +1775,8 @@
+                     "content_sha256": graph_content_hash(writer.files, [])}
+         (output_dir / writer.stream / "manifest.json").write_bytes(deterministic_json_bytes(manifest))
+         manifests[writer.stream] = manifest
++    if EVAL_DUMP is not None:   # EVAL-TEMP
++        Path(__import__('os').environ['KUNYA_EVAL_DUMP']).write_text(json.dumps(EVAL_DUMP, ensure_ascii=False), encoding='utf-8')
+     return manifests
+ 
+ 

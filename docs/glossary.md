@@ -1400,7 +1400,7 @@ Not yet checked by a person against its source.
 
 Produced by software, such as a translation model or an automated comparison, and not yet reviewed by a person.
 
-- **In this archive:** Always labelled. A machine translation is shown only for works whose recorded English policy allows it, as “Unreviewed machine translation” with the model that produced it, or “model not recorded”. No identity, grade, date or translation is asserted by a machine.
+- **In this archive:** Always labelled. A machine translation is shown only for works whose recorded English policy allows it, labelled “Unreviewed machine translation. May contain errors that change the meaning; the Arabic is authoritative.”, with the model that produced it named in the credit line (or “model not recorded”). No identity, grade, date or translation is asserted by a machine.
 - **Related:** [Candidate](#candidate), [Unreviewed](#unreviewed), [Parallel](#parallel)
 - **Data values:** `translation_state.machine_unreviewed`, `record_origin.ai_research`, `english_policy.source_provided_and_machine_allowed`
 

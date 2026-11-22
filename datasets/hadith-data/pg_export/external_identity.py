@@ -51,6 +51,8 @@ KUNYA_ONLY_DEMOTION = {
 
 # A surface that is only a kunya, the theophoric «أبو عبد الله» included (owner, 2026-11-22: the bare kunya rule).
 BARE_KUNYA_SURFACE = re.compile(r"^(?:أبو|ابو|أبي|ابي|أبا|ابا|أم|ام)\s+(?:عبد\s+)?\S+$")
+# The works with no curated per-report narrator index (the OpenITI works, `chain_builder.OPENITI_WORKS`): the only works the rule applies to.
+KUNYA_RULE_WORKS = frozenset({"ibadi:musnad-rabi", "zaydi:musnad-zayd", "imami:sahifat-al-imam-ali-al-rida"})
 # Which source's claims a standing method rests on; the bare kunya rule counts carriers in each (exempt methods absent).
 KUNYA_RULE_AUTHORITIES = {
     "source_index_confirmed_by_text": ("rawi",), "two_sources_agree": ("rawi", "hadith-kg"),
@@ -66,6 +68,11 @@ def bare_kunya_key(surface_ar: str) -> str | None:
     text = re.sub("[أإآٱ]", "ا", text).replace("ى", "ي").replace("ة", "ه")
     head, rest = text.split(" ", 1)
     return ("ام" if head == "ام" else "ابو") + " " + rest
+
+
+def bare_kunya_withheld(work: str, carriers: int) -> bool:
+    """True when the rule withholds a bare kunya's identity: a work with no per-report index and not exactly one carrier."""
+    return work in KUNYA_RULE_WORKS and carriers != 1
 
 
 def demote_kunya_only(candidate: "Candidate", surface_ar: str) -> "Candidate":
