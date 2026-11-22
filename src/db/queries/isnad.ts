@@ -82,7 +82,7 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
            case when link.id is not null then m.confidence end as confidence,
            m.name_latin, m.name_latin_basis, m.name_latin_narrator_id,
            case when link.id is not null then m.extraction_method end as standing_basis,
-           m.identity_withheld_reason, m.inherited_from_mention_id
+           m.identity_withheld_reason, m.inherited_from_mention_id, c.suspension as chain_suspension
     from chain_mentions m
     join chains c on c.id = m.chain_id and c.retired_at is null
     join hadiths h on h.id = m.hadith_id and h.retired_at is null
@@ -143,7 +143,8 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              'name_latin', l.name_latin, 'name_latin_basis', l.name_latin_basis,
              'name_latin_narrator_id', l.name_latin_narrator_id, 'standing_basis', l.standing_basis,
              'identity_withheld_reason', l.identity_withheld_reason,
-             'inherited_from_mention_id', l.inherited_from_mention_id)
+             'inherited_from_mention_id', l.inherited_from_mention_id,
+             'chain_suspension', l.chain_suspension)
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
@@ -176,6 +177,7 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     standing_basis: node.is_link ? text(node.standing_basis) : null,
     identity_withheld_reason: node.is_link ? null : text(node.identity_withheld_reason),
     inherited_from_mention_id: text(node.inherited_from_mention_id),
+    chain_suspension: text(node.chain_suspension),
   };
 }
 

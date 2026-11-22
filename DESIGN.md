@@ -257,8 +257,10 @@ list (tradition, work, number, book, attribution, tellings, address in mono) and
   disagreement.
 - A position that is not a name written in this report says so on one 12px muted line under the name: "From the earlier
   report's chain" (a continuation repeats the earlier report's names; the section already opens with "Chain continues
-  from No. N"), "Unnamed transmitter: the text names no one here" (a gap the text marks: balagh, «عن رجل»). Text only,
-  no new mark.
+  from No. N"), "Unnamed transmitter: the text names no one here" (a gap the text marks: balagh, «عن رجل»), "Refers back
+  to the previous report's chain; not a narrator" («عنه»). A chain that relies on another says so once under its heading in
+  12px muted text: "Chain relies on the previous report", "Chain starts mid-way and relies on an earlier report", "The
+  compiler gives his route to the first narrator elsewhere in the book". Text only, no new mark.
 - Rows are divided by hairlines; no boxes. *Shown in:* `#isnad`.
 
 ### Identity basis labels (`BasisMark`, basis wording)
@@ -520,3 +522,4 @@ marks (`TraditionBadge`, tellings, all-chains, timeline group labels, filter chi
   dark.
 - 2026-11-22: Isnad list position notes for inherited names and unnamed transmitters (chain builder round 2); identity
   basis "named by the work's own opening isnad (report No. 1)" drawn with the confirmed mark.
+- 2026-11-22: chain suspension line under the branch heading and the back-reference position note (round 2, Imami).

@@ -302,6 +302,10 @@ async function main() {
     // The chain builder (0014): continuations name the written mention they repeat; the opening-isnad rule is a tier basis.
     expect(withheld.includes('inherited_from_mention_id'), 'public_chain_links does not expose inherited_from_mention_id');
     expect(tier.includes("'named_in_opening_isnad'"), 'public_chain_mention_candidates_v2 does not count named_in_opening_isnad');
+    // 0015: chains say when they rely on another; an unnamed transmitter or a back-reference never stands in a pair.
+    expect(withheld.includes('chain_suspension'), 'public_chain_links does not expose chain_suspension');
+    expect(network.includes("'anonymous'") && network.includes("'not_a_narrator'") && network.includes('first_pos'),
+      'narrator_transmissions lost the 0015 anonymous-gap guard or the 0013 seam guard');
 
     console.log(
       [

@@ -6,6 +6,7 @@ Run: python -I datasets/hadith-data/pg_export/test_chain_builder.py
 import json
 import sys
 import unittest
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -118,6 +119,69 @@ class KunyaOnlySurface(unittest.TestCase):
                 demoted = xid.demote_kunya_only(claim, surface)
                 self.assertEqual(demoted.basis, basis)
                 self.assertEqual(xid.standing_identity([demoted], xid.PersonKeys()) is None, basis == "source_riwayat")
+
+
+class ImamiChainRules(unittest.TestCase):
+    """The Imami audit's cases (chain-audit/imami/README.md), each a real surface or text."""
+
+    KAFI_3_4_16_1 = ("1ـ عَلِيُّ بْنُ إِبْرَاهِيمَ عَنْ أَبِيهِ وَمُحَمَّدُ بْنُ إِسْمَاعِيلَ عَنِ الْفَضْلِ بْنِ شَاذَانَ جَمِيعاً عَنْ حَمَّادِ بْنِ"
+                     " عِيسَى عَنْ حَرِيزٍ عَنْ زُرَارَةَ قَالَ قَالَ أَبُو جَعْفَرٍ (عَلَيْهِ الْسَّلام) إِذَا قُمْتَ فِي الصَّلاَةِ")
+
+    def test_jamian_groups_meet_at_the_shared_narrator(self):
+        # Noor's structured sanad (hadithId 108787): two routes meeting at Hammad b. ʿIsa, no cross link.
+        counts = Counter()
+        chains = cb.build_imami_chains(self.KAFI_3_4_16_1, [], "al-kafi", counts)
+        self.assertEqual([[cb.imami_fold(m.surface) for m in chain.mentions] for chain in chains], [
+            ["علي بن ابراهيم", "ابيه", "حماد بن عيسي", "حريز", "زرارة"],
+            ["محمد بن اسماعيل", "الفضل بن شاذان", "حماد بن عيسي", "حريز", "زرارة"]])
+
+    def test_plain_co_transmitters_before_jamian_are_not_regrouped(self):
+        self.assertIsNone(cb.jamian_groups("علي بن إبراهيم عن أبيه و محمد بن عيسى جميعا عن يونس"))
+
+    def test_surfaces(self):
+        # (surface, position, after an Imam, work) -> (mentions as (text, link kind), chain suspension)
+        cases = [
+            ("و روى حماد بن عثمان", 0, False, "man-la-yahduruhu-al-faqih", [("حماد بن عثمان", None)], "route_given_elsewhere"),
+            ("و روى عنه عمر بن يزيد", 0, False, "man-la-yahduruhu-al-faqih", [("عمر بن يزيد", None)], "back_reference"),
+            ("و سأل صفوان بن يحيى أبا الحسن", 0, False, "man-la-yahduruhu-al-faqih",
+             [("صفوان بن يحيى", None), ("أبا الحسن", None)], "route_given_elsewhere"),
+            ("وعنه", 0, False, "kamil-al-ziyarat", [("وعنه", "not_a_narrator")], "back_reference"),
+            ("و بهذا الإسناد", 0, False, "al-kafi", [("و بهذا الإسناد", "not_a_narrator")], "back_reference"),
+            ("داود بن أبي يزيد عمن ذكره", 3, False, "al-kafi", [("داود بن أبي يزيد", None), ("عمن ذكره", "anonymous")], None),
+            ("بعض أصحابه رفعه", 1, False, "al-kafi", [("بعض أصحابه رفعه", "anonymous")], None),
+            ("سبعين", 2, False, "al-amali-saduq", [], None),
+            ("4/86 الكافي علي", 0, False, "mujam-al-ahadith-al-mutabara", [("علي", None)], None),
+            ("موسى بن بشار العطار 1", 2, False, "mujam-al-ahadith-al-mutabara", [("موسى بن بشار العطار", None)], None),
+            ("الرجل يدخل الحمام و هو صائم فقال لا بأس ما لم يخش ضعفا", 3, True, "al-kafi", [], None),
+            ("قلنا أما الذي يدل على صحتها فإن الشيعة الإمامية يروونها على", 0, False, "al-kafi", [], None),
+            ("عيسى بن عبد الله بن محمد بن عمر بن علي بن أبي طالب ع", 3, False, "kamil-al-ziyarat",
+             [("عيسى بن عبد الله بن محمد بن عمر بن علي بن أبي طالب ع", None)], None),
+        ]
+        for surface, position, after_imam, work, expected, suspension in cases:
+            with self.subTest(surface):
+                mentions, opened = cb.clean_imami_mention(surface, position, after_imam, work, Counter())
+                self.assertEqual([(m.surface, m.link_kind) for m in mentions], expected)
+                self.assertEqual(opened, suspension)
+
+    def test_same_isnad_after_the_previous_report_is_filled_only_when_certain(self):
+        def chain(*surfaces, label=True):
+            mentions = [cb.BuiltMention("وبهذا الإسناد", "not_a_narrator")] if label else []
+            return [cb.ImamiChain(mentions + [cb.BuiltMention(s) for s in surfaces], "back_reference" if label else None)]
+        built = {"p": chain("محمد بن يحيى", "أحمد بن محمد", "ابن محبوب", "أبي عبد الله", label=False),
+                 "whole": chain(), "named": chain("ابن محبوب", "أبي عبد الله"), "elsewhere": chain("يونس")}
+        previous = {"whole": "p", "named": "whole", "elsewhere": "p"}
+        counts = Counter()
+        depth = cb.resolve_same_isnad(built, previous, {key: f"rec:{key}" for key in built}, counts)
+        self.assertEqual([m.surface for m in built["whole"][0].mentions], ["محمد بن يحيى", "أحمد بن محمد", "ابن محبوب", "أبي عبد الله"])
+        self.assertTrue(all(m.inherited_from[0] == "rec:p" for m in built["whole"][0].mentions))
+        self.assertEqual([m.surface for m in built["named"][0].mentions], ["محمد بن يحيى", "أحمد بن محمد", "ابن محبوب", "أبي عبد الله"])
+        self.assertEqual([m.inherited_from is None for m in built["named"][0].mentions], [False, False, True, True])
+        self.assertEqual(built["elsewhere"][0].suspension, "back_reference")       # «عن يونس»: not in the previous chain
+        self.assertEqual(depth, {"whole": 1, "named": 2})
+
+    def test_fused_co_transmitters_become_one_level(self):
+        mention = cb.BuiltMention("أبي و محمد بن الحسن بن أحمد بن الوليد")
+        self.assertEqual([m.surface for m in cb.split_fused(mention, Counter())], ["أبي", "محمد بن الحسن بن أحمد بن الوليد"])
 
 
 if __name__ == "__main__":

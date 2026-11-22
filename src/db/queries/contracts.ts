@@ -180,6 +180,8 @@ export interface ChainNode {
   identity_withheld_reason?: string | null;
   /** The written mention this name repeats: the chain continues from an earlier report (0014). */
   inherited_from_mention_id?: string | null;
+  /** The chain relies on another (0015): `back_reference`, `mid_chain_start` or `route_given_elsewhere`. */
+  chain_suspension?: string | null;
 }
 
 export interface ChainEdge {

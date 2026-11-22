@@ -20,6 +20,12 @@ const RIDA_CONTINUATION = 'hadith:openiti:imami:rida_0003|3|V01P441'; // «وب�
 const ZAYD = 'hadith:openiti:zaydi:zayd_0170|170|V01P167'; // «زيد بن علي عن أبيه عن جده عن علي»
 const BALAGH = 'hadith:openiti:ibadi:rabi_0425|425|V01P114';
 const JABIR = 'narrator:riwayat:N0001547';
+const KAFI_JAMIAN = 'hadith:thaqalayn:07b3c9089c6fc4b7ed88073a'; // al-Kafi 3/4/16/1 «... و ... جميعا عن حماد بن عيسى»
+const FAQIH_RAWA = 'hadith:thaqalayn:000fabb7bcb6211feb2d377f'; // «و روى ابن أبي عمير ...»
+const BACK_REFERENCE = 'hadith:thaqalayn:0034cac887c15c7dfc9a3956'; // «عنه عن صفوان ...»
+const ANONYMOUS_GAP = 'hadith:thaqalayn:05071e9f53ff6d02c6eb4590'; // «... إبراهيم بن عمر اليماني عمن حدثه عن أبي عبد الله»
+const SAME_ISNAD = 'hadith:thaqalayn:15e4894bab9e3d65b60b4d38'; // «وبهذا الإسناد عن صالح بن عقبة ...»
+const SAME_ISNAD_PREVIOUS = 'hadith:thaqalayn:4ba1a5c368726ec2df100193';
 
 type Row = Record<string, string | null>;
 const TABLES = [
@@ -102,6 +108,52 @@ flow('a balagh is a labelled gap: no pair forms across it', async () => {
   assert.ok(gap, 'the balagh is a mention of its own');
   assert.equal(gap.narrator_id, null, 'an unnamed transmitter never carries an identity, so no pair can form through it');
   assert.ok(nodes.some((node) => node.position > gap.position), 'the named source after the balagh is kept');
+});
+
+flow('al-Kafi «جميعا»: two routes meet at Hammad b. ʿIsa and no name of one route is linked to the other', async () => {
+  const nodes = (await getChainGraph(KAFI_JAMIAN)).nodes;
+  const routes = [...new Set(nodes.map((node) => node.chain_id))].map((id) =>
+    nodes.filter((node) => node.chain_id === id).sort((a, b) => a.position - b.position).map((node) => node.surface_ar));
+  assert.equal(routes.length, 2);
+  assert.deepEqual(routes.map((route) => route.slice(0, 2)), [['علي بن إبراهيم', 'أبيه'], ['محمد بن إسماعيل', 'الفضل بن شاذان']]);
+  assert.ok(routes.every((route) => route[2] === 'حماد بن عيسى'), 'each route meets the other at Hammad');
+});
+
+flow('Man la Yahduruhu: «و روى X» starts the chain at X and says the route is given elsewhere', async () => {
+  const nodes = (await getChainGraph(FAQIH_RAWA)).nodes;
+  assert.ok(!/روى/.test(nodes[0].surface_ar), 'the report verb is not part of the first name');
+  assert.equal(nodes[0].chain_suspension, 'route_given_elsewhere');
+});
+
+flow('a back-reference is a label: the chain relies on the previous report and «عنه» carries no identity', async () => {
+  const nodes = (await getChainGraph(BACK_REFERENCE)).nodes;
+  assert.equal(nodes[0].surface_ar, 'عنه');
+  assert.equal(nodes[0].link_kind, 'not_a_narrator');
+  assert.equal(nodes[0].narrator_id, null);
+  assert.equal(nodes[0].chain_suspension, 'back_reference');
+});
+
+flow('an unnamed transmitter («عمن حدثه») sits between two names, and no teacher-student pair crosses it', async () => {
+  const nodes = (await getChainGraph(ANONYMOUS_GAP)).nodes.filter((node) => node.branch === 0);
+  const gap = nodes.find((node) => node.link_kind === 'anonymous');
+  assert.ok(gap, 'the gap is its own position');
+  const student = nodes.find((node) => node.position === gap.position - 1);
+  const teacher = nodes.find((node) => node.position === gap.position + 1);
+  assert.ok(student && teacher);
+  const crossed = await sql`select 1 from narrator_transmissions t join chain_mentions s on s.narrator_id = t.student_id
+                            join chain_mentions m on m.narrator_id = t.teacher_id
+                            where s.id = ${student.node_id} and m.id = ${teacher.node_id}`;
+  assert.equal(crossed.length, 0);
+});
+
+flow('«وبهذا الإسناد» right after a report of the same chapter takes its chain up to the named link', async () => {
+  const previous = (await getChainGraph(SAME_ISNAD_PREVIOUS)).nodes.filter((node) => node.branch === 0);
+  const nodes = (await getChainGraph(SAME_ISNAD)).nodes.filter((node) => node.branch === 0);
+  const inherited = nodes.filter((node) => node.inherited_from_mention_id);
+  assert.ok(inherited.length >= 2);
+  assert.deepEqual(inherited.map((node) => node.surface_ar), previous.slice(0, inherited.length).map((node) => node.surface_ar));
+  assert.ok(inherited.every((node) => node.inherited_from_mention_id!.includes('4ba1a5c368726ec2df100193')));
+  assert.equal(nodes[0].chain_suspension, null, 'a filled antecedent is no longer suspended');
 });
 
 async function main(): Promise<void> {

@@ -226,6 +226,10 @@ chains are cut. The builder, not rows by hand, is fixed: `datasets/hadith-data/p
 - `link_kind` is now written for these chains: `derived_relation` («أبيه», «جده» read through the rule), `anonymous` (a
   balagh gap). The chain view words them ("From the earlier report's chain", "Unnamed transmitter").
 - `public_chain_links` appends `inherited_from_mention_id` (CREATE OR REPLACE). `db:verify` checks it and the tier basis.
+- **0015 (Imami chains).** `chains.suspension` (check: `back_reference`, `mid_chain_start`, `route_given_elsewhere`): the chain
+  relies on another; the page says so in plain words. `public_chain_links` appends `chain_suspension`. `narrator_transmissions`
+  (0013 body) adds one guard: an `anonymous` or `not_a_narrator` position is never one side of a pair. `db:verify` checks both;
+  `db:verify-data` checks that no such position carries an automatic identity.
 
 ## Report correspondences (0007; design §5.5.1)
 
@@ -270,7 +274,9 @@ write decisions.
   `narrator_lexicon_profiles.source_fields` and two checks; hand-written: `public_chain_links` appended, `narrator_transmissions`
   dropped and recreated with its two indexes; see §Chain chronology guard) -> `0014_chain_builder_openiti` (generated:
   enum value `named_in_opening_isnad`, `chain_mentions.inherited_from_mention_id`; hand-written: `public_chain_links` appended,
-  `public_chain_mention_candidates_v2` counts the new basis; see §Chain builder). A `--custom` generate snapshots the previous schema: after promoting a
+  `public_chain_mention_candidates_v2` counts the new basis; see §Chain builder) -> `0015_chain_builder_imami` (generated:
+  `chains.suspension` and its check; hand-written: `public_chain_links` appended, `narrator_transmissions` dropped and recreated
+  with the anonymous-gap guard and its two indexes). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

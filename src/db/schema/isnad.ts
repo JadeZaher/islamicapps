@@ -48,9 +48,15 @@ export const chains = pgTable(
     confidence: real('confidence'),
     sanadConfidence: text('sanad_confidence'),
     ...pipelineBookkeeping(),
+    /** The chain opens by relying on another (0015; src/db/AGENTS.md §Chain builder): a back-reference, a mid-isnad start, or a route the compiler gives elsewhere. */
+    suspension: text('suspension'),
   },
   (table) => [
     unique('chains_hadith_id_branch_key').on(table.hadithId, table.branch),
+    check(
+      'chains_suspension_check',
+      sql`${table.suspension} is null or ${table.suspension} in ('back_reference', 'mid_chain_start', 'route_given_elsewhere')`,
+    ),
     restrictForeignKey('chains_hadith_id_fk', table.hadithId, hadiths.id),
     ...pipelineBookkeepingForeignKeys('chains', table),
   ],
@@ -274,6 +280,8 @@ export const publicChainLinks = pgView('public_chain_links', {
   identityWithheldReason: text('identity_withheld_reason'),
   /** Appended in 0014: the written mention a continuation repeats (the chain continues from an earlier report). */
   inheritedFromMentionId: text('inherited_from_mention_id'),
+  /** Appended in 0015: the chain's `suspension` (it relies on another chain), repeated on each of its positions. */
+  chainSuspension: text('chain_suspension'),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */

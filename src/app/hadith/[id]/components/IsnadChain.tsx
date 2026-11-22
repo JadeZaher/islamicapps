@@ -164,9 +164,17 @@ function MentionIdentityCell({ node, tradition }: { node: ChainNode; tradition: 
 /** What a position is when it is not a name written here: repeated from an earlier report, or a gap the text marks. */
 export function positionNote(node: Pick<ChainNode, 'inherited_from_mention_id' | 'link_kind'>): string | null {
     if (node.link_kind === 'anonymous') return 'Unnamed transmitter: the text names no one here';
+    if (node.link_kind === 'not_a_narrator') return "Refers back to the previous report's chain; not a narrator";
     if (node.inherited_from_mention_id) return "From the earlier report's chain";
     return null;
 }
+
+/** Why a chain does not start with the compiler's own shaykh (0015), in plain words. */
+export const CHAIN_SUSPENSION_LABEL: Record<string, string> = {
+    back_reference: 'Chain relies on the previous report',
+    mid_chain_start: 'Chain starts mid-way and relies on an earlier report',
+    route_given_elsewhere: "The compiler gives his route to the first narrator elsewhere in the book",
+};
 
 /** The name as written: Arabic in the Arabic face at the end, its Latin form at the start with how it was obtained. */
 function WrittenName({ node }: { node: ChainNode }) {
@@ -250,6 +258,11 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                 <div key={branch.id}>
                     {(branches.length > 1 || sourceSanad) && (
                         <p className="mb-2 type-h3 text-ink">{branches.length > 1 ? `Branch ${branchIndex + 1}` : 'Narrators'}</p>
+                    )}
+                    {branch.nodes[0].chain_suspension && (
+                        <p className="mb-2 type-small text-ink-muted" data-chain-suspension={branch.nodes[0].chain_suspension}>
+                            {CHAIN_SUSPENSION_LABEL[branch.nodes[0].chain_suspension] ?? 'Chain relies on another report'}
+                        </p>
                     )}
                     <ol
                         aria-label={[

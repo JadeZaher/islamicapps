@@ -221,3 +221,28 @@ extractor is reused unchanged, so no Sunni or Thaqalayn chain can move (measured
   change many more; that is the owner's call.
 - **External claims** are not aligned onto inherited mentions (`build_external_identity_sidecars.py`), which copy their
   written mention's candidates instead.
+
+### Imami chains (projection `2026.11.22.2`; audit `chain-audit/imami/`)
+
+`build_imami_chains` re-cuts every Thaqalayn report from the bundle's branches and the report text (the shared extractor is
+still unchanged; Sunni and OpenITI rows: 0 differ apart from two Sunni mentions whose Riwayat record changed label status,
+because label status counts claims across the corpus).
+
+- **«جميعا» groups** (`jamian_groups`): «A عن B و C عن D جميعا عن E» is split at each waw with a link on both sides; each
+  group is its own route meeting at E. A group that opens with one of al-Kulayni's shaykhs (the audit's list) is a route of
+  its own; another hangs from the first group's opening name («علي بن إبراهيم عن أبيه و محمد بن عيسى عن يونس»). «A عن B و C
+  جميعا» with no inner link is a plain co-transmitter level; a last group that ends in a co-transmitter level («عن صفوان و
+  ابن أبي عمير جميعا») is ambiguous and left as read (counted).
+- **Not narrators** (`clean_imami_mention`): a report verb («و روى», «قال», «سئل», «في رواية») is cut and the chain starts at
+  the name; the Mujam's «3/45 الكافي» citation, footnote digits, a trailing «أو / مثله / في قوله / أنه / في الرجل ...», year and
+  number words, a clause, the Saduq compiler opener («... بن بابويه»), and matn after an Imam are not names.
+- **Suspended** (`chains.suspension`): `back_reference` (the opening is a pronoun or formula: «عنه», «وبهذا الإسناد»; kept as a
+  `not_a_narrator` label with no identity), `route_given_elsewhere` (Man la Yahduruhu: «و روى X», the route is in the
+  Mashyakha), `mid_chain_start` (al-Kafi: the opening name is not a shaykh of the compiler, stands first in under a fifth of
+  its 20 or more appearances, and the text starts with it; the audit's rule with its text test corrected). Only «وبهذا
+  الإسناد» right after a report of the same chapter (provider order) is filled in, and only when the link it then names is
+  in that report's chain (`resolve_same_isnad`); the rest stay marked.
+- **Anonymous gaps**: «X رفعه», «X عمن ذكره», «X عن رجل» become X and an `anonymous` mention; a standalone «رجل», «بعض أصحابه»
+  is `anonymous`. A label position never carries an identity (its candidates stay), and `narrator_transmissions` excludes it.
+- **Fused co-transmitters** «أبي و محمد بن الحسن» become one level of two branches; in al-Kafi a fused name whose second half
+  is a shaykh of the compiler starts a second isnad instead. Concatenated isnads (D07) are not split (deferred).

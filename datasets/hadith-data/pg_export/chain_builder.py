@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from extract_isnad_unified import extract_isnad_branches
+from extract_isnad_unified import _strip_arabic_marks, extract_isnad_branches
 
 RULES_PATH = Path(__file__).resolve().parent / "opening_isnad_rules.json"
 OPENITI_WORKS = frozenset({"ibadi:musnad-rabi", "zaydi:musnad-zayd", "imami:sahifat-al-imam-ali-al-rida"})
@@ -394,3 +394,318 @@ def load_zayd_rule(path: Path = RULES_PATH) -> tuple[ZaydOpeningIsnad, list[dict
     work = data["works"]["zaydi:musnad-zayd"]
     persons = [(fold(item["pattern"]), item["narrator_id"], item["written"]) for item in work["shape"]]
     return ZaydOpeningIsnad(work["opening_record_id"], persons), data["register_additions"]
+
+
+# ─── Imami (Thaqalayn) chains: «جميعا» groups, non-narrators, suspended chains, anonymous gaps ─────────────────────
+
+IMAMI_FOLD = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ى": "ي", "ی": "ي", "ک": "ك"})
+# The previous report's chain, by a pronoun or a formula (taʿliq): a label, never a narrator.
+BACK_REFERENCE = re.compile(rf"^(?:و\s?)?(?:عنه|عنهم|عنهما|به|بهذا|بهذه|باسناده|بالاسناد|بالاسانيد){END}")
+# «وبهذا الإسناد», directly after a report of the same chapter: the antecedent is mechanically certain.
+SAME_ISNAD = re.compile(rf"^(?:و\s?)?(?:بهذا|بهذه)\s+(?:الاسناد|الاسانيد|السند){END}")
+VERB_PREFIX = re.compile(rf"^(?:و\s?)?(?:روي|وروي|روى|وروى|قال|وقال|سال|سئل|وسئل|ذكر|في\s+رواية|في\s+خبر){END}\s*")
+# What follows a name in the text but is not part of it: a doubt («أو»), «مثله», a Qur'an cue, a reported clause.
+IMAMI_TRAILING = re.compile(
+    rf"\s+(?:او|أو|مثله|نحوه|زاد\s+فيه|في\s+قوله|في\s+قول\s+الله|انه|أنه|انها|أنها|انهما|قال|يقول|عنه"
+    rf"|في\s+(?:ال)?(?:رجل|رجلين|امراة|مراة|متوفي|قوم|عبد|جارية)|رحمة\s+الله|رحمه\s+الله|رضي\s+الله){END}.*$")
+# The al-Kafi compiler's own shaykhs (the audit lane's list): a group or a fused name that starts with one starts a route.
+KULAYNI_SHAYKH = frozenset(["علي بن ابراهيم", "علي بن ابراهيم بن هاشم", "محمد بن يحيي", "عدة من اصحابنا", "الحسين بن محمد",
+                            "الحسين بن محمد الاشعري", "ابو علي الاشعري", "حميد بن زياد", "محمد بن اسماعيل", "احمد بن ادريس"])
+SADUQ_WORKS = frozenset(["al-amali-saduq", "al-khisal", "al-tawhid-saduq", "kamal-al-din", "maani-al-akhbar", "thawab-al-amal",
+                         "uyun-akhbar-al-rida", "fadail-al-shia", "sifat-al-shia", "man-la-yahduruhu-al-faqih"])
+ASKED_OBJECT = re.compile(r"\s+(?=ابا\s+\S)")
+CLAUSE_WORDS = frozenset("ولا ليس الا لان فقد هذا ذلك اذا فان لم ما كان كانت كانوا الذي التي ان انه انها اي حيث ثم او هو هي".split())
+NUMBER_WORDS = frozenset(
+    "واحد اثنين اثنتين ثلاث ثلاثة اربع اربعة خمس خمسة ست ستة سبع سبعة ثمان ثماني ثمانية تسع تسعة عشر عشرة عشرين "
+    "ثلاثين اربعين خمسين ستين سبعين ثمانين تسعين مائة ماية مائتين مئتين ثلاثمائة اربعمائة خمسمائة الف سنة شهر رمضان "
+    "محرم صفر ربيع الاول الاخر جمادي رجب شعبان شوال القعدة الحجة في".split())
+# A volume/page citation of the Mujam and the book it cites («3/45 معاني الاخبار»): not part of a name.
+CITATION_PREFIX = re.compile(
+    r"^/?[0-9]+(?:/[0-9]+)*\s+(?:(?:اصول\s+)?الكافي|رجال\s+الكشي|توحيد\s+الصدوق|التوحيد|الخصال|تهذيب\s+الاحكام|التهذيب"
+    r"|علل\s+الشرائع|غيبة\s+الطوسي|غيبة\s+النعماني|معاني\s+الاخبار|الفقيه|العيون|عيون\s+اخبار\s+الرضا|ارشاد\s+المفيد|الارشاد"
+    r"|امالي\s+\S+|الامالي|كمال\s+الدين|ثواب\s+الاعمال|بصائر\s+الدرجات|المحاسن|الاحتجاج|الاستبصار)?\s*")
+FOOTNOTE_DIGIT = re.compile(r"(?:^|\s)[0-9]+(?=\s|$)")
+# Gap markers after a name: he did not hear from the next name; the words become an unnamed-transmitter mention.
+GAP_SUFFIX = re.compile(
+    rf"\s+(?P<gap>رفعه|يرفعه|عمن\s+ذكره|عمن\s+رواه|عمن\s+حدثه|يبلغ\s+به|مرسلا|عن\s+رجل(?:\s+.*)?|عن\s+بعض(?:\s+\S+)?)$")
+ANONYMOUS = re.compile(
+    rf"^(?:و\s?)?(?:رجل|رجلا|الرجل|بعض\s+اصحابه|بعض\s+اصحابنا|بعض\s+رجاله|بعضهم|عمن\s+ذكره|عمن\s+رواه|عمن\s+حدثه"
+    rf"|بعض\s+من\s+رواه|رفعه|يرفعه|رجل\s+من\s+\S+|من\s+ذكره)(?:\s+(?:رفعه|يرفعه))?$")
+IMAM_SURFACE = re.compile(
+    rf"^(?:و\s?)?(?:(?:ابي|ابا|ابو)\s+(?:عبد\s+الله|جعفر|الحسن|ابراهيم)|الصادق|الباقر|الكاظم|الرضا|الجواد|الهادي|العسكري"
+    rf"|السجاد|امير\s+المومنين|امير\s+المؤمنين){END}")
+MATN_HEAD = re.compile(rf"^(?:الرجل|رجل|المراة|امراة|الميت|ما|هل|في|ان|لو|اذا){END}")
+FUSED_PAIR = re.compile(
+    rf"^(?P<left>ابي|\S+(?:\s+\S+){{0,7}}?)(?<!\sبن)(?<!\sابن)(?<!\sابي)(?<!\sابو)\s+و\s*(?P<right>(?:محمد|احمد|علي|الحسين|الحسن|ابراهيم|عبد"
+    rf"|سعد|عمر|يحيي|جعفر|موسي|هارون|ابي|ابن|الفضل|سهل|صفوان|حماد|جميل|عثمان|القاسم){END}.*)$")
+LINK_WORD = re.compile(rf"(?<![ء-ي])(?:عن|حدثنا|حدثني|اخبرنا|اخبرني){END}")
+
+
+def imami_fold(surface: str) -> str:
+    """Marks dropped, alef, ya and Persian letters folded (the audit lane's `fold`)."""
+    return re.sub(r"\s+", " ", re.sub(r"[ً-ٰٟـ]", "", surface).translate(IMAMI_FOLD)).strip()
+
+
+def jamian_groups(text: str) -> list[str] | None:
+    """«A عن B و C عن D جميعا عن E»: each group with its own inner «عن» is its own route to E; else None.
+
+    «A عن B و C جميعا عن E» (no inner link after the waw) is a plain co-transmitter level and stays as the extractor reads it.
+    """
+    original = _strip_arabic_marks(text)
+    plain = original.translate(IMAMI_FOLD)          # same length: slices of the folded text are slices of the original
+    at = plain[:900].find("جميعا")
+    if at < 0 or not re.match(rf"^\s*عن{END}", plain[at + len("جميعا"):]):
+        return None
+    prefix, tail = plain[:at], original[at + len("جميعا"):]
+    cuts, last = [], 0
+    for match in re.finditer(r"\s+و\s*(?=[ء-ي])", prefix):
+        left, right = prefix[last:match.start()], prefix[match.end():]
+        previous = left.split()[-1] if left.split() else ""
+        if previous in ("بن", "ابن", "ابي", "ابو", "ام") or not LINK_WORD.search(left) or not LINK_WORD.search(right):
+            continue
+        cuts.append((match.start(), match.end()))
+        last = match.end()
+    if not cuts:
+        return None
+    if re.search(r"\s+و\s*(?=[ء-ي])", prefix[last:]) and not LINK_WORD.search(prefix[last:].rsplit(" و", 1)[-1]):
+        return []      # the last group ends in a co-transmitter level («عن صفوان و ابن أبي عمير جميعا»): ambiguous, left as read
+    groups, start = [], 0
+    for begin, end in cuts:
+        groups.append(original[start:begin])
+        start = end
+    groups.append(original[start:at])
+    first_name = re.split(LINK_WORD, groups[0].translate(IMAMI_FOLD), maxsplit=1)[0].strip()
+    routes = [groups[0].strip()]
+    for group in groups[1:]:
+        opening = re.split(LINK_WORD, group.translate(IMAMI_FOLD), maxsplit=1)[0].strip()
+        # A group that opens with one of the compiler's shaykhs is a route of its own; otherwise it hangs from the first
+        # group's opening name («علي بن إبراهيم عن أبيه و محمد بن عيسى عن يونس»: both are ʿAli b. Ibrahim's shaykhs).
+        routes.append(group.strip() if opening in KULAYNI_SHAYKH else f"{first_name} عن {group.strip()}")
+    return [route + " " + tail.strip() for route in routes]
+
+
+@dataclass(frozen=True)
+class ImamiChain:
+    mentions: list[BuiltMention]
+    suspension: str | None = None     # back_reference | mid_chain_start | route_given_elsewhere
+
+
+class Written:
+    """A surface as written (marks already stripped) and its folded twin of the same length, cut together."""
+
+    def __init__(self, surface: str):
+        self.text = re.sub(r"\s+", " ", surface).strip()
+        self.folded = self.text.translate(IMAMI_FOLD)
+
+    def cut(self, start: int, end: int | None = None) -> "Written":
+        return Written(self.text[start:end])
+
+    def drop_digits(self) -> "Written":
+        return Written(FOOTNOTE_DIGIT.sub(" ", self.text))
+
+
+def clean_imami_mention(surface: str, position: int, after_imam: bool, work: str,
+                        counts: Counter) -> tuple[list[BuiltMention], str | None]:
+    """One stored surface as zero or more mentions, and the chain's suspension when this opening says so."""
+    name = Written(surface)
+    if position == 0 and BACK_REFERENCE.match(name.folded):
+        counts["back_reference_label"] += 1
+        return [BuiltMention(name.text, link_kind="not_a_narrator")], "back_reference"
+    suspension = None
+    if re.match(r"^(?:/[0-9]+|[0-9]+/[0-9]+)\s", name.folded):
+        counts["citation_prefix_removed"] += 1
+        name = name.cut(CITATION_PREFIX.match(name.folded).end())
+        if not name.text:
+            return [], None
+    if FOOTNOTE_DIGIT.search(name.folded) and len(name.folded.split()) > 1:
+        counts["footnote_digit_removed"] += 1
+        name = name.drop_digits()
+    verb = VERB_PREFIX.match(name.folded)
+    if verb:
+        counts[f"verb_prefix_removed:{work}"] += 1
+        name = name.cut(verb.end())
+        if position == 0 and work == "man-la-yahduruhu-al-faqih":
+            suspension = "route_given_elsewhere"
+        pronoun = re.match(rf"^عنه{END}\s*", name.folded)
+        if pronoun:
+            name = name.cut(pronoun.end())
+            suspension = "back_reference"
+        if not name.text:
+            return [], suspension
+    if re.search(r"\s+و$", name.folded):
+        name = name.cut(0, re.search(r"\s+و$", name.folded).start())      # a waw left by the next co-transmitter's split
+    trailing = IMAMI_TRAILING.search(name.folded)
+    if trailing and name.folded[:trailing.start()].strip():
+        counts["trailing_words_removed"] += 1
+        name = name.cut(0, trailing.start())
+    if position == 0 and work in SADUQ_WORKS and "بابويه" in name.folded:
+        counts["compiler_not_a_mention"] += 1
+        return [], suspension
+    tokens = name.folded.split()
+    if tokens and all(token.removeprefix("و") in NUMBER_WORDS for token in tokens) and any(
+            token.removeprefix("و") not in ("سنة", "شهر", "في", "رمضان") for token in tokens):
+        counts["numeral_dropped"] += 1
+        return [], suspension
+    if after_imam and (MATN_HEAD.match(name.folded) or (len(tokens) >= 4 and "بن" not in tokens)):
+        counts["matn_after_imam_dropped"] += 1
+        return [], suspension
+    if tokens.count("بن") < 3 and ((len(tokens) >= 3 and any(token in CLAUSE_WORDS for token in tokens)) or len(tokens) >= 12):
+        counts["clause_dropped"] += 1
+        return [], suspension
+    if ANONYMOUS.match(name.folded):
+        counts["anonymous_marked"] += 1
+        return [BuiltMention(name.text, link_kind="anonymous")], suspension
+    gap = GAP_SUFFIX.search(name.folded)
+    if gap and name.folded[:gap.start()].strip():
+        counts["gap_split_from_name"] += 1
+        return [BuiltMention(name.cut(0, gap.start()).text),
+                BuiltMention(name.cut(gap.start("gap")).text, link_kind="anonymous")], suspension
+    asked = ASKED_OBJECT.search(name.folded) if verb else None
+    if asked:
+        counts["asked_imam_split"] += 1                 # «سأل صفوان بن يحيى أبا الحسن»: the asker, then the Imam
+        return [BuiltMention(name.cut(0, asked.start()).text), BuiltMention(name.cut(asked.end()).text)], suspension
+    return [BuiltMention(name.text)], suspension
+
+
+def split_fused(mention: BuiltMention, counts: Counter) -> list[BuiltMention]:
+    """«أبي و محمد بن الحسن» in one surface: two co-transmitters at one position (each on its own branch)."""
+    if mention.link_kind:
+        return [mention]
+    name = Written(mention.surface)
+    match = FUSED_PAIR.match(name.folded)
+    if not match:
+        return [mention]
+    counts["fused_cotransmitters_split"] += 1
+    return [BuiltMention(name.cut(0, match.end("left")).text), BuiltMention(name.cut(match.start("right")).text)]
+
+
+def build_imami_chains(text_ar: str, branches: list[list[str]], work: str, counts: Counter,
+                       extract=extract_isnad_branches) -> list[ImamiChain]:
+    """Re-cut one Thaqalayn report: «جميعا» groups as separate routes, then each surface cleaned (see above)."""
+    groups = jamian_groups(text_ar)
+    if groups == []:
+        counts["jamian_ambiguous_left_as_read"] += 1
+    if groups:
+        regrouped: list[list[str]] = []
+        for group in groups:
+            for branch in extract(group):
+                if branch and branch not in regrouped:
+                    regrouped.append(branch)
+        if regrouped:
+            counts["jamian_regrouped_reports"] += 1
+            branches = regrouped
+    out: list[ImamiChain] = []
+    for branch in branches:
+        levels: list[list[BuiltMention]] = []
+        suspension = None
+        after_imam = False
+        restart: list[list[BuiltMention]] | None = None
+        for position, surface in enumerate(branch):
+            mentions, opening = clean_imami_mention(surface, len(levels), after_imam, work, counts)
+            suspension = suspension or opening
+            for mention in mentions:
+                alternatives = split_fused(mention, counts)
+                if (restart is None and work == "al-kafi" and len(alternatives) == 2 and levels
+                        and imami_fold(alternatives[1].surface) in KULAYNI_SHAYKH):
+                    # «... عن حنان بن سدير و محمد بن يحيى عن ...»: a second isnad starts with the compiler's shaykh.
+                    counts["second_isnad_split_at_compiler_shaykh"] += 1
+                    out.append(ImamiChain([m for level in levels for m in level[:1]] + [alternatives[0]], suspension))
+                    restart = [[alternatives[1]]]
+                    levels = restart
+                    continue
+                levels.append(alternatives)
+            if mentions:
+                after_imam = bool(IMAM_SURFACE.match(imami_fold(mentions[-1].surface)))
+        expanded: list[list[BuiltMention]] = [[]]
+        for alternatives in levels:
+            if len(expanded) * len(alternatives) > 64:
+                alternatives = alternatives[:1]
+            expanded = [path + [mention] for path in expanded for mention in alternatives]
+        for path in expanded:
+            surfaces = [mention.surface for mention in path]
+            # A chain of the formula alone («وبهذا الإسناد») stays: it says the report relies on the previous one.
+            if path and (suspension or any(mention.link_kind is None for mention in path)) and all(
+                    surfaces != [mention.surface for mention in chain.mentions] for chain in out):
+                out.append(ImamiChain(path, suspension))
+    return out
+
+
+def mark_mid_chain_starts(reports: dict[str, tuple[str, str]], built: dict[str, list[ImamiChain]],
+                          counts: Counter) -> dict[tuple[str, int], str]:
+    """al-Kafi chains that open mid-isnad (the audit's D02b): the opening name is not one of the compiler's shaykhs,
+    stands first in under a fifth of its 20 or more appearances, and the report's text starts with it."""
+    seen: dict[str, list[int]] = {}
+    for hadith_id, chains in built.items():
+        if reports[hadith_id][0] != "imami:al-kafi":
+            continue
+        for chain in chains:
+            for position, mention in enumerate(chain.mentions):
+                tally = seen.setdefault(imami_fold(mention.surface), [0, 0])
+                tally[0 if position == 0 else 1] += 1
+    marked: dict[tuple[str, int], str] = {}
+    for hadith_id, chains in built.items():
+        work, text = reports[hadith_id]
+        if work != "imami:al-kafi":
+            continue
+        opening_text = re.sub(r"^\s*[0-9]+\s*[ـ-]?\s*", "", imami_fold(_strip_arabic_marks(text)))
+        for index, chain in enumerate(chains):
+            if chain.suspension or not chain.mentions or chain.mentions[0].link_kind:
+                continue
+            first = imami_fold(chain.mentions[0].surface)
+            first_count, middle_count = seen.get(first, (0, 0))
+            if (first not in KULAYNI_SHAYKH and middle_count >= 20 and first_count / (first_count + middle_count) < 0.2
+                    and opening_text.startswith(first)):
+                marked[(hadith_id, index)] = "mid_chain_start"
+                counts["mid_chain_start_marked"] += 1
+    return marked
+
+
+def resolve_same_isnad(built: dict[str, list[ImamiChain]], previous: dict[str, str], record_ids: dict[str, str],
+                       counts: Counter) -> dict[str, int]:
+    """«وبهذا الإسناد ...» right after a report of the same chapter takes that report's chain (marked inherited), up to the
+    link it names; every other back-reference stays marked and unfilled. Returns the inheriting reports' depth."""
+    depth: dict[str, int] = {}
+    settled: dict[str, int] = {}
+
+    def resolve(hadith_id: str, guard: int = 0) -> int:
+        if hadith_id not in settled:
+            settled[hadith_id] = attempt(hadith_id, guard)
+        return settled[hadith_id]
+
+    def attempt(hadith_id: str, guard: int) -> int:
+        chains = built[hadith_id]
+        opening = chains[0].mentions[0] if chains and chains[0].mentions else None
+        parent = previous.get(hadith_id)
+        if (opening is None or opening.link_kind != "not_a_narrator" or not SAME_ISNAD.match(imami_fold(opening.surface))
+                or parent is None or guard > 200):
+            return 0
+        counts["same_isnad_after_previous_report"] += 1
+        parent_depth = resolve(parent, guard + 1)
+        usable = [(index, chain) for index, chain in enumerate(built[parent]) if chain.suspension is None]
+        if not usable:
+            counts["same_isnad_previous_report_has_no_usable_chain"] += 1
+            return 0
+        own = list(chains[0].mentions[1:])
+        route = [[mention if mention.inherited_from else BuiltMention(
+                      mention.surface, mention.link_kind, (record_ids[parent], index, position), mention.rule_identity)
+                  for position, mention in enumerate(chain.mentions)] for index, chain in usable]
+        resolved = []
+        for branch in route:
+            cut = None
+            if own and own[0].link_kind is None:
+                hits = [p for p, m in enumerate(branch) if m.link_kind is None and names_match(own[0].surface, m.surface)]
+                cut = hits[-1] if hits else None
+            if own and cut is None:
+                continue          # «وبهذا الإسناد عن X» with X not in the previous chain: where it joins is not certain
+            resolved.append(ImamiChain(branch[:cut] + own if cut is not None else branch, None))
+        if not resolved:
+            counts["same_isnad_named_link_not_in_previous_chain"] += 1
+            return 0
+        built[hadith_id] = resolved + chains[1:]
+        counts["same_isnad_resolved"] += 1
+        depth[hadith_id] = parent_depth + 1
+        return depth[hadith_id]
+
+    for hadith_id in list(built):
+        resolve(hadith_id)
+    return depth

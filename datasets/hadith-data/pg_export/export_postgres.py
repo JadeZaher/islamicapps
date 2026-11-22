@@ -47,7 +47,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.1"
+PROJECTION_VERSION = "2026.11.22.4"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -1128,6 +1128,59 @@ def project(args: argparse.Namespace) -> dict:
             openiti_counts["mentions_inherited"] += sum(1 for mention in branch if mention.inherited_from)
     counts["openiti_chain_builder"] = dict(sorted(openiti_counts.items()))
 
+    # Thaqalayn (Imami) chains: «جميعا» groups, non-narrators, suspended chains, anonymous gaps (chain_builder.py).
+    imami_counts: Counter = Counter()
+    imami_built: dict[str, list[chain_builder.ImamiChain]] = {}
+    for hadith_id in sorted(branches_by_hadith):
+        info = hadith_info[hadith_id]
+        if not hadith_id.startswith("hadith:thaqalayn:") or tradition_names[info["tradition_id"]] != "Imami":
+            continue
+        surfaces = [[surface for _, surface, _ in branch["mentions"]]
+                    for branch in sorted(branches_by_hadith[hadith_id], key=lambda item: item["branch"])]
+        work = info["source_work_id"].split(":", 1)[1]
+        imami_built[hadith_id] = chain_builder.build_imami_chains(hadith_text[hadith_id], surfaces, work, imami_counts)
+        if not imami_built[hadith_id]:
+            imami_counts["reports_left_without_chain"] += 1
+    imami_suspension = chain_builder.mark_mid_chain_starts(
+        {h: (hadith_info[h]["source_work_id"], hadith_text[h]) for h in imami_built}, imami_built, imami_counts)
+    # «وبهذا الإسناد» directly after a report of the same chapter: the only antecedent filled in this round.
+    chapter_order: dict[str, list[tuple[int, str]]] = defaultdict(list)
+    for hadith_id in imami_built:
+        provider = hadith_info[hadith_id]["provider_hadith_id"]
+        if hadith_chapter.get(hadith_id) and provider and provider.isdigit():
+            chapter_order[hadith_chapter[hadith_id]].append((int(provider), hadith_id))
+    previous_report: dict[str, str] = {}
+    for reports in chapter_order.values():
+        reports.sort()
+        for (_, earlier), (_, later) in zip(reports, reports[1:]):
+            previous_report[later] = earlier
+    imami_resolved = chain_builder.resolve_same_isnad(imami_built, previous_report,
+                                                      {h: hadith_info[h]["record_id"] for h in imami_built}, imami_counts)
+    imami_depth = {hadith_id: depth for hadith_id, depth in imami_resolved.items()}
+    for hadith_id, chains_built in imami_built.items():
+        record_id = hadith_info[hadith_id]["record_id"]
+        branches_by_hadith[hadith_id] = []
+        for index, chain in enumerate(chains_built):
+            inherited = any(mention.inherited_from for mention in chain.mentions)
+            if inherited:
+                inheriting_hadiths.add(hadith_id)
+            branches_by_hadith[hadith_id].append({
+                "id": f"chain:{record_id}:{index:04d}", "branch": index, "resolved": False,
+                "extraction_method": "thaqalayn_inherited_chain" if inherited else "extract_isnad_unified",
+                "sanad_confidence": None, "suspension": imami_suspension.get((hadith_id, index), chain.suspension),
+                "mentions": [(f"mention:{record_id}:{index:04d}:{position:04d}", mention.surface,
+                              name_normalize(mention.surface)) for position, mention in enumerate(chain.mentions)],
+                "built": chain.mentions,
+            })
+            imami_counts["chains"] += 1
+            imami_counts["mentions"] += len(chain.mentions)
+            imami_counts[f"suspension:{branches_by_hadith[hadith_id][-1]['suspension']}"] += 1
+        if not branches_by_hadith[hadith_id]:
+            del branches_by_hadith[hadith_id]
+    for hadith_id, depth in imami_depth.items():
+        build_order[hadith_id] = 1_000_000 + depth
+    counts["imami_chain_builder"] = dict(sorted(imami_counts.items()))
+
     # K6 source index: mapped onto the extracted branches only where the sidecar's text branches are exactly them.
     source_counts: Counter = Counter()
     source_alignment: dict[str, tuple[dict, dict]] = {}
@@ -1197,7 +1250,7 @@ def project(args: argparse.Namespace) -> dict:
             rows = branch["mentions"]
             built_mentions = branch.get("built")
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
-                           branch["extraction_method"], None, branch["sanad_confidence"]])
+                           branch["extraction_method"], None, branch["sanad_confidence"], branch.get("suspension")])
             if built_mentions and any(mention.inherited_from for mention in built_mentions):
                 # An inherited name is not written in this report: only the written ones are located in its text.
                 written_at = [position for position, mention in enumerate(built_mentions) if not mention.inherited_from]
@@ -1279,6 +1332,11 @@ def project(args: argparse.Namespace) -> dict:
                 agreement = candidate_agreement(candidate.narrator_id for candidate in found)
                 identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
                 standing = xid.standing_identity(found, person_keys)
+                if built_mention is not None and built_mention.link_kind in ("not_a_narrator", "anonymous"):
+                    # A back-reference or an unnamed transmitter is a label: its candidates stay, no identity stands.
+                    if standing:
+                        identity["standing_blocked_on_label_position"][f"{tradition}:{built_mention.link_kind}"] += 1
+                    standing = None
                 if standing is None and any(c.basis in xid.CONFIRMED_SOURCE_BASES for c in found):
                     identity["confirmed_but_contested_or_not_counted"][tradition] += 1
                 resolved.append((found, standing))
@@ -1346,7 +1404,7 @@ def project(args: argparse.Namespace) -> dict:
                     latin[2] if latin else None, withheld, inherited_from,
                 ])
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
-                               "sanad_confidence"], chains)
+                               "sanad_confidence", "suspension"], chains)
     canonical.write("chain_mentions", [
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",

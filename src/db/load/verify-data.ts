@@ -236,14 +236,20 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
   );
   // Chain builder (0014; src/db/AGENTS.md §Chain builder).
   await check(
-    "an inherited mention repeats a live written mention of the same collection, with the same surface, in a report that inherits a chain",
+    "an inherited mention repeats a live written mention of the same collection, with the same surface, in a chain that inherits (an OpenITI continuation or a Thaqalayn «وبهذا الإسناد»)",
     `select count(*)::int as value from chain_mentions m
      join hadiths h on h.id = m.hadith_id
+     join chains c on c.id = m.chain_id
      left join chain_mentions w on w.id = m.inherited_from_mention_id and w.retired_at is null
        and w.inherited_from_mention_id is null and w.surface_ar = m.surface_ar
      left join hadiths wh on wh.id = w.hadith_id and wh.collection_id = h.collection_id
      where m.retired_at is null and m.inherited_from_mention_id is not null
-       and (wh.id is null or h.sanad_inherits_from is null)`,
+       and (wh.id is null or (h.sanad_inherits_from is null and c.extraction_method <> 'thaqalayn_inherited_chain'))`,
+  );
+  await check(
+    'an unnamed transmitter or a back-reference carries no automatic identity (so no machine-reviewed pair touches one)',
+    `select count(*)::int as value from chain_mentions m where m.retired_at is null and m.narrator_id is not null
+       and m.decision_id is null and m.link_kind in ('anonymous', 'not_a_narrator')`,
   );
   await check(
     'the opening-isnad rule (named_in_opening_isnad) names only register rows, only in Musnad Zayd',

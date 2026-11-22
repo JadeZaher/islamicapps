@@ -562,3 +562,23 @@ Rollback: code, redeploy `877b700` (it ignores the new column; the new basis rea
 `development/openiti-fix-2026-11-21/projection-v6` again after re-exporting it with the 0014 catalog (its chain_mentions header
 lacks `inherited_from_mention_id`, so re-export from the `*.20261122_r2m1.bak` sidecars), then re-record the preview approval.
 Never edit 0014; a later migration restores the two view bodies of 0013/0011 if needed.
+
+### Milestone 2: Imami chains (projection `2026.11.22.4`)
+
+- **Schema**: `0015_chain_builder_imami` (additive: `chains.suspension`; `public_chain_links.chain_suspension`; `narrator_transmissions`
+  recreated with the anonymous-gap guard) applied to production before the load.
+- **External claims** rebuilt twice against interim projections without Thaqalayn claims; non-Imami claims identical except
+  3 rows of `rabi_0253` (the milestone 1 claims were built before its «صاحب رسول الله» fix).
+- **Loads**: the first attempt (`2026.11.22.2`) failed the new inherited-mention check (it required `hadiths.sanad_inherits_from`,
+  which Thaqalayn reports do not have) and rolled back; the second (`2026.11.22.3`) was started before that check was fixed and
+  failed the same way; `2026.11.22.4` also keeps the formula-only chains («وبهذا الإسناد» with nothing after it) so the page
+  can say the report relies on the previous one. Preview approval re-recorded after the successful load.
+
+Deploy: `0015` is applied; push to both branches. Live: `/hadith/thaqalayn/07b3c9089c6fc4b7ed88073a/chains` (al-Kafi 3/4/16/1,
+two routes), a Faqih «و روى» report `/hadith/thaqalayn/000fabb7bcb6211feb2d377f` ("The compiler gives his route ... elsewhere"),
+`/hadith/thaqalayn/0034cac887c15c7dfc9a3956` ("Chain relies on the previous report"), `/hadith/thaqalayn/05071e9f53ff6d02c6eb4590`
+("Unnamed transmitter").
+
+Rollback: code, redeploy the milestone 1 commit (it ignores `chains.suspension` and `chain_suspension`). Data: load
+`development/chain-builder-r2-2026-11-22/projection-m1` again after re-exporting it with the 0015 catalog (its `chains.csv`
+lacks `suspension`), with the `*.20261122_r2m2.bak` external sidecars, then re-record the preview approval.
