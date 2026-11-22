@@ -133,6 +133,26 @@ Every candidate identity for a name is kept with its basis. Where sources disagr
 
 **Code.** `datasets/hadith-data/pg_export/chain_builder.py`, `datasets/hadith-data/pg_export/opening_isnad_rules.json`.
 
+### A printed edition names the person (Sunni chain audit) {#identity-edition-identification}
+
+`identity-edition-identification` version `2026.11.22` · Checked by rule · Adopted, not yet loaded
+
+**Rule.** Where the chain audit found a printed edition’s own note identifying a short name (book, volume and page cited), and rated it high confidence, that identification is stored and stands over the source index it corrects. Medium-confidence proposals are not stored.
+
+**Evidence.** The edition’s note, quoted with its locator; The chain as written.
+
+**Measured.** Five positions in five reports; three distinct identifications, each read online. Sample: The audit’s identity probe. Where: `datasets/hadith-data/chain-audit/sunni/identity_evidence.json`.
+
+**Known failure modes.** The lexicon holds two records for the same person (rawi 27536 and 25603); the identification names one.
+
+**Reader sees.** “AI-reviewed (cited): a printed edition’s note names him”
+
+**Excluded.** The 95 medium-confidence «أبي» rows after Ibn Numayr.
+
+**Credited.** `SWI` Shura wa Istehsan (this archive).
+
+**Code.** `datasets/hadith-data/pg_export/build_edition_identifications.py`, `datasets/hadith-data/pg_export/edition_identifications.json`.
+
 ### Two independent sources agree {#identity-two-sources-agree}
 
 `identity-two-sources-agree` version `2026.11.21` · Checked by rule · Adopted, not yet loaded

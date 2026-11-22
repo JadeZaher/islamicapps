@@ -523,3 +523,4 @@ marks (`TraditionBadge`, tellings, all-chains, timeline group labels, filter chi
 - 2026-11-22: Isnad list position notes for inherited names and unnamed transmitters (chain builder round 2); identity
   basis "named by the work's own opening isnad (report No. 1)" drawn with the confirmed mark.
 - 2026-11-22: chain suspension line under the branch heading and the back-reference position note (round 2, Imami).
+- 2026-11-22: "A link is missing after name N" line under the branch heading; identity basis "named by a printed edition's note" with its citation (round 2, Sunni).

@@ -26,6 +26,10 @@ const BACK_REFERENCE = 'hadith:thaqalayn:0034cac887c15c7dfc9a3956'; // «عنه 
 const ANONYMOUS_GAP = 'hadith:thaqalayn:05071e9f53ff6d02c6eb4590'; // «... إبراهيم بن عمر اليماني عمن حدثه عن أبي عبد الله»
 const SAME_ISNAD = 'hadith:thaqalayn:15e4894bab9e3d65b60b4d38'; // «وبهذا الإسناد عن صالح بن عقبة ...»
 const SAME_ISNAD_PREVIOUS = 'hadith:thaqalayn:4ba1a5c368726ec2df100193';
+const NASAI_TAHWIL = 'hadith:k6:28195'; // «... عن ابن شهاب. ح وأخبرنا عمرو بن عثمان ...»: two routes stored as one
+const NASAI_UMAR = 'hadith:k6:28147'; // «حدثنا عمر عن الأوزاعي»: the edition says ʿUmar b. ʿAbd al-Wahid
+const UMAR_IBN_ABD_AL_WAHID = 'narrator:rawi:27536';
+const MISSING_LINK = 'hadith:k6:1101';
 
 type Row = Record<string, string | null>;
 const TABLES = [
@@ -154,6 +158,29 @@ flow('«وبهذا الإسناد» right after a report of the same chapter tak
   assert.deepEqual(inherited.map((node) => node.surface_ar), previous.slice(0, inherited.length).map((node) => node.surface_ar));
   assert.ok(inherited.every((node) => node.inherited_from_mention_id!.includes('4ba1a5c368726ec2df100193')));
   assert.equal(nodes[0].chain_suspension, null, 'a filled antecedent is no longer suspended');
+});
+
+flow('a flattened tahwil is two routes, each with al-Awzaʿi once', async () => {
+  const nodes = (await getChainGraph(NASAI_TAHWIL)).nodes;
+  const routes = [0, 1].map((branch) => nodes.filter((node) => node.branch === branch).map((node) => node.surface_ar));
+  assert.deepEqual(routes.map((route) => route[0]), ['محمود بن خالد', 'عمرو بن عثمان']);
+  assert.ok(routes.every((route) => route.filter((surface) => surface === 'الأوزاعي').length === 1));
+});
+
+flow('an edition identification stands with its citation, never called verified', async () => {
+  const umar = (await getChainGraph(NASAI_UMAR)).nodes.find((node) => node.surface_ar === 'عمر');
+  assert.equal(umar?.narrator_id, UMAR_IBN_ABD_AL_WAHID);
+  assert.equal(umar?.standing_basis, 'edition_identification');
+  const cited = umar?.candidates.find((candidate) => candidate.basis === 'edition_identification');
+  assert.match(cited?.detail ?? '', /سنن النسائي.*vol\. 6, p\. 502/);
+  assert.ok(umar?.candidates.some((candidate) => candidate.basis === 'source_index_confirmed_by_text'), 'the index it corrects is still shown');
+});
+
+flow('a missing link is flagged on the chain and no name is invented', async () => {
+  const nodes = (await getChainGraph(MISSING_LINK)).nodes;
+  const [{ length }] = await sql<{ length: number }[]>`select length from chains where hadith_id = ${MISSING_LINK} and branch = 0`;
+  assert.equal(nodes.filter((node) => node.branch === 0).length, length);
+  assert.equal(nodes[0].chain_missing_link_after, 1);
 });
 
 async function main(): Promise<void> {

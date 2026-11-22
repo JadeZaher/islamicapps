@@ -181,7 +181,7 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
        and not (m.resolution = 'source_index' and (
          (m.extraction_method in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
-                                  'imam_kunya_convention', 'named_in_opening_isnad')
+                                  'imam_kunya_convention', 'named_in_opening_isnad', 'edition_identification')
           and exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
                         and c.narrator_id = m.narrator_id and c.basis::text = m.extraction_method))
          or (m.extraction_method = 'source_riwayat_confirmed_by_text'
@@ -209,7 +209,8 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        where c.retired_at is null and c.basis::text not in ${NON_CONTESTING}
        group by c.mention_id, split_part(k.person, ':', 2) having count(distinct k.person) > 1)
      select count(*)::int as value from chain_mentions m join contested x on x.mention_id = m.id
-     where m.retired_at is null and m.narrator_id is not null and m.decision_id is null`,
+     where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
+       and m.extraction_method <> 'edition_identification'`,
   );
   await check(
     'the machine-reviewed tier never rests on a Riwayat automatic link',
@@ -250,6 +251,13 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     'an unnamed transmitter or a back-reference carries no automatic identity (so no machine-reviewed pair touches one)',
     `select count(*)::int as value from chain_mentions m where m.retired_at is null and m.narrator_id is not null
        and m.decision_id is null and m.link_kind in ('anonymous', 'not_a_narrator')`,
+  );
+  await check(
+    "an edition identification (edition_identification) names a lexicon row, only in a Sunni report, with its citation",
+    `select count(*)::int as value from chain_mention_candidates c
+     join hadiths h on h.id = c.hadith_id join narrators n on n.id = c.narrator_id
+     where c.retired_at is null and c.basis::text = 'edition_identification'
+       and (h.tradition_id <> 'tradition:sunni' or n.authority::text <> 'rawi' or nullif(trim(c.detail), '') is null)`,
   );
   await check(
     'the opening-isnad rule (named_in_opening_isnad) names only register rows, only in Musnad Zayd',

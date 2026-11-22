@@ -13,6 +13,7 @@ export const BASIS_ORDER: IdentityBasis[] = [
   'source_index_confirmed_by_text',
   'imam_kunya_convention',
   'named_in_opening_isnad',
+  'edition_identification',
   'source_hadith_kg_confirmed_by_text',
   'source_riwayat_confirmed_by_text',
   'source_index',

@@ -42,6 +42,12 @@ function BasisLine({ candidate, tradition }: { candidate: ChainMentionCandidate;
         <p className="relative mt-1 ps-[1.125rem] text-ink-muted">
             <BasisMark basis={candidateMarkBasis(candidate)} decorative className="absolute start-0 top-[0.3125rem]" />
             {candidateBasisLabel(candidate, tradition)}
+            {candidate.detail && (
+                <>
+                    {': '}
+                    <bdi>{candidate.detail}</bdi>
+                </>
+            )}
             {sourcesForIdentityClaim(candidate.basis, candidate.origin, tradition).map((code) => (
                 <span key={code}>
                     {' · '}
@@ -258,6 +264,12 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                 <div key={branch.id}>
                     {(branches.length > 1 || sourceSanad) && (
                         <p className="mb-2 type-h3 text-ink">{branches.length > 1 ? `Branch ${branchIndex + 1}` : 'Narrators'}</p>
+                    )}
+                    {branch.nodes[0].chain_missing_link_after != null && (
+                        <p className="mb-2 type-small text-ink-muted" data-chain-missing-link>
+                            A link is missing after name {branch.nodes[0].chain_missing_link_after + 1}: the next name lived too
+                            early to be heard directly
+                        </p>
                     )}
                     {branch.nodes[0].chain_suspension && (
                         <p className="mb-2 type-small text-ink-muted" data-chain-suspension={branch.nodes[0].chain_suspension}>

@@ -15,7 +15,7 @@ Definitions of the terms used in the Shura wa Istehsan app, its documentation an
 - [Report grading](#section-report-grading) (16)
 - [Works and genres](#section-works) (10)
 - [Comparative study and history](#section-comparative) (13)
-- [Archive terms](#section-archive) (55)
+- [Archive terms](#section-archive) (56)
 - [Needs the owner’s review](#owner-review)
 - [Enum values without an entry](#enum-values-without-an-entry)
 
@@ -1048,6 +1048,16 @@ A work often writes its full chain once, in its first report, and later writes o
 - **In this archive:** In Musnad Zayd only, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.
 - **Related:** [Imam’s conventional kunya](#imam-kunya), [Machine-reviewed](#confirmed-by-source-and-text)
 - **Data values:** `mention_candidate_basis.named_in_opening_isnad`
+
+<a id="edition-identification"></a>
+
+### Named by a printed edition (e.g. «عمر، هو ابن عبد الواحد الدمشقي»)
+
+An editor of a printed edition sometimes says in a note who a short name in the chain is. The note is cited with its book, volume and page.
+
+- **In this archive:** Five Sunni chain positions carry such an identification, found by the chain audit and cited to the edition; it counts toward the machine-reviewed tier and stands over the source index it corrects. It is never called verified: a reviewer has not confirmed it. Other proposals of the audit stay as notes for review.
+- **Related:** [Source index](#source-index), [Machine-reviewed](#confirmed-by-source-and-text)
+- **Data values:** `mention_candidate_basis.edition_identification`
 
 <a id="external-source-record"></a>
 

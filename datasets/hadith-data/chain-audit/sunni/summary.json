@@ -1,0 +1,327 @@
+{
+ "sample_total": 201,
+ "random": {
+  "sampled": 108,
+  "verifiable": 84,
+  "defects": 9,
+  "rate": 0.1071,
+  "wilson95": [
+   0.0574,
+   0.1912
+  ]
+ },
+ "by_collection_random": {
+  "abudawud": {
+   "sampled": 12,
+   "verifiable": 12,
+   "defects": 1,
+   "rate": 0.0833,
+   "wilson95": [
+    0.0149,
+    0.3539
+   ]
+  },
+  "ahmad": {
+   "sampled": 12,
+   "verifiable": 6,
+   "defects": 1,
+   "rate": 0.1667,
+   "wilson95": [
+    0.0301,
+    0.5635
+   ]
+  },
+  "bukhari": {
+   "sampled": 12,
+   "verifiable": 11,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.2588
+   ]
+  },
+  "darimi": {
+   "sampled": 12,
+   "verifiable": 7,
+   "defects": 1,
+   "rate": 0.1429,
+   "wilson95": [
+    0.0257,
+    0.5131
+   ]
+  },
+  "ibnmajah": {
+   "sampled": 12,
+   "verifiable": 11,
+   "defects": 1,
+   "rate": 0.0909,
+   "wilson95": [
+    0.0162,
+    0.3774
+   ]
+  },
+  "muslim": {
+   "sampled": 12,
+   "verifiable": 10,
+   "defects": 2,
+   "rate": 0.2,
+   "wilson95": [
+    0.0567,
+    0.5098
+   ]
+  },
+  "muwatta": {
+   "sampled": 12,
+   "verifiable": 5,
+   "defects": 1,
+   "rate": 0.2,
+   "wilson95": [
+    0.0362,
+    0.6245
+   ]
+  },
+  "nasai": {
+   "sampled": 12,
+   "verifiable": 12,
+   "defects": 1,
+   "rate": 0.0833,
+   "wilson95": [
+    0.0149,
+    0.3539
+   ]
+  },
+  "tirmidhi": {
+   "sampled": 12,
+   "verifiable": 10,
+   "defects": 1,
+   "rate": 0.1,
+   "wilson95": [
+    0.0179,
+    0.4042
+   ]
+  }
+ },
+ "random_defect_kinds": {
+  "not_a_narrator": 6,
+  "missing_link": 3
+ },
+ "by_hit_stratum": {
+  "hit:bare_relation_resolved:consistent": {
+   "sampled": 1,
+   "verifiable": 1,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.7935
+   ]
+  },
+  "hit:bare_relation_resolved:mismatch": {
+   "sampled": 6,
+   "verifiable": 5,
+   "defects": 2,
+   "rate": 0.4,
+   "wilson95": [
+    0.1176,
+    0.7693
+   ]
+  },
+  "hit:bidirectional_pair": {
+   "sampled": 6,
+   "verifiable": 5,
+   "defects": 1,
+   "rate": 0.2,
+   "wilson95": [
+    0.0362,
+    0.6245
+   ]
+  },
+  "hit:chrono_contradiction:high": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.3903
+   ]
+  },
+  "hit:chrono_contradiction:medium": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 2,
+   "rate": 0.3333,
+   "wilson95": [
+    0.0968,
+    0.7
+   ]
+  },
+  "hit:co_transmitter_gap": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 2,
+   "rate": 0.3333,
+   "wilson95": [
+    0.0968,
+    0.7
+   ]
+  },
+  "hit:collector_self_mention": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.3903
+   ]
+  },
+  "hit:companion_nonfinal": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.3903
+   ]
+  },
+  "hit:gap_has_unstored_words": {
+   "sampled": 4,
+   "verifiable": 4,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.4899
+   ]
+  },
+  "hit:non_name_surface": {
+   "sampled": 4,
+   "verifiable": 4,
+   "defects": 4,
+   "rate": 1,
+   "wilson95": [
+    0.5101,
+    1
+   ]
+  },
+  "hit:prophet_as_mention": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 1,
+   "rate": 0.1667,
+   "wilson95": [
+    0.0301,
+    0.5635
+   ]
+  },
+  "hit:repeated_narrator": {
+   "sampled": 6,
+   "verifiable": 5,
+   "defects": 1,
+   "rate": 0.2,
+   "wilson95": [
+    0.0362,
+    0.6245
+   ]
+  },
+  "hit:seam_in_chain": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 5,
+   "rate": 0.8333,
+   "wilson95": [
+    0.4365,
+    0.9699
+   ]
+  },
+  "hit:surface_name_mismatch": {
+   "sampled": 6,
+   "verifiable": 3,
+   "defects": 1,
+   "rate": 0.3333,
+   "wilson95": [
+    0.0615,
+    0.7923
+   ]
+  },
+  "hit:tahwil_marker_vs_chain_count": {
+   "sampled": 6,
+   "verifiable": 5,
+   "defects": 1,
+   "rate": 0.2,
+   "wilson95": [
+    0.0362,
+    0.6245
+   ]
+  },
+  "hit:text_order_mismatch": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 6,
+   "rate": 1,
+   "wilson95": [
+    0.6097,
+    1
+   ]
+  },
+  "hit:truncated_before_companion": {
+   "sampled": 6,
+   "verifiable": 6,
+   "defects": 0,
+   "rate": 0,
+   "wilson95": [
+    0,
+    0.3903
+   ]
+  }
+ },
+ "random_identity": {
+  "chains": 108,
+  "with_high_chrono": 0
+ },
+ "correction_counts": {
+  "not_a_narrator|medium": 5912,
+  "not_a_narrator|high": 4518,
+  "branch_seam|high": 543,
+  "misidentified|medium": 212,
+  "co_transmitter|high": 60,
+  "misidentified|high": 398,
+  "branch_seam|medium": 158,
+  "missing_link|high": 29,
+  "order_reversed|medium": 56,
+  "other|medium": 95
+ },
+ "corrections_total": 11981,
+ "correction_by_action_detector_conf": {
+  "retire_mention|non_name_surface|medium": 5734,
+  "retire_mention|non_name_surface|high": 4514,
+  "split_chain_at|seam_in_chain|high": 543,
+  "demote_identity|chrono_contradiction|medium": 178,
+  "retire_mention|prophet_as_mention|medium": 101,
+  "split_co_transmitters|co_transmitter_gap|high": 60,
+  "retire_mention|collector_self_mention|medium": 77,
+  "demote_identity|chrono_contradiction|high": 393,
+  "split_chain_at|text_order_mismatch|medium": 7,
+  "split_chain_at|repeated_narrator|medium": 151,
+  "flag_missing_link|chrono_contradiction|high": 29,
+  "demote_identity|bare_relation_resolved|medium": 34,
+  "retire_mention|prophet_as_mention|high": 4,
+  "replace_identity|chrono_contradiction|high": 4,
+  "replace_identity|bare_relation_resolved|high": 1,
+  "reorder|bidirectional_pair|medium": 56,
+  "assign_identity|identity_rule:abdallah_ibn_numayr_father|medium": 95
+ },
+ "unverifiable_by_collection": {
+  "ahmad": 11,
+  "darimi": 5,
+  "ibnmajah": 2,
+  "muwatta": 7,
+  "muslim": 2,
+  "tirmidhi": 2,
+  "bukhari": 1,
+  "nasai": 1
+ }
+}

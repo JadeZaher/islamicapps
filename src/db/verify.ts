@@ -304,6 +304,8 @@ async function main() {
     expect(tier.includes("'named_in_opening_isnad'"), 'public_chain_mention_candidates_v2 does not count named_in_opening_isnad');
     // 0015: chains say when they rely on another; an unnamed transmitter or a back-reference never stands in a pair.
     expect(withheld.includes('chain_suspension'), 'public_chain_links does not expose chain_suspension');
+    expect(withheld.includes('chain_missing_link_after'), 'public_chain_links does not expose chain_missing_link_after');
+    expect(tier.includes("'edition_identification'"), 'public_chain_mention_candidates_v2 does not count edition_identification');
     expect(network.includes("'anonymous'") && network.includes("'not_a_narrator'") && network.includes('first_pos'),
       'narrator_transmissions lost the 0015 anonymous-gap guard or the 0013 seam guard');
 

@@ -12,7 +12,7 @@ import { WithheldIdentity } from '@/components/archive/WithheldIdentity';
 /** Bases that could have made this narrator the standing identity, so a withheld reason is about him. */
 const TIER_BASES: ReadonlySet<string> = new Set([
   'source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text', 'source_riwayat_confirmed_by_text', 'imam_kunya_convention',
-  'named_in_opening_isnad',
+  'named_in_opening_isnad', 'edition_identification',
 ]);
 
 /**

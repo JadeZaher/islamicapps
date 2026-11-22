@@ -50,6 +50,8 @@ export const chains = pgTable(
     ...pipelineBookkeeping(),
     /** The chain opens by relying on another (0015; src/db/AGENTS.md §Chain builder): a back-reference, a mid-isnad start, or a route the compiler gives elsewhere. */
     suspension: text('suspension'),
+    /** A link is missing after this position (0016; Sunni audit `missing_link`): flagged, no name invented. */
+    missingLinkAfter: integer('missing_link_after'),
   },
   (table) => [
     unique('chains_hadith_id_branch_key').on(table.hadithId, table.branch),
@@ -57,6 +59,7 @@ export const chains = pgTable(
       'chains_suspension_check',
       sql`${table.suspension} is null or ${table.suspension} in ('back_reference', 'mid_chain_start', 'route_given_elsewhere')`,
     ),
+    check('chains_missing_link_after_check', sql`${table.missingLinkAfter} is null or (${table.missingLinkAfter} >= 0 and ${table.missingLinkAfter} < ${table.length} - 1)`),
     restrictForeignKey('chains_hadith_id_fk', table.hadithId, hadiths.id),
     ...pipelineBookkeepingForeignKeys('chains', table),
   ],
@@ -282,6 +285,8 @@ export const publicChainLinks = pgView('public_chain_links', {
   inheritedFromMentionId: text('inherited_from_mention_id'),
   /** Appended in 0015: the chain's `suspension` (it relies on another chain), repeated on each of its positions. */
   chainSuspension: text('chain_suspension'),
+  /** Appended in 0016: a link is missing after this position of the chain. */
+  chainMissingLinkAfter: integer('chain_missing_link_after'),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */

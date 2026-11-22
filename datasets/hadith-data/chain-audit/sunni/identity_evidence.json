@@ -1,0 +1,28 @@
+{
+ "umar_ibn_abd_al_wahid": {
+  "proposed_narrator_id": "narrator:rawi:27536",
+  "alternatives_same_name": ["narrator:rawi:25603"],
+  "rule": "surface «عمر» between «محمود بن خالد» and «الأوزاعي», currently narrator:rawi:3 (ʿUmar b. al-Khattab, d. 23)",
+  "evidence": [
+   {"book": "سنن النسائي - ط الرسالة", "vol": "6", "page": "502", "search_file": "fetched/identity_nasai3693_umar.json", "quote": "اسناده صحيح، عمر، هو ابن عبد الواحد الدمشقي، والاوزاعي، هو عبد الرحمن بن عمرو، ومحمد بن علي بن حسين، هو ابو جعفر الباقر"},
+   {"book": "جامع الأصول", "vol": "3", "page": "413", "search_file": "fetched/identity_nasai3693_umar.json", "quote": "و النسائي في الكبري تحفة الاشراف ١١/ ١٥١٩٩ عن محمود بن خالد، عن عمر بن عبد الواحد، عن الاوزاعي"}
+  ],
+  "note": "The DB holds two same-name rawi records (27536 with death 200 and no Dimashqi nisba; 25603 without dates); 27536 is chosen because its dates fit (student of al-Awzaʿi d. 157, teacher of Mahmud b. Khalid) - the integrator should merge or confirm the duplicate."
+ },
+ "umar_ibn_al_khattab_sijistani": {
+  "proposed_narrator_id": "narrator:rawi:38420",
+  "rule": "surface «عمر بن الخطاب أبو حفص» followed by «الفريابي», currently narrator:rawi:3 (the Caliph)",
+  "evidence": [
+   {"book": "جامع المسانيد والسنن", "vol": "4", "page": "269", "search_file": "fetched/identity_abudawud3067.json", "quote": "عمر بن الخطاب السجستاني القسيري، ابو حفص نزيل الاهواز، روي عن محمد بن يوسف الفريابي وغيره وعنه ابو داود وغيره"},
+   {"book": "شرح سنن أبي داود للعباد", "vol": "358", "page": "21", "search_file": "fetched/identity_abudawud3067.json", "quote": "عمر بن الخطاب ابو حفص صدوق، اخرج له ابو داود. حدثنا الفريابي . هو محمد بن يوسف الفريابي"}
+  ],
+  "note": "narrator:rawi:38420 carries death 354 in narrator_lifespans, which cannot be a shaykh of Abu Dawud (d. 275) who narrated from al-Firyabi (d. 212); the lifespan row needs checking."
+ },
+ "abdallah_ibn_numayr_father": {
+  "proposed_narrator_id": "narrator:rawi:20331",
+  "rule": "bare «أبي» after «ابن نمير» / «محمد بن عبد الله بن نمير», currently resolved to a different person",
+  "evidence": [
+   {"book": "الكوكب الوهاج شرح صحيح مسلم بن الحجاج", "vol": "14", "page": "341", "search_file": "fetched/identity_muslim3237.json", "quote": "حدثنا محمد بن عبد الله بن نمير واللفظ الاتي له اي لابن نمير لا لابي بكر حدثنا ابي عبد الله بن نمير حدثنا عبيد الله بن عمر حدثني نافع عن ابن عمر"}
+  ]
+ }
+}

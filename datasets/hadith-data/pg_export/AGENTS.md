@@ -246,3 +246,26 @@ because label status counts claims across the corpus).
   is `anonymous`. A label position never carries an identity (its candidates stay), and `narrator_transmissions` excludes it.
 - **Fused co-transmitters** «أبي و محمد بن الحسن» become one level of two branches; in al-Kafi a fused name whose second half
   is a shaykh of the compiler starts a second isnad instead. Concatenated isnads (D07) are not split (deferred).
+
+### Sunni chains (projection `2026.11.22.5`; audit `chain-audit/sunni/`)
+
+`build_sunni_chains` re-cuts a Sunni report after the K6 source index has been aligned to the bundle's branches; every moved
+or trimmed mention keeps its bundle (branch, position) as `origins`, so its source-index claim follows it (the alignment is
+never recomputed on the new branches). The rules are the audit's detectors, ported (`surface_gaps`, `seam_positions`):
+
+- **Seam.** A standalone «ح» or a waw-led new transmission verb between two stored neighbours, not followed by the previous
+  shaykh's name (that is a benign convergence), starts a new route. Each earlier route continues along the last one after the
+  name it converges on (same folded surface), else ends there. Round 1's view guard (no pair between two occurrences of one
+  narrator) stays for every chain not split.
+- **Formula words** (the audit's high-confidence list: «بهذا الإسناد», «كلاهما», «مثله», «نحوه», «اللفظ», «حدثنا» ...) are cut out
+  of a name; a surface with nothing of a name left is dropped; a branch that existed only because an aside («اللفظ لعمرو»,
+  «تقاربا في اللفظ») was read as a co-transmitter is dropped (dropping just the aside would join its neighbours). The
+  medium-confidence class (7 or more words without a nasab, «أنها», «قال» ...) is left: in the sample it held long names and
+  real Companions («عائشة أنها»), so cutting it needs the trailing-frame rule tested on its own.
+- **Co-transmitters.** Two neighbours joined only by a waw or comma become one level (two branches), so no pair forms between them.
+- **Edition identifications** (`edition_identifications.json`, built by `build_edition_identifications.py` from the audit's
+  high-confidence rows that cite a printed edition): basis `edition_identification`, detail the book, volume, page and the
+  editor's words. It stands over the source index it corrects (`standing_identity`), is credited `SWI`, and is never called
+  verified. The 95 medium «أبي» rows after Ibn Numayr are not stored.
+- **Missing link** (`missing_link_after`): the last name is a person who died more than 120 years before the fully named student
+  beside him; the chain says a link is missing, no name is invented.

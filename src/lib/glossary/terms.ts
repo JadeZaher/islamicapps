@@ -1377,6 +1377,19 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     enumValues: ['mention_candidate_basis.named_in_opening_isnad'],
   },
   {
+    slug: 'edition-identification',
+    section: 'archive',
+    term: 'Named by a printed edition',
+    english: 'e.g. «عمر، هو ابن عبد الواحد الدمشقي»',
+    definition:
+      'An editor of a printed edition sometimes says in a note who a short name in the chain is. The note is cited with its book, volume and page.',
+    inArchive:
+      'Five Sunni chain positions carry such an identification, found by the chain audit and cited to the edition; it counts toward the machine-reviewed tier and stands over the source index it corrects. It is never called verified: a reviewer has not confirmed it. Other proposals of the audit stay as notes for review.',
+    related: ['source-index', 'confirmed-by-source-and-text'],
+    aliases: ['editor’s note', 'tahqiq'],
+    enumValues: ['mention_candidate_basis.edition_identification'],
+  },
+  {
     slug: 'external-source-record',
     section: 'archive',
     term: 'External source record',

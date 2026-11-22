@@ -120,7 +120,8 @@ export type IdentityBasis =
   | 'source_riwayat'
   | 'imam_kunya_convention'
   | 'imam_kunya_candidate'
-  | 'named_in_opening_isnad';
+  | 'named_in_opening_isnad'
+  | 'edition_identification';
 
 /** Narrator record authority: the lexicon, an external dataset's own record, or the Imam register (0010). */
 export type NarratorAuthority = 'rawi' | 'imami_rijal' | 'hadith_kg' | 'riwayat' | 'imam_register';
@@ -137,6 +138,8 @@ export interface ChainMentionCandidate {
   /** External claims: the report it was read from, and who asserted the id (Riwayat's origin or `dataset_index`). */
   source_ref?: string | null;
   origin?: string | null;
+  /** The citation behind a rule or edition identification (report or printed edition and page). */
+  detail?: string | null;
   /** Can carry the machine-reviewed tier by itself (not Riwayat's automatic linker, not a label-like record). */
   tier_basis?: boolean;
   authority?: NarratorAuthority;
@@ -182,6 +185,8 @@ export interface ChainNode {
   inherited_from_mention_id?: string | null;
   /** The chain relies on another (0015): `back_reference`, `mid_chain_start` or `route_given_elsewhere`. */
   chain_suspension?: string | null;
+  /** A link is missing after this position (0016); no name is invented for it. */
+  chain_missing_link_after?: number | null;
 }
 
 export interface ChainEdge {

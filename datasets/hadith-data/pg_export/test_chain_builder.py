@@ -184,5 +184,52 @@ class ImamiChainRules(unittest.TestCase):
         self.assertEqual([m.surface for m in cb.split_fused(mention, Counter())], ["أبي", "محمد بن الحسن بن أحمد بن الوليد"])
 
 
+class SunniChainRules(unittest.TestCase):
+    """The Sunni audit's confirmed cases (chain-audit/sunni/fixtures.json: real rows of production)."""
+
+    @classmethod
+    def setUpClass(cls):
+        data = json.loads((HERE.parent / "chain-audit" / "sunni" / "fixtures.json").read_text(encoding="utf-8"))
+        cls.text = {h["id"]: h["text_ar"] for h in data["hadiths"]}
+        by_chain: dict = {}
+        for mention in data["mentions"]:
+            by_chain.setdefault(mention["chain_id"], []).append(mention)
+        cls.branches: dict = {}
+        for chain in sorted(data["chains"], key=lambda c: (c["hadith_id"], c["branch"])):
+            surfaces = [m["surface_ar"] for m in sorted(by_chain.get(chain["id"], []), key=lambda m: m["position"])]
+            cls.branches.setdefault(chain["hadith_id"], []).append(surfaces)
+
+    def rebuilt(self, hadith_id: str) -> list[list[str]]:
+        chains = cb.build_sunni_chains(self.text[hadith_id], self.branches[hadith_id], Counter())
+        return [[m.surface for m in chain.mentions] for chain in chains]
+
+    def test_flattened_tahwil_is_split_at_its_seam(self):
+        routes = self.rebuilt("hadith:k6:28195")           # al-Awzaʿi twice: «... عن ابن شهاب. ح وأخبرنا عمرو بن عثمان ...»
+        self.assertEqual(len(routes), 2)
+        self.assertEqual(routes[0][:2], ["محمود بن خالد", "عمر"])
+        self.assertEqual(routes[1][0], "عمرو بن عثمان")
+        self.assertTrue(all(route.count("الأوزاعي") == 1 for route in routes))
+
+    def test_a_single_route_without_a_seam_is_unchanged(self):
+        self.assertEqual(self.rebuilt("hadith:k6:10025"), self.branches["hadith:k6:10025"])
+
+    def test_formula_words_leave_the_name(self):
+        cases = [("ابن جريج بهذا الحديث", "ابن جريج"), ("النضر بن شميل كلاهما", "النضر بن شميل"),
+                 ("سهيل في هذا الإسناد بمعنى حديث مالك فليكفر يمينه", "سهيل"), ("بهذا الإسناد", None),
+                 ("تقاربا في اللفظ", None), ("عبد الله بن عمر", "عبد الله بن عمر")]
+        for surface, expected in cases:
+            with self.subTest(surface):
+                self.assertEqual(cb.formula_trim(surface)[0], expected)
+
+    def test_missing_link_is_flagged_after_a_fully_named_student(self):
+        deaths = {"s": 239, "t": 105, "u": 200}
+        cases = [(["x", "s", "t"], ["أ", "عثمان بن أبي شيبة", "حميد"], 1),   # k6:11793 shape: 134 years
+                 (["x", "u", "t"], ["أ", "عثمان بن أبي شيبة", "حميد"], None),  # 95 years: a plausible pair
+                 (["x", "s", "t"], ["أ", "عثمان", "حميد"], None)]               # a one-word student: not decided here
+        for identities, surfaces, expected in cases:
+            with self.subTest(identities=identities, surfaces=surfaces):
+                self.assertEqual(cb.missing_link_after(identities, deaths, surfaces), expected)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

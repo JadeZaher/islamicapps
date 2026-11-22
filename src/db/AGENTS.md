@@ -230,6 +230,9 @@ chains are cut. The builder, not rows by hand, is fixed: `datasets/hadith-data/p
   relies on another; the page says so in plain words. `public_chain_links` appends `chain_suspension`. `narrator_transmissions`
   (0013 body) adds one guard: an `anonymous` or `not_a_narrator` position is never one side of a pair. `db:verify` checks both;
   `db:verify-data` checks that no such position carries an automatic identity.
+- **0016 (Sunni chains).** `mention_candidate_basis.edition_identification` (a printed edition's note names the person; a tier
+  basis that stands over the source index it corrects, so it is exempt from the uncontested check; Sunni lexicon rows only, detail
+  required) and `chains.missing_link_after` (check: inside the chain). `public_chain_links` appends `chain_missing_link_after`.
 
 ## Report correspondences (0007; design §5.5.1)
 
@@ -276,7 +279,9 @@ write decisions.
   enum value `named_in_opening_isnad`, `chain_mentions.inherited_from_mention_id`; hand-written: `public_chain_links` appended,
   `public_chain_mention_candidates_v2` counts the new basis; see §Chain builder) -> `0015_chain_builder_imami` (generated:
   `chains.suspension` and its check; hand-written: `public_chain_links` appended, `narrator_transmissions` dropped and recreated
-  with the anonymous-gap guard and its two indexes). A `--custom` generate snapshots the previous schema: after promoting a
+  with the anonymous-gap guard and its two indexes) -> `0016_chain_builder_sunni` (generated: enum value
+  `edition_identification`, `chains.missing_link_after` and its check; hand-written: `public_chain_links` appended,
+  `public_chain_mention_candidates_v2` counts the new basis). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

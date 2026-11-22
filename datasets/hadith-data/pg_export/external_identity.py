@@ -37,6 +37,8 @@ STANDING_METHODS = (
     "source_index_confirmed_by_text", "two_sources_agree", "source_hadith_kg_confirmed_by_text",
     "source_riwayat_confirmed_by_text", "imam_kunya_convention", "named_in_opening_isnad",
 )
+# A printed edition's own note names the person (edition_identifications.json): it stands over the index it corrects.
+EDITION_BASIS = "edition_identification"
 # The work's own opening isnad names the person (opening_isnad_rules.json); the detail cites the report.
 OPENING_ISNAD_BASIS = "named_in_opening_isnad"
 # A surface that is a kunya alone («أبو عبيدة»): no source can be confirmed by such text (owner, round 2, P7).
@@ -120,6 +122,9 @@ def standing_identity(candidates: Sequence[Candidate], keys: PersonKeys) -> tupl
     from an annotation, not its automatic linker, on a record that is not label-like; an Imam's conventional kunya.
     The mention must be uncontested. Riwayat's Sunni ids are hadith-kg's own, so they never count as a second source.
     """
+    edition = [c for c in candidates if c.basis == EDITION_BASIS]
+    if edition:
+        return edition[0].narrator_id, EDITION_BASIS
     if contests(candidates, keys):
         return None
     k6 = [c for c in candidates if c.basis in K6_BASES and not c.placeholder]

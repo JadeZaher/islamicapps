@@ -47,7 +47,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.4"
+PROJECTION_VERSION = "2026.11.22.5"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -93,7 +93,7 @@ IMAMI_ENGLISH_LEXICON = DIAGNOSTICS_DIR / "chain-reconciliation" / "output" / "i
 HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
 ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
 MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py",
-                "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json")
+                "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json", "edition_identifications.json")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
 OPENING_ISNAD_LICENCE = ("Shura wa Istehsan register (opening_isnad_rules.json); the name as the work's opening isnad writes "
@@ -1202,6 +1202,37 @@ def project(args: argparse.Namespace) -> dict:
         source_alignment[hadith_id] = (row, alignment)
         source_counts[f"reports_mapped:{row['basis']}"] += 1
 
+    # Sunni chains (chain_builder.py, audit chain-audit/sunni/): flattened tahwil split at its seam, formula words cut out
+    # of names, «A و B» neighbours on one level. Runs after the K6 alignment, so each moved mention keeps its source-index
+    # claim through its origin (bundle branch, position).
+    sunni_counts: Counter = Counter()
+    for hadith_id in sorted(branches_by_hadith):
+        info = hadith_info[hadith_id]
+        if tradition_names[info["tradition_id"]] != "Sunni":
+            continue
+        old = sorted(branches_by_hadith[hadith_id], key=lambda item: item["branch"])
+        if any(branch.get("built") for branch in old):
+            continue
+        surfaces = [[surface for _, surface, _ in branch["mentions"]] for branch in old]
+        rebuilt = chain_builder.build_sunni_chains(hadith_text[hadith_id], surfaces, sunni_counts)
+        if [[mention.surface for mention in chain.mentions] for chain in rebuilt] == surfaces:
+            continue
+        record_id = info["record_id"]
+        method = old[0]["extraction_method"]
+        sunni_counts["reports_changed"] += 1
+        branches_by_hadith[hadith_id] = [{
+            "id": f"chain:{record_id}:{index:04d}", "branch": index, "resolved": False,
+            "extraction_method": method, "sanad_confidence": old[0]["sanad_confidence"],
+            "mentions": [(f"mention:{record_id}:{index:04d}:{position:04d}", mention.surface,
+                          name_normalize(mention.surface)) for position, mention in enumerate(chain.mentions)],
+            "origins": [mention.origin for mention in chain.mentions],
+        } for index, chain in enumerate(rebuilt)]
+        if not rebuilt:
+            del branches_by_hadith[hadith_id]
+    counts["sunni_chain_builder"] = dict(sorted(sunni_counts.items()))
+    edition_ids = chain_builder.load_edition_identifications()
+    death_year = {narrator: span.death for narrator, span in lifespans.items()}
+
     name_cache: dict[str, tuple[str, str, str] | None] = {}
 
     def name_match(surface: str) -> tuple[str, str, str] | None:
@@ -1250,7 +1281,7 @@ def project(args: argparse.Namespace) -> dict:
             rows = branch["mentions"]
             built_mentions = branch.get("built")
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
-                           branch["extraction_method"], None, branch["sanad_confidence"], branch.get("suspension")])
+                           branch["extraction_method"], None, branch["sanad_confidence"], branch.get("suspension"), None])
             if built_mentions and any(mention.inherited_from for mention in built_mentions):
                 # An inherited name is not written in this report: only the written ones are located in its text.
                 written_at = [position for position, mention in enumerate(built_mentions) if not mention.inherited_from]
@@ -1287,7 +1318,8 @@ def project(args: argparse.Namespace) -> dict:
                                                            placeholder=placeholders.get(scholar)))
                     if source is not None:
                         row, alignment = source
-                        hit = alignment.get((branch["branch"], position))
+                        origin = branch["origins"][position] if branch.get("origins") else (branch["branch"], position)
+                        hit = alignment.get(origin) if origin else None
                         if hit is not None:
                             source_position, shared_trunk = hit
                             scholar = row["source_ids"][source_position]
@@ -1313,6 +1345,11 @@ def project(args: argparse.Namespace) -> dict:
                     if built_mention is not None and built_mention.rule_identity:
                         narrator_id, detail = built_mention.rule_identity
                         found.append(xid.Candidate(narrator_id, xid.OPENING_ISNAD_BASIS, detail))
+                    origin = branch["origins"][position] if branch.get("origins") else (branch["branch"], position)
+                    edition = edition_ids.get((hadith_id, origin)) if origin else None
+                    if edition and edition["surface"] == surface_ar:
+                        identity["edition_identifications"][tradition] += 1
+                        found.append(xid.Candidate(edition["narrator_id"], xid.EDITION_BASIS, edition["detail"]))
                     # The Imams' conventional kunyas, with the honorific marker after the name in the text.
                     span = spans[position]
                     marker = report_text.honorific_after(*span) if span else False
@@ -1351,6 +1388,12 @@ def project(args: argparse.Namespace) -> dict:
             chronology["pairs_left_to_the_view_repeated_narrator"] += contest.repeated_left
             chronology["seam_pairs_never_a_transmission"] += contest.seam_pairs
             chronology["seam_chains"] += 1 if contest.seam_pairs else 0
+            if tradition == "Sunni":
+                gap = chain_builder.missing_link_after([standing[0] if standing else None for _, standing in resolved],
+                                                       death_year, [surface for _, surface, _ in rows])
+                if gap is not None:
+                    chains[-1][9] = gap
+                    identity["chains_with_missing_link"][tradition] += 1
             for position, (mention_id, surface_ar, normalized) in enumerate(rows):
                 found, standing = resolved[position]
                 surface = Verbatim(normalized)
@@ -1404,7 +1447,7 @@ def project(args: argparse.Namespace) -> dict:
                     latin[2] if latin else None, withheld, inherited_from,
                 ])
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
-                               "sanad_confidence", "suspension"], chains)
+                               "sanad_confidence", "suspension", "missing_link_after"], chains)
     canonical.write("chain_mentions", [
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",

@@ -106,6 +106,7 @@ export const mentionCandidateBasisEnum = pgEnum('mention_candidate_basis', [
   'imam_kunya_convention',
   'imam_kunya_candidate',
   'named_in_opening_isnad',
+  'edition_identification',
 ]);
 
 /** How a chain mention's Latin name was obtained (0010; src/db/AGENTS.md §Latin names). Never an identification. */

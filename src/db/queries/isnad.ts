@@ -30,6 +30,7 @@ function toCandidates(value: unknown): ChainMentionCandidate[] {
       basis: String(row.basis) as IdentityBasis,
       source_ref: text(row.source_ref),
       origin: text(row.origin),
+      detail: text(row.detail),
       tier_basis: row.tier_basis === true,
       authority: String(row.authority) as NarratorAuthority,
       placeholder: text(row.placeholder),
@@ -82,7 +83,8 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
            case when link.id is not null then m.confidence end as confidence,
            m.name_latin, m.name_latin_basis, m.name_latin_narrator_id,
            case when link.id is not null then m.extraction_method end as standing_basis,
-           m.identity_withheld_reason, m.inherited_from_mention_id, c.suspension as chain_suspension
+           m.identity_withheld_reason, m.inherited_from_mention_id, c.suspension as chain_suspension,
+           c.missing_link_after as chain_missing_link_after
     from chain_mentions m
     join chains c on c.id = m.chain_id and c.retired_at is null
     join hadiths h on h.id = m.hadith_id and h.retired_at is null
@@ -92,7 +94,8 @@ export const REVIEW_CHAIN_RELATIONS: ChainRelations = {
   candidates: sql`(
     select c.mention_id, c.hadith_id, c.narrator_id, c.basis, c.detail, c.source_ref, c.source_assertion_origin,
            (c.basis::text in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
-                              'source_riwayat_confirmed_by_text', 'imam_kunya_convention', 'named_in_opening_isnad')
+                              'source_riwayat_confirmed_by_text', 'imam_kunya_convention', 'named_in_opening_isnad',
+                              'edition_identification')
             and n.placeholder_reason is null
             and coalesce(c.source_assertion_origin, '') <> 'riwayat_automatic_linking'
             and not exists (select 1 from narrator_source_profiles p
@@ -126,6 +129,8 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              json_agg(json_build_object('narrator_id', c.narrator_id, 'name_ar', n.name_ar,
                                         'name_en', coalesce(n.name_en, n.name_latin, n.name), 'basis', c.basis,
                                         'source_ref', c.source_ref, 'origin', c.source_assertion_origin,
+                                        'detail', case when c.basis::text in ('named_in_opening_isnad', 'edition_identification')
+                                                       then c.detail end,
                                         'tier_basis', c.tier_basis, 'authority', n.authority,
                                         'placeholder', n.placeholder_reason, 'label_reason', p.label_reason,
                                         'person_key', ${PERSON_KEY_SQL})) as items
@@ -144,7 +149,7 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
              'name_latin_narrator_id', l.name_latin_narrator_id, 'standing_basis', l.standing_basis,
              'identity_withheld_reason', l.identity_withheld_reason,
              'inherited_from_mention_id', l.inherited_from_mention_id,
-             'chain_suspension', l.chain_suspension)
+             'chain_suspension', l.chain_suspension, 'chain_missing_link_after', l.chain_missing_link_after)
            order by l.hadith_id, l.branch, l.position)
     from ${relations.links} l
     left join narrators n on l.is_link and n.id = l.narrator_id
@@ -178,6 +183,7 @@ export function toChainNode(node: Record<string, unknown>, verdict: string | nul
     identity_withheld_reason: node.is_link ? null : text(node.identity_withheld_reason),
     inherited_from_mention_id: text(node.inherited_from_mention_id),
     chain_suspension: text(node.chain_suspension),
+    chain_missing_link_after: node.chain_missing_link_after == null ? null : Number(node.chain_missing_link_after),
   };
 }
 

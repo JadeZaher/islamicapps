@@ -582,3 +582,23 @@ two routes), a Faqih «و روى» report `/hadith/thaqalayn/000fabb7bcb6211feb2
 Rollback: code, redeploy the milestone 1 commit (it ignores `chains.suspension` and `chain_suspension`). Data: load
 `development/chain-builder-r2-2026-11-22/projection-m1` again after re-exporting it with the 0015 catalog (its `chains.csv`
 lacks `suspension`), with the `*.20261122_r2m2.bak` external sidecars, then re-record the preview approval.
+
+### Milestone 3: Sunni chains (projection `2026.11.22.5`; audit `chain-audit/sunni/`)
+
+- **Schema**: `0016_chain_builder_sunni` (additive: basis `edition_identification`, `chains.missing_link_after`,
+  `public_chain_links.chain_missing_link_after`, `public_chain_mention_candidates_v2`) applied to production before the load.
+- **External claims** rebuilt against an interim projection without Sunni claims; non-Sunni claims identical apart from 3 rows in
+  two Thaqalayn reports whose formula-only chains returned in `2026.11.22.4`.
+- **K6 source index**: aligned to the bundle's branches as before, then carried through the re-cut by each mention's origin
+  (0 more reports lose their alignment; 1 differed before and still does).
+- **For the owner** (not changed): 56 medium order-reversed rows, 105 Prophet-as-mention rows, the lexicon's death year 354 for
+  `narrator:rawi:38420` (a shaykh of Abu Dawud, d. 275), `narrator:rawi:27536` and `25603` (likely one person, two records), and
+  the 95 medium «أبي» rows after Ibn Numayr (`identity_rule:abdallah_ibn_numayr_father`).
+
+Deploy: `0016` is applied; push to both branches. Live: `/hadith/k6/28195/chains` (two routes), `/hadith/k6/28147/chains`
+(«عمر» = ʿUmar b. ʿAbd al-Wahid, "named by a printed edition's note", cited), `/hadith/k6/18025/chains`,
+`/narrator/narrator%3Arawi%3A3` (no al-Awzaʿi, ʿUbaydullah b. ʿUmar or al-Faryabi among teachers).
+
+Rollback: code, redeploy the milestone 2 commit (it ignores the new column; the new basis shows its raw name). Data: load
+`development/chain-builder-r2-2026-11-22/projection-m2c` after re-exporting it with the 0016 catalog and the
+`*.20261122_r2m3.bak` external sidecars, then re-record the preview approval.
