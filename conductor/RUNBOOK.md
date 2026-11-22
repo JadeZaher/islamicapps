@@ -678,3 +678,14 @@ For the owner (not changed, round 3): al-Kafi 7 (`8a5b2230`) has the Kafi 19 sha
 زيدا», the book's later sections) still store no chain; Faqih «وَ قَالَ الصادق» statements whose only stored mention was «و» now
 have no chain (the extractor never read the Imam; adding him from the text is the same kind of rule as the deferred «قال سألت أبا
 عبد الله»); the Ibn Numayr «أبي» stitch (`identity_rule:abdallah_ibn_numayr_father`) still waits on your ruling.
+
+### Milestone B2: follow-up (projection `2026.11.22.8`)
+
+The live check of milestone B found a short route it introduced (`k6:14609`: «ابن نمير > أبي» beside «ابن نمير > محمد بن بشر >
+…»): the co-transmitter test located «أبي» at its first occurrence in the text («أبو بكر بن أبي شيبة»). It now uses the chain-ordered
+spans, and one written name twice in a row collapses to one mention (relations excepted). 10 Sunni reports change; Imami and OpenITI
+rows are identical to B. External claims rebuilt as before (`reconciled-interim-b2`, sidecars backed up as `*.20261122_r3b2.bak`).
+- **Loaded**: dataset version `f153d736…`, 1,951 rows changed (92 Sunni reports: 82 self-loops such as «الزهري > الزهري» or «أبي
+  معاوية > أبو معاوية» collapsed, the rest co-transmitter routes completed), 422 s, every check passed; preview approval re-recorded
+  at once (`approve-b2.log`). Sunni standing identities 136,551 -> 136,549; `narrator_transmissions` 27,992 -> 27,993.
+  Rollback: load `projection-b` again, then re-record the approval.

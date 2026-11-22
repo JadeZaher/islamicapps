@@ -302,6 +302,8 @@ class SunniRound3(unittest.TestCase):
             ("hadith:k6:11255", ["عبد الله بن دينار"]),
             ("hadith:k6:13589", ["أبا هريرة"]),                        # «أنهما سمعا أبا هريرة»: both co-transmitters
             ("hadith:k6:14282", ["محمد بن سيرين", "أبي هريرة"]),       # round 2 right: stays
+            ("hadith:k6:14609", ["قيس", "مستوردا أخا بني فهر"]),     # «حدثنا أبي ومحمد بن بشر»: both co-transmitters
+            ("hadith:k6:7666", ["مسروق", "عبد الله"]),
             ("hadith:k6:29819", ["مسروق", "عبد الله"]),                # round 2 right: stays
         ]
         for hadith_id, tail in cases:
@@ -344,6 +346,10 @@ class SunniRound3(unittest.TestCase):
         for hadith_id, surface in cases:
             with self.subTest(hadith_id):
                 self.assertFalse(any(surface in route for route in self.rebuilt(hadith_id)))
+
+    def test_no_narrator_twice_in_a_row(self):
+        for route in self.rebuilt("hadith:k6:18840"):
+            self.assertFalse(any(a == b for a, b in zip(route, route[1:])), route)
 
     def test_split_link_verbs(self):
         cases = [

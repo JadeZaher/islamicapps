@@ -1704,6 +1704,13 @@ def complete_short_routes(report: ReportText, chains: list[SunniChain], counts: 
         if not changed:
             break
     share_co_transmitter_continuations(report, chains, counts)
+    # A narrator never transmits from himself: one written name twice in a row is one mention (k6:18840 «ابن السرح»).
+    for index, chain in enumerate(chains):
+        kept = [m for k, m in enumerate(chain.mentions) if not (k and same_name(m.surface, chain.mentions[k - 1].surface)
+                                                                and name_key(m.surface) not in RELATION_WORDS)]
+        if len(kept) < len(chain.mentions):
+            counts["adjacent_repeat_collapsed"] += 1
+            chains[index] = SunniChain(kept, chain.split_from)
     unique: list[SunniChain] = []
     for chain in chains:
         if not any(len(chain.mentions) == len(kept.mentions) and all(
@@ -1712,18 +1719,25 @@ def complete_short_routes(report: ReportText, chains: list[SunniChain], counts: 
     return unique
 
 
+# A relation can repeat («عن أبيه عن أبيه» walks up a family line); never collapsed.
+RELATION_WORDS = frozenset(["ابيه", "ابي", "ابوه", "جده", "جدي", "امه", "امي", "عمه", "عمي", "خاله", "خالي", "اخيه", "اخي"])
+
+
 def share_co_transmitter_continuations(report: ReportText, chains: list[SunniChain], counts: Counter) -> None:
     """Co-transmitters joined by a waw at one position share what follows them («مطرف بن طريف، وعبد الملك بن سعيد، سمعا
     الشعبي»): a route that stops there, or skips a name its partner carries split off a verb, takes the partner's continuation."""
+    spans = ordered_spans(report.normal, [[m.surface for m in chain.mentions] for chain in chains])
     for index, chain in enumerate(chains):
-        for other in chains:
+        for other_index, other in enumerate(chains):
             if other is chain:
                 continue
             p = next((k for k, (a, b) in enumerate(zip(chain.mentions, other.mentions)) if a.surface != b.surface), None)
             if p is None or p >= len(other.mentions) - 1 or p >= len(chain.mentions):
                 continue
-            first = locate(report.normal, chain.mentions[p].surface)
-            second = locate(report.normal, other.mentions[p].surface)
+            # Each name where its own chain stands in the text (k6:14609: «أبي» of «حدثنا أبي ومحمد بن بشر», never the
+            # «أبي» of «أبو بكر بن أبي شيبة» earlier on).
+            first = spans[index][p] if p < len(spans[index]) else None
+            second = spans[other_index][p] if p < len(spans[other_index]) else None
             if not first or not second:
                 continue
             a, b = sorted([first, second])

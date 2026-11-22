@@ -22,7 +22,7 @@ REPORTS = [
     "hadith:k6:9600", "hadith:k6:9826", "hadith:k6:13913", "hadith:k6:8169", "hadith:pure-canon:pc_46421",
     "hadith:pure-canon:pc_71896", "hadith:k6:28195", "hadith:k6:10025", "hadith:k6:14282", "hadith:k6:29819",
     "hadith:k6:26285", "hadith:k6:4144", "hadith:k6:27269", "hadith:k6:24036", "hadith:k6:21664", "hadith:k6:11006",
-    "hadith:k6:9123", "hadith:k6:5155",
+    "hadith:k6:9123", "hadith:k6:5155", "hadith:k6:14609", "hadith:k6:7666", "hadith:k6:18840",
 ]
 # The re-check's Imami examples (patterns 6-8 and its Imami regression rows) and cases round 2 got right.
 IMAMI_REPORTS = [

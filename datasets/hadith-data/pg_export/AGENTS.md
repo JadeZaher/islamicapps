@@ -310,7 +310,9 @@ never recomputed on the new branches). The rules are the audit's detectors, port
   shared tail by (a) or (b); 7 of k6:11239's 11 routes stopped there. Co-transmitters joined by a waw at one position
   (`share_co_transmitter_continuations`) share what follows: a route that stops there, or skips a name its partner carries
   split off a verb («مطرف بن طريف، وعبد الملك بن سعيد، سمعا الشعبي»), takes the partner's continuation. Chains are located in
-  the text in stored order (`ordered_spans`): a repeated head («قتيبة بن سعيد» twice, k6:9600) is found where it stands.
+  the text in stored order (`ordered_spans`, also for the co-transmitter test): a repeated head («قتيبة بن سعيد» twice, k6:9600)
+  or a common word («أبي» of «حدثنا أبي ومحمد بن بشر», not of «أبو بكر بن أبي شيبة», k6:14609) is found where it stands. One
+  written name twice in a row is one mention (no narrator transmits from himself), except a relation («عن أبيه عن أبيه»).
 - **Where the extractor stopped (`extend_stopped_branches`, the canonical extractor reused unchanged).** After a wording
   attribution naming a stored co-transmitter («قال ابن المثنى حدثنا», also «قال عبد أخبرنا وقال ابن رافع حدثنا») or a convergence
   word followed by «عن», the extractor is re-run on the text without that span and the branch is extended only when a
