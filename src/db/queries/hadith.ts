@@ -6,7 +6,7 @@ import { getSourceFilterValues } from '@/lib/constants/sources';
 import { hadithAssessmentsJson } from './assessment';
 import { englishLabel, englishReference } from '@/lib/sources/report-credit';
 import type { EnglishAttribution, HadithDetail, HadithListItem, Paginated } from './contracts';
-import { groupAssessments, mapHadithListItem, text } from './mappers';
+import { groupAssessments, mapHadithListItem, mapSourceNotes, text, verbatim } from './mappers';
 import {
   andAll,
   clampPage,
@@ -168,6 +168,10 @@ export function hadithDetailStatement(relations: HadithRelations, hadithId: stri
       'sanad', h.sanad, 'sanad_confidence', h.sanad_confidence, 'narration_level', h.narration_level,
       'chain_type', h.chain_type, 'school', h.school, 'attributed_to', h.attributed_to, 'url', h.url,
       'page_ref', h.page_ref, 'arabic_sha256', h.arabic_sha256,
+      'sanad_ar', h.sanad_ar, 'split_confidence', h.split_confidence, 'source_notes', h.source_notes,
+      'chain_continues_from', (
+        select json_build_object('id', p.id, 'hadith_no', p.hadith_no, 'page_ref', p.page_ref)
+        from ${relations.hadiths} p where p.id = h.sanad_inherits_from and p.retired_at is null),
       'matn_en', tr.matn_text, 'english_source', tr.source, 'translator', tr.translator, 'english_model', tr.model,
       'source_slug', src.slug, 'source_work_id', col.source_work_id,
       'assessments', ${hadithAssessmentsJson(sql`h.id`)}
@@ -201,8 +205,15 @@ export function mapHadithDetail(detail: Record<string, unknown>): HadithDetail {
   const list = mapHadithListItem(detail.list as Record<string, unknown>);
   const sanad = text(detail.sanad);
   const matnEn = text(detail.matn_en);
+  const continuation = (detail.chain_continues_from ?? null) as Record<string, unknown> | null;
   return {
     ...list,
+    sanad_ar: verbatim(detail.sanad_ar),
+    split_confidence: detail.split_confidence === 'high' || detail.split_confidence === 'low' ? detail.split_confidence : null,
+    chain_continues_from: continuation
+      ? { id: String(continuation.id), hadith_no: text(continuation.hadith_no), page_ref: text(continuation.page_ref) }
+      : null,
+    source_notes: mapSourceNotes(detail.source_notes),
     sanad,
     isnad_arabic: sanad,
     chain_text_arabic: sanad,

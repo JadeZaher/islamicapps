@@ -12,6 +12,7 @@ import type {
   NarratorListItem,
   NarratorVerdict,
   ParallelRecord,
+  SourceNote,
   SourceTextRecord,
 } from './contracts';
 import { HADITH_TRADITION_CODES, type HadithTraditionCode, toInt, toIso } from './sql-helpers';
@@ -26,7 +27,7 @@ export function text(value: unknown): string | null {
 }
 
 /** Text kept byte for byte (Arabic and English bodies are never trimmed or folded). */
-function verbatim(value: unknown): string | null {
+export function verbatim(value: unknown): string | null {
   if (value === null || value === undefined) return null;
   const asString = String(value);
   return asString.trim() === '' ? null : asString;
@@ -70,6 +71,15 @@ export function mapHadithListItem(row: Row): HadithListItem {
     chain_status: String(row.chain_status),
     grading_status: String(row.grading_status),
   };
+}
+
+/** `hadiths.source_notes` (jsonb list) as notes; an entry without text or of an unknown kind is dropped. */
+export function mapSourceNotes(value: unknown): SourceNote[] {
+  const kinds = ['compiler_comment', 'arranger_note', 'editor_footnote', 'note'];
+  return arrayOf(value).flatMap((row) => {
+    const textAr = verbatim(row.text_ar);
+    return textAr && kinds.includes(String(row.kind)) ? [{ kind: row.kind as SourceNote['kind'], text_ar: textAr }] : [];
+  });
 }
 
 /** Groups assessment rows into one group per tradition, in the fixed tradition order; empty groups kept. */

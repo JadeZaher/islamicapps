@@ -444,3 +444,59 @@ production database already loaded). Detail: `src/db/AGENTS.md` §External ident
   they stay candidates).
 - The loader now runs with parallel query off (the container's `/dev/shm` is too small for the load's joins); a
   Postgres restart is still pending for the tuning in "Production state".
+
+## OpenITI extraction fix (2026-11-21)
+
+The corrected parse of al-Rabi, Musnad Zayd and Sahifat al-Rida (`datasets/hadith-data/extraction-quality/fixed/LOAD_STEPS.md`
+followed) is in production; code is uncommitted on `refactor/postgres-drizzle`. Detail: `src/db/AGENTS.md` §OpenITI extraction
+fields, `datasets/hadith-data/pg_export/AGENTS.md` §OpenITI report structure, `src/app/hadith/[id]/AGENTS.md`.
+
+- **Loaded** (dataset version `bed23aaaaf16…`, projection `2026.11.21.5`, incomplete-curation preview build, preview approval
+  re-recorded): hadiths +173 new, 1,728 updated (755 with new Arabic; the other 973 gained the new columns or lost the old
+  machine English from the file), 9 retired (`zayd_0009 0045 0047 0140 0308 0430 0469 0610`, `rida_0002`). 99,447 reports
+  (Ibadi 1,005, Zaydi 691, Imami 33,395 with the 205 Sahifat al-Rida reports). 1,531 confident splits, 370 low, 231 continuations,
+  142 reports with 149 source notes. `db:verify` OK, `db:verify-data` OK (35 checks, 3 new for the new columns), reload not run.
+- **Schema**: migration `0012_openiti_extraction_fields` (additive: `hadiths.sanad_ar`, `sanad_inherits_from`, `split_confidence`,
+  `source_notes`; `public_hadiths` replaced with the same body so it exposes them). Already applied to production.
+- **A retired id** answers 404 (the row is kept, `retired_at` set); no redirect.
+- **Parser correction**: Sahifat al-Rida stays `Imami`. The first corrected parse said `Zaydi`, which would have changed every
+  rida `record_id` (35 retired, 205 new under another tradition).
+- **Rebuilt for the new Arabic**: unified CSV (incomplete-curation), report correspondence v1 (135,976 pairs, 54,934 members),
+  external crosswalk and identity sidecars (hadith-kg, Riwayat; claims 366,241), Qur'an citations (`quran/`, validated),
+  correspondence v2 (154,305 pairs; its `recall_v2.json` was not re-measured, the old one is in `output.20261121_1735.bak/`),
+  `reconciled/openiti_extraction.jsonl.gz` (new). **Stale** (file-only, loaded nowhere, or more than one command):
+  `reconciled/structure/*` (needs `--production-dump <csv>`), the Qur'an review worksheets and readings that cite OpenITI ids
+  (`quran_review_worksheet_150.csv`, `quran_reading_80.csv`), `lsh_recall.json` of correspondence v1, and the machine-English
+  candidates for OpenITI (`translation_candidates.csv` 31,652 -> 29,915 rows: the corrected parse does not carry `text_en`;
+  the originals are in `*/translations.jsonl`, keyed by parsed id, never reuse for a changed hash).
+- **Not done**: English for the 173 new and 755 changed reports (OpenRouter out of credit; the page says "No English available
+  yet"); the release curation gate (`curation_manifest.json` is not ready: new ids have no reviewed English);
+  `load-flow.test.ts` could not run (development database is at an earlier migration; see `src/db/load/AGENTS.md`).
+- **Access-denied files**: `development/incomplete-curation/` held files an earlier sandbox account owned (`all_hadiths_shia.incomplete*`,
+  `all_hadiths_clean.incomplete*`, `all_hadiths_unified.incomplete.csv`, `classical_narrator_gap.incomplete.csv`,
+  `curation_manifest.incomplete.json`; also `datasets/hadith-data/curation_*.json|csv`). They were moved aside as
+  `*.20261121_1630.bak` (still unreadable by this account) and regenerated, with Thaqalayn rebuilt from `shia-hadith/v2_books`
+  (no `--no-shia`: the reusable gz was the unreadable one). The Imami rows came out identical (the load changed 0 Thaqalayn rows).
+
+### Deploy (session lead)
+
+1. Pick-up checks: `npx tsc --noEmit`; `DATABASE_URL=<production> npm run db:verify`;
+   `npm run db:verify-data -- --database production --confirm-production`.
+2. Commit, merge `refactor/postgres-drizzle` to `main`, push. The pre-deploy `migrate.mjs` finds 0012 already recorded.
+3. Check live: `/hadith/openiti/ibadi/rabi_0001%7C1%7C` (matn «نية المؤمن…» alone, chain span under Isnad),
+   `/hadith/openiti/ibadi/rabi_0001b%7C1%7C` ("Chain continues from No. 1"), `/hadith/openiti/ibadi/rabi_0225%7C225%7CV01P060`
+   (Notes in the source edition, credited OITI), `/hadith/openiti/zaydi/zayd_0007%232%7C7%7CV01P064` (No. 7, part 2),
+   `/hadith/openiti/zaydi/zayd_0009%7C9%7CV01P065` (404).
+4. The deployed build (`6e67b2e`) is safe on this data: it ignores the new columns, shows `matn_ar` where present and the whole
+   text for the 370 low-confidence reports.
+
+### Rollback
+
+- Code: redeploy `6e67b2e`; the data needs no change for it.
+- Data: there is no `pg_dump` 18 here, so there is no one-command return to `bbafb2f1…`. Options: restore the bucket backup
+  `db/2026-11-21-schema0011/` (docs/backups/README.md; loses the 0012 columns, which only the new code reads), or load the
+  previous projection after rebuilding it against the 0012 catalog from the `*.20261121_162559.bak` parse files and
+  `all_hadiths_unified.incomplete.csv.gz.20261121_1630.bak` (the loader refuses a projection whose header is not the live
+  catalog, so `projection-v4` as it stands cannot be loaded). Curation rows before the load: `development/openiti-fix-2026-11-21/curation-dump-before/`.
+- After any load into production, run `npm run db:approve-preview -- --database production --confirm-production --by owner
+  --reason "..."` at once: a new current version has no override and `public_hadiths` is empty until it is recorded (this load: about a minute).

@@ -5,7 +5,15 @@
  * getPublicParallelsForHadith. page.tsx adapts the hadith contract to the legacy keys below; the chain is passed
  * through as the section 9.4 `ChainGraph`.
  */
-import type { ChainGraph, ChainNode, EnglishAttribution, HadithAssessmentGroup, ReportFamily } from '@/db/queries/contracts';
+import type {
+    ChainContinuation,
+    ChainGraph,
+    ChainNode,
+    EnglishAttribution,
+    HadithAssessmentGroup,
+    ReportFamily,
+    SourceNote,
+} from '@/db/queries/contracts';
 
 export type { ChainGraph, ChainNode, HadithAssessmentGroup };
 
@@ -47,6 +55,13 @@ export interface HadithNode {
     text_ar?: string | null;
     /** v2: Arabic matn (narrative portion, post-isnad). */
     matn_ar?: string | null;
+    /** OpenITI works: the Arabic chain span as written; null unless the parser split chain and matn with confidence. */
+    sanad_ar?: string | null;
+    split_confidence?: 'high' | 'low' | null;
+    /** The report whose chain this one repeats ("and by this chain"); null for every other report. */
+    chain_continues_from?: ChainContinuation | null;
+    /** Notes the source edition prints beside the report (never part of the text). */
+    source_notes?: SourceNote[];
     /** v2: English matn (narrative portion, post-isnad). */
     matn_en?: string | null;
     /** v2: isnad text (the chain of transmitters, free-text Arabic). */

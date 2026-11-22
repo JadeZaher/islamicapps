@@ -324,6 +324,29 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where retired_at is null and matn_ar is not null
        and strpos(regexp_replace(coalesce(text_ar, ''), '[^ء-ي]', '', 'g'), regexp_replace(matn_ar, '[^ء-ي]', '', 'g')) = 0`,
   );
+  // OpenITI report structure (src/db/AGENTS.md §OpenITI extraction fields): spans are the report's own, never rewritten.
+  await check(
+    'a stored Arabic chain span is contained in its own text, and a low-confidence split stores no span',
+    `select count(*)::int as value from hadiths
+     where retired_at is null
+       and ((sanad_ar is not null and strpos(coalesce(text_ar, ''), sanad_ar) = 0)
+            or (split_confidence = 'low' and (sanad_ar is not null or matn_ar is not null)))`,
+  );
+  await check(
+    'a chain continued from another report names a live report of the same collection',
+    `select count(*)::int as value from hadiths h
+     left join hadiths p on p.id = h.sanad_inherits_from and p.retired_at is null
+     where h.retired_at is null and h.sanad_inherits_from is not null
+       and (p.id is null or p.collection_id <> h.collection_id or p.id = h.id)`,
+  );
+  await check(
+    'source notes are a list of known kinds with Arabic text',
+    `select count(*)::int as value from hadiths h
+     where h.retired_at is null and h.source_notes is not null
+       and exists (select 1 from jsonb_array_elements(h.source_notes) n
+                   where n->>'kind' not in ('compiler_comment', 'arranger_note', 'editor_footnote', 'note')
+                      or nullif(trim(n->>'text_ar'), '') is null)`,
+  );
   await check(
     'no non-ruling (not included, silent, back-reference) stored as an assessment',
     `select count(*)::int as value from hadith_assessments where retired_at is null

@@ -1,12 +1,12 @@
 {
   "ambiguity_reasons": {
     "hadith_kg": {
-      "external_report_claimed_by_several_of_ours": 2626,
-      "several_external_reports_in_the_same_work": 652
+      "external_report_claimed_by_several_of_ours": 2648,
+      "several_external_reports_in_the_same_work": 654
     },
     "riwayat": {
-      "external_report_claimed_by_several_of_ours": 2494,
-      "several_external_reports_in_the_same_work": 1748
+      "external_report_claimed_by_several_of_ours": 2516,
+      "several_external_reports_in_the_same_work": 1854
     }
   },
   "artifact": "external_report_crosswalk",
@@ -14,7 +14,7 @@
     "datasets/hadith-data/diagnostics/report-correspondence/matn_isolation.py": "c76ec0f474c07e1f71a7d0f87488076fbaed616e392abbb3948a3922cc088380",
     "datasets/hadith-data/extract_isnad_unified.py": "56ea1ae0968d1cddfa4d0dcdd630e8145e897a1b82413cb3c271cf8023708212",
     "datasets/hadith-data/reconciled/build_external_report_crosswalk.py": "82472c1e92ee5412eab7c3631a62185fe4396855c8cd3b780669a4893289dee1",
-    "datasets/hadith-data/reconciled/external_source_io.py": "277dfae8dc1b702c53ec26db76f0bcc6fd27619b4c4e6d5ed633b45baeb7aa46",
+    "datasets/hadith-data/reconciled/external_source_io.py": "44f98e19e69b5a64043cd83bdc084120de01d1ab0f7e2deb5545f7730bde952e",
     "datasets/hadith-data/reconciled/external_source_logic.py": "5fbab5c6d36b442a0cb9b03ddd42d14513c8ae918998f0e926ccbdbd9796506e",
     "datasets/hadith-data/reconciled/sidecar_io.py": "e4564e31cc2e6f16d8e1640b179c1cfc5b771d71a3e424646a03df8dde9e9eb2",
     "datasets/hadith-data/regen_unified_csvs.py": "310fbf58885b53700a17698c1ffcd3231f24a55ba7ea8e8c1c08b64864e78147"
@@ -23,14 +23,14 @@
   "cross_checks_not_used_for_matching": {
     "imami_thaqalayn_locator_tail_agrees": 14579,
     "imami_thaqalayn_locator_tail_differs": 4005,
-    "riwayat_kg_id_equals_our_kg_match": 32430
+    "riwayat_kg_id_equals_our_kg_match": 32509
   },
   "external_rows_scanned": {
     "hadith_kg": 66402,
     "riwayat": 95086
   },
   "inputs_sha256": {
-    "datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz": "feeeb38dae008bed993fab7ccdf6fc7399e985296d5a0c36b59534327e003a17",
+    "datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz": "98187511b3fd2a9388fa0b62b8a569be7e86c751de7590ef06e7e14c09b52b12",
     "datasets/hadith-data/neo4j_export/source_work_registry.json": "8dfda404ca64d217cad7d366a1941d59009220a47705eb4ccca08d4bc2cbe2ba",
     "datasets/hadith-data/reconciled/no_chain_in_source.jsonl.gz": "59b98699b696002998df43bcd5d0626d69a4aa46caf443d12ce8400f384c15c5",
     "datasets/hadith-data/reconciled/pure_canon_chain.jsonl.gz": "5b335f0e81853c65ca05761ea188abf3772256a86897afbc8a3c43396371bb19",
@@ -53,8 +53,10 @@
     "tradition": "our tradition is carried; Riwayat's label is kept as external_tradition_label (it labels Musnad Zayd and Musnad al-Rabi' as sunni)"
   },
   "our_matn_methods": {
-    "Ibadi:matn_column": 909,
-    "Ibadi:matn_under_40_letters": 95,
+    "Ibadi:extractor_boundary": 150,
+    "Ibadi:matn_column": 623,
+    "Ibadi:matn_under_40_letters": 132,
+    "Ibadi:whole_text_no_reliable_boundary": 100,
     "Imami:extractor_boundary": 23122,
     "Imami:matn_under_40_letters": 3409,
     "Imami:no_chain_in_source": 1997,
@@ -65,27 +67,29 @@
     "Sunni:no_chain_in_source": 1557,
     "Sunni:source_text_is_matn_only": 22459,
     "Sunni:whole_text_no_reliable_boundary": 11,
-    "Zaydi:matn_column": 672,
-    "Zaydi:matn_under_40_letters": 26
+    "Zaydi:extractor_boundary": 36,
+    "Zaydi:matn_column": 568,
+    "Zaydi:matn_under_40_letters": 75,
+    "Zaydi:whole_text_no_reliable_boundary": 12
   },
   "output": {
     "file": "external_report_crosswalk.jsonl.gz",
-    "rows": 91791,
-    "sha256": "9b63c459d93dff65874790421de9526b29566fa78322b0ba0f36fb2ee15ffc76"
+    "rows": 92205,
+    "sha256": "74c25512e3d5b98296fad06b7767aa5cd4b673ad92dbe43f607819b1edb43c8a"
   },
   "rates_by_tradition": {
     "hadith_kg": {
       "Ibadi": {
-        "ambiguous": 21,
-        "our_matn_contained": 153,
-        "reports": 1004,
-        "used_percent": 40.5,
-        "whole_text_equal": 254
+        "ambiguous": 45,
+        "our_matn_contained": 186,
+        "reports": 1005,
+        "used_percent": 44.5,
+        "whole_text_equal": 261
       },
       "Imami": {
         "ambiguous": 0,
         "our_matn_contained": 0,
-        "reports": 33225,
+        "reports": 33395,
         "used_percent": 0.0,
         "whole_text_equal": 0
       },
@@ -98,25 +102,25 @@
       },
       "Zaydi": {
         "ambiguous": 0,
-        "our_matn_contained": 62,
-        "reports": 698,
-        "used_percent": 8.9,
+        "our_matn_contained": 205,
+        "reports": 691,
+        "used_percent": 29.7,
         "whole_text_equal": 0
       }
     },
     "riwayat": {
       "Ibadi": {
-        "ambiguous": 26,
-        "our_matn_contained": 148,
-        "reports": 1004,
-        "used_percent": 40.0,
-        "whole_text_equal": 254
+        "ambiguous": 57,
+        "our_matn_contained": 174,
+        "reports": 1005,
+        "used_percent": 43.3,
+        "whole_text_equal": 261
       },
       "Imami": {
         "ambiguous": 139,
         "our_matn_contained": 1157,
-        "reports": 33225,
-        "used_percent": 55.9,
+        "reports": 33395,
+        "used_percent": 55.6,
         "whole_text_equal": 17427
       },
       "Sunni": {
@@ -127,10 +131,10 @@
         "whole_text_equal": 21487
       },
       "Zaydi": {
-        "ambiguous": 49,
-        "our_matn_contained": 13,
-        "reports": 698,
-        "used_percent": 1.9,
+        "ambiguous": 146,
+        "our_matn_contained": 59,
+        "reports": 691,
+        "used_percent": 8.5,
         "whole_text_equal": 0
       }
     }
@@ -138,11 +142,11 @@
   "rates_by_work": {
     "hadith_kg": {
       "Ibadi|ibadi:musnad-rabi": {
-        "ambiguous": 21,
-        "our_matn_contained": 153,
-        "reports": 1004,
-        "used_percent": 40.5,
-        "whole_text_equal": 254,
+        "ambiguous": 45,
+        "our_matn_contained": 186,
+        "reports": 1005,
+        "used_percent": 44.5,
+        "whole_text_equal": 261,
         "work_has_counterpart": true
       },
       "Imami|imami:al-amali-mufid": {
@@ -292,7 +296,7 @@
       "Imami|imami:sahifat-al-imam-ali-al-rida": {
         "ambiguous": 0,
         "our_matn_contained": 0,
-        "reports": 35,
+        "reports": 205,
         "used_percent": 0.0,
         "whole_text_equal": 0,
         "work_has_counterpart": false
@@ -403,20 +407,20 @@
       },
       "Zaydi|zaydi:musnad-zayd": {
         "ambiguous": 0,
-        "our_matn_contained": 62,
-        "reports": 698,
-        "used_percent": 8.9,
+        "our_matn_contained": 205,
+        "reports": 691,
+        "used_percent": 29.7,
         "whole_text_equal": 0,
         "work_has_counterpart": true
       }
     },
     "riwayat": {
       "Ibadi|ibadi:musnad-rabi": {
-        "ambiguous": 26,
-        "our_matn_contained": 148,
-        "reports": 1004,
-        "used_percent": 40.0,
-        "whole_text_equal": 254,
+        "ambiguous": 57,
+        "our_matn_contained": 174,
+        "reports": 1005,
+        "used_percent": 43.3,
+        "whole_text_equal": 261,
         "work_has_counterpart": true
       },
       "Imami|imami:al-amali-mufid": {
@@ -566,7 +570,7 @@
       "Imami|imami:sahifat-al-imam-ali-al-rida": {
         "ambiguous": 0,
         "our_matn_contained": 0,
-        "reports": 35,
+        "reports": 205,
         "used_percent": 0.0,
         "whole_text_equal": 0,
         "work_has_counterpart": false
@@ -676,10 +680,10 @@
         "work_has_counterpart": true
       },
       "Zaydi|zaydi:musnad-zayd": {
-        "ambiguous": 49,
-        "our_matn_contained": 13,
-        "reports": 698,
-        "used_percent": 1.9,
+        "ambiguous": 146,
+        "our_matn_contained": 59,
+        "reports": 691,
+        "used_percent": 8.5,
         "whole_text_equal": 0,
         "work_has_counterpart": true
       }

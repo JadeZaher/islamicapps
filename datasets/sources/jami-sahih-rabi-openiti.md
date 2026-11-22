@@ -37,7 +37,7 @@ bibtex: |
 
 ## What we use
 
-This OpenITI transcription is the Arabic source for the 1,004-row Ibadi
+This OpenITI transcription is the Arabic source for the 1,005-row Ibadi (1,004 before the 2026-11-21 parser correction)
 collection, including commentary represented by the parser.
 
 ## How we acquired it

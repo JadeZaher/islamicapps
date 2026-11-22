@@ -45,6 +45,15 @@ python -X utf8 -m pytest datasets/test_parse_openiti.py -q                      
   previous report in the work. Not confident (no clear closing verb, matn would open with another reporting verb) → both null, `split_confidence: "low"`.
   `split_kind`: `chain_and_matn`, `continuation_chain`, `no_chain` (sanad `""`), `unsplit`, `chain_only`.
 
+## Adopted 2026-11-21 (the load session)
+
+`LOAD_STEPS.md` was followed (production, incomplete-curation build). One correction to the parser: Sahifat al-Rida's
+`tradition` is `Imami` again (`parse_openiti.py` had `Zaydi`, so `record_id` would have become `openiti:zaydi:rida_*` and all 35
+ids retired; production has always held it as `openiti:imami:rida_*`). `parsed_hadiths.fixed.json` still says `Zaydi` for
+`works.rida`: the live `rida-hadith/parsed_hadiths.json` equals it except that field. Rebuild this directory with
+`build_fixed.py` before using it as a reference again. The structure fields load as `hadiths.sanad_ar`, `sanad_inherits_from`,
+`split_confidence` and `source_notes` (`src/db/AGENTS.md` §OpenITI extraction fields).
+
 ## Id anchoring (why the parser replays the old segmentation)
 
 Production ids are `<work>_<counter>` for zayd/rida and `rabi_<number>` for rabi; `record_id = openiti:<tradition>:<id>|<hadith_no>|<page_ref>` and `page_ref` is

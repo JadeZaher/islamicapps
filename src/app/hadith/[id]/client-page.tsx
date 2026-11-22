@@ -12,8 +12,10 @@ import { IsnadChain } from './components/IsnadChain';
 import { GradingPanel } from './components/GradingPanel';
 import { Assessments } from './components/Assessments';
 import { ReportFamilySection } from './components/family/ReportFamilySection';
+import { SourceNotes } from './components/SourceNotes';
 import { ownMatn } from './matn';
-import { reportNumber, reportReference } from '@/lib/citation/reference';
+import { reportNumber, reportPart, reportReference } from '@/lib/citation/reference';
+import { hadithPath } from '@/lib/hadith-address';
 import type { HadithClientPageProps } from './types';
 
 /** Section heading used for every block on the page: a 12px uppercase label (DESIGN.md §Report reading column). */
@@ -49,9 +51,14 @@ export function HadithClientPage({ hadith, chain, parallels = [], family = null,
     // The written sanad is shown above the matn only when the Arabic below is the matn alone; otherwise the full text
     // below already carries the chain, and it is shown once.
     const writtenSanad = hadith.sanad ?? hadith.isnad_arabic ?? hadith.chain_text_arabic ?? null;
-    const sourceSanadText = hasArabicMatn ? writtenSanad : null;
+    // OpenITI works: the Arabic chain span as written, only where the split is confident (a low-confidence report keeps
+    // its whole text below, once); it replaces the stored sanad line, which would show the chain twice.
+    const chainSpan = hadith.split_confidence === 'high' && arabicMatn ? hadith.sanad_ar?.trim() || null : null;
+    const sourceSanadText = hasArabicMatn && !chainSpan ? writtenSanad : null;
     const hasChain = (chain?.nodes.length ?? 0) > 0;
-    const showChain = Boolean(sourceSanadText?.trim()) || hasChain;
+    const continuation = hadith.chain_continues_from ?? null;
+    const sourceNotes = hadith.source_notes ?? [];
+    const showChain = Boolean(sourceSanadText?.trim()) || hasChain || Boolean(chainSpan) || Boolean(continuation);
 
     // Thaqalayn's stored hadith_no is the chapter number: the report's own number comes from the provider URL.
     const referenceFields = {
@@ -63,7 +70,8 @@ export function HadithClientPage({ hadith, chain, parallels = [], family = null,
         bookNumber: null,
     };
     const number = reportNumber(referenceFields);
-    const reference = [hadith.source, number].filter(Boolean).join(' ');
+    const part = reportPart(hadith.id);
+    const reference = [hadith.source, number && part ? `${number}, part ${part}` : number].filter(Boolean).join(' ');
     const heading = reference || hadith.title?.trim() || 'Hadith';
     const chapter = hadith.chapter?.trim() || hadith.title?.trim() || '';
     const topic = hadith.primary_topic?.trim();
@@ -125,7 +133,26 @@ export function HadithClientPage({ hadith, chain, parallels = [], family = null,
                     {showChain && (
                         <section aria-labelledby="isnad-heading" className={`${SECTION} max-w-[var(--measure-reading)]`}>
                             <SectionHeading id="isnad-heading">Isnad · chain of transmission</SectionHeading>
+                            {chainSpan && (
+                                <ArabicText as="p" variant="reading" className="mb-4 whitespace-pre-line text-ink">
+                                    {chainSpan}
+                                </ArabicText>
+                            )}
+                            {continuation && (
+                                <p className="mb-4 type-small text-ink-muted">
+                                    <Link href={hadithPath(continuation.id)} className="link-row">
+                                        {`Chain continues from ${reportReference({ id: continuation.id, hadithNo: continuation.hadith_no, url: null, volume: null, pageRef: null, bookNumber: null })}`}
+                                    </Link>
+                                </p>
+                            )}
                             <IsnadChain chain={chain} sourceSanadText={sourceSanadText} />
+                        </section>
+                    )}
+
+                    {sourceNotes.length > 0 && (
+                        <section aria-labelledby="notes-heading" className={`${SECTION} max-w-[var(--measure-reading)]`}>
+                            <SectionHeading id="notes-heading">Notes in the source edition</SectionHeading>
+                            <SourceNotes notes={sourceNotes} />
                         </section>
                     )}
                 </div>

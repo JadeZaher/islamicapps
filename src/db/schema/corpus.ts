@@ -2,9 +2,11 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   customType,
   index,
   integer,
+  jsonb,
   pgTable,
   pgView,
   text,
@@ -177,6 +179,10 @@ function hadithColumns() {
     sanad: text('sanad'),
     sanadConfidence: text('sanad_confidence'),
     matnAr: text('matn_ar'),
+    sanadAr: text('sanad_ar'),
+    sanadInheritsFrom: text('sanad_inherits_from'),
+    splitConfidence: text('split_confidence'),
+    sourceNotes: jsonb('source_notes'),
     attributedTo: text('attributed_to'),
     narrationLevel: narrationLevelEnum('narration_level'),
     chainType: text('chain_type'),
@@ -200,6 +206,8 @@ export const hadiths = pgTable(
   hadithColumns(),
   (table) => [
     unique('hadiths_record_id_key').on(table.recordId),
+    check('hadiths_split_confidence_check', sql`${table.splitConfidence} in ('high', 'low')`),
+    check('hadiths_source_notes_check', sql`${table.sourceNotes} is null or jsonb_typeof(${table.sourceNotes}) = 'array'`),
     restrictForeignKey('hadiths_collection_id_fk', table.collectionId, collections.id),
     restrictForeignKey('hadiths_tradition_id_fk', table.traditionId, traditions.id),
     restrictForeignKey('hadiths_book_id_fk', table.bookId, books.id),

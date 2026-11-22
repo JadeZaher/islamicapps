@@ -44,6 +44,12 @@ export function reportNumber(fields: ReferenceFields): string | null {
   return positiveNumber(fields.hadithNo);
 }
 
+/** The part of a report the parser split off a numbered one (`...rida_0004#2|4|V01P442` is part 2 of No. 4); null for the first. */
+export function reportPart(id: string): number | null {
+  const match = /#(\d+)(?:\||$)/.exec(id);
+  return match ? Number(match[1]) : null;
+}
+
 /** The local part of the stable ID (`k6:10008` -> `10008`), used when a report has no number. */
 function recordKey(id: string): string {
   return id.split(':').slice(2).join(':');
@@ -68,7 +74,8 @@ export function reportReference(fields: ReferenceFields): string {
     }
     case 'openiti': {
       const page = pageLabel(fields.pageRef);
-      const base = number ? `No. ${number}` : `Record ${recordKey(fields.id)}`;
+      const part = reportPart(fields.id);
+      const base = number ? `No. ${number}${part ? `, part ${part}` : ''}` : `Record ${recordKey(fields.id)}`;
       return page ? `${base} (${page})` : base;
     }
     default:

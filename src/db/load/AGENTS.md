@@ -85,6 +85,15 @@ holding `canonical/`), not `canonical/` itself. Production was loaded from the s
 database holds (version `e2430eae…`, `prod-load-2.log` beside the development logs; `prod-load-1.log` is the cancelled
 first attempt), so both databases carry one content hash.
 
+## OpenITI extraction load (2026-11-21, `bed23aaaaf16…`)
+
+`projection-v5` (`development/openiti-fix-2026-11-21/`, log `prod-load-1.log`): hadiths +173 ~1,728 retired 9, chains +193 ~1,701
+retired 28, correspondences +920 ~14,125 retired 769, 599 s, all section 11.4 checks pass (three new ones guard the 0012 columns).
+A new current version carries no preview override: **run `npm run db:approve-preview` at once**; until then `public_hadiths` is
+empty (the load's own check reports `public_hadiths=0`). `load-flow.test.ts` now defaults to `projection-v5`; it needs a
+development database migrated to the current stream (the one in `.env.local` stopped at an earlier migration on 2026-11-21, so
+the test could not run there) and `slice_projection.py` now carries the three external-identity tables.
+
 ## Known limits
 
 - The loader refuses to run while any live `narrator_surface_decisions` row exists: decision replay

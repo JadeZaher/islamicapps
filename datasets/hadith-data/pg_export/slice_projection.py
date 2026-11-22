@@ -128,6 +128,15 @@ def build_slice(projection: Path, output: Path, per_tradition: int, omit_hadith:
     keep["narrator_aliases"] = [row for row in tables["narrator_aliases"][1] if row["narrator_id"] in narrator_ids]
     keep["narrator_teachers"] = [row for row in tables["narrator_teachers"][1]
                                  if row["student_id"] in narrator_ids and row["teacher_id"] in narrator_ids]
+    # External identity tables (0010), when the projection has them: closed over the slice's narrators.
+    if "narrator_source_profiles" in tables:
+        keep["narrator_source_profiles"] = [row for row in tables["narrator_source_profiles"][1]
+                                            if row["narrator_id"] in narrator_ids]
+        keep["narrator_external_ids"] = [row for row in tables["narrator_external_ids"][1]
+                                         if row["narrator_id"] in narrator_ids]
+        keep["narrator_link_candidates"] = [row for row in tables["narrator_link_candidates"][1]
+                                            if row["external_narrator_id"] in narrator_ids
+                                            and row["rawi_narrator_id"] in narrator_ids]
     for table in ("bibliographic_works", "editions", "citations"):
         keep[table] = []
 

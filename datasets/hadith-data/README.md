@@ -14,7 +14,7 @@ stored in subdirectories or archived under `archive/`.
 
 | File | Rows | Plain size | .gz size | Description |
 |------|------|------|------|-------------|
-| `all_hadiths_unified.csv` | 99,283 | 172 MB | 32 MB | **Current published master.** All traditions (Sunni 64,356 + Imami 33,225 + Ibadi 1,004 + Zaydi 698). Rebuilt by `python regen_unified_csvs.py`; publication is blocked unless Arabic, English, stable identity, and provenance gates pass. |
+| `all_hadiths_unified.csv` | 99,283 | 172 MB | 32 MB | **Current published master.** All traditions (Sunni 64,356 + Imami 33,225 + Ibadi 1,005 + Zaydi 691, counts of the corrected OpenITI parse; the 2026-11-21 load of it holds 99,447 reports, see `extraction-quality/fixed/`). Rebuilt by `python regen_unified_csvs.py`; publication is blocked unless Arabic, English, stable identity, and provenance gates pass. |
 | `all_hadiths_clean.csv` | 66,058 | 60 MB | 14 MB | Sunni + Ibadi + Zaydi view (no Imami). Derived from `all_hadiths_unified.csv`. |
 | `all_hadiths_shia.csv` | 34,927 | 95 MB | 18 MB | Imami + Rida + Ibadi + Zaydi view. Extended schema with grading fields. Derived from `all_hadiths_unified.csv` (and itself the input for Imami row loading via the Thaqalayn build at `shia-hadith/build_csv.py`). |
 
@@ -22,9 +22,9 @@ stored in subdirectories or archived under `archive/`.
 
 | File | Rows | Description |
 |------|------|-------------|
-| `parsed_hadiths.json` | 698 | Current authoritative JSON from OpenITI clean text. Source of truth. |
-| `zaydi_hadiths_clean.csv` | 699 | Stale derivative; regenerate and reconcile before release. |
-| `zaydi_hadiths_full.csv` | 699 | Stale derivative; regenerate and reconcile before release. |
+| `parsed_hadiths.json` | 691 | Current authoritative JSON from OpenITI clean text (corrected parse, `datasets/parse_openiti.py`): adds `sanad_ar`, `matn_ar`, `split_confidence`, `sanad_inherits_from`, `footnotes`, `commentary`. Source of truth. |
+| `zaydi_hadiths_clean.csv` | 691 | Stale derivative; regenerate and reconcile before release. |
+| `zaydi_hadiths_full.csv` | 691 | Stale derivative; regenerate and reconcile before release. |
 | `PROVENANCE.json` | — | Transformation metadata (source URI, parse date, what changed). |
 
 **Source**: OpenITI `0122ZaydIbnCali.Musnad.Zaydiyya0000052-ara1` (community-typed from Shamela al-Zaydiyya, NOT OCR).
@@ -33,9 +33,9 @@ stored in subdirectories or archived under `archive/`.
 
 | File | Rows | Description |
 |------|------|-------------|
-| `parsed_hadiths.json` | 1,004 | Authoritative JSON from OpenITI clean text. Includes al-Rabi commentary (138 hadiths). |
-| `ibadi_hadiths_clean.csv` | 1,004 | Minimal CSV. |
-| `ibadi_hadiths_full.csv` | 1,004 | Full schema CSV for unified dataset integration. |
+| `parsed_hadiths.json` | 1,005 | Authoritative JSON from OpenITI clean text (corrected parse). Includes al-Rabi commentary and footnotes as separate lists (142 reports). |
+| `ibadi_hadiths_clean.csv` | 1,005 | Minimal CSV. |
+| `ibadi_hadiths_full.csv` | 1,005 | Full schema CSV for unified dataset integration. |
 | `PROVENANCE.json` | — | Transformation metadata. |
 
 **Source**: OpenITI `0170RabicIbnHabibAzdi.JamicSahih.ShamIbadiyya0000155-ara1` (community-typed from Shamela al-Ibadiyya, NOT OCR).

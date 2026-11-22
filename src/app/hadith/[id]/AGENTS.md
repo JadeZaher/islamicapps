@@ -22,6 +22,19 @@ and does not also print the written sanad, so the chain appears once. The projec
 `diagnostics/report-correspondence/matn_isolation.py` before load (1,597 K6 rows carried another report's matn, 12,617
 carried the chain); this guard is the second line.
 
+## OpenITI chain span, continuation and source notes
+
+For al-Rabi, Musnad Zayd and Sahifat al-Rida (`src/db/AGENTS.md` §OpenITI extraction fields):
+
+- **Confident split** (`split_confidence = 'high'`, `sanad_ar` set): the matn alone under "Matn · report text"; the Arabic
+  chain span as written leads the isnad section and replaces the stored `sanad` line (which would show the chain twice).
+- **Low confidence**: `matn_ar` is NULL, so the page shows the whole text once under "Text as in the source", no span.
+- **Continuation** ("and by this chain"): a link "Chain continues from No. N" (`chain_continues_from`, the closest earlier
+  report the parser named) opens the isnad section, with or without a span. A split part reads "No. 4, part 2" (`reportPart`).
+- **Source notes** (`components/SourceNotes.tsx`): its own section "Notes in the source edition" below the isnad, each note
+  labelled by author (compiler's remark, arranger's note, editor's footnote), credited once to OITI with `SourceCredit`.
+  Never inside the text. Flow tests: `src/db/queries/__tests__/openiti-extraction-flows.test.ts`.
+
 ## Report family
 
 - **Wording.** Neutral across traditions; nothing calls one telling the original or more authentic. A correspondence is

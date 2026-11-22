@@ -141,3 +141,18 @@ mention's own span in the report text (`locate_mentions`; the stored surface has
 read from the curated table; or (d) the table alone when every word is in it. Otherwise none: Arabic alone. The table
 leaves out spellings with two customary readings (معمر, عبيدة, حصين, حجر, حبان, سلام, عقيل) and non-name words.
 `counts.latin_names` gives coverage by tradition and basis.
+
+## OpenITI report structure (projection `2026.11.21.5`; `src/db/AGENTS.md` §OpenITI extraction fields)
+
+`reconciled/openiti_extraction.jsonl.gz` (`build_openiti_extraction_sidecar.py`, run after `regen_unified_csvs.py`) carries
+`sanad_ar`, `sanad_inherits_from_record_id`, `split_confidence`, `split_kind` and `source_notes` per OpenITI report, bound to the
+SHA-256 of the unified `text_ar`. The exporter checks the file against its build manifest and refuses an OpenITI report with no
+row, a row bound to other Arabic, an unused row and an inheritance that names a report not in the projection. It writes
+`hadiths.sanad_ar`, `sanad_inherits_from` (`hadith:` + record id), `split_confidence` and `source_notes` (compact JSON);
+`counts.openiti_extraction` gives the split confidence, inheritances and notes. `matn_ar` is unchanged: it still passes `accepted_matn`.
+
+A corpus change that alters an OpenITI report's Arabic invalidates the external identity claims on its mentions, and those
+are built from a projection's `chain_mentions.csv`. Break the cycle with an interim projection: export once with a copy of
+`reconciled/` whose `external_mention_claims.jsonl.gz` has no `openiti:` rows (manifest hash updated in the copy), point
+`EXTERNAL_SIDECAR_PROJECTION` at its `canonical/`, rebuild `build_external_report_crosswalk.py` and
+`build_external_identity_sidecars.py`, then export for real. `slice_openiti_extraction_fixture.py` cuts the flow-test fixture.

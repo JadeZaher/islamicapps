@@ -43,7 +43,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.21.4"
+PROJECTION_VERSION = "2026.11.21.5"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -511,6 +511,23 @@ def load_unified(path: Path) -> dict[str, dict[str, str]]:
     return rows
 
 
+def load_openiti_extraction(directory: Path) -> tuple[dict[str, dict], str]:
+    """Report structure of the OpenITI works by record_id, hash-checked against its build manifest."""
+    manifest = json.loads((directory / "openiti_extraction.manifest.json").read_text(encoding="utf-8"))
+    path = directory / "openiti_extraction.jsonl.gz"
+    digest = sha256_file(path)
+    if digest != manifest["outputs"][0]["sha256"]:
+        raise ProjectionError("reconciled/openiti_extraction.jsonl.gz: SHA-256 differs from its build manifest")
+    rows: dict[str, dict] = {}
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            if row["record_id"] in rows:
+                raise ProjectionError(f"reconciled/openiti_extraction.jsonl.gz: {row['record_id']} listed twice")
+            rows[row["record_id"]] = row
+    return rows, digest
+
+
 def load_reconciled_sidecars(directory: Path) -> tuple[dict[str, dict[str, dict]], dict[str, str], str | None]:
     """The three reconciled sidecars keyed by record_id, each file hash-checked against its build manifest.
 
@@ -770,6 +787,9 @@ def project(args: argparse.Namespace) -> dict:
     hadiths = []
     hadith_info: dict[str, dict] = {}
     hadith_text: dict[str, str] = {}
+    openiti_extraction, openiti_extraction_sha = load_openiti_extraction(args.reconciled)
+    extraction_unused = set(openiti_extraction)
+    extraction_counts: Counter = Counter()
     arabic_mismatches = 0
     provenance_mismatches = 0
     isolator = matn_isolator()
@@ -803,6 +823,17 @@ def project(args: argparse.Namespace) -> dict:
             matn_counts[f"rejected_by_work:{collection['source_work_id']}"] += 1
         elif matn_ar is not None:
             matn_counts["stored"] += 1
+        extraction = openiti_extraction.get(row["record_id"])
+        if row["record_id"].startswith("openiti:") and extraction is None:
+            raise ProjectionError(f"{hadith_id}: OpenITI report without a row in reconciled/openiti_extraction.jsonl.gz")
+        if extraction is not None:
+            extraction_unused.discard(row["record_id"])
+            if extraction["text_ar_sha256"] != row["arabic_sha256"]:
+                raise ProjectionError(f"{hadith_id}: openiti_extraction is bound to different Arabic")
+            inherits = extraction["sanad_inherits_from_record_id"]
+            extraction_counts[f"split_confidence:{extraction['split_confidence']}"] += 1
+            extraction_counts["sanad_inherits_from"] += inherits is not None
+            extraction_counts["source_notes"] += len(extraction["source_notes"])
         hadith_text[hadith_id] = text_ar
         hadith_info[hadith_id] = {
             "record_id": row["record_id"], "tradition_id": tradition_id, "source": row["source"],
@@ -818,22 +849,37 @@ def project(args: argparse.Namespace) -> dict:
             category.lower() if category else None, hadith_no, text_ar if text_ar != "" else None,
             arabic_norm(text_ar) if text_ar.strip() else None, row["arabic_sha256"], blank_to_none(row["sanad"]),
             blank_to_none(source_row["sanad_confidence"]), matn_ar,
+            extraction["sanad_ar"] if extraction else None,
+            f"hadith:{extraction['sanad_inherits_from_record_id']}"
+            if extraction and extraction["sanad_inherits_from_record_id"] else None,
+            extraction["split_confidence"] if extraction else None,
+            json.dumps(extraction["source_notes"], ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            if extraction and extraction["source_notes"] else None,
             alias_surface[attributed] if attributed else None, narration_level,
             blank_to_none(source_row["chain_type"]), blank_to_none(source_row["school"]), blank_to_none(row["url"]),
             blank_to_none(row["page_ref"]), blank_to_none(row["provenance"]),
             blank_to_none(row["translation_disposition"]), row["quality_excluded"] == "true",
             blank_to_none(row["quality_exclusion_reason"]),
         ])
-    if arabic_mismatches:
-        raise ProjectionError(f"{arabic_mismatches} hadiths fail the Arabic SHA-256 binding")
-    canonical.write("hadiths", [
+    hadith_columns = [
         "id", "record_id", "source_record_id", "provider_hadith_id", "collection_id", "collection_sort_key",
         "source_display_label", "tradition_id", "book_id", "chapter_id", "volume", "chapter_no", "chapter_title",
         "chapter_title_folded", "category", "category_folded", "hadith_no", "text_ar", "text_ar_normalized",
-        "arabic_sha256", "sanad", "sanad_confidence", "matn_ar", "attributed_to", "narration_level", "chain_type",
-        "school", "url", "page_ref", "provenance_source", "translation_disposition", "quality_excluded",
+        "arabic_sha256", "sanad", "sanad_confidence", "matn_ar", "sanad_ar", "sanad_inherits_from", "split_confidence",
+        "source_notes", "attributed_to", "narration_level", "chain_type", "school", "url", "page_ref", "provenance_source", "translation_disposition", "quality_excluded",
         "quality_exclusion_reason",
-    ], hadiths)
+    ]
+    if arabic_mismatches:
+        raise ProjectionError(f"{arabic_mismatches} hadiths fail the Arabic SHA-256 binding")
+    if extraction_unused:
+        raise ProjectionError(f"{len(extraction_unused)} openiti_extraction rows name no loaded report")
+    known_hadith_ids = {item[0] for item in hadiths}
+    inherits_at = hadith_columns.index("sanad_inherits_from")
+    dangling = [item[0] for item in hadiths if item[inherits_at] is not None and item[inherits_at] not in known_hadith_ids]
+    if dangling:
+        raise ProjectionError(f"{len(dangling)} reports inherit a chain from a report that is not loaded")
+    counts["openiti_extraction"] = dict(sorted(extraction_counts.items()))
+    canonical.write("hadiths", hadith_columns, hadiths)
     counts["arabic_sha256_binding_errors"] = arabic_mismatches
     counts["hadith_provenance_differs_from_unified"] = provenance_mismatches
     counts["matn_ar"] = dict(sorted(matn_counts.items()))
@@ -1273,6 +1319,7 @@ def project(args: argparse.Namespace) -> dict:
             "arabic_norm_sha256": sha256_file(DATASETS_DIR / "classify_attribution.py"),
             "projection_sha256": sha256_file(Path(__file__)),
             "reconciled_sidecars": {f"reconciled/{name}": digest for name, digest in sorted(sidecar_hashes.items())},
+            "openiti_extraction_sha256": openiti_extraction_sha,
             "k6_sidecar_resolver_sha256": k6_resolver_sha,
             "matn_isolation_sha256": sha256_file(CORRESPONDENCE_JOB_DIR / "matn_isolation.py"),
             "extractor_sha256": sha256_file(HADITH_DATA_DIR / "extract_isnad_unified.py"),

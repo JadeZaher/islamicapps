@@ -12,7 +12,7 @@ import { developmentDatabaseUrl, openLoaderClient, type LoaderSql } from '../con
 import { loadProjection } from '../load';
 import { createThrowawaySchema, dropThrowawaySchema, throwawaySchemaName } from './throwaway-schema';
 
-const PROJECTION = process.env.LOAD_TEST_PROJECTION ?? 'datasets/hadith-data/development/pg-load-2026-11-21/projection-v3';
+const PROJECTION = process.env.LOAD_TEST_PROJECTION ?? 'datasets/hadith-data/development/openiti-fix-2026-11-21/projection-v5';
 const SLICER = 'datasets/hadith-data/pg_export/slice_projection.py';
 
 interface Expectations {

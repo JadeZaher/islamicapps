@@ -65,8 +65,30 @@ export interface EnglishAttribution {
   reference: SourceReference | null;
 }
 
+/** Who wrote a source note (OpenITI extraction, src/db/AGENTS.md §OpenITI extraction fields). */
+export type SourceNoteKind = 'compiler_comment' | 'arranger_note' | 'editor_footnote' | 'note';
+
+/** A note the source edition prints beside a report: never part of the report's text. */
+export interface SourceNote {
+  kind: SourceNoteKind;
+  text_ar: string;
+}
+
+/** The report whose chain a continuation report ("and by this chain") repeats. */
+export interface ChainContinuation {
+  id: string;
+  hadith_no: string | null;
+  page_ref: string | null;
+}
+
 /** Hadith detail; `assessments` replaces display_grade / auto_calculated_grade / transmission_type. */
 export interface HadithDetail extends HadithListItem {
+  /** The Arabic chain span exactly as written in the text; null unless the split is confident (OpenITI works only). */
+  sanad_ar: string | null;
+  /** `high` where the parser separated chain and matn with confidence, `low` where it left the text whole. */
+  split_confidence: 'high' | 'low' | null;
+  chain_continues_from: ChainContinuation | null;
+  source_notes: SourceNote[];
   sanad: string | null;
   isnad_arabic: string | null;
   chain_text_arabic: string | null;

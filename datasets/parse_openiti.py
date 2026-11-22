@@ -1012,7 +1012,7 @@ def _parse_chunked(source_path, work):
     reports = merge_chain_fragments(reports)
 
     if is_rida:
-        base = {"source": "Sahifat al-Imam Ali al-Rida", "source_ar": "صحيفة الإمام علي الرضا", "tradition": "Zaydi",
+        base = {"source": "Sahifat al-Imam Ali al-Rida", "source_ar": "صحيفة الإمام علي الرضا", "tradition": "Imami",
                 "compiler": "Abd al-Wasit ibn Yahya al-Wasiti (arranger)", "compiler_ar": "عبد الواسع بن يحيى الواسعي (مرتب)"}
         uri = "0122ZaydIbnCali.Musnad.Zaydiyya0000052-ara1 (appendix)"
     else:
@@ -1023,7 +1023,7 @@ def _parse_chunked(source_path, work):
     result = {
         "source_file": os.path.basename(source_path),
         "openiti_uri": uri,
-        "tradition": "Zaydi",
+        "tradition": base["tradition"],
         "bab_count": state["bab_no"],
         "hadith_count": len(hadiths),
         "hadiths": hadiths,

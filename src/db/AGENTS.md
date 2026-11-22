@@ -144,6 +144,34 @@ or of the one person all candidates name; the narrator whose name it is is recor
 transliteration for external rows, which have no English name. Rules: `datasets/hadith-data/pg_export/AGENTS.md`
 §Latin names.
 
+## OpenITI extraction fields (0012; owner request 2026-11-21)
+
+The corrected parse of al-Rabi, Musnad Zayd and Sahifat al-Rida (`datasets/parse_openiti.py`, `extraction-quality/fixed/`)
+splits a report into an Arabic chain span and a matn, notes where a chain repeats an earlier one, and separates the
+edition's own notes from the text. Four nullable columns on `hadiths` carry it; they are NULL for every other work.
+
+- `sanad_ar`: the chain span exactly as written in `text_ar` (a substring, checked at load), NULL unless the split is confident.
+- `split_confidence` (`high` | `low`, check): `low` means the parser left the text whole: `sanad_ar` and `matn_ar` are NULL
+  and the page shows `text_ar` once, with no split.
+- `sanad_inherits_from`: the id of the report whose chain a continuation («وبهذا السند», «وباسناده», «ومن طريقه») repeats,
+  checked at load to be a live report of the same collection. No foreign key: a self-reference would order the merge.
+- `source_notes` (jsonb list, check): `{kind, text_ar}` with kind `compiler_comment` (al-Rabi's own remark or gloss),
+  `arranger_note`, `editor_footnote` or `note`. Never part of `text_ar`; the page shows them in their own labelled block credited
+  to OITI. One column, not a table: notes live and die with the report row, so they can never be bound to stale Arabic, and no
+  loader path or `NOT NULL` English column (`commentaries.text`) is involved.
+- Projection: `reconciled/openiti_extraction.jsonl.gz` (built by `build_openiti_extraction_sidecar.py`, hash-bound to the exact
+  `text_ar`); `export_postgres.py` refuses an OpenITI report without a row, a row bound to other Arabic, or a dangling inheritance.
+- `public_hadiths` is `select h.*`, whose column list froze at creation: 0012 replaces it with the same body, which appends the
+  new columns at the end and leaves every dependent view alone. A build older than 0012 reads the columns it knows.
+- Ids: `#2`, `#3` mark parts the parser split off a numbered report (`hadith:openiti:rida:rida_0004#2|4|V01P442`); the `#`
+  is part of the id and is percent-encoded in the URL (`reportPart` in `src/lib/citation/reference.ts` words it "No. 4, part 2").
+  An id the parser absorbed into another report is retired by the loader like any report that leaves a projection: the row is
+  kept, readers get 404 (no redirect).
+- Sahifat al-Rida stays Imami (`openiti:imami:rida_*`, as loaded since the first load). The first corrected parse had set
+  its tradition to Zaydi, which would have retired all 35 ids; `parse_openiti.py` is fixed and the record ids are unchanged.
+- Load invariants (`load/verify-data.ts`): a stored span lies inside its own text and a low-confidence split stores none; a
+  continuation names a live report of the same collection; every source note has a known kind and Arabic text.
+
 ## Report correspondences (0007; design §5.5.1)
 
 Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
@@ -181,7 +209,9 @@ write decisions.
   promoted from `ops/pending/`; idempotent) -> `0009_public_english_policy` (enum value
   `source_provided_and_machine_allowed`, `public_translations` redefined; see §Public English) ->
   `0010_external_identity` (generated: enum values, the three external tables, Latin-name and source-reference columns,
-  checks) -> `0011_external_identity_views` (hand-written views, see §External identity). A `--custom` generate snapshots the previous schema: after promoting a
+  checks) -> `0011_external_identity_views` (hand-written views, see §External identity) -> `0012_openiti_extraction_fields` (generated:
+  four nullable `hadiths` columns and two checks, then a hand-written `CREATE OR REPLACE VIEW public_hadiths`, see §OpenITI
+  extraction fields). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

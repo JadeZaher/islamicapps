@@ -8,6 +8,7 @@ from __future__ import annotations
 import csv
 import gzip
 import json
+import os
 import pathlib
 import sqlite3
 import sys
@@ -28,7 +29,9 @@ RIWAYAT = EXTERNAL / "riwayat-corpus" / "hadith_master.db"
 CORPUS = common.HADITH_DATA_DIR / "development" / "incomplete-curation" / "all_hadiths_unified.incomplete.csv.gz"
 WORK_REGISTRY = common.HADITH_DATA_DIR / "neo4j_export" / "source_work_registry.json"
 # The projection actually loaded (mention ids and today's identity candidates); read only.
-PROJECTION = common.HADITH_DATA_DIR / "development" / "pg-load-2026-11-21" / "projection-candidates" / "canonical"
+# EXTERNAL_SIDECAR_PROJECTION points at another projection's `canonical/` (the interim one built for a corpus change).
+PROJECTION = Path(os.environ.get("EXTERNAL_SIDECAR_PROJECTION") or (
+    common.HADITH_DATA_DIR / "development" / "pg-load-2026-11-21" / "projection-candidates" / "canonical"))
 CROSSWALK = "external_report_crosswalk.jsonl.gz"
 
 LICENCE = {

@@ -1,28 +1,32 @@
 {
-  "parsed_at": "2026-05-10T00:59:37.160541+00:00",
+  "parsed_at": "2026-11-21T23:32:02.678840+00:00",
   "parser": "parse_openiti.py",
   "source_uri": "0122ZaydIbnCali.Musnad.Zaydiyya0000052-ara1 (appendix)",
   "source_file": "musnad_zaydiyya_052.mARkdown",
   "source_type": "OpenITI mARkdown (community-typed, Shamela)",
-  "tradition": "Zaydi",
-  "hadith_count": 35,
+  "tradition": "Imami",
+  "hadith_count": 205,
   "transformations": [
     "NFKC Unicode normalization",
     "Zero-width/bidi control character removal",
     "Footnote marker removal (inline parenthetical numbers)",
     "Page marker and milestone extraction (stored in page_ref, removed from text)",
-    "Whitespace normalization"
+    "Whitespace normalization",
+    "Edition markers removed (zayd '=', stray leading 'V', lone '*')",
+    "Footnote blocks, Rabi comment paragraphs, glosses and the editorial section moved to footnotes/commentary fields",
+    "Chapter headings kept as titles, not reports; merged reports split (id#2...); chain-only fragments merged",
+    "sanad_ar / matn_ar cut from text_ar (verbatim substrings; null when the split is not confident)"
   ],
   "what_was_NOT_changed": [
     "Tashkeel (diacritics) preserved as-is",
     "Original Arabic word order preserved",
     "No spelling correction applied",
-    "No content added or removed beyond format markers"
+    "Every emitted string is a verbatim substring of the normalised source (asserted at parse time, see 'verification')"
   ],
   "notes": [
     "Text is community-proofread from Shamela, NOT from OCR",
     "Grade fields are empty — these traditions use different grading systems",
     "Translation (text_en) is empty — to be filled by translation pipeline"
   ],
-  "bab_count": 1
+  "bab_count": 7
 }

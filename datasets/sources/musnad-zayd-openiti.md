@@ -56,7 +56,7 @@ locator.
 
 ## Known limits
 
-The checked-in parse has 698 rows; rerunning the current parser against the
+The checked-in parse (corrected 2026-11-21) has 691 rows; the earlier parse had 698; rerunning the current parser against the
 exact official Git blob `2c97cb75946922ea45e348ef10f1f94ee10bb1c7`
 produces 699. The missing row must be reconciled before publication. Existing
 English has no row-level human-review evidence.
