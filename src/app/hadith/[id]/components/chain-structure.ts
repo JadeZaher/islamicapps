@@ -14,6 +14,7 @@ export const CHAIN_STRUCTURE_REASON_LABEL: Record<string, string> = {
   unaccounted_route_marker: 'the text marks more routes («ح», «جميعا», «كلهم») than were stored',
   crossed_routes: "two of al-Kulayni's routes appear joined in one chain",
   many_routes: 'the report has three or more routes, which the rules read wrong too often',
+  sibling_skips_link: 'two routes of this report differ by one name in the middle, so one of them lost or added a name',
   work_not_checked: 'chains in this work were read wrong too often to rely on',
 };
 

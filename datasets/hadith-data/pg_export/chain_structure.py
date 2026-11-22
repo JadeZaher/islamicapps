@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from typing import Sequence
 
-from chain_builder import (CONVERGENCE_WORD, FORMULA_HIGH, LINK_VERB, NUMBER_WORDS, ROUTE_HEAD_GAP, TAHWIL_H, name_key,
+from chain_builder import (CONVERGENCE_WORD, FORMULA_HIGH, LINK_VERB, NUMBER_WORDS, ROUTE_HEAD_GAP, TAHWIL_H, locate, name_key,
                            ordered_spans, sunni_norm)
 
 CHECKED = "checked_by_rule"
@@ -33,6 +33,7 @@ REASON_TEXT = {
     "ghayr_wahid_half": "half of «غير واحد» is stored as a link",
     "crossed_routes": "two of al-Kulayni's routes appear joined in one chain",
     "many_routes": "the report has three or more routes, which the rules read wrong too often to rely on",
+    "sibling_skips_link": "two routes of this report differ by one link in the middle, so one of them lost or added a name",
     "work_not_checked": "chains in this work were read wrong too often to rely on without review",
 }
 
@@ -41,15 +42,19 @@ REASON_TEXT = {
 # they flagged no defect the gate's detectors had not already flagged, at a cost of correct chains.
 GATE_REASONS = frozenset(["duplicated_link", "joined_names", "ghayr_wahid_half", "short_beside_long", "repeated_name",
                           "text_between_links", "text_names_more_after", "not_a_name", "unaccounted_route_marker",
-                          "crossed_routes", "many_routes", "work_not_checked"])
+                          "crossed_routes", "many_routes", "work_not_checked", "sibling_skips_link"])
 
-# Imami works whose chains the re-check found defective in 11 of 32 sampled (round 3): every chain is uncertain.
-# al-Kafi (3/50), Man la Yahduruhu al-Faqih and Thawab al-Aʿmal are not in the list.
-UNCHECKED_WORKS = frozenset(f"imami:{work}" for work in [
-    "al-khisal", "al-amali-saduq", "uyun-akhbar-al-rida", "maani-al-akhbar", "kitab-al-ghayba-tusi", "kamil-al-ziyarat",
-    "kamal-al-din", "al-tawhid-saduq", "mujam-al-ahadith-al-mutabara", "kitab-al-ghayba-numani", "al-amali-mufid",
-    "kitab-al-zuhd", "kitab-al-mumin", "sifat-al-shia", "fadail-al-shia"])
+# Round 4 withheld every chain of 15 small Imami works (11 of 32 sampled chains defective); round 5's out-of-sample check found
+# 13 of 14 such chains correct and the defects a rule can see are caught by other detectors, so the list is empty (the 15 works
+# and the evidence: chain-audit/round5/README.md). Add `imami:<work>` here to withhold a work again.
+UNCHECKED_WORKS: frozenset[str] = frozenset()
 MANY_ROUTES = 3
+
+# Round-5 rules, each measured on the tuning set (rounds 2/3) and the held-out set (round 4); remove a name to reverse one
+# (chain-audit/round5/README.md, pg_export/AGENTS.md §Gate recalibration).
+FEATURES = frozenset([
+    "gloss_beside_name", "label_formula", "saying_as_single_link", "asker_and_imam_in_one_link", "tabi_slash", "hadathanah",
+    "tail_hearing_shapes", "waan_between_links", "inherited_tail", "pure_canon_tail_exempt"])
 
 # Works whose text is prose or rijal entries: no chain is stored for them at all (retired).
 PROSE_WORKS = frozenset(["imami:kitab-al-duafa", "imami:risalat-al-huquq"])
@@ -69,6 +74,8 @@ NOT_NAME_WORD = frozenset(LINK_VERB) | FORMULA_HIGH | frozenset([
     "ضعيف", "عاش", "ساق", "بطوله", "اخر", "يصلي", "اكل", "اهدي", "هو", "انا", "نحن", "عند", "له", "لها", "الي",
     "المعني",
 ])
+# «أبو الحسن القطان حدثناه خازم بن يحيى»: a hearing verb with its pronoun inside one link (round 4, Ibn Majah 89 and 448).
+HADATHANAH = frozenset(["حدثناه", "حدثنيه", "اخبرناه", "اخبرنيه"])
 LINK_GAP_WORD = frozenset([
     "عن", "حدثنا", "حدثني", "اخبرنا", "اخبرني", "انبانا", "انباني", "ثنا", "نا", "انا", "سمعت", "سمع", "سمعا", "قال", "قالت",
     "قالا", "يقول", "تقول", "حدثه", "حدثته", "اخبره", "اخبرته", "ان", "انه", "انها", "انهما", "قراءة", "عليه", "عليها",
@@ -84,6 +91,15 @@ ROUTE_VERB = re.compile(r"(?:^|\s)(?:قال\s+)?و(?:اخبرنا|حدثنا|ا�
 AFTER_LAST = re.compile(
     r"(?<![ء-ي])(?:عن|حدثنا|حدثني|فحدثنا|فحدثني|اخبرنا|اخبرني|فاخبرني|فاخبرنا|حدثتني|حدثتنا|اخبرتني)\s+(?P<name>[ء-ي]+(?:\s+[ء-ي]+)?)"
     r"|(?<![ء-ي])(?:سالت|سمعت)\s+(?P<named>(?:ابا|ابو|ابي|ابن|ام|عبد)\s*[ء-ي]+|[ء-ي]+\s+بن\s+[ء-ي]+)")
+# An inherited chain's continuation: only a hearing verb names a further source (a bare «عن» there stands in the matn).
+AFTER_LAST_VERB = re.compile(AFTER_LAST.pattern.replace("(?:عن|حدثنا", "(?:حدثنا", 1))
+# Third-person hearing and reading shapes after the last stored link: «أنه سمع أسماء بنت أبي بكر», «أنه نظر إلى ابن عمر», «قرأت على
+# عبد الله بن عمر», «نشهد على عائشة», «قلت من حدثك قال ابن عباس», «قال عمرو بن دينار قال ابن عباس» (round 4's missed tail loss).
+NASAB_SHAPED = r"(?:ابا|ابو|ابي|ابن|ام|عبد)\s*[ء-ي]+|[ء-ي]+\s+(?:بن|بنت)\s+[ء-ي]+"
+AFTER_LAST_HEARING = re.compile(
+    rf"(?<![ء-ي])(?:سمع|سمعا|سمعوا|نظر\s+الي|قرات\s+علي|قرانا\s+علي|نشهد\s+علي|شهدت\s+علي)\s+(?P<named>{NASAB_SHAPED}|عائشة|ام\s+[ء-ي]+)"
+    rf"|(?<![ء-ي])من\s+حدثك\s+قال\s+(?P<asked>{NASAB_SHAPED})"
+    rf"|^[\s،,.:]*قال\s+(?P<first>{NASAB_SHAPED})\s+قال\s+(?P<second>{NASAB_SHAPED})")
 MATN_REACHED = re.compile(r"(?<![ء-ي])(?:رسول\s+الله|النبي|نبي\s+الله)(?![ء-ي])|[\"“]")
 PROPHET_OR_IMAM = re.compile(r"^(?:رسول|النبي|نبي|الله|امير|احدهما|احدهم|ابيه|جده|رجل|الرجل|امراة|المراة|قول|ذلك|شيء|هذا|ابي\s+عبد\s+الله|ابي\s+جعفر|ابي\s+الحسن|ابا\s+عبد\s+الله"
                              r"|ابا\s+جعفر|ابا\s+الحسن|ابو\s+عبد\s+الله|ابو\s+جعفر|ابو\s+الحسن|الرضا|الصادق|الباقر|عليا|علي)")
@@ -115,16 +131,46 @@ def _is_label(surface: str) -> bool:
     return bool(LABEL.match(fold(surface)))
 
 
-def not_a_name(surface: str) -> bool:
-    """A stored link that is no name: a verb, clause or formula word, digits, a fragment of one letter, a long clause."""
+GLOSS_WORD = frozenset(["يعني", "هو", "وهو"])
+# A back-reference or anonymity formula stored as a label link (never a name, never a defect).
+LABEL_FORMULA = re.compile(r"^(?:و\s?)?(?:بهذا\s+(?:ال)?اسناد|باسناده|بإسناده|عمن\s+حدثه|عمن\s+ذكره)$")
+# An asker and the Imam stored as one link: «علي بن جعفر أخاه موسى بن جعفر», «... الجعفري العبد الصالح موسى بن جعفر».
+ASKER_AND_IMAM = re.compile(r"(?:^|\s)(?:اخاه|اخيه|العبد\s+الصالح)(?=\s|$)")
+
+
+def _without_gloss(words: list[str]) -> list[str]:
+    """«علي يعني ابن مسهر», «سعيد هو ابن أبي أيوب»: a gloss between a name and the name it completes is dropped."""
+    for index, word in enumerate(words):
+        if word in GLOSS_WORD and 1 <= index < len(words) - 1 and index <= 4 and len(words) - index - 1 <= 5:
+            left, right = words[:index], words[index + 1:]
+            if not any(w in NOT_NAME_WORD for w in left + right):
+                return left + right
+    return words
+
+
+def not_a_name(surface: str, single_link: bool = False, routes_from_text: bool = True) -> bool:
+    """A stored link that is no name: a verb, clause or formula word, digits, a fragment of one letter, a long clause, a
+    «/» artefact, a whole saying (as the only link), an asker and an Imam in one link."""
     words = _words(surface)
     if not words:
         return False
+    if "tabi_slash" in FEATURES and "/" in surface:
+        return True
+    if "hadathanah" in FEATURES and any(word in HADATHANAH for word in words):
+        return True
+    if "label_formula" in FEATURES and LABEL_FORMULA.match(" ".join(words)):
+        return False
+    if "asker_and_imam_in_one_link" in FEATURES and ASKER_AND_IMAM.search(" ".join(words)):
+        return True
     if _is_label(surface):
         return any(word in NOT_NAME_WORD for word in words[1:]) or bool(DIGIT.search(surface))
+    if "gloss_beside_name" in FEATURES and not routes_from_text:
+        words = _without_gloss(words)
     if DIGIT.search(surface) or (len(words) == 1 and len(words[0]) <= 1):
         return True
     if any(word in NOT_NAME_WORD for word in words[1:]) or (words[0] in NOT_NAME_WORD and len(words) > 1):
+        return True
+    if "saying_as_single_link" in FEATURES and single_link and len(words) >= 3 and not any(word in NASAB_WORD for word in words):
         return True
     return len(words) >= 6 and not any(word in NASAB_WORD for word in words)
 
@@ -175,6 +221,19 @@ def crossed_routes(chain: Sequence[str]) -> bool:
     return any((a, b) in CROSSED_PAIRS for a, b in zip(keys, keys[1:]))
 
 
+def sibling_skips_link(chains: Sequence[Sequence[str]]) -> list[bool]:
+    """Per chain: another chain of the report is this one with one interior link added or dropped («A > B > D» beside
+    «A > B > C > D»): the two readings of one route disagree, so neither is relied on."""
+    keys = [[fold(surface) for surface in chain] for chain in chains]
+    flagged = [False] * len(keys)
+    for i, longer in enumerate(keys):
+        for j, shorter in enumerate(keys):
+            if len(longer) == len(shorter) + 1 and len(shorter) >= 2 and any(
+                    longer[:k] + longer[k + 1:] == shorter for k in range(1, len(longer) - 1)):
+                flagged[i] = flagged[j] = True
+    return flagged
+
+
 def _repeated(chain: Sequence[str]) -> bool:
     keys = []
     for surface in chain:
@@ -186,6 +245,7 @@ def _repeated(chain: Sequence[str]) -> bool:
     return False
 
 
+WAAN = re.compile(r"(?:^|\s)وعن(?=\s|$)")
 ASIDE = re.compile(r"(?<![ء-ي])(?:و?هو|يعني|يعنون|و?اللفظ|لفظ[ء-ي]*|و?قال\s+الاخر[ء-ي]*)(?![ء-ي])[^،,\-]*")
 WORDING = re.compile(r"(?<![ء-ي])و?قال[\s،,]+(?P<name>[ء-ي]+(?:\s+[ء-ي]+){0,3}?)[\s،,]+(?=(?:حدثنا|حدثني|اخبرنا|اخبرني|انبانا)(?![ء-ي]))")
 
@@ -201,6 +261,16 @@ def _gap_says_more(gap: str, report_names: Sequence[str] = ()) -> bool:
     words = [word for word in re.split(r"[\s،,:.؛\-()«»\"]+", gap) if word]
     return any(word not in LINK_GAP_WORD and not word.startswith(("وحدث", "واخبر", "حدث", "اخبر"))
                and (word[1:] if word.startswith("و") else word) not in NUMBER_WORDS | {"غير", "واحد", "سنة"} for word in words)
+
+
+def _names_more_by_hearing(tail: str, report_names: Sequence[str]) -> bool:
+    """A hearing or reading shape names a source after the last stored link (not the Prophet, an Imam or a stored name)."""
+    for hit in AFTER_LAST_HEARING.finditer(tail):
+        for group in ("named", "asked", "second"):
+            named = hit.groupdict().get(group)
+            if named and not PROPHET_OR_IMAM.match(named.strip()) and not any(named.strip().startswith(n) for n in report_names):
+                return True
+    return False
 
 
 def _break_at_route_head(gap: str) -> bool:
@@ -222,9 +292,10 @@ def assess(report: ReportChains, evidence: list | None = None, measure_all: bool
     reasons: list[set[str]] = [set() for _ in chains]
     inherited = list(report.inherited) + [False] * (len(chains) - len(report.inherited))
     longest = max((len(chain) for chain in chains), default=0)
+    skipped = sibling_skips_link(chains)
     for index, chain in enumerate(chains):
         found = reasons[index]
-        if any(not_a_name(surface) for surface in chain):
+        if any(not_a_name(surface, len(chain) == 1, report.routes_from_text) for surface in chain):
             found.add("not_a_name")
         if any(joined_names(surface) for surface in chain):
             found.add("joined_names")
@@ -240,6 +311,8 @@ def assess(report: ReportChains, evidence: list | None = None, measure_all: bool
             found.add("work_not_checked")
         if report.tradition == "Sunni" and report.routes_from_text and len(chains) >= MANY_ROUTES:
             found.add("many_routes")
+        if skipped[index]:
+            found.add("sibling_skips_link")
         if len(chain) >= 12:
             found.add("long_chain")
         if any(re.fullmatch(r"(?:عن\s)?و?\s?غير|و?احد(?:\s.*)?", fold(surface)) for surface in chain):
@@ -250,17 +323,27 @@ def assess(report: ReportChains, evidence: list | None = None, measure_all: bool
     report_names = sorted({fold(surface) for chain in chains for surface in chain if len(fold(surface)) >= 2}, key=len,
                           reverse=True)
     for index, chain_spans in enumerate(spans):
-        if not written[index]:
-            continue
         found = reasons[index]
-        if any(span is None for span in chain_spans):
+        hearing_only = False
+        if not written[index]:
+            # An inherited chain's names stand in its parent's text: only the continuation's own words after the last
+            # name it repeats are read (a further named source, Rida 16#3).
+            if not ("inherited_tail" in FEATURES and inherited[index] and normal and chains[index]):
+                continue
+            located = [span for surface in chains[index] if len(_words(surface)) >= 2
+                       for span in [locate(normal, surface.translate(PERSIAN))] if span]
+            if not located:
+                continue
+            chain_spans = [max(located, key=lambda span: span[1])]
+            hearing_only = True
+        elif any(span is None for span in chain_spans):
             found.add("order_not_in_text")
             continue
-        for left, right in zip(chain_spans, chain_spans[1:]):
+        for left, right in zip(chain_spans, chain_spans[1:]) if written[index] else []:
             gap = normal[left[1]:right[0]]
             if _break_at_route_head(gap):
                 code = "route_break_inside"
-            elif _gap_says_more(gap, report_names):
+            elif _gap_says_more(gap, report_names) or ("waan_between_links" in FEATURES and report.thaqalayn and WAAN.search(normal[left[1]:right[1]])):
                 code = "text_between_links"
             else:
                 continue
@@ -269,10 +352,12 @@ def assess(report: ReportChains, evidence: list | None = None, measure_all: bool
                 evidence.append((index, code, gap))
         if report.thaqalayn:
             continue          # «قال سألت أبا عبد الله ... عن الرجل»: the Imam convention gap, not a lost name (owner, not ruled)
+        if "pure_canon_tail_exempt" in FEATURES and not report.routes_from_text:
+            continue          # a Pure Canon chain is the source's own chain field: what follows it is another route of the field
         tail = normal[chain_spans[-1][1]:chain_spans[-1][1] + 120]
         stop = MATN_REACHED.search(tail)
         tail = WORDING.sub(" ", ASIDE.sub(" ", tail[:stop.start()] if stop else tail))
-        for hit in AFTER_LAST.finditer(tail):
+        for hit in (AFTER_LAST_VERB if hearing_only else AFTER_LAST).finditer(tail):
             named = (hit.group("name") or hit.group("named")).strip()
             if PROPHET_OR_IMAM.match(named) or any(named.startswith(name) for name in report_names):
                 continue
@@ -280,6 +365,11 @@ def assess(report: ReportChains, evidence: list | None = None, measure_all: bool
             if evidence is not None:
                 evidence.append((index, "text_names_more_after", tail))
             break
+        else:
+            if "tail_hearing_shapes" in FEATURES and _names_more_by_hearing(tail, report_names):
+                found.add("text_names_more_after")
+                if evidence is not None:
+                    evidence.append((index, "text_names_more_after", tail))
     if normal and chains:
         breaks = len(TAHWIL_H.findall(normal))
         convergence = len(CONVERGENCE_WORD.findall(normal))

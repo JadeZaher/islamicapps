@@ -295,23 +295,24 @@ const IDENTITY: readonly RuleProcedure[] = [
   {
     kind: 'rule',
     id: 'chain-structure-gate',
-    version: '2026.11.22',
+    version: '2026.11.22.2',
     claimKind: 'identity',
     title: 'Which chains feed teacher and student lists',
     status: 'in_use',
     rule:
-      'Each stored chain is tested for shapes that the re-checks found wrong: a name stored twice in a row, two names in one position, words that are not a name, text that names more than the chain holds, more «ح» or «جميعا» than stored routes, three or more routes in one six-books report, and the 15 small Imami works whose chains were read wrong most often. A chain that trips any test is still shown as stored, marked unchecked with its reasons, and forms no teacher–student pair. Chains of Kitab al-Duafa, Risalat al-Huquq and chapter headings are not stored as chains.',
+      'Each stored chain is tested for shapes that the re-checks found wrong: a name stored twice in a row, two names in one position, words that are not a name (a verb, a clause, a whole saying or an asker and an Imam stored as one name, a «تابع/» mark), text that names more than the chain holds (between two stored names, after the last one with «سمع», «قرأت على», «نشهد على» and the like, or «وعن» joining two of al-Kulayni’s routes), more «ح» or «جميعا» than stored routes, two routes of one report that differ by one name in the middle, and three or more routes in one six-books report. A chain that trips any test is still shown as stored, marked unchecked with its reasons, and forms no teacher–student pair. A chain that trips none is "checked by rule": no test found a fault, which is not a claim that it is right. Chains of Kitab al-Duafa, Risalat al-Huquq and chapter headings are not stored as chains.',
     evidence: ['The chain as stored', 'The report’s Arabic (the source’s own chain field for Pure Canon)', 'The other routes of the report'],
     measured: {
       summary:
-        'Re-check of 2026-11-22 (round 3), random sample, strict defects before the gate → among chains left checked: Sunni 18.0% → 2.6% (76 of 100 chains kept; six-books text works 25.4% → 4.3%, 47 of 67); Imami 17.0% → 3.2% (63 of 100); al-Rabiʿ 16.1% → 7.7% (26 of 31: not shown below 5%); Musnad Zayd 2.5% → 0% (39 of 40); Sahifat al-Rida 0% → 0% (40 of 40). Over all 980 read units: 12.1% → 2.2%. Share of stored chains checked (projection 2026.11.22.9): Sunni 73.2% (six-books text works 68.0%, Pure Canon 80.9%), Imami 61.0% (al-Kafi 91.3%), al-Rabiʿ 95.0%, Musnad Zayd 99.3%, Sahifat al-Rida 99.5%.',
-      sample: '980 chains read against the Arabic by the round-2 and round-3 re-checks (the round-3 random 320, its changed populations, and round-2 items unchanged since).',
-      where: 'datasets/hadith-data/chain-audit/structure-gate/README.md',
+        'Out-of-sample check, 2026-11-22: 310 chains the gate had passed, 60 it had withheld and 150 teacher–student pairs, drawn at random from production after the gate was built and each read against the Arabic. Defects among chains passed (95% interval): Sunni 8.3% (4.6–14.7), of which six-books text works 10.6% (5.7–18.9, 85 chains) and Pure Canon 2.9% (0.5–14.5, 35); Imami 4.0% (1.6–9.8, 100), al-Kafi 0 of 70 and Man la yahduruhu al-Faqih 4 of 20; al-Rabiʿ 5.0% (1.4–16.5, 40); Musnad Zayd 0 of 25; Sahifat al-Rida 1 of 25 (4.0%). The figures first published for this gate (Sunni 2.6%, six-books 4.3%, Imami 3.2%, al-Rabiʿ 7.7%) were measured on the same readings the rules were tuned on, and were too low. Teacher–student pairs were right in 149 of 150 (99.3%, 96.3–99.9); in 2 more a right link names a different person from the stored one. Of 60 chains the gate withheld, 40 (66.7%, 54.1–77.3) were correct, so many correct chains are left unchecked. These rates belong to the gate as it stood on that date. It was recalibrated the same day from those readings (the 15 small Imami works are no longer withheld wholesale; new tests for the shapes the readings found); the recalibrated gate has not yet been measured on fresh readings and no rate is claimed for it. Its changes were tuned on earlier readings and checked against these (datasets/hadith-data/chain-audit/round5/README.md).',
+      sample: '520 items read against the Arabic by an independent re-check (2026-11-22, round 4): 310 passed chains, 60 withheld chains, 150 pairs.',
+      where: 'datasets/hadith-data/chain-audit/round4/README.md',
     },
     failureModes: [
-      'A name lost where the text names no one with a link word («أن X حدثه» alone)',
+      'A named source lost after the last stored link in a shape no test lists (most defects the out-of-sample check found in six-books chains)',
       'A Companion’s source named only in the matn («سمعتني أم الفضل»)',
-      'Correct chains in many-route reports and the 15 small Imami works are left unchecked with the wrong ones',
+      'Correct chains in reports with three or more routes are left unchecked with the wrong ones',
+      'A right link between two names that stand for a different person from the stored one (1 to 3 pairs in 100)',
     ],
     readerLabel: 'The reading of this chain’s routes has not been checked; it is not used for teacher and student lists',
     excluded: ['Three measured tests that removed no further defect: names out of order, a break inside one chain, length 12 or more'],

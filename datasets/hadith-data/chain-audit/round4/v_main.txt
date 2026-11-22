@@ -1,0 +1,310 @@
+0	ok	ok		
+1	ok	defect	missing_link	b0 stored «أبو بكر بن نافع > غندر», text «حدثنا غندر، ح ... قالا حدثنا شعبة»: شعبة missing from b0 (sampled chain b1 correct)
+2	ok	ok		
+3	ok	ok		
+4	ok	ok		
+5	ok	ok		
+6	ok	ok		
+7	ok	ok		any-level only: last surface «أبي هريرة - - رواية»
+8	ok	ok		
+9	ok	ok		
+10	ok	ok		
+11	ok	ok		
+12	ok	ok		
+13	defect	defect	missing_link	text «عن عبيد الله بن مقسم، أنه نظر إلى عبد الله بن عمر كيف يحكي رسول الله»: chain ends at عبيد الله بن مقسم, ابن عمر (the observed narrator) not stored
+14	ok	ok		any-level only: b1 stores «هب بن كيسان» (letter lost from وهب)
+15	ok	ok		
+16	ok	ok		
+17	ok	ok		
+18	ok	defect	missing_route	second route «وحدثنيه زهير بن حرب، حدثنا عبد الصمد بن عبد الوارث، حدثنا همام ... عن أنس» not stored (one chain only); sampled chain b0 correct
+19	ok	ok		
+20	ok	ok		
+21	ok	defect	missing_route_taliq	chain correct; text appends «رواه سعيد عن مالك», «وقال أبو اليمان أخبرنا شعيب، عن الزهري، أخبرني أبو سلمة، أن أبا هريرة» (judgment: appended mu'allaq routes, not stored)
+22	defect	defect	missing_link	stored last link «من شهد النبي» (a clause); text «قلت من حدثك قال ابن عباس»: ابن عباس not stored
+23	ok	ok		
+24	ok	ok		
+25	defect	defect	missing_link	text «عن عمرو، قال كان أبو نهيك رجلا أكولا فقال له ابن عمر إن رسول الله صلى الله عليه وسلم قال»: chain ends at عمرو; ابن عمر (Companion, named in matn) not stored (judgment, same as a Companion's source in the matn)
+26	defect	defect	missing_link	«أخبرنا ابن جريج، قال عمرو بن دينار قال ابن عباس»: stored ends at ابن جريج; عمرو بن دينار and ابن عباس lost
+27	ok	ok		
+28	defect	defect	missing_link	«أخبرني عروة بن الزبير، أنه سمع أسماء بنت أبي بكر تقول»: stored ends at عروة بن الزبير, أسماء lost
+29	ok	ok		
+30	ok	ok		
+31	ok	ok		
+32	ok	ok		
+33	ok	ok		
+34	ok	ok		
+35	ok	ok		
+36	ok	ok		
+37	ok	ok		
+38	ok	ok		
+39	ok	ok		
+40	ok	ok		
+41	defect	defect	missing_link	«قال سمعت مسروقا، والأسود، قالا نشهد على عائشة أنها قالت»: both chains end at مسروق / الأسود; عائشة lost
+42	ok	ok		
+43	ok	ok		
+44	ok	ok		
+45	ok	ok		
+46	ok	ok		
+47	ok	ok		
+48	ok	ok		
+49	ok	ok		any-level only: b1 «اسع بن حبان» (letter lost from واسع); b0 stores «عمه» for the same link
+50	ok	ok		
+51	ok	defect	missing_route	second route «قال محمد بن رافع وأخبرنا محمد بن بشر أخبرنا علي بن نزار عن نزار عن عكرمة عن ابن عباس» not stored; sampled chain correct
+52	ok	ok		
+53	ok	ok		
+54	ok	ok		
+55	defect	defect	missing_link	«أنه سمع هانئا، مولى عثمان قال كان عثمان إذا وقف على قبر بكى ... فقال إن رسول الله صلى الله عليه وسلم قال»: chain ends at هانئ; عثمان (named in matn as the speaker) not stored (judgment, as #25)
+56	ok	ok		
+57	ok	ok		
+58	ok	ok		
+59	ok	ok		
+60	ok	ok		
+61	ok	ok		
+62	defect	defect	missing_link	«عن عطية بن سعد العوفي، قال قرأت على عبد الله بن عمر»: chain ends at عطية; ابن عمر lost
+63	ok	ok		
+64	ok	ok		
+65	ok	ok		
+66	ok	ok		
+67	ok	ok		
+68	ok	defect	truncated_route	«حدثنا محمد بن كثير، ح وحدثنا مسلم بن إبراهيم، حدثنا همام، عن قتادة ...»: b0 stored as the lone link «محمد بن كثير» without the shared tail (همام ... ابن عمر); sampled b1 correct
+69	ok	ok		
+70	ok	ok		
+71	ok	ok		
+72	ok	ok		
+73	ok	ok		
+74	ok	ok		
+75	ok	ok		
+76	ok	ok		
+77	ok	ok		
+78	ok	ok		
+79	ok	ok		
+80	defect	defect	merged_names	text «قال أبو الحسن القطان حدثناه خازم بن يحيى، حدثنا عبد الملك بن شيبان»: first link stored as one surface «أبو الحسن القطان حدثناه خازم بن يحيى» (two people and a verb in one link)
+81	ok	ok		
+82	ok	ok		
+83	ok	ok		
+84	ok	ok		
+85	ok	ok		
+86	ok	ok		
+87	defect	defect	non_narrator_name	source sanad field «تابع/, روح, عبد الصمد ...»: link 0 «تابع/» is not a name (copied from the source field, stored as a narrator link)
+88	ok	ok		
+89	ok	ok		
+90	ok	ok		
+91	ok	ok		
+92	ok	ok		
+93	ok	ok		S field has 4 routes, 4 stored; matches (Aisha not in source field)
+94	ok	ok		
+95	ok	ok		matn is first-person («صليت خلف شيخ بمكة»); source field ends at قتادة
+96	ok	ok		
+97	ok	ok		
+98	ok	ok		any-level only: b1 first link «عفان المعنى» (gloss in the name)
+99	ok	ok		
+100	ok	ok		
+101	ok	ok		
+102	ok	ok		
+103	ok	ok		
+104	ok	ok		
+105	ok	ok		
+106	ok	ok		matn «سألت عطاء عن المرأة ... قال توضأ وتنضح»: عطاء not a link, but source sanad field ends at عبد الكريم (judged vs source field)
+107	ok	ok		any-level only: link «عطاء قاله محمد» carries a gloss
+108	ok	ok		
+109	ok	ok		
+110	ok	ok		
+111	ok	ok		
+112	ok	ok		
+113	ok	ok		
+114	ok	ok		
+115	ok	ok		
+116	ok	ok		
+117	ok	ok		
+118	ok	ok		
+119	ok	ok		
+120	ok	ok		Imam named only as «العالم» after «سئل»: convention gap, not counted
+121	ok	ok		Imams in matn: convention gap, not counted
+122	ok	ok		
+123	ok	ok		
+124	ok	ok		
+125	ok	ok		
+126	ok	ok		link 3 «رفعه» is a label (anonymous raising); checked link_kind later
+127	ok	ok		
+128	ok	ok		
+129	ok	ok		
+130	ok	ok		
+131	ok	ok		Imam al-Sajjad named in matn: convention gap
+132	ok	ok		
+133	ok	ok		
+134	ok	ok		
+135	ok	ok		
+136	ok	ok		
+137	ok	ok		
+138	ok	ok		
+139	ok	ok		
+140	ok	defect	non_narrator_name	extra chain b1 ends «قد طاف بعضه» (matn words stored as a narrator after «بعض أصحابنا»); sampled b0 «.. بعض أصحابنا > أحدهما» correct
+141	ok	ok		
+142	ok	ok		
+143	ok	ok		
+144	ok	ok		
+145	ok	ok		
+146	ok	ok		
+147	ok	ok		
+148	ok	ok		
+149	ok	ok		
+150	ok	ok		
+151	ok	ok		
+152	ok	ok		
+153	ok	ok		
+154	ok	ok		
+155	ok	ok		
+156	ok	ok		
+157	ok	ok		
+158	ok	ok		
+159	ok	ok		
+160	ok	ok		
+161	ok	ok		
+162	ok	ok		
+163	ok	ok		
+164	ok	ok		
+165	ok	ok		
+166	ok	ok		
+167	ok	ok		back-reference «عنه» convention
+168	ok	ok		
+169	ok	ok		
+170	ok	ok		
+171	ok	ok		
+172	ok	ok		
+173	ok	ok		
+174	ok	ok		
+175	ok	ok		
+176	ok	ok		
+177	ok	ok		
+178	ok	ok		
+179	ok	ok		
+180	ok	ok		
+181	ok	ok		
+182	ok	ok		
+183	ok	ok		
+184	ok	ok		
+185	ok	ok		
+186	ok	ok		
+187	ok	ok		
+188	ok	ok		
+189	ok	ok		
+190	ok	ok		
+191	ok	ok		
+192	ok	ok		
+193	ok	ok		
+194	ok	ok		
+195	ok	ok		
+196	defect	defect	merged_names	text «و سأل علي بن جعفر أخاه موسى بن جعفر»: one link «علي بن جعفر أخاه موسى بن جعفر» holds the asker and the Imam
+197	ok	defect	non_narrator_name	b1 adds link «حده» (matn word «وحده») after the Imam; sampled b0 correct
+198	ok	ok		
+199	ok	ok		
+200	defect	defect	non_narrator_name	text «و قال أبو جعفر عليه السلام : «البر و الصدقة ينفيان الفقر ...»: single stored link «صاحبهما سبعين ميتة سوء» is matn words
+201	ok	ok		any-level only: b1 link «محمد بن علي من» carries the first matn word
+202	ok	ok		
+203	ok	ok		
+204	ok	ok		
+205	defect	defect	non_narrator_name	text «5813 - الدال على الخير كفاعله»: the whole saying is stored as the one link «الدال على الخير كفاعله»
+206	defect	defect	merged_names	text «و سأل سليمان بن جعفر الجعفري العبد الصالح موسى بن جعفر»: one link holds the asker and the Imam
+207	ok	ok		
+208	ok	ok		
+209	ok	ok		Imam in «أن أبا عبد الله عليه السلام قال» not stored: convention gap, not counted
+210	ok	ok		
+211	ok	ok		
+212	ok	ok		
+213	ok	ok		
+214	ok	ok		
+215	ok	ok		
+216	ok	ok		
+217	ok	ok		
+218	ok	ok		
+219	ok	ok		
+220	ok	ok		
+221	ok	ok		
+222	ok	ok		
+223	ok	ok		
+224	ok	ok		
+225	ok	ok		
+226	ok	ok		link «بلغني» is link_kind=anonymous (an unnamed intermediary), not a name
+227	ok	ok		
+228	defect	defect	missing_link	text «أبو عبيدة عنه أيضا قال:» stored as the single link «أبو عبيدة»: the pronoun «عنه» (the source) is not resolved, chain has no teacher
+229	ok	ok		
+230	ok	ok		
+231	ok	ok		
+232	ok	ok		
+233	ok	ok		inherits 0709 («ومن طريقه»); matches
+234	ok	ok		
+235	ok	ok		
+236	ok	ok		
+237	ok	ok		«بلغني» stored as anonymous link
+238	ok	ok		inherits 0615->0614 («ومن طريق ابن عباس»); chain أبو عبيدة>جابر بن زيد>ابن عباس matches 0614
+239	ok	ok		
+240	ok	ok		
+241	ok	ok		
+242	ok	ok		
+243	ok	ok		
+244	ok	ok		
+245	ok	ok		
+246	ok	ok		
+247	ok	ok		
+248	ok	ok		«قال الربيع: عن عبادة بن الصامت»: compiler not stored as a link (same convention as #243)
+249	ok	ok		
+250	ok	ok		
+251	ok	ok		
+252	ok	ok		
+253	ok	ok		
+254	ok	ok		
+255	ok	ok		
+256	ok	ok		
+257	ok	ok		
+258	ok	ok		
+259	ok	ok		
+260	ok	ok		text carries a second report with the same isnad; one chain is right for both
+261	ok	ok		
+262	ok	ok		
+263	ok	ok		
+264	ok	ok		
+265	ok	ok		
+266	ok	ok		
+267	ok	ok		
+268	ok	ok		
+269	ok	ok		
+270	ok	ok		
+271	ok	ok		
+272	ok	ok		
+273	ok	ok		
+274	ok	ok		
+275	ok	ok		
+276	ok	ok		
+277	ok	ok		text «عن أبيه عن علي بن الحسين»: stored literally (3 links, father and Ali b. al-Husayn as written)
+278	ok	ok		
+279	ok	ok		
+280	ok	ok		
+281	ok	ok		
+282	ok	ok		
+283	ok	ok		
+284	ok	ok		
+285	ok	ok		inherited master isnad (Rida>...>Ali) matches the Sahifa's opening isnad; stops at named speaker
+286	ok	ok		
+287	ok	ok		
+288	ok	ok		
+289	ok	ok		
+290	ok	ok		
+291	ok	ok		
+292	ok	ok		
+293	ok	ok		
+294	ok	ok		
+295	ok	ok		
+296	ok	ok		
+297	ok	ok		
+298	ok	ok		
+299	ok	ok		
+300	ok	ok		
+301	ok	ok		
+302	ok	ok		
+303	ok	ok		
+304	ok	ok		
+305	ok	ok		
+306	ok	ok		
+307	defect	defect	missing_link	text «وباسناده قال: حدثني أبي علي بن الحسين، قال حدثتني اسماء بنت عميس قالت»: chain stops at «أبي علي بن الحسين»; أسماء بنت عميس not stored
+308	ok	ok		
+309	ok	ok		

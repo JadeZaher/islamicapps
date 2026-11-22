@@ -365,7 +365,7 @@ for detection only.
   `not_a_name` (a verb, clause or formula word, digits, one letter, six words without a nasab), `unaccounted_route_marker`
   (more «ح» than routes, or «جميعا/كلهم/كلاهما» with one route), `crossed_routes` (al-Kafi «أبيه > محمد بن إسماعيل», «ابن أبي
   عمير > الفضل بن شاذان»), `many_routes` (a K6 report with three or more routes read from its text) and `work_not_checked`
-  (the 15 small Imami works of `UNCHECKED_WORKS`: 11 of 32 sampled chains defective).
+  (the 15 small Imami works of `UNCHECKED_WORKS`: 11 of 32 sampled chains defective; withdrawn in round 5, see below).
 - **Measured only, not in the gate** (`assess(..., measure_all=True)`): `order_not_in_text`, `route_break_inside`, `long_chain`:
   on the labelled set they flagged no defect the gate's detectors had not already flagged, at a cost of correct chains.
 - **Retired** (`retire_reason`): every chain of Kitab al-Duafa and Risalat al-Huquq, and a K6 report whose text is a chapter
@@ -376,3 +376,25 @@ for detection only.
 - **«غير واحد»** merge now also matches Persian letters («غیر») in `merge_ghayr_wahid`.
 - Output: `chains.structure_status`, `chains.structure_reasons` (a pg array); `counts.chain_structure` gives status and
   reasons per tradition and the retired chains.
+
+## Gate recalibration (round 5; `chain-audit/round5/README.md`)
+
+Round 4's out-of-sample reading (`chain-audit/round4/`) showed the in-sample rates were too low (Sunni 8.3%, six-books 10.6%, al-Faqih 4/20) and
+that the gate withheld mostly correct chains (40/60). `chain_structure.py` was recalibrated on a split: tuning = rounds 2/3, held-out = round 4's 370
+chain readings; every change is reversible by name.
+
+- **`FEATURES`** (a frozenset; remove a name to reverse that rule): `gloss_beside_name` (Pure Canon only: «يعني/هو ابن X» beside a name is the
+  source's own gloss), `label_formula` («وبهذا الإسناد», «عمن حدثه» are label links), `saying_as_single_link` (3+ words, no nasab word, the whole chain),
+  `asker_and_imam_in_one_link` («أخاه», «أخيه», «العبد الصالح» in a link), `tabi_slash` («/» in a link), `hadathanah`, `tail_hearing_shapes` («سمع», «نظر
+  إلى», «قرأت على», «نشهد على», «من حدثك قال X», «قال X قال Y» after the last link, nasab-shaped names only), `waan_between_links` (Thaqalayn only:
+  «وعن» between stored neighbours; the locator's waw prefix is read in the right neighbour's span, so the slice runs to its end),
+  `inherited_tail` (a continuation's own hearing verb after the last name it repeats; never a bare «عن»), `pure_canon_tail_exempt` (a Pure Canon chain is the
+  source's field: its later routes are not a lost tail).
+- **`UNCHECKED_WORKS` is empty**: the 15 small Imami works are checked by the same tests as the rest (13 of 14 withheld sampled chains were correct).
+- **`sibling_skips_link`** is a new gate reason: two routes of one report differ by one interior link.
+- **`MANY_ROUTES` stays 3**: raising it releases correct and defective chains at 18 to 22% defective (`results.json`).
+- Pure Canon note: `text_names_more_after` for Pure Canon read the chain field's own later routes as a lost tail (11 of 11 correct): exempt.
+- Ablation (`recalibrate.py`): each change's flagged and released counts on both sets and in production; `fixtures.json` (real round-4 rows) drives the
+  new tests in `test_chain_structure.py`.
+- The recalibrated gate is NOT measured out of sample: its held-out gains rest on shapes read from the same items. Public wording (`/method`) says so.
+

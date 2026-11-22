@@ -254,6 +254,8 @@ operating point: `datasets/hadith-data/pg_export/AGENTS.md` §Chain structure ga
   lists") and the reasons in words (`src/app/hadith/[id]/components/chain-structure.ts`).
 - Retired, not flagged: every chain of Kitab al-Duafa and Risalat al-Huquq (prose and rijal entries), and chains read from a
   Sunni chapter heading («باب …» as the report text). The loader retires their earlier rows; reports stay.
+- Round 5 recalibrated the detectors (no schema change): the 15 small Imami works are no longer withheld as a block and new shape tests were
+  added (`pg_export/AGENTS.md` §Gate recalibration). The out-of-sample rates are in `chain-audit/round4/`; `/method` states them.
 - `db:verify` checks both view changes; `db:verify-data` checks every live chain has a status and every network pair stands
   in a live checked chain. Flow test: `queries/__tests__/structure-flows.test.ts`.
 

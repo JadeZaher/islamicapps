@@ -730,3 +730,34 @@ projection: `datasets/hadith-data/development/chain-structure-gate-2026-11-22/`.
   retired Duafa, Huquq and heading chains, export from this commit with `PROSE_WORKS` empty and `retire_reason` returning None
   (and, for an ungated network without a migration, `GATE_REASONS` empty), load it, then re-record the preview approval at once.
   Curation rows before the load: `curation-dump-before/`.
+
+## Gate recalibration (round 5, 2026-11-22)
+
+Round 4's independent reading (`datasets/hadith-data/chain-audit/round4/README.md`, 520 items from production) found the gate's published
+rates were in-sample and too low: strict defects among checked chains Sunni 8.3% (4.6-14.7), six-books 10.6%, Imami 4.0% (al-Faqih 4/20), Pure Canon
+2.9%, al-Rabi 5.0%, Rida 4.0%, Zayd 0/25; pair precision 149/150 = 99.3%; 40 of 60 withheld chains were correct. `/method`
+(`src/lib/review/procedures.ts`) and `chain-audit/structure-gate/README.md` now say so, and say the recalibrated gate has no out-of-sample rate yet.
+Detail, tables and the per-change ablation: `datasets/hadith-data/chain-audit/round5/README.md`; rules: `pg_export/AGENTS.md` §Gate recalibration.
+
+- **Changes** (`pg_export/chain_structure.py`; no migration): the 15 small Imami works are no longer withheld as a block (`UNCHECKED_WORKS` is empty);
+  `FEATURES` adds shape tests (Faqih sayings and asker+Imam links, «/» links, «حدثناه», third-person hearing verbs after the last link, «وعن» joining two
+  Imami routes, an inherited chain's own hearing verb) and exemptions (Pure Canon glosses, Pure Canon chain-field tails, label formulas); `sibling_skips_link`
+  is a new gate reason; `MANY_ROUTES` stays 3 (narrowing releases 18-22% defective chains). Split: tuning = rounds 2/3, held-out = round 4's 370 readings;
+  the tightenings were read from round 4, so their held-out gain is by construction. Tests: `test_chain_structure.py` (`RoundFiveRecalibration`, real round-4
+  rows in `chain-audit/round5/fixtures.json`).
+- **Projection `2026.11.22.10`** (dataset version `bc798caea6e4...`): same 110,999 chains and mentions, only status and reasons moved. Checked by rule:
+  88,349 of 110,999 (79.6%, was 77,630 = 69.9%); Sunni 58,287 (76.4%; six-books 67.6%, Pure Canon 89.4%), Imami 28,602 (86.1%; al-Kafi 91.3%, al-Faqih 81.2%),
+  al-Rabi 94.9%, Zayd 99.3%, Rida 98.5%. 11,925 chains released, 1,206 newly withheld. `check_projection.py` passed before the load; the load ran in
+  409 s with the loader's own invariants green and the approval was re-recorded at once (`approve.log`).
+- **Network**: `narrator_transmissions` 25,465 -> 25,893 rows (Sunni 22,263 -> 22,578, Imami 3,189 -> 3,302; 502 pairs gained, 74 lost). 134 narrators gained a
+  first teacher or first student, 13 lost all teachers and 19 all students. 70 of the 502 new pairs read against the Arabic: 70/70 adjacent.
+- Logs, projection, curation dump, the before/after pair snapshots: `datasets/hadith-data/development/gate-recalibration-2026-11-22/`. Round-5 scripts
+  (`recalibrate.py`, `new_pairs.py`, `pairs_snapshot.cjs`, `dump_curation.cjs`, `regained.cjs`) live in `chain-audit/round5/`.
+
+### Rollback
+
+- Load `development/chain-structure-gate-2026-11-22/projection` (projection `2026.11.22.9`, the round-4 gate) and re-record the preview approval at once;
+  or restore the gate by putting the 15 works back in `UNCHECKED_WORKS` and emptying `FEATURES` / `GATE_REASONS - {sibling_skips_link}` in `chain_structure.py`,
+  then export, check, load, approve. Curation rows before the load: `curation-dump-before/`.
+- Next measurement: a round 6 reading of fresh chains (passed, withheld, pairs) is the only way to put a rate on the recalibrated gate.
+

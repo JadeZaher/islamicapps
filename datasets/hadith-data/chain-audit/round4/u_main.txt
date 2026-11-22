@@ -1,0 +1,60 @@
+0	defect	missing_link	text «حدثني نبيه بن وهب، أن عمر بن عبيد الله ... فنهاه أبان بن عثمان وأمره ... وحدث عن عثمان بن عفان»: stored نبيه بن وهب > عثمان بن عفان; أبان بن عثمان missing
+1	defect	missing_link	text «حدثنا يزيد بن خالد، وقتيبة، أن الليث بن سعد، حدثهم عن بكير»: stored يزيد > بكير; الليث بن سعد lost
+2	correct		b1 أبو الربيع > حماد > أيوب > أبي قلابة > أبي أسماء > ثوبان matches the text
+3	defect	missing_link	text ends «علي بن ربيعة الأسدي، قال ... فجاء المغيرة بن شعبة ... سمعت رسول الله»: المغيرة not stored (judgment, Companion source in matn, Tirmidhi's own comment «حديث المغيرة»)
+4	correct		b0 matches the text through ابن أخت عبادة > عبادة; any-level only in b1
+5	correct		matches the source field; any-level: link «سعيد يعني المقبري»
+6	defect	non_narrator_name	b1 stores «ادي القرى» and «دين أحدكم فدعوه» (matn) as links; the man who told him is anonymous in the text
+7	correct		chain matches; text ends on «ح» with no following route in this record
+8	defect	non_narrator_name	b9 link «ابن عجلان فإنهما زادا» is a clause; b0 is the lone link «يحيى بن يحيى» (route cut)
+9	correct		both chains match the text
+10	defect	missing_link	text «عمرو بن الحارث، أن أبا النضر، حدثه عن سليمان بن يسار»: stored عمرو بن الحارث > سليمان بن يسار; أبو النضر lost
+11	correct		matches source field; any-level: «سعيد هو ابن أبي أيوب»
+12	correct		chain matches; any-level: last link carries the quoted verse
+13	correct		matches source field (two routes)
+14	correct		b2 أبو بكر بن أبي شيبة > وكيع > مسعر > منصور matches the text
+15	correct		matches source field; any-level: «ليث يعني ابن سعد»
+16	correct		mirrors the source field, which itself loops (جعفر > كثير > جعفر); judged vs source (sensitivity: would be a defect if the source loop is read as false)
+17	correct		b3 matches
+18	correct		b4 matches; any-level in b1
+19	defect	non_narrator_name	b1 last link «لكل جعلنا موالي» (a Qur'anic phrase) stored in place of ابن عباس
+20	defect	non_narrator_name	b1 last link «العزى» (Qur'anic phrase) stored in place of ابن عباس
+21	defect	truncated_route	b0 stored «مسدد > يحيى» without the shared tail (عبيد الله > نافع > ابن عمر)
+22	defect	truncated_route	stored only «يحيى بن يحيى»; text «قرأت على مالك عن نافع، عن زيد بن عبد الله، عن عبد الله بن عبد الرحمن، عن أم سلمة» lost
+23	correct		matches source field; any-level glosses
+24	correct		mirrors the source field, which repeats «إسحاق ابن عيسى» (judged vs source; sensitivity as #16)
+25	correct		b1 matches
+26	defect	missing_link	text «قال انتهيت إلى عبد الله بن عمرو بن العاص ... فسمعته يقول»: all routes end at عبد الرحمن بن عبد رب الكعبة; عبد الله بن عمرو not stored (judgment: source named in matn)
+27	correct		matches source field
+28	defect	duplicated_link	b1 «المعتمر > معتمر بن سليمان» one person twice (text «كلاهما عن المعتمر، قال ابن حبيب حدثنا معتمر بن سليمان»)
+29	correct		b0 matches
+30	correct		matches source field; any-level glosses
+31	correct		matches source field
+32	defect	non_narrator_name	b2 stores «الإخبار» (from «والإخبار في حديث وهب») as a link; b3 «هب»
+33	defect	false_link	b0 adds سالم after الزهري; text gives «الليث، عن يونس، عن الزهري، بهذا الحديث», and «وروى مالك ... عن الزهري، عن سالم» is a separate comment; b1 stores «روى مالك» as a link
+34	correct		matches source field
+35	correct		matches source field (its second route «مالك, عبد الرزاق» is the source field's own text; judged vs source)
+36	correct		matches source field
+37	correct		b0 matches
+38	defect	truncated_route	stored «علي بن عبد الله > سفيان»; text «سفيان، قال الزهري عن سعيد بن المسيب، عن أبي هريرة» lost
+39	correct		b2 matches (sibling chains b1/b3/b5 add the false link «لا أعلمه إلا»)
+40	defect	non_narrator_name	b0 last link «المعيشة فلا بأس» is matn; Imam not stored
+41	correct		chain matches the text
+42	defect	non_narrator_name	sampled b2 last link «فاغسلوا» and siblings «السارقة فاقطعوا أيديهما», «جوهكم»: Qur'anic words as narrators
+43	correct		chain matches the text
+44	correct		chain matches the text
+45	correct		chain matches the text
+46	correct		matches the text as written (two links)
+47	correct		chain matches the text
+48	correct		chain matches the text
+49	correct		chain matches the text
+50	correct		any-level only: first link «علي بن محمد بن بندار و غيره» carries «و غيره»
+51	correct		10-link chain matches the text
+52	correct		three routes match the text
+53	defect	concatenated_isnads	text gives two isnads (first ends «عن بكر بن صالح», then «وحدثنا أبي ... قالوا: حدثنا على بن إبراهيم عن أبيه عن بكر بن صالح ...»); every chain joins them: «.. > بكر بن صالح > على بن إبراهيم بن هاشم > أبيه > بكر بن صالح > ..»
+54	correct		chain matches the text
+55	correct		chain matches the text
+56	defect	non_narrator_name	text «وفي رواية أخرى عن أبي عبد الله»: link 0 is the word «أخرى»
+57	correct		chain matches the text; any-level: link 0 starts «به أبو عبد الله أحمد بن عبدون»
+58	correct		«و بهذا الإسناد» resolves to the preceding report's isnad (علي بن أحمد الدقاق / محمد بن أحمد الشيباني > محمد بن أبي عبد الله الكوفي > ... > علي بن الحسين) read from the record before it
+59	defect	merged_names	last link «علي بن أسباط عمن روى في الجلالات» holds the narrator plus «عمن روى» and matn words

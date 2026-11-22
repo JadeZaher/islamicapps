@@ -3,6 +3,14 @@ type: diagnostic
 ---
 # Chain structure gate (round 4): which stored chains a tested rule stands behind
 
+> **Correction (round 5, 2026-11-22).** Every "among checked" rate below was measured on the readings the rules were tuned on, so it is
+> in-sample and too low. A later independent reading of 310 chains the gate passed, drawn at random from production
+> (`../round4/README.md`), measured strict defects among checked chains at: Sunni 10/120 = 8.3% (4.6-14.7), six-books text works 9/85 =
+> 10.6% (5.7-18.9), Pure Canon 1/35 = 2.9% (0.5-14.5), Imami 4/100 = 4.0% (1.6-9.8; al-Faqih 4/20), al-Rabi 2/40 = 5.0% (1.4-16.5), Zayd
+> 0/25, Rida 1/25 = 4.0% (0.7-19.5); teacher-student pairs were right in 149/150 = 99.3% (96.3-99.9); 40 of 60 withheld chains (66.7%,
+> 54.1-77.3) were correct. The gate was then recalibrated (`../round5/README.md`: the 15 small Imami works are no longer withheld as a
+> block, new shape tests); that recalibrated gate has no out-of-sample rate yet. The text below is kept as the round-4 record.
+
 Three rounds of builder rules left the Sunni strict chain-defect rate at 10.7% -> 17.3% -> 18.0% (`../round3/README.md`).
 Round 4 changes the goal to the precision of what is asserted: a chain the detectors in
 `datasets/hadith-data/pg_export/chain_structure.py` flag is stored and shown as read, marked `uncertain` with its reasons, and

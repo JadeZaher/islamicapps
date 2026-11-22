@@ -15,6 +15,7 @@ sys.path.insert(0, str(HERE.parent.parent))
 import chain_structure as cs  # noqa: E402
 
 FIXTURES = HERE.parent / "chain-audit" / "structure-gate" / "fixtures.json"
+ROUND_FIVE_FIXTURES = HERE.parent / "chain-audit" / "round5" / "fixtures.json"
 
 
 def report_of(case: dict) -> cs.ReportChains:
@@ -48,6 +49,55 @@ class DetectorsOnTheRechecksRows(unittest.TestCase):
 
     def test_every_reason_has_reader_wording(self):
         self.assertTrue(cs.GATE_REASONS <= set(cs.REASON_TEXT))
+
+
+class RoundFiveRecalibration(unittest.TestCase):
+    """Rows round 4 read: shapes the recalibrated gate must now flag, and correct chains it must no longer withhold."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.cases = json.loads(ROUND_FIVE_FIXTURES.read_text(encoding="utf-8"))["cases"]
+
+    def test_each_round_four_row(self):
+        for case in self.cases:
+            with self.subTest(case["hadith_id"], why=case["why"]):
+                reasons = cs.assess(report_of(case))[case["chain"]]
+                if "flag" in case:
+                    self.assertIn(case["flag"], reasons)
+                else:
+                    self.assertNotIn(case["clear"], reasons)
+
+    def test_not_a_name_shapes(self):
+        for surface, kwargs, expected in [
+            ("تابع/", {}, True), ("أبو الحسن القطان حدثناه خازم بن يحيى", {}, True),
+            ("علي بن جعفر أخاه موسى بن جعفر", {}, True), ("الدال على الخير كفاعله", {"single_link": True}, True),
+            ("الدال على الخير كفاعله", {"single_link": False}, False),       # a saying is only read as such when it is the whole chain
+            ("سعيد يعني المقبري", {"routes_from_text": False}, False),         # Pure Canon: the source's own gloss
+            ("سعيد يعني المقبري", {"routes_from_text": True}, True),           # a text-built chain with a gloss stays unchecked
+            ("وبهذا الإسناد", {}, False), ("عمن حدثه", {}, False),            # label links, not names
+            ("أبو الحسن القطان", {"single_link": True}, False),               # a kunya-led name has a nasab word
+        ]:
+            with self.subTest(surface, **kwargs):
+                self.assertEqual(cs.not_a_name(surface, **kwargs), expected)
+
+    def test_hearing_shapes_after_the_last_link(self):
+        for tail, expected in [
+            ("أنه سمع أسماء بنت أبي بكر تقول", True), ("أنه نظر إلى عبد الله بن عمر كيف يحكي", True),
+            ("قال قرأت على عبد الله بن عمر", True), ("قالا نشهد على عائشة أنها قالت", True),
+            ("قلت من حدثك قال ابن عباس", True), ("، قال عمرو بن دينار قال ابن عباس", True),
+            ("قال سمعت رسول الله يقول", False), ("قال سمعت النبي", False),   # the Prophet is the end of the chain, not a lost link
+        ]:
+            with self.subTest(tail):
+                chain = ["حدثنا مسدد", "يحيى"]
+                text = "حدثنا مسدد، حدثنا يحيى، " + tail
+                reasons = cs.assess(cs.ReportChains(text, [["مسدد", "يحيى"]], "Sunni"))[0]
+                self.assertEqual("text_names_more_after" in reasons, expected, chain)
+
+    def test_sibling_skips_link(self):
+        self.assertEqual(cs.sibling_skips_link([["أ", "ب", "ج", "د"], ["أ", "ب", "د"]]), [True, True])
+        self.assertEqual(cs.sibling_skips_link([["أ", "ب", "ج"], ["أ", "ب", "د"]]), [False, False])   # co-transmitters: same length
+        self.assertEqual(cs.sibling_skips_link([["أ", "ب", "ج"], ["ب", "ج"]]), [False, False])         # a shared tail, not a skip
+        self.assertEqual(cs.sibling_skips_link([["أ", "ب", "ج", "د"]]), [False])
 
 
 class PureRules(unittest.TestCase):
