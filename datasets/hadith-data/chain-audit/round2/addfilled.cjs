@@ -1,0 +1,3 @@
+const fs=require('fs');const ids=JSON.parse(fs.readFileSync('pop_imami_filled.json','utf8'));
+const d={6:['missing_link','parent «حَدَّثَنِی أَحْمَدُ بْنُ إِدْرِیسَ» (Persian ya) lost from its chain; child inherits a prefix with a name that is not in the parent chain'],13:['name_over_extended','inherited surface «حدثنی محمد بن الحسن» keeps the verb (Persian ya form not recognised)'],14:['not_a_narrator','inherited mention «يقال له الهروي» is a clause in the parent chain']};
+let o='';ids.forEach((s,i)=>{const x=d[i];o+=['imami_filled',s.chain_id,x?'defect':(i==11?'unverifiable':'ok'),x?x[0]:'',x?x[1]:(i==11?'«قال الرضا» speaker; inherited chain runs past him through his ancestors':'')].join('\t')+'\n'});fs.appendFileSync('pop_verdicts.tsv',o);

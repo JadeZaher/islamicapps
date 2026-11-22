@@ -76,6 +76,47 @@ MATN_HEAD_SOURCE = re.compile(
     rf"\s*(?:{HONORIFIC.pattern})?\s*:")
 
 
+# A low-confidence split's opening read through the work's fixed isnad shape (round 3): the span stops at the first word
+# the shape cannot explain. al-Rabi: «[قال الربيع:] أبو عبيدة [عن|قال: قال] جابر بن زيد [عن|قال: قال|قال: سمعت] <Companion>»
+# or «… قال: بلغني عن X» (the balagh gap); Musnad Zayd: «[حدثني] زيد بن علي عن أبيه عن جده عن علي».
+COMPANION_RUN = (rf"(?!رسول|النبي|جملة|قوم|رجل|بعض|ناس|أناس|بلغ|سمع|سئل|جاء|كان|أتى|أتي|قال|رأ|أن{END}|أنه{END}|أنها{END})(?:(?:أبو|أبي|أبا|ابن|أم|عبد|بنت)\s+)?[{AR}]+"
+                 rf"(?:\s+(?:بن|ابن|بنت)\s+(?:(?:أبي|عبد)\s+)?[{AR}]+){{0,3}}(?:\s+(?:الخطاب|الأنصاري|الخدري|الأشعري|الغفاري"
+                 rf"|أم\s+المؤمنين)){{0,2}}")
+RABI_LINK = r"\s*[:،,]?\s*(?:عن|قال\s*:\s*(?:قال|حدثني|سمعت)?|قال\s+(?:قال|حدثني|سمعت))\s*:?\s*"
+# «بلغني عن X» (X may be the Prophet: the balagh gap ends the chain) or a named Companion.
+RABI_BALAGH = rf"و?(?:بلغني|بلغنا)\s+عن\s+(?:{COMPANION_RUN}|رسول\s+الله|النبيء?)(?={END})"
+RABI_SOURCE = rf"(?:{RABI_BALAGH}|{COMPANION_RUN}(?={END}))"
+RABI_SHAPE = re.compile(
+    rf"^\s*(?:قال\s+)?(?P<span>أبو\s+عبيدة(?:\s+مسلم\s+بن\s+أبي\s+كريمة(?:\s+التميمي)?)?"
+    rf"(?:{RABI_LINK}جابر(?:\s+بن\s+زيد(?:\s+الأزدي)?)?(?:{RABI_LINK}{RABI_SOURCE})?|{RABI_LINK}{RABI_SOURCE})?)")
+IMAM_MARK = r"(?:\s+(?:عليهم?(?:ا|ما)?\s+السلام|\(\s*ع\s*م?\s*\)))?"
+ZAYD_SHAPE = re.compile(
+    rf"^\s*(?:حدثني\s+)?(?P<span>زيد\s+بن\s+علي{IMAM_MARK}(?:\s+عن\s+(?:أبيه|ابيه){IMAM_MARK}(?:\s+عن\s+جده{IMAM_MARK}(?:\s+عن\s+"
+    rf"(?:علي|على)(?:\s+بن\s+أبي\s+طالب)?(?={END}))?)?|\s+عن\s+آبائه{IMAM_MARK}\s+عن\s+(?:علي|على)(?:\s+بن\s+أبي\s+طالب)?(?={END})"
+    rf"|(?=\s+قال{END}))?)")
+# Inside an al-Rabi span «قال: قال X» and «قال: حدثني X» are links («بلغني» stays: it is the balagh gap).
+RABI_SPAN_LINK = re.compile(rf"\s*[:،,]?\s*قال\s*:?\s*(?:(?:قال|حدثني|سمعت)\s*:?\s*|(?!و?بلغني))")
+
+
+def _spelling_tolerant(pattern: re.Pattern) -> re.Pattern:
+    """The pattern with hamza-less alef and ha for ta marbuta accepted («ابو عبيده»)."""
+    return re.compile(pattern.pattern.replace("أ", "[أاإ]").replace("ة", "[ةه]"))
+
+
+RABI_SHAPE, ZAYD_SHAPE = _spelling_tolerant(RABI_SHAPE), _spelling_tolerant(ZAYD_SHAPE)
+
+
+def fixed_shape_span(work: str, text: str) -> str | None:
+    """The opening of a low-confidence report read through its work's fixed isnad shape, or None (pg_export/AGENTS.md)."""
+    plain, _ = strip_compiler(work, _strip_arabic_marks(text))
+    shape = RABI_SHAPE if work == "rabi" else ZAYD_SHAPE if work == "zayd" else None
+    hit = shape.match(plain) if shape else None
+    if not hit:
+        return None
+    span = hit.group("span").strip()
+    return RABI_SPAN_LINK.sub(" عن ", span) if work == "rabi" else span
+
+
 @dataclass(frozen=True)
 class OpenitiReport:
     record_id: str
@@ -218,6 +259,12 @@ def own_branches(report: OpenitiReport, counts: Counter) -> list[list[BuiltMenti
         counts["rida_imam_chain_stored"] += 1
         return extract_names(span)
     if report.split_confidence != "high" or not report.sanad_ar:
+        # Low confidence about where the matn starts is not low confidence about the opening: a fixed-shape opening is read.
+        span = fixed_shape_span(report.work, report.text_ar) if report.inherits_from is None else None
+        if span:
+            counts["low_confidence:chain_from_fixed_shape" if report.split_confidence != "high" else
+                   "no_sanad_span:chain_from_fixed_shape"] += 1
+            return extract_names(span)
         counts["no_chain:low_confidence_split" if report.split_confidence != "high" else "no_chain:no_chain_in_text"] += 1
         return []
     text, stripped = strip_compiler(report.work, report.sanad_ar)
@@ -254,6 +301,26 @@ def names_match(own: str, parent: str) -> bool:
     return longer[:len(shorter)] == shorter
 
 
+RELATION_ONLY = frozenset(["ابي", "ابيه", "جده", "جدي", "ابائه"])
+
+
+def continuation_names_match(own: str, parent: str) -> bool:
+    """`names_match` for a continuation's named link: the written form is tried too («أبي جعفر» = «أبي جعفر بن محمد»), and a
+    bare relation in the parent chain («أبي») never stands for a longer name (rida_0031#13)."""
+    own_raw, parent_raw = fold(own).replace("ابن ", "بن "), fold(parent).replace("ابن ", "بن ")
+    if parent_raw in RELATION_ONLY and own_raw != parent_raw:
+        return False
+    if names_match(own, parent):
+        return True
+    a, b = own_raw.split(), parent_raw.split()
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    return len(shorter) >= 2 and longer[:len(shorter)] == shorter
+
+
+# The speaker a continuation names before his words: «قال: قال علي بن الحسين», «سئل محمد بن علي», «حدثني أبي جعفر».
+SPEAKER_LEAD = re.compile(rf"^\s*(?:(?:قال|قالت|وقال|سئل|وسئل|حدثني|حدثنا)\s*[:.]?\s*)+")
+
+
 def continuation_own_names(report: OpenitiReport) -> tuple[list[BuiltMention], str]:
     """Names a continuation writes after its opener, and how they were read."""
     if report.split_confidence == "high" and report.sanad_ar is not None:
@@ -262,17 +329,32 @@ def continuation_own_names(report: OpenitiReport) -> tuple[list[BuiltMention], s
         # Low-confidence split: the words after the opener and its «قال:», up to the next colon or 80 letters; they
         # can only shorten the parent's chain, never extend it.
         text, how = report.text_ar[:240], "head"
+    own, how = _names_after_opener(text, how)
+    if not own and how == "sanad":
+        # The span holds only the opener («وباسناده قال:»): the speaker the matn names first can only shorten the chain.
+        own, _ = _names_after_opener(report.text_ar[:240], "head")
+        how = "head" if own else how
+    return own, how
+
+
+def _names_after_opener(text: str, how: str) -> tuple[list[BuiltMention], str]:
     opener = OPENER.match(text) or NAMED_ROUTE.match(text)
     rest = text[opener.end():] if opener else text
-    rest = re.sub(rf"^\s*(?:قال\s*[:.]?\s*)", "", rest)
+    rest = re.sub(rf"^\s*(?:قال(?:ت|ا|وا)?{END}\s*[:.]?\s*)", "", rest)
     if how == "head":
+        rest = SPEAKER_LEAD.sub("", rest)
         rest = re.split(r"[:«]", rest[:80], maxsplit=1)[0]
+        rest = re.split(HONORIFIC, rest, maxsplit=1)[0]          # the speaker's words start after his blessing
     if re.match(rf"^\s*(?:عن|عنه){END}", rest) and not re.match(rf"^\s*عن\s+(?!النبي|رسول)", rest):
         rest = ""
     if re.match(rf"^\s*(?:قال\s+)?(?:رسول\s+الله|النبيء?|النبي){END}", rest) or re.match(rf"^\s*عنه{END}", rest):
         rest = ""
     branches = extract_names("عن " + rest) if rest.strip() else []
     return (branches[0] if branches else []), how
+
+
+# al-Rabi's fixed transmitters: a route ending at one of them has no Companion for «ومن طريق X» to replace.
+RABI_FIXED_LINKS = ("أبو عبيدة", "جابر بن زيد", "جابر")
 
 
 def inherit(report: OpenitiReport, parent: list[list[BuiltMention]], parent_id: str,
@@ -282,6 +364,13 @@ def inherit(report: OpenitiReport, parent: list[list[BuiltMention]], parent_id: 
     Returns the branches and whether they replace the route for the reports that continue this one («ومن طريق X»).
     """
     own, how = continuation_own_names(report)
+    if how == "head":
+        # A head read from the text can only shorten: a word that names no link of the route («رسول اله», «رأيت النبي»)
+        # is not a narrator of this report (round 3; round 2 dropped the whole chain for it).
+        kept = [m for m in own if m.link_kind or any(continuation_names_match(m.surface, p.surface)
+                                                     for branch in parent for p in branch if p.link_kind is None)]
+        counts["inherited:head_words_outside_route_ignored"] += len(own) - len(kept)
+        own = kept
     named_route = bool(NAMED_ROUTE.match(report.text_ar)) and not OPENER.match(report.text_ar)
     result = []
     for branch_index, branch in enumerate(parent):
@@ -290,7 +379,7 @@ def inherit(report: OpenitiReport, parent: list[list[BuiltMention]], parent_id: 
         for own_index, mention in enumerate(own):
             if mention.link_kind:
                 continue
-            hits = [p for p, m in enumerate(branch) if m.link_kind is None and names_match(mention.surface, m.surface)]
+            hits = [p for p, m in enumerate(branch) if m.link_kind is None and continuation_names_match(mention.surface, m.surface)]
             if hits:
                 cut, own_start = hits[-1], own_index
                 break
@@ -303,9 +392,13 @@ def inherit(report: OpenitiReport, parent: list[list[BuiltMention]], parent_id: 
         elif own and how == "head":
             counts["inherited:low_confidence_names_outside_parent"] += 1
             return [], False
-        elif own and named_route:
+        elif own and named_route and not any(names_match(copied[-1].surface, fixed) for fixed in RABI_FIXED_LINKS):
             counts["inherited:named_route_replaces_last_link"] += 1
             result.append(copied[:-1] + own)
+        elif own and named_route:
+            # The route ends at the work's own transmitter (no Companion written): «ومن طريق X» adds X after him.
+            counts["inherited:named_route_after_fixed_transmitter"] += 1
+            result.append(copied + own)
         elif own:
             counts["inherited:extended_with_own_links"] += 1
             result.append(copied + own)
@@ -711,62 +804,225 @@ def resolve_same_isnad(built: dict[str, list[ImamiChain]], previous: dict[str, s
     return depth
 
 
-# ─── Sunni chains: flattened tahwil seams, formula surfaces, co-transmitters (audit `chain-audit/sunni/`) ───────────
+# ─── Sunni chains: tahwil routes with their shared tail, names after link verbs, formula surfaces (rounds 2-3) ─────────
 
 SUNNI_DIACRITICS = re.compile(r"[ً-ْٰـۖ-ۭ]")
-# A route break between two stored neighbours: a standalone «ح» or a new waw-led transmission verb (the audit's rule).
+SUNNI_INVISIBLE = frozenset("‏‎‫‬")
+# A route break between two stored neighbours: a standalone «ح» or a new waw-led transmission verb.
 TAHWIL_H = re.compile(r"(?:^|\s)ح(?=[\s.،,]|$)")
 NEW_ROUTE_VERB = re.compile(r"(?:^|\s)(?:قال\s+)?و(?:اخبرنا|حدثنا|اخبرني|حدثني|انبانا|انباني|سمعت|اخبرتنا|حدثتنا)(?=\s|$)")
+# After the last route break only a verb may stand before the next stored name: that name heads the new route.
+ROUTE_HEAD_GAP = re.compile(r"^[\s.،,:\-]*(?:قال\s+)?و?\s*(?:(?:حدثنا|حدثني|اخبرنا|اخبرني|انبانا|انباني|ثنا|نا|سمعت|حدثناه"
+                            r"|حدثنيه|اخبرناه|اخبرنيه)(?:\s+به)?)?[\s.،,:\-]*$")
+# Routes converge on one narrator: «كلاهما عن», «كلهم عن», «جميعا عن».
+CONVERGENCE_WORD = re.compile(r"(?<![ء-ي])(?:كلاهما|كلتاهما|كلهم|جميعا|ثلاثتهم|اربعتهم|كل\s+هؤلاء)(?![ء-ي])")
+PROPHET_IN_TEXT = re.compile(r"(?<![ء-ي])(?:رسول\s+الله|النبي)(?![ء-ي])")
+# What may stand between a name and the next route break or convergence word: punctuation, «وهو ابن زيد», «يعني ابن
+# عيينة», «واللفظ له». Consumed from the left until none applies.
+LEADING_ASIDE = re.compile(r"^(?:[\s.،,:\-]+|و?هو\s+(?:ابن\s+)?[ء-ي]+(?:\s+(?:بن|ابن)\s+[ء-ي]+)?|يعني\s+(?:ابن\s+)?[ء-ي]+"
+                           r"(?:\s+(?:بن|ابن)\s+[ء-ي]+)?|و?اللفظ\s+(?:له|ل[ء-ي]+(?:\s+[ء-ي]+)?))")
 # Two neighbours joined only by a waw or a comma: co-transmitters at one level.
 WAW_GAP = re.compile(r"^[\s،,]*و?[\s،,]*$")
-COMMON_ISM = frozenset(["عبد", "محمد", "احمد", "علي", "عمر", "عمرو", "يحيي", "ابراهيم", "اسماعيل", "سليمان", "سعيد",
-                        "عثمان", "خالد", "يزيد", "الحسن", "الحسين", "حسن", "حسين", "موسي", "عيسي", "هشام", "جعفر", "يوسف",
-                        "عبيد", "مسلم", "زيد", "سعد", "عبد الله"])
-# Words that make a surface a formula, an aside or a verb rather than a name (the audit's high-confidence class).
+# A wording attribution after a co-transmitter level («قال ابن المثنى حدثنا»): the extractor stops there.
+# Also the double form «قال عبد أخبرنا وقال ابن رافع حدثنا» (each co-transmitter's verb): both attributions go.
+WORDING_ATTRIBUTION = re.compile(
+    r"^قال[\s،,]+(?P<name>(?!رسول|النبي)[ء-ي]+(?:\s+[ء-ي]+){0,3}?)[\s،,]+(?:(?:حدثنا|حدثني|اخبرنا|اخبرني|انبانا)[\s،,]+"
+    r"و?قال[\s،,]+(?:[ء-ي]+(?:\s+[ء-ي]+){0,3}?)[\s،,]+)?(?=(?:حدثنا|حدثني|اخبرنا|اخبرني|انبانا)(?![ء-ي]))")
+CONVERGENCE_LINK = re.compile(r"^(?:كلاهما|كلتاهما|كلهم|جميعا|ثلاثتهم|اربعتهم)[\s،,]+(?=عن(?![ء-ي]))")
+# «كلاهما عن عبد الله بن دينار، بهذا الإسناد»: the one name before a back-reference (the extractor drops it).
+CONVERGENCE_THEN_REFERENCE = re.compile(
+    r"^عن\s+(?P<name>[ء-ي]+(?:\s+[ء-ي]+){0,5}?)[\s،,]*(?=(?:بهذا|بهذه|باسناد[ء-ي]*|بمثل[ء-ي]*|بمعني|بنحو|نحوه|مثله)(?![ء-ي]))")
+# A narrator the text names after the stored chain ends, through a transmission verb («، أن عائشة، أخبرته»).
+TEXT_LINK_AFTER = re.compile(
+    r"^[\s،,]*(?:قال\s+)?(?:انه|انها|انهما|انهم)?\s*(?:سمع|سمعا|سمعوا)\s+(?P<heard>(?!رسول|النبي|رجل)[ء-ي]+(?:\s+[ء-ي]+){0,4}?)"
+    r"(?=[\s،,.]+(?:يقول|يحدث|يخبر|قال|عن|ان)(?![ء-ي])|\s*[،,.])"
+    r"|^[\s،,]*ان\s+(?P<told>(?!رسول|النبي|رجل)[ء-ي]+(?:\s+[ء-ي]+){0,4}?)[\s،,]+(?:اخبرته|اخبره|اخبرها|اخبرهم|حدثته|حدثه"
+    r"|حدثها|حدثهم|اخبرتها|اخبرتهم|حدثتها|حدثتهم)(?![ء-ي])")
+# Words that make a surface a formula or an aside rather than a name (the audit's high-confidence class).
 FORMULA_HIGH = frozenset(["بهذا", "الاسناد", "باسناده", "كلاهما", "احدهما", "مثله", "نحوه", "بمثل", "بنحو", "بمعني",
-                          "بمعناه", "معناه", "اللفظ", "لفظ", "كلهم", "سمعا", "فذكر", "الحديث", "حديثه", "تابعه", "جاءت",
-                          "فنهاه", "هذا", "حدثتني", "حدثني", "حدثنا", "اخبرني", "اخبرنا", "سمعت"])
+                          "بمعناه", "معناه", "اللفظ", "لفظ", "كلهم", "فذكر", "الحديث", "حديثه", "تابعه", "جاءت",
+                          "فنهاه", "هذا", "انما", "كل", "هؤلاء", "الاخران", "الاخرون", "الباقون"])
+# A transmission verb inside a surface is a link: the name after it is the next narrator («الشعبي» in «X سمعا الشعبي»).
+LINK_VERB = frozenset(["سمعا", "سمعوا", "سمع", "سمعت", "حدثتني", "حدثني", "حدثنا", "حدثتنا", "اخبرني", "اخبرنا", "اخبرتني",
+                       "اخبرته", "اخبره", "اخبراه", "اخبروه", "حدثه", "حدثته", "حدثاه", "انبانا", "انباني",
+                       "فاخبرني", "فحدثني", "فاخبرنا", "فحدثنا"])
+# «أبي ومحمد بن بشر» stored as one surface: two co-transmitters (the waw-led word opens a name).
+FUSED_NAME_START = frozenset(["محمد", "احمد", "علي", "عبد", "عبيد", "ابي", "ابو", "ابن", "يحيي", "اسحاق", "ابراهيم", "سفيان",
+                              "شعبة", "حماد", "عمرو", "عمر", "زهير", "قتيبة", "هشام", "سعيد", "يزيد", "وكيع", "حجاج", "الليث"])
+# Words that frame a name without being part of it («أنهما», «يحدث», «يخبر», «زوج النبي»).
+NAME_FRAME = frozenset(["انه", "انها", "انهما", "انهم", "قال", "قالا", "قالت", "قالوا", "يقول", "يقولان", "يحدث", "يحدثان",
+                        "يحدثه", "يحدثون", "يخبر", "يخبره", "يخبران", "يذكر", "يرفعه", "زوج", "لقد", "قد"])
+# A word that never stands inside a name split off a verb (a clause, not a narrator).
+NAME_STOP = frozenset(["من", "في", "الي", "ما", "لا", "كان", "كانت", "هي", "ذلك", "له", "لها", "عنه", "عنها", "رسول", "النبي"])
+# A person named by a relation to the Prophet («ربيبة النبي», «مولى النبي»): a narrator, not the Prophet.
+RELATION_TO_PROPHET = re.compile(r"(?:ربيبه|ربيبة|مولي|مولاة|مولاه|خادم|ابنة|بنت)\s+(?:النبي|رسول\s+الله)$")
 
 
 def sunni_norm(value: str) -> str:
     """The audit lane's `norm`: marks out, alef and final ya folded, direction marks dropped, spaces collapsed."""
-    value = SUNNI_DIACRITICS.sub("", value or "")
-    value = re.sub("[أإآٱ]", "ا", value).replace("ى", "ي")
-    value = re.sub("[‏‎‫‬]", "", value)
-    return re.sub(r"\s+", " ", value).strip()
+    return sunni_norm_with_map(value)[0]
 
 
-def surface_gaps(text: str, surfaces: Sequence[str]) -> list[str | None]:
-    """Each stored surface found in order in the text; the text between neighbours (None where one is not found)."""
-    normal = sunni_norm(text)
+def sunni_norm_with_map(value: str) -> tuple[str, list[int]]:
+    """`sunni_norm` and, per output letter, its index in the input (to cut the original text where the normal one matched)."""
+    out: list[str] = []
+    where: list[int] = []
+    for index, char in enumerate(value or ""):
+        if SUNNI_DIACRITICS.match(char) or char in SUNNI_INVISIBLE:
+            continue
+        if char.isspace():
+            if out and out[-1] != " ":
+                out.append(" ")
+                where.append(index)
+            continue
+        out.append("ا" if char in "أإآٱ" else "ي" if char == "ى" else char)
+        where.append(index)
+    if out and out[-1] == " ":
+        out.pop()
+        where.pop()
+    return "".join(out), where
+
+
+def name_key(surface: str) -> str:
+    """Comparison key of a name: «ابن» as «بن», ta marbuta folded, the kunya's case endings («أبا/أبي/أبو») as «ابو»."""
+    words = ["بن" if word == "ابن" else word for word in sunni_norm(surface).replace("ة", "ه").split()]
+    if words and words[0] in ("ابا", "ابي"):
+        words[0] = "ابو"
+    if len(words) == 1 and words[0].startswith("ال") and len(words[0]) > 4:
+        words[0] = words[0][2:]          # «الليث» = «ليث»: one bare name with or without the article
+    return " ".join(words)
+
+
+def same_name(a: str, b: str) -> bool:
+    """One written name, allowing the accusative alif («جابرا» = «جابر»)."""
+    a, b = name_key(a), name_key(b)
+    return bool(a) and (a == b or a == b + "ا" or b == a + "ا")
+
+
+def locate(normal: str, surface: str, cursor: int = 0) -> tuple[int, int] | None:
+    """The first span of a stored surface in the normalized text at or after `cursor` (a leading «و/ف», an accusative alif)."""
+    body = re.escape(sunni_norm(surface)).replace("\\ ", "[\\s،,]+")
+    if not body:
+        return None
+    hit = re.compile(rf"(?<![ء-ي])(?:و|ف)?{body}ا?(?![ء-ي])").search(normal, cursor)
+    return (hit.start(), hit.end()) if hit else None
+
+
+def locate_all(normal: str, surfaces: Sequence[str]) -> list[tuple[int, int] | None]:
+    """Each surface located in order, each search starting after the previous hit."""
     cursor, spans = 0, []
     for surface in surfaces:
-        pattern = re.compile(rf"(?<![ء-ي])(?:و|ف)?{re.escape(sunni_norm(surface)).replace(chr(92) + ' ', chr(92) + 's+')}(?![ء-ي])")
-        hit = pattern.search(normal, cursor)
-        if not hit:
-            spans.append(None)
-            continue
-        spans.append((hit.start(), hit.end()))
-        cursor = hit.end()
-    return [normal[a[1]:b[0]] if a and b and b[0] >= a[1] else None for a, b in zip(spans, spans[1:])]
+        span = locate(normal, surface, cursor)
+        spans.append(span)
+        if span:
+            cursor = span[1]
+    return spans
 
 
-def seam_positions(text: str, surfaces: Sequence[str]) -> list[int]:
-    """Positions where a new route starts inside one stored chain (the next mention after the break)."""
-    out = []
-    for index, gap in enumerate(surface_gaps(text, surfaces)):
-        if gap is None or not (TAHWIL_H.search(gap) or NEW_ROUTE_VERB.search(gap)):
+def ordered_spans(normal: str, chains: Sequence[Sequence[str]]) -> list[list[tuple[int, int] | None]]:
+    """Each chain located in the text, chains taken in their stored (text) order: a chain's first name is searched from the
+    previous chain's first name on, and past it unless the two chains are co-transmitter variants of one occurrence
+    (same head, their next names waw-joined). A repeated head («قتيبة بن سعيد» twice, k6:9600) is found where it stands."""
+    out: list[list[tuple[int, int] | None]] = []
+    floor = 0
+    previous: Sequence[str] | None = None
+    for chain in chains:
+        if not chain:
+            out.append([])
             continue
-        words = [w for w in sunni_norm(surfaces[index]).split() if w not in ("بن", "ابن", "ابو", "ابي")]
-        take = 2 if words and (words[0] == "عبد" or words[0] in COMMON_ISM) else 1
-        key = r"(?:\s+(?:بن|ابن))?\s+".join(words[:take])
-        key = re.sub(r"(^|\s)ال(?=..)", r"\1", key)
-        if len(words) >= take and len(key) > 2 and re.search(rf"(?<![ء-ي])(?:ال)?{key}(?![ء-ي])", sunni_norm(gap)):
-            continue      # the text restates the previous shaykh after the break: the routes converge on him (benign)
-        out.append(index + 1)
+        start = floor
+        if previous and out and out[-1] and out[-1][0]:
+            head = out[-1][0]
+            same_occurrence = same_name(chain[0], previous[0]) and (
+                len(chain) < 2 or len(previous) < 2 or same_name(chain[1], previous[1]) or _waw_joined(normal, previous, out[-1], chain[1]))
+            start = head[0] if same_occurrence or not same_name(chain[0], previous[0]) else head[1]
+        first = locate(normal, chain[0], start) or locate(normal, chain[0], floor)
+        spans = [first] + (locate_all_from(normal, chain[1:], first[1]) if first else [None] * (len(chain) - 1))
+        out.append(spans)
+        if first:
+            floor = first[0]
+        previous = chain
     return out
 
 
+def _waw_joined(normal: str, previous: Sequence[str], spans, name: str) -> bool:
+    """`name` stands right after the previous chain's second name, joined by a waw (one level, two co-transmitters)."""
+    if len(spans) < 2 or not spans[1]:
+        return False
+    hit = locate(normal, name, spans[1][1])
+    return bool(hit) and bool(WAW_GAP.match(normal[spans[1][1]:hit[0]]))
+
+
+def locate_all_from(normal: str, surfaces: Sequence[str], cursor: int) -> list[tuple[int, int] | None]:
+    """`locate_all` from a given offset."""
+    spans = []
+    for surface in surfaces:
+        span = locate(normal, surface, cursor)
+        spans.append(span)
+        if span:
+            cursor = span[1]
+    return spans
+
+
+def surface_gaps(text: str, surfaces: Sequence[str]) -> list[str | None]:
+    """The text between stored neighbours (None where one of them is not found in order)."""
+    normal = sunni_norm(text)
+    spans = locate_all(normal, surfaces)
+    return [normal[a[1]:b[0]] if a and b and b[0] >= a[1] else None for a, b in zip(spans, spans[1:])]
+
+
+def skip_asides(rest: str) -> str:
+    """The text after a name with leading punctuation and asides («وهو ابن زيد», «واللفظ له») removed."""
+    while True:
+        match = LEADING_ASIDE.match(rest)
+        if not match or not match.group(0):
+            return rest
+        rest = rest[match.end():]
+
+
+def split_link_verbs(surface: str) -> list[str]:
+    """A surface split at its transmission verbs («عبد الملك بن سعيد سمعا الشعبي يخبر» -> the two names; «عروة أن عائشة
+    أخبرته» likewise); frame words around a name are dropped, a piece that is not a name is dropped."""
+    words = surface.split()
+    folded = [sunni_norm(word) for word in words]
+    if not any(word in LINK_VERB for word in folded):
+        return [surface]
+    pieces: list[list[str]] = [[]]
+    for word, key in zip(words, folded):
+        if key in LINK_VERB:
+            pieces.append([])
+        else:
+            pieces[-1].append(word)
+    names = []
+    for piece in pieces:
+        keys = [sunni_norm(word) for word in piece]
+        # «عروة بن الزبير أن عائشة»: a «أن» between two names is a link too.
+        cut = next((k for k in range(1, len(keys) - 1) if keys[k] == "ان"), None)
+        for part in ([piece[:cut], piece[cut + 1:]] if cut is not None else [piece]):
+            name = frame_trimmed(part)
+            if name:
+                names.append(name)
+    return names
+
+
+def frame_trimmed(words: list[str]) -> str | None:
+    """A run of words as a name: frame words off its start, cut at the first frame or formula word; None if not a name."""
+    keys = [sunni_norm(word) for word in words]
+    while keys and (keys[0] in NAME_FRAME or keys[0] == "ان"):
+        words, keys = words[1:], keys[1:]
+    stop = next((k for k, key in enumerate(keys) if key in NAME_FRAME or key in FORMULA_HIGH
+                 or (key == "يزيد" and k + 1 < len(keys) and keys[k + 1] == "احدهما")), len(keys))
+    words, keys = words[:stop], keys[:stop]
+    name = " ".join(words).strip(" ،,.:-")
+    relation = RELATION_TO_PROPHET.search(" ".join(keys))
+    stops = [key for key in (keys[:-1] if relation else keys) if key in NAME_STOP]
+    if not name or len(keys) > 10 or stops or not re.search("[ء-ي]", name):
+        return None
+    return name
+
+
+# «وأنا أسمع» of «قراءة عليه وأنا أسمع» (the compiler heard it read), read as a co-transmitter: never a name.
+HEARING_ASIDE = re.compile(r"و?انا\s+اسمع")
 # A word that opens a remark on the wording («تقاربا في اللفظ»), never a name.
 WORDING_REMARK = frozenset(["تقاربا", "تقاربوا", "واللفظ", "لفظه", "متقارب"])
 
@@ -775,20 +1031,15 @@ def formula_trim(surface: str) -> tuple[str | None, bool]:
     """(the name left once formula words are cut, whether the surface had one). None: nothing of a name remains."""
     words = surface.split()
     folded = [sunni_norm(word) for word in words]
-    if folded and folded[0] in WORDING_REMARK:
+    if (folded and folded[0] in WORDING_REMARK) or folded[:2] in (["في", "حديث"], ["في", "رواية"]) or HEARING_ASIDE.fullmatch(
+            " ".join(folded)):
         return None, True
     hits = [index for index, word in enumerate(folded) if word in FORMULA_HIGH]
     if not hits:
         return surface, False
-    first = hits[0]
-    if first == 0:
-        # A leading verb («حدثنا فلان») leaves the name after it; any other leading formula leaves nothing.
-        rest = words[1:] if folded[0] in ("حدثني", "حدثنا", "اخبرني", "اخبرنا", "سمعت", "حدثتني") else []
-        rest_folded = [sunni_norm(word) for word in rest]
-        if not rest or any(word in FORMULA_HIGH for word in rest_folded):
-            return None, True
-        return " ".join(rest), True
-    kept = " ".join(words[:first]).strip(" ،,.:")
+    if hits[0] == 0:
+        return None, True
+    kept = " ".join(words[:hits[0]]).strip(" ،,.:")
     kept = re.sub(r"\s+(?:في|عن|و|قال|يعني|-)$", "", kept).strip(" ،,.:-")
     return (kept or None), True
 
@@ -805,75 +1056,442 @@ class SunniChain:
     split_from: int | None = None          # the bundle branch a seam split this route from
 
 
-def build_sunni_chains(text: str, branches: list[list[str]], counts: Counter) -> list[SunniChain]:
-    """Split flattened tahwil at its seam, cut formula words out of names, and put «A و B» neighbours on one level."""
-    out: list[SunniChain] = []
-    for branch_index, surfaces in enumerate(branches):
-        mentions = [SunniMention(surface, (branch_index, position)) for position, surface in enumerate(surfaces)]
-        gaps = surface_gaps(text, surfaces)
-        # Co-transmitters stored as teacher then student: the second becomes an alternative at the first's level.
-        levels: list[list[SunniMention]] = []
-        for position, mention in enumerate(mentions):
-            if position > 0 and gaps[position - 1] is not None and WAW_GAP.match(gaps[position - 1]) and levels:
-                counts["co_transmitters_put_on_one_level"] += 1
-                levels[-1].append(mention)
-            else:
-                levels.append([mention])
-        routes: list[list[list[SunniMention]]] = [levels]
-        seams = seam_positions(text, surfaces)
-        if seams:
-            routes = []
-            starts = [0] + seams
-            level_of = {}
-            for level_index, level in enumerate(levels):
-                for mention in level:
-                    level_of[mention.origin[1]] = level_index
-            cut_levels = sorted({level_of[position] for position in seams if position in level_of})
-            bounds = [0] + cut_levels + [len(levels)]
-            pieces = [levels[a:b] for a, b in zip(bounds, bounds[1:]) if b > a]
-            counts["seam_chains_split"] += 1
-            counts["seam_routes_made"] += len(pieces)
-            # Each earlier route continues along the last route after the name it converges on (suffix alignment).
-            last = pieces[-1]
-            for piece in pieces[:-1]:
-                tail: list[list[SunniMention]] = []
-                end = sunni_norm(piece[-1][0].surface)
-                for index, level in enumerate(last):
-                    if any(sunni_norm(m.surface) == end for m in level):
-                        tail = last[index + 1:]
-                        break
-                routes.append(piece + tail)
-            routes.append(last)
-            del starts
-        for route_index, route in enumerate(routes):
-            cleaned_levels = []
-            aside_branch = False
-            for level_index, level in enumerate(route):
-                kept = []
-                for mention in level:
-                    name, had = formula_trim(mention.surface)
-                    if had:
-                        counts["formula_surfaces_trimmed" if name else "formula_surfaces_retired"] += 1
-                    if name:
-                        kept.append(SunniMention(name, mention.origin))
-                if kept:
-                    cleaned_levels.append(kept)
-                elif len(branches) > 1 and level_index < len(route) - 1:
-                    # «اللفظ لعمرو» read as a co-transmitter: its branch is an artefact; dropping only the aside would
-                    # join its neighbours as teacher and student.
-                    aside_branch = True
-            if aside_branch:
-                counts["aside_branches_dropped"] += 1
+class ReportText:
+    """A report's text, normalized once, with the map back to the original letters."""
+
+    def __init__(self, text: str):
+        self.original = text
+        self.normal, self.where = sunni_norm_with_map(text)
+
+    def original_slice(self, start: int, end: int) -> str:
+        return self.original[self.where[start]:self.where[end - 1] + 1]
+
+    def without(self, start: int, end: int) -> str:
+        """The original text with the normal span [start, end) removed."""
+        return self.original[:self.where[start]] + " " + self.original[self.where[end - 1] + 1:]
+
+    def after(self, span: tuple[int, int] | None) -> str | None:
+        return skip_asides(self.normal[span[1]:]) if span else None
+
+
+def prefix_extension(old: list[str], found: list[list[str]]) -> list[str] | None:
+    """The names a re-extraction adds after `old`, when a re-extracted branch starts with exactly `old` (its last name may
+    now be shorter: «شعبة كلاهما» -> «شعبة»)."""
+    for branch in found:
+        if len(branch) <= len(old) or branch[:len(old) - 1] != old[:-1]:
+            continue
+        last_old, last_new = sunni_norm(old[-1]).split(), sunni_norm(branch[len(old) - 1]).split()
+        if last_new and last_old[:len(last_new)] == last_new:
+            return branch[len(old):]
+    return None
+
+
+def attributed_to(name: str, surface: str) -> bool:
+    """«قال ابن المثنى» names «محمد بن المثنى»; «قال أبو بكر» names «أبو بكر بن أبي شيبة»."""
+    a, b = name_key(name).split(), name_key(surface).split()
+    if not a or not b:
+        return False
+    return a == b[:len(a)] or (len(a) >= 2 and a[-2] == "بن" and len(b) >= 2 and b[-2:] == a[-2:])
+
+
+def extend_stopped_branches(report: ReportText, branches: list[list[str]], counts: Counter,
+                            extract=extract_isnad_branches) -> list[list[tuple[str, tuple[int, int] | None]]]:
+    """Bundle branches as (surface, origin = bundle position), plus the names the extractor stopped short of: after a wording
+    attribution («قال ابن المثنى حدثنا»), after a convergence word («شعبة، كلاهما عن ...»), and a name the text gives
+    through a verb after the last stored one («، أن عائشة، أخبرته»). Added names have no origin."""
+    out = [[(surface, (index, position)) for position, surface in enumerate(branch)] for index, branch in enumerate(branches)]
+    every = [surface for branch in branches for surface in branch]
+    removals: dict[tuple[int, int], str] = {}
+    for index, branch in enumerate(branches):
+        if not branch:
+            continue
+        spans = locate_all(report.normal, [formula_trim(surface)[0] or surface for surface in branch])
+        if spans[-1] is None:
+            continue
+        rest = report.after(spans[-1])
+        at = len(report.normal) - len(rest)
+        attribution = WORDING_ATTRIBUTION.match(rest)
+        if attribution and any(attributed_to(attribution.group("name"), surface) for surface in every):
+            removals[(at, at + attribution.end())] = "wording_attribution"
+            continue
+        convergence = CONVERGENCE_LINK.match(rest)
+        if convergence:
+            reference = CONVERGENCE_THEN_REFERENCE.match(rest[convergence.end():])
+            if reference:
+                offset = at + convergence.end()
+                name = frame_trimmed(report.original_slice(offset + reference.start("name"), offset + reference.end("name")).split())
+                if name:
+                    counts["sunni_extended_after_convergence_word_before_reference"] += 1
+                    out[index].append((name, None))
                 continue
-            paths: list[list[SunniMention]] = [[]]
-            for level in cleaned_levels:
-                if len(paths) * len(level) > 64:
-                    level = level[:1]
-                paths = [path + [mention] for path in paths for mention in level]
-            for path in paths:
-                if path and all([m.surface for m in path] != [m.surface for m in chain.mentions] for chain in out):
-                    out.append(SunniChain(path, branch_index if len(routes) > 1 else None))
+            removals[(at, at + convergence.end())] = "convergence_word"
+            continue
+        # «عن عطاء بن يسار، أن زيد بن خالد أخبره ...»: followed link by link (at most three).
+        last = branch[-1]
+        for _ in range(3):
+            link = TEXT_LINK_AFTER.match(rest)
+            if not link:
+                break
+            group = "heard" if link.group("heard") else "told"
+            name = frame_trimmed(report.original_slice(at + link.start(group), at + link.end(group)).split())
+            if not name or same_name(name, last):
+                break
+            counts["sunni_name_after_link_verb_in_text"] += 1
+            out[index].append((name, None))
+            last = name
+            consumed = link.end(group)
+            rest = skip_asides(rest[consumed:])
+            at = len(report.normal) - len(rest)
+            rest = re.sub(r"^(?:اخبرته|اخبره|اخبرها|اخبرهم|حدثته|حدثه|حدثها|حدثهم|اخبرتها|اخبرتهم|حدثتها|حدثتهم|يقول|يحدث|يخبر)"
+                          r"(?![ء-ي])", "", rest)
+            at = len(report.normal) - len(rest)
+    for (start, end), kind in sorted(removals.items()):
+        found = extract(report.without(start, end))
+        for index, branch in enumerate(branches):
+            if len(out[index]) != len(branch) or not branch:
+                continue
+            tail = prefix_extension(branch, found)
+            if tail:
+                counts[f"sunni_extended_after_{kind}"] += 1
+                out[index] = out[index] + [(surface, None) for surface in tail]
     return out
+
+
+def split_fused_names(surface: str) -> list[str]:
+    """«أبي ومحمد بن بشر» -> «أبي», «محمد بن بشر» (they fall on one level: only a waw stands between them in the text)."""
+    words = surface.split()
+    keys = [sunni_norm(word) for word in words]
+    for k in range(1, len(words)):
+        right = keys[k][1:] if keys[k].startswith("و") and len(keys[k]) > 2 else None
+        if right in FUSED_NAME_START and keys[k - 1] not in ("بن", "ابن", "عبد", "بنت", "ام"):
+            return [" ".join(words[:k]), " ".join([words[k][1:]] + words[k + 1:])]
+    return [surface]
+
+
+def clean_branch(branch: list[tuple[str, tuple[int, int] | None]], counts: Counter) -> list[SunniMention | None]:
+    """Each stored surface as names: link verbs split it, formula words are cut. None marks a surface with no name left."""
+    out: list[SunniMention | None] = []
+    for position, (surface, origin) in enumerate(branch):
+        names = [part for name in split_link_verbs(surface) for part in split_fused_names(name)]
+        if names != [surface]:
+            counts["sunni_link_verb_surfaces_split"] += 1
+        kept = []
+        for name in names:
+            trimmed, had = formula_trim(name)
+            if had:
+                counts["formula_surfaces_trimmed" if trimmed else "formula_surfaces_retired"] += 1
+            if trimmed:
+                kept.append(trimmed)
+        if not kept:
+            out.append(None)
+            continue
+        following = branch[position + 1][0] if position + 1 < len(branch) else None
+        for index, name in enumerate(kept):
+            # A name split off a surface that the bundle already stores next is not repeated («سمعا جابرا» > «جابر»).
+            if index and following is not None and same_name(name, following):
+                counts["sunni_link_verb_name_already_stored"] += 1
+                continue
+            out.append(SunniMention(name, origin if index == 0 else None))
+            counts["sunni_link_verb_names_added"] += 1 if index else 0
+    return out
+
+
+def levels_of(report: ReportText, mentions: list[SunniMention], spans) -> list[list[SunniMention]]:
+    """Mentions grouped into transmission levels (waw-joined neighbours share one), given each mention's span."""
+    levels: list[list[SunniMention]] = []
+    for position, mention in enumerate(mentions):
+        a, b = (spans[position - 1], spans[position]) if position else (None, None)
+        if a and b and b[0] >= a[1] and WAW_GAP.match(report.normal[a[1]:b[0]]) and levels:
+            levels[-1].append(mention)
+        else:
+            levels.append([mention])
+    return levels
+
+
+@dataclass(frozen=True)
+class RouteBreak:
+    """A route break inside one stored chain, before mention `index`."""
+    index: int
+    kind: str              # 'h' (a standalone «ح», in the text or at the end of a stored surface) | 'verb' (a waw-led verb)
+    earlier_ends: bool     # the earlier route's last name stands right before the break (only asides between)
+    later_is_head: bool    # only a verb stands between the break and the next stored name
+
+
+TRAILING_H = re.compile(r"\s+ح$")
+
+
+def strip_trailing_h(mentions: list[SunniMention]) -> tuple[list[SunniMention], set[int]]:
+    """«ابن شهاب ح» stored as one surface: the name, and a break before the next mention (its index in the result)."""
+    out: list[SunniMention] = []
+    after: set[int] = set()
+    for mention in mentions:
+        if len(out) in after and same_name(mention.surface, out[-1].surface):
+            continue          # «ابن جريج ح» then «ابن جريج»: one name, the second route reaches him too
+        if TRAILING_H.search(sunni_norm(mention.surface)) and len(mention.surface.split()) > 1:
+            out.append(SunniMention(TRAILING_H.sub("", mention.surface.rstrip(" ،,.")).strip(" ،,.-"), mention.origin))
+            after.add(len(out))
+        else:
+            out.append(mention)
+    return out, {index for index in after if index < len(out)}
+
+
+def route_breaks(report: ReportText, mentions: list[SunniMention], spans, h_after: set[int]) -> list[RouteBreak]:
+    """Every break between stored neighbours, with where it stands relative to them."""
+    out = []
+    for index in range(1, len(mentions)):
+        a, b = spans[index - 1], spans[index]
+        if not a or not b or b[0] < a[1]:
+            continue
+        gap = report.normal[a[1]:b[0]]
+        breaks = list(TAHWIL_H.finditer(gap))
+        if index in h_after and not breaks:
+            out.append(RouteBreak(index, "h", True, bool(ROUTE_HEAD_GAP.match(gap))))
+        elif breaks:
+            before, after = gap[:breaks[0].start()], gap[breaks[-1].end():]
+            out.append(RouteBreak(index, "h", not skip_asides(before).strip(), bool(ROUTE_HEAD_GAP.match(after))))
+        else:
+            verbs = list(NEW_ROUTE_VERB.finditer(gap))
+            if verbs and re.match(r"^[\s.،,:\-]*$", gap[verbs[-1].end():]):
+                out.append(RouteBreak(index, "verb", not skip_asides(gap[:verbs[0].start()]).strip(), True))
+    return out
+
+
+# One man under two customary names, for convergence only (never an identity): Muhammad b. Muslim b. Shihab al-Zuhri.
+SAME_MAN = [frozenset(["الزهري", "ابن شهاب", "محمد بن مسلم بن شهاب", "محمد بن مسلم الزهري", "ابن شهاب الزهري"])]
+
+
+SAME_MAN_KEYS = [frozenset(name_key(name) for name in group) for group in SAME_MAN]
+
+
+def converges(a: str, b: str) -> bool:
+    """Two surfaces a tahwil may converge on: one written name, or the two names of al-Zuhri."""
+    if same_name(a, b):
+        return True
+    a_key, b_key = name_key(a), name_key(b)
+    return any(a_key in group_keys and b_key in group_keys for group_keys in SAME_MAN_KEYS)
+
+
+@dataclass
+class Candidate:
+    """A route of the report as levels, with each mention's span, offered as a possible shared tail."""
+    levels: list[list[SunniMention]]
+    spans: dict[int, tuple[int, int] | None]
+
+    def after(self, end: int) -> list[list[SunniMention]]:
+        """Its levels the text gives after `end`."""
+        for k, level in enumerate(self.levels):
+            if any((self.spans.get(id(m)) or (-1, -1))[0] > end for m in level):
+                return self.levels[k:]
+        return []
+
+
+def shared_tail(report: ReportText, route: list[list[SunniMention]], end: tuple[int, int] | None, candidates: list[Candidate],
+                allow_convergence_word: bool) -> list[list[SunniMention]] | None:
+    """What a route that stops at a break continues with; None when no tested rule establishes it.
+    (a) a later route repeats one of this route's last two names (suffix alignment, as the extractor stitches tahwil);
+    (b) after a «ح», the first convergence word («كلاهما/كلهم/جميعا») directly after a later route's name."""
+    if end is None:
+        return None
+    later = [candidate.after(end[1]) for candidate in candidates]
+    for back in (0, 1):
+        if back >= len(route):
+            break
+        names = route[len(route) - 1 - back]
+        for candidate, other in zip(candidates, later):
+            for k, level in enumerate(other):
+                # A route's head is never where another route converges (k6:11239: «زهير بن حرب» heads two routes).
+                if k == 0 and len(other) == len(candidate.levels):
+                    continue
+                if any(converges(m.surface, n.surface) for m in level for n in names):
+                    position = k + 1 + back
+                    if position < len(other):
+                        return other[position:]
+    if not allow_convergence_word:
+        return None
+    word = CONVERGENCE_WORD.search(report.normal, end[1])
+    if not word or PROPHET_IN_TEXT.search(report.normal[end[1]:word.start()]):
+        return None
+    for candidate, other in zip(candidates, later):
+        for k, level in enumerate(other[:-1]):
+            for mention in level:
+                span = candidate.spans.get(id(mention))
+                if span and span[1] <= word.start() and not skip_asides(report.normal[span[1]:word.start()]).strip():
+                    return other[k + 1:]
+    return None
+
+
+def contained(levels: list[list[SunniMention]], routes: list[list[list[SunniMention]]], at_start: bool) -> bool:
+    """`levels` is the start (or a run ending at the end) of another route, name by name."""
+    names = [level[0].surface for level in levels]
+    for other in routes:
+        surfaces = [level[0].surface for level in other]
+        if other is levels or len(surfaces) <= len(names):
+            continue
+        window = surfaces[:len(names)] if at_start else surfaces[-len(names):]
+        if all(same_name(a, b) for a, b in zip(names, window)):
+            return True
+    return False
+
+
+@dataclass
+class PendingBranch:
+    """A stored chain with route breaks inside it, resolved once every route of the report is known."""
+    index: int
+    levels: list[list[SunniMention]]
+    pieces: list[list[list[SunniMention]]]
+    breaks: list[RouteBreak]          # breaks[k] separates pieces[k] and pieces[k + 1]
+    spans: dict[int, tuple[int, int] | None]
+
+
+def build_sunni_chains(text: str, branches: list[list[str]], counts: Counter, extract=extract_isnad_branches) -> list[SunniChain]:
+    """Re-cut one Sunni report (pg_export/AGENTS.md §Sunni chains, rounds 2-3)."""
+    report = ReportText(text)
+    cleaned = [clean_branch(branch, counts) for branch in extend_stopped_branches(report, branches, counts, extract)]
+    settled: list[tuple[int, list[list[SunniMention]], bool]] = []      # (bundle branch, levels, split from it)
+    pending: list[PendingBranch] = []
+    kept: list[tuple[int, list[SunniMention], set[int]]] = []
+    span_of: dict[int, tuple[int, int] | None] = {}
+    for branch_index, branch in enumerate(cleaned):
+        empty = [p for p, m in enumerate(branch) if m is None]
+        # A position with no name left was an aside read as a co-transmitter («اللفظ لعمرو») when a sibling branch
+        # differs from this one only there: this branch is the artefact. Otherwise only the position goes (k6:21409).
+        if empty and any(j != branch_index and len(branches[j]) == len(branches[branch_index]) and all(
+                branches[j][p] == branches[branch_index][p] for p in range(len(branches[j])) if p not in empty)
+                for j in range(len(branches))):
+            counts["aside_branches_dropped"] += 1
+            continue
+        mentions, h_after = strip_trailing_h([m for m in branch if m is not None])
+        if mentions:
+            kept.append((branch_index, mentions, h_after))
+    all_spans = ordered_spans(report.normal, [[m.surface for m in mentions] for _, mentions, _ in kept])
+    for (branch_index, mentions, h_after), spans in zip(kept, all_spans):
+        levels = levels_of(report, mentions, spans)
+        counts["co_transmitters_put_on_one_level"] += len(mentions) - len(levels)
+        span_by_id = {id(m): s for m, s in zip(mentions, spans)}
+        span_of.update(span_by_id)
+        breaks = route_breaks(report, mentions, spans, h_after)
+        level_of = {id(m): i for i, level in enumerate(levels) for m in level}
+        by_level = {}
+        for item in breaks:
+            if level_of[id(mentions[item.index])] > 0:
+                by_level.setdefault(level_of[id(mentions[item.index])], item)
+        if not by_level:
+            settled.append((branch_index, levels, False))
+            continue
+        bounds = [0] + sorted(by_level) + [len(levels)]
+        pending.append(PendingBranch(branch_index, levels, [levels[a:b] for a, b in zip(bounds, bounds[1:])],
+                                     [by_level[k] for k in sorted(by_level)], span_by_id))
+    candidates = [Candidate(levels, {id(m): span_of.get(id(m)) for level in levels for m in level}) for _, levels, _ in settled]
+    candidates += [Candidate(piece, item.spans) for item in pending for piece in item.pieces]
+    every = [candidate.levels for candidate in candidates]
+    for item in pending:
+        routes = resolve_pending(report, item, candidates, every, counts)
+        if routes is None:
+            counts["seam_not_split:no_shared_tail"] += 1
+            settled.append((item.index, item.levels, False))
+        else:
+            counts["seam_chains_split"] += 1
+            counts["seam_routes_made"] += len(routes)
+            settled.extend((item.index, route, True) for route in routes)
+    out: list[SunniChain] = []
+    for branch_index, route, split in sorted(settled, key=lambda entry: entry[0]):
+        paths: list[list[SunniMention]] = [[]]
+        for level in route:
+            if len(paths) * len(level) > 64:
+                level = level[:1]
+            paths = [path + [mention] for path in paths for mention in level]
+        for path in paths:
+            if path and all([m.surface for m in path] != [m.surface for m in chain.mentions] for chain in out):
+                out.append(SunniChain(path, branch_index if split else None))
+    return complete_short_routes(report, out, counts)
+
+
+def resolve_pending(report: ReportText, item: PendingBranch, candidates: list[Candidate], every, counts: Counter):
+    """The routes a stored chain with breaks becomes, or None to leave it whole (no tested rule settles every piece).
+    Each earlier piece that ends at its break takes its shared tail; one that does not, or a later piece that does not start
+    at a route head, is dropped only when another route of the report already holds it."""
+    routes = []
+    for number, piece in enumerate(item.pieces):
+        before = item.breaks[number - 1] if number else None
+        after = item.breaks[number] if number < len(item.breaks) else None
+        if before is not None and not before.later_is_head:
+            if contained(piece, every, at_start=False):
+                counts["seam_piece_dropped:continues_another_route"] += 1
+                continue
+            return None
+        if after is None:
+            routes.append(piece)
+            continue
+        if not after.earlier_ends:
+            if contained(piece, every, at_start=True):
+                counts["seam_piece_dropped:start_of_another_route"] += 1
+                continue
+            return None
+        others = [candidate for candidate in candidates if candidate.levels is not piece]
+        tail = shared_tail(report, piece, item.spans.get(id(piece[-1][-1])), others, after.kind == "h")
+        if tail is None:
+            return None
+        routes.append(piece + tail)
+    return routes or None
+
+
+def complete_short_routes(report: ReportText, chains: list[SunniChain], counts: Counter) -> list[SunniChain]:
+    """A route that stops at a «ح» continues along the route it converges with (rules (a) and (b) of `shared_tail`)."""
+    for _ in range(3):
+        changed = False
+        spans = ordered_spans(report.normal, [[m.surface for m in chain.mentions] for chain in chains])
+        candidates = [Candidate([[m] for m in chain.mentions], {id(m): s for m, s in zip(chain.mentions, spans[k])})
+                      for k, chain in enumerate(chains)]
+        for index, chain in enumerate(chains):
+            end = spans[index][-1]
+            rest = report.after(end)
+            if rest is None or not re.match(r"^ح(?![ء-ي])", rest):
+                continue
+            others = [candidate for k, candidate in enumerate(candidates) if k != index]
+            tail = shared_tail(report, [[m] for m in chain.mentions], end, others, True)
+            if tail:
+                counts["short_routes_given_shared_tail"] += 1
+                chains[index] = SunniChain(chain.mentions + [level[0] for level in tail], chain.split_from)
+                changed = True
+        if not changed:
+            break
+    share_co_transmitter_continuations(report, chains, counts)
+    unique: list[SunniChain] = []
+    for chain in chains:
+        if not any(len(chain.mentions) == len(kept.mentions) and all(
+                same_name(a.surface, b.surface) for a, b in zip(chain.mentions, kept.mentions)) for kept in unique):
+            unique.append(chain)
+    return unique
+
+
+def share_co_transmitter_continuations(report: ReportText, chains: list[SunniChain], counts: Counter) -> None:
+    """Co-transmitters joined by a waw at one position share what follows them («مطرف بن طريف، وعبد الملك بن سعيد، سمعا
+    الشعبي»): a route that stops there, or skips a name its partner carries split off a verb, takes the partner's continuation."""
+    for index, chain in enumerate(chains):
+        for other in chains:
+            if other is chain:
+                continue
+            p = next((k for k, (a, b) in enumerate(zip(chain.mentions, other.mentions)) if a.surface != b.surface), None)
+            if p is None or p >= len(other.mentions) - 1 or p >= len(chain.mentions):
+                continue
+            first = locate(report.normal, chain.mentions[p].surface)
+            second = locate(report.normal, other.mentions[p].surface)
+            if not first or not second:
+                continue
+            a, b = sorted([first, second])
+            if b[0] < a[1] or not WAW_GAP.match(report.normal[a[1]:b[0]]):
+                continue
+            mine, theirs = chain.mentions[p + 1:], other.mentions[p + 1:]
+            added = [m for m in theirs if m.origin is None]
+            if not mine or (added and is_subsequence([m.surface for m in mine], [m.surface for m in theirs])):
+                counts["co_transmitter_continuation_shared"] += 1
+                chains[index] = chain = SunniChain(chain.mentions[:p + 1] + list(theirs), chain.split_from)
+
+
+def is_subsequence(short: list[str], long: list[str]) -> bool:
+    """`short` is `long` with names left out, in order."""
+    iterator = iter(long)
+    return len(short) < len(long) and all(any(same_name(name, candidate) for candidate in iterator) for name in short)
 
 
 EDITION_PATH = Path(__file__).resolve().parent / "edition_identifications.json"

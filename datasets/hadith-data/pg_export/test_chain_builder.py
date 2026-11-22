@@ -69,8 +69,53 @@ class ChainBuilderOnRealReports(unittest.TestCase):
                     with self.subTest(record_id=record_id, surface=mention.surface):
                         self.assertFalse(any(word in cb.fold(mention.surface) + " " for word in bad))
 
-    def test_low_confidence_split_has_no_own_chain(self):
-        self.assertEqual(self.by_short["rabi_0002"], [])                                  # D3e, D5d
+    def test_low_confidence_split_reads_only_a_fixed_shape_opening(self):
+        # Round 3 (re-check `chain_lost_written_chain_present`): the opening is read when it is the work's fixed isnad, up
+        # to the first word the shape cannot explain; any other opening still stores no chain (D3e, D5d).
+        cases = [
+            ("rabi_0002", ["ابو عبيده", "جابر بن زيد", "عائشه"]),                     # «قال الربيع بن حبيب: أبو عبيدة ...»
+            ("rabi_0094", ["ابو عبيده", "جابر بن زيد", "بلغني"]),                     # «بلغني عن رسول الله»: the gap
+            ("rabi_0437", ["ابو عبيده", "جابر بن زيد", "ابن عباس"]),                  # «قال: قال ابن عباس»
+            ("rabi_0079", ["ابو عبيده", "ابي ايوب الانصاري"]),                        # Abu ʿUbayda from a Companion
+            ("rabi_0672", ["ابو عبيده", "جابر بن زيد"]),                              # «قال جاء رجل»: «جاء» is no name
+            ("rabi_0411", ["ابو عبيده"]),                                            # «بلغني أن ...»: no source named
+            ("rabi_0193", ["ابو عبيده", "جابر بن زيد"]),                              # «حدثني جملة من أصحاب»
+            ("zayd_0523", ["زيد بن علي", "ابيه", "جده", "علي"]),
+            ("zayd_0031", ["زيد بن علي", "ابائه", "علي"]),                            # the «عن آبائه» opening
+            ("zayd_0027", ["زيد بن علي"]),                                           # «زيد بن علي بن ابيه»: stops at the slip
+            ("rabi_0901", None), ("rabi_0016", None), ("zayd_0007", None),           # not the work's shape: no chain
+        ]
+        for short, expected in cases:
+            with self.subTest(short):
+                if expected is None:
+                    self.assertEqual(self.by_short[short], [])
+                else:
+                    self.assertEqual(self.surfaces(short), expected)
+        rabi = self.chain("rabi_0094")
+        self.assertEqual(rabi[-1].link_kind, "anonymous")
+        self.assertEqual([m.rule_identity[0] for m in self.chain("zayd_0523")],
+                         ["narrator:imam:zayd", "narrator:imam:4", "narrator:imam:3", "narrator:imam:1"])
+
+    def test_continuation_stops_at_the_named_speaker(self):
+        # Round 3 (re-check pattern 11): the inherited Imam chain stops at the speaker the report names.
+        cases = [
+            ("rida_0031#23", 5, "ابي علي بن الحسين", True),     # «وباسناده قال: قال علي بن الحسين» (low confidence)
+            ("rida_0035#5", 4, "ابي محمد بن علي", True),         # «وباسناده قال: سئل محمد بن علي بن الحسين» (in the matn)
+            ("rida_0031#13", 3, "ابي جعفر", False),              # «حدثني أبي جعفر»: never the bare «أبي» near the end
+            ("rida_0004#3", 5, "علي بن الحسين", False),          # round 2's case stays
+            ("rida_0005", 8, "علي بن ابي طالب", True),           # the next «وباسناده» repeats the whole chain
+            ("rida_0011", 8, "علي بن ابي طالب", True),           # «رأيت النبي» in the head names no link: whole chain kept
+        ]
+        for short, length, last, inherited in cases:
+            with self.subTest(short):
+                chain = self.chain(short)
+                self.assertEqual((len(chain), cb.fold(chain[-1].surface)), (length, last))
+                self.assertEqual(chain[-1].inherited_from is not None, inherited)
+
+    def test_named_route_after_a_route_without_companion(self):
+        # «ومن طريق عائشة» after «أبو عبيدة عن جابر قال: بلغني عن رجل»: Jabir is kept, ʿAʾisha follows him.
+        self.assertEqual(self.surfaces("rabi_0650"), ["ابو عبيده", "جابر", "عائشه"])
+        self.assertEqual(self.surfaces("rabi_0546"), ["ابو عبيده", "جابر بن زيد", "عائشه"])   # «ومن طريقها قالت»: no «ت»
 
     def test_continuation_inherits_marked_names_and_opener_is_never_a_mention(self):
         imam_chain = self.surfaces("rida_0001")
@@ -229,6 +274,99 @@ class SunniChainRules(unittest.TestCase):
         for identities, surfaces, expected in cases:
             with self.subTest(identities=identities, surfaces=surfaces):
                 self.assertEqual(cb.missing_link_after(identities, deaths, surfaces), expected)
+
+
+class SunniRound3(unittest.TestCase):
+    """The round 2 re-check's failing Sunni examples (chain-audit/round2/README.md) and cases round 2 already got right.
+    Input: the bundle branches the builder reads (chain-audit/round2/r3_fixtures.json, cut by make_r3_fixtures.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        data = json.loads((HERE.parent / "chain-audit" / "round2" / "r3_fixtures.json").read_text(encoding="utf-8"))
+        cls.reports = data["reports"]
+
+    def rebuilt(self, hadith_id: str) -> list[list[str]]:
+        report = self.reports[hadith_id]
+        return [[m.surface for m in chain.mentions]
+                for chain in cb.build_sunni_chains(report["text_ar"], report["branches"], Counter())]
+
+    def test_routes_run_from_the_compiler_shaykh_to_the_shared_tail(self):
+        # (report, every route ends with these names): the shared tail after «ح», «كلهم/كلاهما/جميعا», a repeated name,
+        # a wording attribution («قال ابن المثنى حدثنا»), «كلاهما عن X، بهذا الإسناد».
+        cases = [
+            ("hadith:k6:7805", ["أبا العالية", "ابن نبيكم"]),        # was [محمد بن المثنى] alone
+            ("hadith:k6:16725", ["عبد الله بن قرط"]),                  # was cut at «عيسى» with a headless tail
+            ("hadith:k6:11239", ["نافع", "ابن عمر"]),                  # 7 routes stopped at «ح»
+            ("hadith:k6:9552", ["محمد", "أم عطية"]),
+            ("hadith:k6:7510", ["أبيه", "النبي"]),                     # «أبو خالد الأحمر ح» stored as one surface
+            ("hadith:k6:11255", ["عبد الله بن دينار"]),
+            ("hadith:k6:13589", ["أبا هريرة"]),                        # «أنهما سمعا أبا هريرة»: both co-transmitters
+            ("hadith:k6:14282", ["محمد بن سيرين", "أبي هريرة"]),       # round 2 right: stays
+            ("hadith:k6:29819", ["مسروق", "عبد الله"]),                # round 2 right: stays
+        ]
+        for hadith_id, tail in cases:
+            with self.subTest(hadith_id):
+                routes = self.rebuilt(hadith_id)
+                self.assertTrue(routes)
+                for route in routes:
+                    self.assertEqual(route[-len(tail):], tail, route)
+
+    def test_exact_routes(self):
+        cases = [
+            ("hadith:k6:4489", [["مؤمل هو ابن هشام", "إسماعيل بن إبراهيم", "عوف", "أبو رجاء", "سمرة بن جندب"]]),   # «وحدثنا» without «ح»: no split (turath: no waw)
+            ("hadith:k6:4794", [["إسحاق بن منصور", "عبد الرزاق", "معمر", "همام", "أبي هريرة"]]),                  # Bukhari «قال: وحدثنا»
+            ("hadith:k6:9735", [["محمد بن بشار", "سعيد بن الربيع", "شعبة"], ["حدثنيه إسحاق بن منصور", "أبو داود", "شعبة"]]),
+            ("hadith:k6:21409", [["وسألت محمدا", "سليمان بن حرب", "حماد بن زيد"]]),     # round 2 lost its only chain
+            ("hadith:pure-canon:pc_71896", [["عبد الرزاق", "ابن جريج"], ["عبد الرزاق", "روح", "ابن جريج"]]),
+            ("hadith:k6:7852", [["ابن أبي عمر", "سفيان", "مطرف بن طريف", "الشعبي", "المغيرة بن شعبة"],
+                                ["ابن أبي عمر", "سفيان", "عبد الملك بن سعيد", "الشعبي", "المغيرة بن شعبة"]]),
+            ("hadith:k6:28195", [["محمود بن خالد", "عمر", "الأوزاعي", "ابن شهاب", "عروة", "جابر"],
+                                 ["عمرو بن عثمان", "بقية بن الوليد", "الأوزاعي", "الزهري", "عروة", "جابر"]]),
+            # No tested rule gives the first route its tail (owner's rule: then do not split); the flattened chain stays.
+            ("hadith:k6:4144", [["سعيد بن عفير", "ليث", "عقيل", "ابن شهاب", "إسحاق", "يعقوب بن إبراهيم", "ابن أخي ابن شهاب"]]),
+        ]
+        for hadith_id, expected in cases:
+            with self.subTest(hadith_id):
+                self.assertEqual(self.rebuilt(hadith_id), expected)
+
+    def test_names_after_a_verb_are_narrators(self):
+        # (report, a name every route must carry)
+        cases = [("hadith:k6:25756", "عائشة"), ("hadith:k6:8169", "زيد بن خالد الجهني"),
+                 ("hadith:k6:4741", "أبو سلمة بن عبد الرحمن"), ("hadith:pure-canon:pc_46421", "كثير ابن كثير ابن المطلب ابن أبي وداعة")]
+        for hadith_id, name in cases:
+            with self.subTest(hadith_id):
+                for route in self.rebuilt(hadith_id):
+                    self.assertIn(name, route)
+
+    def test_attributions_and_asides_are_not_narrators(self):
+        cases = [("hadith:k6:9826", "الآخران"), ("hadith:k6:13913", "ابن رافع"), ("hadith:k6:27269", "أنا أسمع"),
+                 ("hadith:k6:9600", "في حديث يونس"), ("hadith:k6:9735", "في حديث سعيد بن الربيع")]
+        for hadith_id, surface in cases:
+            with self.subTest(hadith_id):
+                self.assertFalse(any(surface in route for route in self.rebuilt(hadith_id)))
+
+    def test_split_link_verbs(self):
+        cases = [
+            ("عبد الملك بن سعيد سمعا الشعبي يخبر", ["عبد الملك بن سعيد", "الشعبي"]),
+            ("أبو سلمة بن عبد الرحمن أنهما سمعا أبا هريرة", ["أبو سلمة بن عبد الرحمن", "أبا هريرة"]),
+            ("يزيد بن الأصم حدثتني ميمونة بنت الحارث", ["يزيد بن الأصم", "ميمونة بنت الحارث"]),
+            ("إسحاق ابن عبد الله أنهما أخبراه أنهما سمعا أبا هريرة", ["إسحاق ابن عبد الله", "أبا هريرة"]),
+            ("محمد هو ابن إسحاق حدثتني فاطمة بنت المنذر", ["محمد هو ابن إسحاق", "فاطمة بنت المنذر"]),
+            ("كليب حدثتني ربيبة النبي", ["كليب", "ربيبة النبي"]),
+            ("لقد حدثتني عائشة زوج النبي", ["عائشة"]),
+            ("ابن المنكدر سمعا جابرا يزيد أحدهما على الآخر", ["ابن المنكدر", "جابرا"]),
+            ("عبد الله بن عمر", ["عبد الله بن عمر"]),
+        ]
+        for surface, expected in cases:
+            with self.subTest(surface):
+                self.assertEqual(cb.split_link_verbs(surface), expected)
+
+    def test_same_written_name(self):
+        cases = [("جابرا", "جابر", True), ("أبا هريرة", "أبي هريرة", True), ("الليث", "ليث", True),
+                 ("ابن نمير", "عبد الله بن نمير", False), ("عمر", "عمرو", False)]
+        for a, b, expected in cases:
+            with self.subTest((a, b)):
+                self.assertEqual(cb.same_name(a, b), expected)
 
 
 if __name__ == "__main__":

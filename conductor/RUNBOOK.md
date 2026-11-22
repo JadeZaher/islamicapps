@@ -602,3 +602,41 @@ Deploy: `0016` is applied; push to both branches. Live: `/hadith/k6/28195/chains
 Rollback: code, redeploy the milestone 2 commit (it ignores the new column; the new basis shows its raw name). Data: load
 `development/chain-builder-r2-2026-11-22/projection-m2c` after re-exporting it with the 0016 catalog and the
 `*.20261122_r2m3.bak` external sidecars, then re-record the preview approval.
+
+## Chain builder round 3 (2026-11-22)
+
+The round 2 re-check (`datasets/hadith-data/chain-audit/round2/`, README first) found round 2 helped Imami, al-Rabi, Zayd and
+Rida but not Sunni (strict defects 17.3% against 10.7%), with regressions: Sunni seam re-cuts defective 27/30, 162 names
+trimmed after «سمعا/حدثتني», 190 Ibadi/Zaydi reports with a written chain and none stored, Rida chains past the named speaker.
+Rules and rationale: `datasets/hadith-data/pg_export/AGENTS.md` §Chain builder and §Sunni chains (round 3 bullets). Logs, dumps,
+projections: `datasets/hadith-data/development/chain-builder-r3-2026-11-22/`. No migration this round (catalog `0016` unchanged).
+
+Every export now runs `python -I datasets/hadith-data/pg_export/check_projection.py <projection>` before the load (~10 s): the
+file-level chain invariants of `db:verify-data`, so a nine-minute load cannot fail on one of them.
+
+### Milestone A: regressions (projection `2026.11.22.6`)
+
+- **Sunni**: a seam splits only at a route head and only when a tested rule gives the earlier route its shared tail; any route
+  stopping at «ح» takes its shared tail; the extractor is re-run past a wording attribution or a convergence word; a transmission
+  verb inside a surface is a link; asides («وأنا أسمع», «في حديث X», «الآخران») are not names.
+- **al-Rabi, Musnad Zayd**: a low-confidence report that opens with the work's fixed isnad gets that chain (148 of 190).
+- **Sahifat al-Rida**: a continuation stops at the speaker it names (13 chains shortened, 3 regain the whole chain).
+- **External claims** rebuilt against an interim projection without Sunni and OpenITI claims (`reconciled-interim-a`,
+  `projection-a-interim`; sidecars backed up as `*.20261122_r3a.bak`): 368,575 -> 375,415 claims. Imami chains and candidates
+  identical; 44 Imami mentions lose a standing identity because Riwayat N0152816 and N0002797 now meet the "name held by several
+  ids" label rule (label status counts claims across the corpus).
+- **Loaded**: dataset version `83a827a8…`, 72,277 rows changed (chains +29 ~5,413 retired 807; mentions +11,152 ~12,543 retired
+  4,351; candidates +16,768 ~5,514 retired 9,834), 437 s, every check passed; preview approval re-recorded at once
+  (`approve-a.log`). Curation rows before the load: `curation-dump-before-a/`.
+- **Numbers**: short Sunni chain (<= 3) beside a long sibling (>= 5) in K6: 679 before round 2, 817 after it, 372 now. Sunni standing
+  identities 132,358 -> 135,381 (every collection up), Ibadi 484 -> 525, Zaydi 2,452 -> 2,566, Imami 27,788 -> 27,744;
+  `narrator_transmissions` 27,111 -> 27,586 rows.
+
+Deploy: no migration and no app code change; push to both branches. Live: `/hadith/k6/7805/chains` (both routes to Ibn ʿAbbas),
+`/hadith/k6/7852/chains` (al-Shaʿbi on both routes), `/hadith/k6/4489/chains` (one route, no false seam), `/hadith/k6/28195/chains`
+(two routes), `/hadith/openiti/ibadi/rabi_0094%7C94%7CV01P029` (Abu ʿUbayda > Jabir > unnamed «بلغني»),
+`/hadith/openiti/imami/rida_0031%2323%7C31%7CV01P490` (stops at ʿAli b. al-Husayn).
+
+Rollback: data, load `development/chain-builder-r2-2026-11-22/projection-m3` again (exported with the same `0016` catalog, so it
+loads as it stands), then re-record the preview approval; the `*.20261122_r3a.bak` sidecars restore the external claims it was
+built with. Code: the builder change is export-time only; `40264df` rebuilds `projection-m3`.

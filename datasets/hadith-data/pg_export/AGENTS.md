@@ -15,6 +15,8 @@ python -I datasets/hadith-data/pg_export/test_export_postgres.py
 python -I datasets/hadith-data/pg_export/test_transliteration.py      # transliteration and mention spans
 python -I datasets/hadith-data/pg_export/test_identity_rules.py       # provider English, Imam kunyas, the tier
 python -I datasets/hadith-data/pg_export/test_chain_chronology.py     # chronology rule, seams, who is withheld
+python -I datasets/hadith-data/pg_export/test_chain_builder.py        # chain builder on real works and the re-checks' cases
+python -I datasets/hadith-data/pg_export/check_projection.py <dir>    # before any load: the file-level chain invariants (~10 s)
 ```
 
 Since projection `2026.11.21.6` the catalog must come from a database migrated to `0013`
@@ -195,6 +197,19 @@ extractor is reused unchanged, so no Sunni or Thaqalayn chain can move (measured
 - **One span.** A report's own chain is cut from the parser's `sanad_ar`, never from `text_ar`. A low-confidence split
   (`split_confidence = low`) has no own chain: 307 reports lose a chain the old whole-text guess gave them (the audit found
   41 of 54 sampled such chains wrong).
+- **Fixed-shape opening (round 3).** Low confidence about where the matn starts is not low confidence about the opening: when
+  the text opens with the work's fixed isnad (`fixed_shape_span`, after the compiler is stripped) the chain is read from that
+  span and stops at the first word the shape cannot explain. al-Rabi: «أبو عبيدة [عن | قال: قال] جابر بن زيد [عن | قال: قال |
+  قال: سمعت] <Companion>», Abu ʿUbayda directly from a Companion, and «بلغني/بلغنا عن X» (X may be the Prophet: the balagh
+  gap ends the chain); the Companion slot refuses verbs and collectives («جاء», «بلغني», «جملة», «أناسا»). Musnad Zayd: «[حدثني]
+  زيد بن علي [عن أبيه [عن جده [عن علي]] | عن آبائه عن علي]», a slip («زيد بن علي بن ابيه») stops at Zayd. Any other opening stores
+  no chain. 148 of the re-check's 190 reports get a chain back (al-Rabi 114, Zayd 34); the page still shows the text whole.
+- **Continuations name their speaker (round 3).** The head of a low-confidence continuation, or the matn's first words when the
+  span is only «وباسناده قال:», is read past «قال/قالت/سئل/حدثني» up to the speaker's blessing; a name that matches a link of the
+  route shortens it there (`continuation_names_match`: the written form counts, «أبي جعفر» = «أبي جعفر بن محمد», and a bare
+  «أبي» never stands for a longer name). Words that name no link («رسول اله», «رأيت النبي») are ignored: round 2 dropped the
+  whole chain for them. «ومن طريق X» after a route ending at al-Rabi's own transmitter (Abu ʿUbayda, Jabir: no Companion
+  written) adds X after him instead of replacing him.
 - **Continuations.** A report the parser marks as continuing («وبهذا السند», «وباسناده», «ومن طريقه», and since round 2
   «ومن طريق X»: `parse_openiti.py` `RE_CONTINUATION_CHAIN`, 22 al-Rabi reports) carries its parent's mentions, each naming
   the written mention it repeats (`chain_mentions.inherited_from_mention_id`) and copying that mention's candidates. The
@@ -253,10 +268,40 @@ because label status counts claims across the corpus).
 or trimmed mention keeps its bundle (branch, position) as `origins`, so its source-index claim follows it (the alignment is
 never recomputed on the new branches). The rules are the audit's detectors, ported (`surface_gaps`, `seam_positions`):
 
-- **Seam.** A standalone «ح» or a waw-led new transmission verb between two stored neighbours, not followed by the previous
-  shaykh's name (that is a benign convergence), starts a new route. Each earlier route continues along the last one after the
-  name it converges on (same folded surface), else ends there. Round 1's view guard (no pair between two occurrences of one
-  narrator) stays for every chain not split.
+- **Seam (round 3; round 2's rule cut 27 of 30 sampled chains wrong).** A break between two stored neighbours is a standalone
+  «ح» in the text between them, a «ح» stored at the end of a surface («ابن شهاب ح»), or a waw-led verb («وحدثنا») with nothing
+  after it. Each break records two facts: does the earlier piece's last name stand right before it (only asides: «وهو ابن زيد»,
+  «يعني …», «واللفظ له»), and does only a verb stand between it and the next stored name (a route head). k6:16725's gap
+  «ح وحدثنا مسدد، أخبرنا عيسى، … عن» has names after the «ح», so «ثور» is no head: the bundle had already joined that route.
+  Pieces are resolved against every route of the report (`resolve_pending`): an earlier piece takes its **shared tail**
+  (`shared_tail`) by (a) a later route repeating one of its last two names at a position after that route's head (suffix
+  alignment, the extractor's own tahwil rule; «الزهري» and «ابن شهاب» count as one man, `SAME_MAN`, for convergence only), or
+  (b), for a «ح» break only, the first convergence word («كلاهما/كلهم/جميعا/كل هؤلاء») after the break that stands directly
+  after a later route's name, with no «رسول الله/النبي» between. A piece that does not end at its break, or does not start at a
+  head, is dropped only when another route of the report already holds it (its start, resp. its end); otherwise the whole stored
+  chain stays as it was (owner: no tested rule, no split; round 1's view guard covers a repeated narrator). A waw-verb break
+  without «ح» splits only by (a): k6:4489 and k6:4794 («وحدثنا» with no «ح», turath prints no waw or Bukhari's «قال: وحدثنا»)
+  are whole again; k6:28195 («قال وأخبرني», al-Awzaʿi twice) is two routes.
+- **Short routes (`complete_short_routes`).** Any route, the bundle's or a split's, whose last name is followed by a «ح» gets its
+  shared tail by (a) or (b); 7 of k6:11239's 11 routes stopped there. Co-transmitters joined by a waw at one position
+  (`share_co_transmitter_continuations`) share what follows: a route that stops there, or skips a name its partner carries
+  split off a verb («مطرف بن طريف، وعبد الملك بن سعيد، سمعا الشعبي»), takes the partner's continuation. Chains are located in
+  the text in stored order (`ordered_spans`): a repeated head («قتيبة بن سعيد» twice, k6:9600) is found where it stands.
+- **Where the extractor stopped (`extend_stopped_branches`, the canonical extractor reused unchanged).** After a wording
+  attribution naming a stored co-transmitter («قال ابن المثنى حدثنا», also «قال عبد أخبرنا وقال ابن رافع حدثنا») or a convergence
+  word followed by «عن», the extractor is re-run on the text without that span and the branch is extended only when a
+  re-extracted branch starts with exactly the stored one (k6:7805). «كلاهما عن X، بهذا الإسناد» adds X (the extractor drops a
+  name before a back-reference). After the last stored name, «، أن عائشة، أخبرته» / «سمع X» add X, link by link (at most three).
+  Added names have no origin, so no source-index claim moves onto them.
+- **A transmission verb is a link** (`split_link_verbs`; round 2's trim dropped the name after it in 162 mentions). «X سمعا Y»,
+  «X حدثتني Y», «X أنهما سمعا Y», «X أن Y أخبرته», «الزهري فأخبرني Y» are two names; frame words («أنهما», «يحدث», «زوج») are
+  not part of a name, «قد/لقد» before a verb is no name, «ربيبة النبي» is a person. A name split off that the bundle already
+  stores next («سمعا جابرا» before «جابر», accusative alif allowed: `same_name`) is not repeated. «أبي ومحمد بن بشر» in one
+  surface is two co-transmitters (`split_fused_names`).
+- **Asides that are not names.** «وأنا أسمع» (of «قراءة عليه وأنا أسمع»), «في حديث X», «في رواية X», «إنما هو», «الآخران»,
+  «كل هؤلاء» join the formula class; a position left empty drops only the position unless a sibling branch differs from this one
+  only there (then the branch was the aside's artefact): round 2 dropped any branch with an emptied position and k6:21409 and
+  pc_20809 lost their only chain.
 - **Formula words** (the audit's high-confidence list: «بهذا الإسناد», «كلاهما», «مثله», «نحوه», «اللفظ», «حدثنا» ...) are cut out
   of a name; a surface with nothing of a name left is dropped; a branch that existed only because an aside («اللفظ لعمرو»,
   «تقاربا في اللفظ») was read as a co-transmitter is dropped (dropping just the aside would join its neighbours). The

@@ -1,0 +1,218 @@
+{
+ "groups": {
+  "sunni_k6": {
+   "read": 67,
+   "judged": 67,
+   "unverifiable": 0,
+   "defects": 18,
+   "strict": 14,
+   "any_defect": "18/67 = 26.9% (17.7%-38.5%)",
+   "strict_defect": "14/67 = 20.9% (12.9%-32.1%)",
+   "kinds": {
+    "name_over_extended": 4,
+    "missing_link": 8,
+    "truncated_route": 1,
+    "not_a_narrator": 3,
+    "wrong_split": 1,
+    "merged_names": 1
+   }
+  },
+  "sunni_pure_canon": {
+   "read": 33,
+   "judged": 31,
+   "unverifiable": 2,
+   "defects": 6,
+   "strict": 3,
+   "any_defect": "6/31 = 19.4% (9.2%-36.3%)",
+   "strict_defect": "3/31 = 9.7% (3.3%-24.9%)",
+   "kinds": {
+    "name_over_extended": 3,
+    "not_a_narrator": 2,
+    "merged_names": 1
+   }
+  },
+  "sunni_all": {
+   "read": 100,
+   "judged": 98,
+   "unverifiable": 2,
+   "defects": 24,
+   "strict": 17,
+   "any_defect": "24/98 = 24.5% (17.0%-33.9%)",
+   "strict_defect": "17/98 = 17.3% (11.1%-26.0%)",
+   "kinds": {
+    "name_over_extended": 7,
+    "missing_link": 8,
+    "truncated_route": 1,
+    "not_a_narrator": 5,
+    "wrong_split": 1,
+    "merged_names": 2
+   }
+  },
+  "imami": {
+   "read": 69,
+   "judged": 68,
+   "unverifiable": 1,
+   "defects": 21,
+   "strict": 9,
+   "any_defect": "21/68 = 30.9% (21.2%-42.6%)",
+   "strict_defect": "9/68 = 13.2% (7.1%-23.3%)",
+   "kinds": {
+    "not_a_narrator": 4,
+    "name_over_extended": 7,
+    "missing_link": 3,
+    "branch_seam": 1,
+    "wrong_split": 1,
+    "name_truncated": 1,
+    "other": 4
+   }
+  },
+  "rabi": {
+   "read": 40,
+   "judged": 40,
+   "unverifiable": 0,
+   "defects": 3,
+   "strict": 1,
+   "any_defect": "3/40 = 7.5% (2.6%-19.9%)",
+   "strict_defect": "1/40 = 2.5% (0.4%-12.9%)",
+   "kinds": {
+    "missing_link": 1,
+    "name_over_extended": 2
+   }
+  },
+  "zayd": {
+   "read": 40,
+   "judged": 40,
+   "unverifiable": 0,
+   "defects": 0,
+   "strict": 0,
+   "any_defect": "0/40 = 0.0% (0.0%-8.8%)",
+   "strict_defect": "0/40 = 0.0% (0.0%-8.8%)",
+   "kinds": {}
+  },
+  "rida": {
+   "read": 40,
+   "judged": 40,
+   "unverifiable": 0,
+   "defects": 5,
+   "strict": 5,
+   "any_defect": "5/40 = 12.5% (5.5%-26.1%)",
+   "strict_defect": "5/40 = 12.5% (5.5%-26.1%)",
+   "kinds": {
+    "inherited_chain_wrong": 3,
+    "missing_link": 2
+   }
+  }
+ },
+ "populations": {
+  "sunni_split": {
+   "n": 30,
+   "judged": 30,
+   "defects": 27,
+   "rate": "27/30 = 90.0% (74.4%-96.5%)",
+   "kinds": {
+    "name_over_extended": 3,
+    "false_seam": 2,
+    "missing_link": 6,
+    "wrong_split": 5,
+    "not_a_narrator": 9,
+    "merged_names": 2
+   }
+  },
+  "imami_jamian": {
+   "n": 30,
+   "judged": 30,
+   "defects": 9,
+   "rate": "9/30 = 30.0% (16.7%-47.9%)",
+   "kinds": {
+    "name_over_extended": 2,
+    "branch_seam": 2,
+    "missing_link": 2,
+    "concatenated_isnads": 3
+   }
+  },
+  "imami_susp:route_given_elsewhere": {
+   "n": 30,
+   "judged": 30,
+   "defects": 5,
+   "rate": "5/30 = 16.7% (7.3%-33.6%)",
+   "kinds": {
+    "not_a_narrator": 1,
+    "missing_link": 1,
+    "name_over_extended": 2,
+    "wrong_split": 1
+   }
+  },
+  "imami_susp:mid_chain_start": {
+   "n": 30,
+   "judged": 30,
+   "defects": 4,
+   "rate": "4/30 = 13.3% (5.3%-29.7%)",
+   "kinds": {
+    "not_a_narrator": 2,
+    "missing_link": 1,
+    "name_over_extended": 1
+   }
+  },
+  "imami_susp:back_reference": {
+   "n": 30,
+   "judged": 30,
+   "defects": 5,
+   "rate": "5/30 = 16.7% (7.3%-33.6%)",
+   "kinds": {
+    "not_a_narrator": 4,
+    "name_over_extended": 1
+   }
+  },
+  "imami_anon": {
+   "n": 30,
+   "judged": 30,
+   "defects": 4,
+   "rate": "4/30 = 13.3% (5.3%-29.7%)",
+   "kinds": {
+    "missing_link": 1,
+    "not_a_narrator": 2,
+    "name_over_extended": 1
+   }
+  },
+  "rabi_inherit": {
+   "n": 30,
+   "judged": 30,
+   "defects": 1,
+   "rate": "1/30 = 3.3% (0.6%-16.7%)",
+   "kinds": {
+    "duplicated_narrator": 1
+   }
+  },
+  "imami_filled": {
+   "n": 30,
+   "judged": 29,
+   "defects": 3,
+   "rate": "3/29 = 10.3% (3.6%-26.4%)",
+   "kinds": {
+    "missing_link": 1,
+    "name_over_extended": 1,
+    "not_a_narrator": 1
+   }
+  }
+ },
+ "regression_rows": 183,
+ "regression_by_kind": {
+  "missing_link": 11,
+  "wrong_split": 6,
+  "false_seam": 2,
+  "name_lost_by_trim": 162,
+  "chain_lost": 2
+ },
+ "trim_lost_rows": 162,
+ "trim_lost_hadiths": 142,
+ "classified": {
+  "sunni:unchanged": 27,
+  "sunni:worse_lost_names": 19,
+  "imami:unchanged": 28,
+  "imami:worse_lost_names": 19,
+  "rabi:not_compared": 4,
+  "rida:not_compared": 5,
+  "sunni:changed_other": 5,
+  "imami:changed_other": 4
+ }
+}
