@@ -936,3 +936,49 @@ routes confirmed (status only), 30 "no chain is written in this report". **46 wa
   `datasets/hadith-data/chain-fixes/accepted_overrides.jsonl.gz` aside (never delete) so the next export replays nothing.
 - A failed apply rolls back per report and leaves the rest; rerun the same command (written fixes are seen as applied and skipped).
 - Schema: never edit 0021/0022; the views and columns are additive and harmless when empty. Code: redeploy `98a7277` (it ignores the new views; model-read chains then show without the label).
+
+## Variant remarks and tranche dry runs (2026-11-22)
+
+No schema change, no load, no fix applied to production. Three things built, two measured. Detail: `datasets/hadith-data/chain-fixes/AGENTS.md` (§variant groups and remarks, §compiler mark per route),
+`reviews/ai/AGENTS.md` (v3.2 tool), `datasets/hadith-data/chain-reader/tranches/AGENTS.md` §Dry run. Local logs and scratch stores: `datasets/hadith-data/development/tranche-dry-run-2026-11-22/` (git-ignored).
+
+- **Variant remarks.** A reader group marked `variant: true` («بمثل حديث سليمان بن بلال») never becomes a route. `chain-fix-submit --variant-notes-supported` (with `to_submission_v3_2.py --variant-notes-supported`
+  building the envelope) stores the union of both passes' remarks on the fix as `planned.variant_remarks` (`chain_fixes.planned` is jsonb, so no migration; each remark marked `a`, `b` or both, with the runs),
+  refuses a fix whose two passes' routes differ, and drops only the `has_variant_group` hold (`variant_only_reading` stays). Overrides carry `variant_remarks` on any effect; replay counts them and makes no row.
+  The chain page reads `chain_fixes.planned -> 'variant_remarks'` beside `public_chain_fix_labels` and shows "The report mentions another version: <Arabic sentence> · names <names>" under the chain
+  (a remark one pass wrote is marked "noted by one of the two readers"). A revert, rejection or changed text removes it with the chain. Flow tests: `reviews/ai/tools/__tests__/chain-fix.test.ts` (envelope, switch, decide,
+  override, replay, rejection), `src/db/ops/__tests__/chain-fix-apply.test.ts` (apply and revert, page read), `chain-fixes/test_chain_fix_engine.py` (`VariantRemarkTest`).
+- **Compiler mark per route.** `WorkRegister.route_links` (`pg_export/work_register.py`) reads each later route's own opening words; the engine plans it as `compiler_link`, the apply writes it, replay uses it or computes it
+  (`chain_fix_projection.rewrite_rows(..., register)`). `hadith:k6:2400` route 1 «وقال الليث»: direct -> indirect (test `CompilerHeadPerRouteTest`). Of the 129 later routes of the 76 applied multi-route fixes that a compiler heads,
+  **4 differ from production**: `chain:k6:2400:0001`, `chain:k6:348:0001`, `chain:k6:6230:0001` (direct -> indirect, «وقال X») and `chain:k6:23555:0002` (indirect -> direct, «حدثنا بذلك»). Production is **not** changed: the next full
+  load writes them (a load then changes exactly those 4 chain rows' `compiler_link`; the model-read chains feed no list, so `narrator_transmissions` does not move). A name-opening work (al-Kafi, al-Saduq) and a co-transmitter joined by «و» keep the report's mark.
+- **Dry runs** (`dry_run_tranche.py`, `dry_run_report.py`; `chain-fix-apply.ts --dry-run --no-mirror` is the store-free rehearsal: each report's transaction inserts its fix row, applies, records the tally and rolls back). Eligible = the v3.2
+  triage (tranche 01 read under prompt v3.1, tranche 02 under the v3.2 draft). Per group (six Sunni books / al-Faqih / other Imami), without -> with `--variant-notes-supported`:
+
+| | eligible in | refused | recorded | held by the pipeline | would apply | routes rewritten | stored chain confirmed | no chain | inherited links | source named in text | variant remark |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| t01 six Sunni | 577 -> 620 | 0 | 577 -> 620 | 42 -> 43 | 535 -> 577 | 424 -> 453 | 110 -> 123 | 1 | 0 | 0 | 0 -> 42 |
+| t01 al-Faqih | 52 | 0 | 52 | 10 | 42 | 38 | 0 | 4 | 8 | 25 | 0 |
+| t01 other Imami | 105 | 0 | 105 | 12 | 93 | 76 | 11 | 6 | 5 | 28 | 0 |
+| **t01 total** | 734 -> 777 | 0 | 734 -> 777 | 64 -> 65 | **670 -> 712** | 538 -> 567 | 121 -> 134 | 11 | 13 | 53 | 0 -> 42 |
+| t02 six Sunni | 549 -> 612 | 0 | 549 -> 612 | 38 -> 40 | 511 -> 572 | 390 -> 437 | 121 -> 135 | 0 | 0 | 0 | 0 -> 61 |
+| t02 al-Faqih | 48 | 1 | 47 | 6 | 41 | 30 | 4 | 7 | 4 | 16 | 0 |
+| t02 other Imami | 109 -> 111 | 0 | 109 -> 111 | 10 -> 11 | 99 -> 100 | 81 -> 82 | 15 | 3 | 3 | 20 | 0 -> 1 |
+| **t02 total** | 706 -> 771 | 1 | 705 -> 770 | 54 -> 57 | **651 -> 713** | 501 -> 549 | 140 -> 154 | 10 | 7 | 36 | 0 -> 62 |
+
+  Refused: one (t02 al-Faqih): the reader's validator, «order: r1 link 5 starts at 175 before link 4 ends at 327» (a second route not in text order). No stale text. Held (pipeline, archive side), codes may stack on one fix:
+  `stored_chain_checked_by_rule` 54 (t01) / 49 (t02) and with the switch 55 / 51; `inherited_source_chain_uncertain` 8 / 2 (al-Faqih and other Imami: an earlier report whose chain is not rule-checked); `inherited_name_not_in_source_chain` 2 / 0;
+  `cited_by_later_report` 1 / 3 (4 with the switch). Without the switch the 43 and 65 variant readings never reach an envelope (the reader tool holds them as `has_variant_group`); with it none is held for that. Remarks written by both passes 32, by pass A only 10, by pass B only 9 (tranche 01).
+  **`narrator_transmissions`: nothing would touch it**: no would-apply fix has a rule-checked or unstatused chain (that is what the hold keeps out), all 34 `chain_fix_work_settings` are `false`, and the view holds 28,468 rows (unchanged).
+  Caveat: the "with" runs rehearse only the fixes the "without" run did not have (its plan stands for the rest: `apply-plan.json` `merged_with_baseline`).
+- **Rule-checked chains (measured, behaviour unchanged; owner decision pending).** The readings held as `stored_chain_checked_by_rule` (batch 001: 30; tranche 01: 55; tranche 02: 51; 136 reports with 144 rule-checked chains):
+  the agreed reading leaves **93 reports with every rule-checked chain identical** and **changes a rule-checked chain in 43** (51 of the 144 chains changed, 93 identical; batch 001 9 of 30 reports, tranche 01 20 of 55, tranche 02 14 of 51).
+  Teacher-student pairs of those chains (present in `narrator_transmissions`): 271 report-pair incidences, 252 distinct pairs. If the reports' chains leave the lists (a model-read chain feeds none): **42 pairs disappear** (supported by no other report; 28 reports lose at least one),
+  the rest only lose a supporting report; **0 pairs appear**. If the readings were admitted instead: 181 of the 271 are kept by the reading (both names adjacent, identity carried) and **0 appear** (the carry rule forms no new pair). Per source (incidences / vanishing): batch 001 29 / 2; tranche 01 132 / 23; tranche 02 110 / 17.
+  Ten examples with the stored chain, the reading and the text quote: `chain-reader/tranches/dry-run-2026-11-22/rule-checked-examples.json` (kinds: a non-chain word stored as the chain; a missing co-transmitter route; the compiler stored as the first link; a taḥwīl merged into one chain; a name taken from the other route; a relation prefix «أبيه» dropped).
+  Numbers per fix: `rule-checked-measure.json`.
+- **Checks**: Python suites (`pg_export` 100, `chain-fixes` 28, `chain-reader/v3_2` 27, `tests` 21, `v3` 24, `v3_1` 45), `chain-fix.test.ts`, `chain-fix-apply.test.ts` (4), `structure-flows` / `flows` / `chain-builder-flows`, `tsc`, `npm run build`: see the sweep line below.
+  Two lessons from the rehearsal: a killed `chain-fix-apply --dry-run` leaves its backend `idle in transaction` holding the data-write advisory lock until reaped (found in `pg_locks`, reaped by exact pid); and a driver loop must be started once with `run_in_background`, never with `&`.
+
+### Rollback
+- Variant remarks: stop passing `--variant-notes-supported` (the hold returns); the remark lives only on the fix row. Compiler mark: make `route_links` return no marks (replay then copies the first chain's, as before); code: redeploy `de483e6`.

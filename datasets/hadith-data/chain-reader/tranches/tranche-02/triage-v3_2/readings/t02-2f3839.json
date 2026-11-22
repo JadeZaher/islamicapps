@@ -1,0 +1,205 @@
+{
+ "expanded_a": {
+  "id": "t02-2f3839",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "ابن ماجه",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "عبد الرحمن بن إبراهيم الدمشقي",
+      "start": 6,
+      "end": 35,
+      "kind": "narrator"
+     },
+     {
+      "surface": "محمد بن شعيب بن شابور",
+      "start": 43,
+      "end": 64,
+      "kind": "narrator"
+     },
+     {
+      "surface": "معاوية بن سلام",
+      "start": 73,
+      "end": 87,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أخيه",
+      "start": 92,
+      "end": 96,
+      "kind": "relation"
+     },
+     {
+      "surface": "أبي سلام",
+      "start": 115,
+      "end": 123,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عبد الرحمن بن غنم",
+      "start": 128,
+      "end": 145,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبي مالك الأشعري",
+      "start": 150,
+      "end": 166,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 166,
+  "notes": [
+   "«عن أخيه، أنه أخبره» makes the brother a link (rule 5: the one who tells Muawiya); he has no name, so he is a relation.",
+   "«عن جده أبي سلام» is one link, the name alone (rule 7)."
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t02-2f3839",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "عبد الرحمن بن إبراهيم الدمشقي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "محمد بن شعيب بن شابور",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "معاوية بن سلام",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أخيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "أبي سلام",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الرحمن بن غنم",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي مالك الأشعري",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«عن أخيه، أنه أخبره» makes the brother a link (rule 5: the one who tells Muawiya); he has no name, so he is a relation.",
+   "«عن جده أبي سلام» is one link, the name alone (rule 7)."
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "t02-2f3839",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "عبد الرحمن بن إبراهيم الدمشقي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "محمد بن شعيب بن شابور",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "معاوية بن سلام",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أخيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "أبي سلام",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الرحمن بن غنم",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي مالك الأشعري",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«عن أخيه» and «عن جده أبي سلام»: «جده» plus a name gives «أبي سلام» alone (rule 7); the brother is named only by relation in the text",
+   "K6I's sequence names the brother «زيد بن سلام»: not in this text, so not written as a link (rule 9)"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "K6I places a name at the brother's position that the text does not write; the text names him only as «أخيه».",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "عن أخيه"
+     },
+     {
+      "source": "K6I",
+      "quote": "زيد بن سلام"
+     }
+    ],
+    "confidence": "low"
+   }
+  ]
+ }
+}

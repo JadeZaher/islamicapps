@@ -7,6 +7,8 @@
  *   npm run db:chain-fixes -- --database production --confirm-production --revert <chain-fix:id> [...]
  *   npm run db:chain-fixes -- --database production --confirm-production --revert-rejected
  *   [--plan <file.json>]   writes what was (or, with --dry-run, would be) written, per report and in total
+ *   --dry-run --no-mirror --store <scratch> --overrides <scratch file>   a store-free rehearsal: nothing is mirrored; each report's
+ *                          transaction inserts its fix row, applies, records the tally and is rolled back (no row stays)
  *
  * Identity rule (docs/review/chain-fix-pipeline.md §Identities): a kept name keeps its candidates; it keeps its standing
  * identity only when both neighbours are unchanged (same fine review unit). A new or changed name starts unresolved. An
@@ -33,6 +35,7 @@ import {
   type BaseChain,
   type FixState,
   type PlannedChain,
+  type VariantRemark,
 } from '../../../reviews/ai/tools/chain-fix-lib';
 
 type Sql = postgres.Sql | postgres.TransactionSql;
@@ -48,7 +51,12 @@ export interface Override {
   effect: 'replace_routes' | 'set_status' | 'annotate';
   structure_status: 'read_by_model' | 'verified_by_reviewer' | null;
   base_chain_sha256: string;
-  planned: { chains: PlannedChain[] } | null;
+  reader_text_sha256?: string;
+  text_layout?: string;
+  fix_kinds?: string[];
+  planned: { chains: PlannedChain[]; variant_remarks?: VariantRemark[] } | null;
+  /** A remark about another version, kept with the fix (never a route, never a row); the page reads it from `chain_fixes.planned`. */
+  variant_remarks?: VariantRemark[];
   /** `no_chain_by_reading`: no planned chain; the report's chains retire and the page says it writes none. */
   disposition?: string | null;
 }
@@ -149,7 +157,9 @@ export async function writeRoutes(sql: Sql, override: Override, base: Awaited<Re
     chainRows.push({ id: chain.id, hadith_id: override.hadith_id, branch: chain.branch, length: chain.length, resolved: false,
       extraction_method: chain.extraction_method, confidence: null, sanad_confidence: sanadConfidence, suspension: chain.suspension,
       missing_link_after: null, structure_status: override.structure_status, structure_reasons: null, chain_fix_id: override.fix_id,
-      compiler_narrator_id: compilerNarratorId, compiler_link: compilerNarratorId ? (chain.suspension ? 'indirect' : compilerLink) : null,
+      compiler_narrator_id: compilerNarratorId,
+      // The route's own mark (work_register.py `route_links`, planned by the engine); a plan without one copies the first chain's.
+      compiler_link: compilerNarratorId ? (chain.suspension ? 'indirect' : (chain.compiler_link ?? compilerLink)) : null,
       first_seen_dataset_version_id: version, changed_in_dataset_version_id: version });
     written.chains.push(chain.id);
     for (const mention of chain.mentions) {
@@ -304,7 +314,8 @@ async function main(): Promise<number> {
     const [{ locked }] = await sql<{ locked: boolean }[]>`select pg_try_advisory_lock(${String(DATA_WRITE_LOCK_KEY)}::bigint) as locked`;
     if (!locked) throw new Error('a load or migration holds the data-write lock; try again after it finishes');
     const [{ id: version }] = await sql<{ id: string }[]>`select id from dataset_versions where is_current`;
-    await sql.begin(async (tx) => console.log(`mirror: ${await syncMirror(tx, storeRoot)} decision rows changed`));
+    if (args.has('no-mirror') && !dryRun) throw new Error('--no-mirror is a rehearsal option: it needs --dry-run');
+    if (!args.has('no-mirror')) await sql.begin(async (tx) => console.log(`mirror: ${await syncMirror(tx, storeRoot)} decision rows changed`));
 
     if (reverting) {
       const paths = storePaths(storeRoot);
@@ -323,6 +334,8 @@ async function main(): Promise<number> {
       for (const override of readOverrides(args.get('overrides') ?? DEFAULT_OVERRIDES)) {
         const tally = emptyTally();
         await sql.begin(async (tx) => {
+          // A rehearsal mirrors nothing: the fix row the chain rows point at lives only inside this rolled-back transaction.
+          if (args.has('no-mirror')) await insertRehearsalFix(tx, override);
           const outcome = await applyOverride(tx, override, version, tally);
           if (outcome !== true) {
             if (outcome) skipped.push({ fix_id: override.fix_id, hadith_id: override.hadith_id, why: outcome });
@@ -351,6 +364,15 @@ async function main(): Promise<number> {
   } finally {
     await sql.end({ timeout: 5 });
   }
+}
+
+/** The fix row a rehearsal needs (chains point at it): from the override alone, inside a transaction that is always rolled back. */
+async function insertRehearsalFix(tx: Sql, override: Override) {
+  await tx`insert into chain_fixes (id, hadith_id, arabic_sha256, reader_text_sha256, text_layout, routes_key, fix_kinds, planned, disposition, created_by)
+           values (${override.fix_id}, ${override.hadith_id}, ${override.arabic_sha256}, ${override.reader_text_sha256 ?? override.arabic_sha256},
+                   ${override.text_layout ?? 'full_text'}, 'rehearsal', ${override.fix_kinds?.length ? override.fix_kinds : ['no_change']},
+                   ${tx.json((override.planned ?? { chains: [] }) as unknown as postgres.JSONValue)}, ${override.disposition ?? null}, ${ACTOR})
+           on conflict (id) do nothing`;
 }
 
 /**

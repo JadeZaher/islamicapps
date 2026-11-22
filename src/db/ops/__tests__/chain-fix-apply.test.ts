@@ -20,8 +20,13 @@ import { applyOverride, liveRows, revertFix, type Override } from '../chain-fix-
 const PROJECTION = process.env.CHAIN_FIX_TEST_PROJECTION ?? 'datasets/hadith-data/development/compiler-chain-fix-2026-11-22/projection';
 const schema = throwawaySchemaName();
 const FIX_ID = 'chain-fix:0123456789abcdef01234567';
+const REMARK = { surfaces: [['سليمان بن بلال']], quote: 'بمثل حديث سليمان بن بلال', start: 0, end: 24, passes: ['a' as const, 'b' as const] };
 let admin: LoaderSql;
 let loader: LoaderSql;
+/** What the page reads (src/db/queries/isnad.ts `chainNodesJson`: the report's live chain's fix, then its planned remarks), minus the public gate the slice lacks. */
+const remarkQuotes = async (hadithId: string): Promise<string[]> => ((await loader.unsafe<{ remarks: { quote: string }[] | null }[]>(
+  `select cf.planned -> 'variant_remarks' as remarks from chains c join chain_fixes cf on cf.id = c.chain_fix_id where c.hadith_id = $1 and c.retired_at is null limit 1`,
+  [hadithId]))[0]?.remarks ?? []).map((remark) => remark.quote);
 
 before(async () => {
   assert.ok(existsSync(path.join(PROJECTION, 'canonical', 'manifest.json')), `no projection at ${PROJECTION}; set CHAIN_FIX_TEST_PROJECTION`);
@@ -74,6 +79,7 @@ test('an accepted fix is written as the model reading, feeds no list, and its re
     base_chain_sha256: chainSha256([{ chain_id: String(chain.id), branch: 0, structure_status: null,
       mentions: mentions.map((m) => ({ id: String(m.id), position: Number(m.position), surface_ar: String(m.surface_ar) })) }]),
     planned: {
+      variant_remarks: [REMARK],
       chains: [{
         id: String(chain.id), branch: 0, length: kept.length, suspension: null, extraction_method: 'chain_fix_reader',
         mentions: kept.map((m, position) => ({
@@ -94,6 +100,7 @@ test('an accepted fix is written as the model reading, feeds no list, and its re
   assert.deepEqual(applied.chains.map((c) => [c.chain_fix_id, c.structure_status, c.length]), [[FIX_ID, 'read_by_model', kept.length]]);
   assert.equal(applied.chains[0].compiler_narrator_id, chain.compiler_narrator_id, 'the compiler head stays with the report');
   assert.equal(applied.chain_mentions.length, mentions.length - 1);
+  assert.deepEqual(await remarkQuotes(hadithId), [REMARK.quote], 'one chain plus the remark, which is no mention');
   // Carried names keep their identity (the engine decides who carries; here every kept name does).
   assert.deepEqual(applied.chain_mentions.map((m) => m.narrator_id), kept.map((m) => m.narrator_id));
   const [{ retired }] = await loader.unsafe<{ retired: number }[]>(
@@ -106,6 +113,7 @@ test('an accepted fix is written as the model reading, feeds no list, and its re
 
   await loader.begin(async (tx) => assert.equal(await revertFix(tx as unknown as LoaderSql, FIX_ID, version), hadithId));
   assert.deepEqual(await liveRows(loader, hadithId), base);
+  assert.deepEqual(await remarkQuotes(hadithId), [], 'the revert takes the remark away with the chain');
   const actions = await loader.unsafe<{ action: string }[]>('select action from chain_fix_applications where fix_id = $1 order by id', [FIX_ID]);
   assert.deepEqual(actions.map((row) => row.action), ['applied', 'reverted']);
 });
@@ -177,5 +185,27 @@ test('an inherited name repeats the cited written mention and its candidates; a 
   // Once the cited chain is no longer rule-checked the same fix waits (stale), and writes nothing.
   await loader.unsafe(`update chains set structure_status = 'uncertain', structure_reasons = array['not_a_name'] where id = $1`, [cited.chain_id]);
   await loader.begin(async (tx) => assert.match(String(await applyOverride(tx as unknown as LoaderSql, override, version)), /stale: the earlier report/));
+  assert.deepEqual(await liveRows(loader, hadithId), base);
+});
+
+test('a variant remark rides on the fix: the page reads it while the fix stands, it adds no chain, mention or pair, and a revert takes it away', async () => {
+  const fixId = 'chain-fix:0123456789abcdef0123456c';
+  const [{ hadith_id: hadithId }] = await loader.unsafe<{ hadith_id: string }[]>(
+    `select c.hadith_id from chains c where c.retired_at is null and c.chain_fix_id is null group by c.hadith_id order by c.hadith_id offset 2 limit 1`);
+  const [{ id: version }] = await loader.unsafe<{ id: string }[]>('select id from dataset_versions where is_current');
+  const remark = REMARK;
+  const planned = { chains: [], variant_remarks: [remark] };
+  const { base, arabicSha256, baseChainSha256 } = await prepare(hadithId, fixId, planned);
+  // A stored chain read the same, with a remark about another version: the fix annotates the chain and carries the remark.
+  const override: Override = { hadith_id: hadithId, record_id: hadithId.replace(/^hadith:/, ''), fix_id: fixId, arabic_sha256: arabicSha256, effect: 'annotate',
+    structure_status: null, base_chain_sha256: baseChainSha256, planned: null, variant_remarks: [remark] };
+  const pageRemarks = async () => (await remarkQuotes(hadithId)).map((quote) => ({ quote }));
+  assert.deepEqual(await pageRemarks(), []);
+  await loader.begin(async (tx) => assert.equal(await applyOverride(tx as unknown as LoaderSql, override, version), true));
+  assert.deepEqual((await pageRemarks()).map((r) => r.quote), [remark.quote], 'the remark shows while the fix stands');
+  const applied = await liveRows(loader, hadithId);
+  assert.deepEqual([applied.chains.length, applied.chain_mentions.length], [base.chains.length, base.chain_mentions.length], 'a remark is no chain and no mention');
+  await loader.begin(async (tx) => assert.equal(await revertFix(tx as unknown as LoaderSql, fixId, version), hadithId));
+  assert.deepEqual(await pageRemarks(), [], 'the revert takes the remark away with the fix');
   assert.deepEqual(await liveRows(loader, hadithId), base);
 });

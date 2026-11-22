@@ -144,6 +144,25 @@ export interface PlannedChain {
   suspension: string | null;
   extraction_method: string;
   mentions: PlannedMention[];
+  /** The compiler's own `direct`/`indirect` mark for this route, from its opening words (work_register.py `route_links`); absent on the first chain and on fixes planned before it. */
+  compiler_link?: 'direct' | 'indirect';
+}
+/** A remark that another version names another transmitter («بمثل حديث X»): kept with the fix and shown under the chain, never a route. */
+export interface VariantRemark {
+  /** The transmitters the other version names, levels of alternatives (as the reader wrote them). */
+  surfaces: string[][];
+  /** The sentence of the remark, an exact stretch of the reader text. */
+  quote: string;
+  start: number;
+  end: number;
+  /** Which reader pass wrote it (`a`, `b`); a remark that only one pass wrote is marked so. */
+  passes: ('a' | 'b')[];
+  /** The runs behind each pass, filled by the submit tool. */
+  by?: { pass: 'a' | 'b'; run_id: string; model_id: string }[];
+}
+export interface PlannedChains {
+  chains: PlannedChain[];
+  variant_remarks?: VariantRemark[];
 }
 export interface ExternalCitation {
   url?: string;
@@ -168,7 +187,7 @@ export interface Submission {
   reading: { routes: { links: Link[]; shared_tail_from: number | null }[]; matn_start: number; notes: string[]; offsets_repaired: boolean };
   fix_kinds: string[];
   comparison: Record<string, unknown>;
-  planned: { chains: PlannedChain[] };
+  planned: PlannedChains;
   reason: string;
   evidence: { quote: string }[];
   computed_evidence: { quote: string; start: number; end: number; for: string }[];
@@ -188,8 +207,8 @@ export interface Submission {
   disposition?: typeof NO_CHAIN_DISPOSITION | null;
   /** The previous reports an inherited reading takes names from, as submitted and resolved. */
   inherited_from?: InheritedSource[];
-  /** v3.2: remarks that another version names another transmitter, recorded with the fix, never a route. */
-  variant_remarks?: unknown[];
+  /** v3.2: remarks that another version names another transmitter, recorded with the fix (the union of both passes), never a route. */
+  variant_remarks?: VariantRemark[];
   review_kind: 'specialist';
   label: 'AI reviewed';
   specialist_id: string;
@@ -322,6 +341,8 @@ export interface EngineItem {
   context?: unknown;
   /** v3: the second reader's output, so `needs_ruling` holds only when both readers set it (holds_v3.py). */
   other_output?: unknown;
+  /** v3.2 tool: the pipeline carries variant remarks, so a reading with one is not held for it (`--variant-notes-supported`). */
+  variant_notes_supported?: boolean;
   tool_version?: ToolVersion;
   /** Per `inherited_from` ref: the previous report's live chains (status and mentions), for inherited names. */
   previous?: Record<string, { hadith_id: string; chains: BaseChain[] }>;
@@ -350,7 +371,7 @@ export interface EngineResult {
   reading: Submission['reading'] | null;
   offsets_repaired: boolean;
   comparison: (Record<string, unknown> & { fix_kinds: string[] }) | null;
-  planned: { chains: PlannedChain[] } | null;
+  planned: PlannedChains | null;
   computed_evidence: Submission['computed_evidence'];
   holds: Hold[];
   proposals: ReaderFinding[];
@@ -358,7 +379,7 @@ export interface EngineResult {
   derived_links: DerivedLink[];
   disposition: typeof NO_CHAIN_DISPOSITION | null;
   /** v3.2: variant groups kept as remarks about another version, never routes. */
-  variant_remarks?: unknown[];
+  variant_remarks?: VariantRemark[];
 }
 
 /**
@@ -734,6 +755,8 @@ export function buildOverrides(states: FixState[], submissions: Submission[]): B
         fix_kinds: state.fix_kinds,
         base_chain_sha256: s.base.chain_sha256,
         planned: state.effect === 'replace_routes' ? s.planned : null,
+        // A variant remark rides on any effect (a stored chain confirmed can carry one too); never a route.
+        ...(s.planned.variant_remarks?.length ? { variant_remarks: s.planned.variant_remarks } : {}),
         disposition: s.disposition ?? null,
         read_by: { models: state.models, runs: state.runs, prompt_sha256: s.prompt_sha256, prompt_version: s.prompt_version, tool_version: s.tool_version ?? null },
       });

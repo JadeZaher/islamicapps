@@ -1,5 +1,5 @@
 /** Reader wording for the chain structure gate (0017), model readings (0019) and the compiler head (0019; src/db/AGENTS.md). */
-import type { ChainCompiler, ChainDisposition, ChainFixLabel, ChainNode } from '@/db/queries/contracts';
+import type { ChainCompiler, ChainDisposition, ChainFixLabel, ChainNode, ChainVariantRemark } from '@/db/queries/contracts';
 
 /** Why a chain's structure is uncertain (0017; codes from `pg_export/chain_structure.py`), in plain words. */
 export const CHAIN_STRUCTURE_REASON_LABEL: Record<string, string> = {
@@ -57,4 +57,22 @@ export function compilerNote(compiler: ChainCompiler): string {
   return compiler.link === 'direct'
     ? 'Compiler of the work; not written in the text'
     : 'Compiler of the work; not written in the text, and this chain does not start from his own teacher, so no teacher link is drawn';
+}
+
+/** The variant remarks of the model reading a report's chains share (one fix per report), or none. */
+export function variantRemarksOf(nodes: Pick<ChainNode, 'chain_fix'>[]): ChainVariantRemark[] {
+  return nodes.find((node) => node.chain_fix?.variant_remarks?.length)?.chain_fix?.variant_remarks ?? [];
+}
+
+/** The lead of a variant remark's line; the Arabic sentence and the names follow it (never drawn as a chain, never a route). */
+export const VARIANT_REMARK_LEAD = 'The report mentions another version:';
+
+/** The names a remark lists, in the order the sentence gives them; alternatives of one level joined by «/». */
+export function variantRemarkNames(remark: ChainVariantRemark): string {
+  return remark.surfaces.map((level) => level.join(' / ')).join('، ');
+}
+
+/** A remark only one of the two readers noted is said so: a weaker claim than one both made. */
+export function variantRemarkCaveat(remark: ChainVariantRemark): string | null {
+  return remark.passes.length < 2 ? 'noted by one of the two readers' : null;
 }

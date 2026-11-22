@@ -49,12 +49,13 @@ import {
   type BaseChain,
   type EngineItem,
   type Submission,
+  type VariantRemark,
   type View,
 } from './chain-fix-lib';
 import { sha256Hex } from './specialist-lib';
 
 const USAGE = `usage: npx tsx reviews/ai/tools/chain-fix-submit.ts --envelope <envelope.json> --reports <reports.jsonl>
-         [--database production] [--store <dir>] [--check-only]
+         [--database production] [--store <dir>] [--check-only] [--variant-notes-supported]
 
   --envelope   ${ENVELOPE_FORMAT}: {"format", "run": {model_id, provider_runtime, run_id, started_at, finished_at,
                prompt_sha256, view}, "packet": "<packet .jsonl path>", "fixes": [{"output": <reader JSON>, "reason",
@@ -63,6 +64,9 @@ const USAGE = `usage: npx tsx reviews/ai/tools/chain-fix-submit.ts --envelope <e
                (chain-reader/pilot/reports.jsonl has this shape)
   --database   check the text hash and read the stored chain from production (read-only) instead of the snapshot
   --check-only validate and print, write nothing
+  --variant-notes-supported
+               the pipeline carries a variant remark (reader tool v3.2): a reading with one is no longer held for it. The remark is
+               stored with the fix, shown under the chain, and counted as no route. Without the flag such a reading stays held.
 Exit 0: every fix recorded (or already recorded). Exit 1: nothing recorded; each line says what to correct.`;
 
 interface ReportRow {
@@ -234,6 +238,9 @@ async function main(): Promise<number> {
       reader_format: readerFormat,
       tool_version: toolVersion,
       context: item.context,
+      // The second pass's unchanged output (v3.2 envelopes): its variant remarks join the first pass's, its routes must agree.
+      other_output: v3Shaped && !noChainEnvelope ? fix.reader_output_v3_b : undefined,
+      variant_notes_supported: args.has('variant-notes-supported'),
       report,
       fix,
       live: live?.get(report.hadith_id),
@@ -280,7 +287,19 @@ async function main(): Promise<number> {
     key: item.key, text: item.text, expected_id: item.expected_id, output: item.output, base: item.base, record_id: item.record_id,
     source_work_id: item.source_work_id, evidence: item.evidence, require_coverage: item.require_coverage,
     reader_format: item.reader_format, tool_version: item.tool_version, context: item.context, previous: previousChains.get(item.key),
+    other_output: item.other_output, variant_notes_supported: item.variant_notes_supported,
   })));
+  // Each variant remark says which pass wrote it and under which run, so the union stays attributable.
+  const passRuns: Record<'a' | 'b', { run_id: string; model_id: string }> = {
+    a: { run_id: String(run.run_id), model_id: String(run.model_id) },
+    b: second ? { run_id: String(second.run_id), model_id: String(second.model_id) } : { run_id: String(run.run_id), model_id: String(run.model_id) },
+  };
+  for (const result of results) {
+    if (!result.variant_remarks?.length) continue;
+    const remarks: VariantRemark[] = result.variant_remarks.map((remark) => ({ ...remark, by: remark.passes.map((pass) => ({ pass, ...passRuns[pass] })) }));
+    result.variant_remarks = remarks;
+    if (result.planned) result.planned.variant_remarks = remarks;
+  }
   for (const result of results) for (const error of result.errors) problems.push(`fixes[${result.key}] (${items[Number(result.key)].expected_id}): ${error}`);
   for (const result of results) {
     // The disposition is computed, never claimed: an empty reading goes in a no-chain envelope, and only there.

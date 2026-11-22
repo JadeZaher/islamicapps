@@ -1,0 +1,118 @@
+{
+ "expanded_a": {
+  "id": "t02-509acd",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "النسائي",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "زينب",
+      "start": 6,
+      "end": 10,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أم سلمة",
+      "start": 16,
+      "end": 23,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 23,
+  "notes": [
+   "Needs ruling (rule 11): two sayings in one report. The second, «قال حميد فقلت لزينب ... قالت زينب كانت المرأة», is an asker-and-answer with its own isnad (حميد > زينب) and is not written as a group here",
+   "The first saying: «وقالت زينب سمعت أم سلمة، تقول» gives زينب then أم سلمة; the saying is Umm Salama's relayed words",
+   "«قال مالك الحفش الخص» and «تفتض تمسح به في حديث محمد» are commentary remarks, not links"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t02-509acd",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "زينب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أم سلمة",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": true,
+  "notes": [
+   "Needs ruling (rule 11): two sayings in one report. The second, «قال حميد فقلت لزينب ... قالت زينب كانت المرأة», is an asker-and-answer with its own isnad (حميد > زينب) and is not written as a group here",
+   "The first saying: «وقالت زينب سمعت أم سلمة، تقول» gives زينب then أم سلمة; the saying is Umm Salama's relayed words",
+   "«قال مالك الحفش الخص» and «تفتض تمسح به في حديث محمد» are commentary remarks, not links"
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "t02-509acd",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "زينب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أم سلمة",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": true,
+  "notes": [
+   "«وقالت زينب سمعت أم سلمة، تقول» : the chain is Zaynab, then Umm Salama, who relays the Prophet's ruling",
+   "«قال حميد فقلت لزينب ... قالت زينب» is Humayd's own first-person account of asking Zaynab, with no isnad of its own: implicit transmission, set for ruling (rule 11). Humayd is not written as a link above Zaynab",
+   "«قال مالك تفتض تمسح به في حديث محمد» and «قال مالك الحفش الخص» are a wording remark and a gloss: left out"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "HKG places حميد بن نافع above زينب in the chain; the text writes Humayd only as the one who asks Zaynab in the second part, and the written chain opens at زينب.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "قال حميد فقلت لزينب"
+     },
+     {
+      "source": "HKG",
+      "quote": "حميد بن نافع بن صفوان"
+     }
+    ],
+    "confidence": "low"
+   }
+  ]
+ }
+}

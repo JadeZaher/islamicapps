@@ -77,14 +77,22 @@ def candidate_id(mention_id: str, basis: str, narrator_id: str) -> str:
     return f"candidate:{mention_id.removeprefix('mention:')}:{basis}:{narrator_id.removeprefix('narrator:')}"
 
 
+def variant_remarks_of(row: dict) -> list[dict]:
+    """The variant remarks an override carries (any effect): remarks about another version, never a route, mention or pair."""
+    return list(row.get("variant_remarks") or [])
+
+
 def rewrite_rows(row: dict, old_chains: list[list], old_mentions: list[list], old_candidates: list[list],
-                 written: dict[str, tuple[list, list[list]]], verbatim, counts: Counter) -> tuple[list[list], list[list], list[list]]:
+                 written: dict[str, tuple[list, list[list]]], verbatim, counts: Counter,
+                 route_links: list[str | None] | None = None) -> tuple[list[list], list[list], list[list]]:
     """The chain, mention and candidate rows of one `replace_routes` override, from the report's rule-built rows (CSV order).
 
     The database apply's rule, column for column: a kept name keeps every candidate; it keeps its identity and Latin form only
     when carried (both neighbours unchanged); else unresolved, and a Latin form survives unless it came from the identity. An
     inherited name repeats its cited written mention: surface, candidates and a Latin form not taken from an identity. A chain
-    takes the report's first rule-built chain's sanad confidence and compiler (indirect when the route relies elsewhere).
+    takes the report's first rule-built chain's sanad confidence and compiler (indirect when the route relies elsewhere); a
+    later route's direct/indirect mark is its own (`route_links`, from its opening words: work_register.py `route_links`; a
+    planned `compiler_link` wins), the first chain keeps the report's.
     `written` maps a mention id to (its row, its candidate rows) across the projection, for inherited names."""
     chain_at = {name: index for index, name in enumerate(CHAIN_COLUMNS)}
     mention_at = {name: index for index, name in enumerate(MENTION_COLUMNS)}
@@ -99,8 +107,9 @@ def rewrite_rows(row: dict, old_chains: list[list], old_mentions: list[list], ol
         return verbatim(value) if value is not None else None      # a computed '' stays '', never NULL
 
     chains, mentions, candidates = [], [], []
-    for chain in row["planned"]["chains"]:
-        link = ("indirect" if chain["suspension"] else first[chain_at["compiler_link"]]) if compiler else None
+    for index, chain in enumerate(row["planned"]["chains"]):
+        own = chain.get("compiler_link") or (route_links[index] if route_links else None)
+        link = ("indirect" if chain["suspension"] else own or first[chain_at["compiler_link"]]) if compiler else None
         chains.append([chain["id"], row["hadith_id"], chain["branch"], chain["length"], False, chain["extraction_method"], None,
                        first[chain_at["sanad_confidence"]] if first else None, chain["suspension"], None,
                        row["structure_status"], None, row["fix_id"], compiler, link])

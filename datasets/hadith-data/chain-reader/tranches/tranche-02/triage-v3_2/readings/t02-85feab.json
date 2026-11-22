@@ -1,0 +1,208 @@
+{
+ "expanded_a": {
+  "id": "t02-85feab",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "الصدوق",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "أبي",
+      "start": 4,
+      "end": 7,
+      "kind": "relation"
+     },
+     {
+      "surface": "أحمد بن إدريس",
+      "start": 30,
+      "end": 43,
+      "kind": "narrator"
+     },
+     {
+      "surface": "محمد بن أحمد",
+      "start": 56,
+      "end": 68,
+      "kind": "narrator"
+     },
+     {
+      "surface": "يوسف بن الحارث",
+      "start": 73,
+      "end": 87,
+      "kind": "narrator"
+     },
+     {
+      "surface": "محمد بن عبد الرحمن العرزمي",
+      "start": 92,
+      "end": 118,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عبد الرحمن",
+      "start": 128,
+      "end": 138,
+      "kind": "narrator"
+     },
+     {
+      "surface": "من قال",
+      "start": 156,
+      "end": 162,
+      "kind": "unnamed"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 162,
+  "notes": [
+   "«أبي رحمه الله» is the compiler's own father, written only as «أبي»: a relation link.",
+   "«عن أبيه عبد الرحمن» is one link, the name alone (rule 7).",
+   "«بإسناده رفعه إلى من قال» is one unnamed link: the raised-to man is the one who says «سمعت رسول الله», so the gap and the speaker are the same link."
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t02-85feab",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "أبي",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "أحمد بن إدريس",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "محمد بن أحمد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "يوسف بن الحارث",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "محمد بن عبد الرحمن العرزمي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الرحمن",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "من قال",
+       "kind": "unnamed"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«أبي رحمه الله» is the compiler's own father, written only as «أبي»: a relation link.",
+   "«عن أبيه عبد الرحمن» is one link, the name alone (rule 7).",
+   "«بإسناده رفعه إلى من قال» is one unnamed link: the raised-to man is the one who says «سمعت رسول الله», so the gap and the speaker are the same link."
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "RWY stores the gap formula as a name, so its stored name is not a transmitter.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "عن أبيه عبد الرحمن بإسناده رفعه إلى"
+     },
+     {
+      "source": "RWY",
+      "quote": "أبيه عبد الرحمن بإسناده رفعه إلى"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "t02-85feab",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "أبي",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "أحمد بن إدريس",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "محمد بن أحمد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "يوسف بن الحارث",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "محمد بن عبد الرحمن العرزمي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الرحمن",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "من قال",
+       "kind": "unnamed"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«أبي رحمه الله» is a bare kin word, so it is a relation link; the father is not named in the text.",
+   "«عن أبيه عبد الرحمن» is one link with surface «عبد الرحمن» (rule 7).",
+   "«بإسناده رفعه إلى» marks the gap; the unnamed man who says «سمعت رسول الله» is «من قال», the last link before the Prophet."
+  ],
+  "fixes": []
+ }
+}

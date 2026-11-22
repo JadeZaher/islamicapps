@@ -3,11 +3,12 @@
  * submit (accepted, refused, duplicate), decide (lone, agreed, disputed, held), review (many reviewers, a human rejection),
  * a v2 reading (levels, expanded by the tool), a reader's proposal filed for a person to decide, and (0021) a batch-001 reading
  * under prompt v3 re-triaged by tool v3.1: "no chain by reading" in its own envelope, refused elsewhere, and an archive hold.
- * Each run uses a private store and overrides file in a temporary directory. Run: npx tsx reviews/ai/tools/__tests__/chain-fix.test.ts
+ * (0023-free, 2026-11-22) a v3.2 reading with a variant remark: held without the switch; with it one chain plus a remark, replayed, and
+ * taken away with the chain by a rejection. Each run uses a private store and overrides file in a temporary directory. Run: npx tsx reviews/ai/tools/__tests__/chain-fix.test.ts
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -397,6 +398,86 @@ check('an archive hold keeps an agreed reading out of the overrides', () => {
   const [state] = (JSON.parse(readFileSync(path.join(v31Store, 'state.json'), 'utf8')) as { fixes: { state: string; holds: string[] }[] }).fixes;
   assert.deepEqual([state.state, state.holds], ['held', ['cited_by_later_report']]);
   assert.equal(gunzipSync(readFileSync(v31Overrides)).toString('utf8'), '');
+});
+
+// v3.2 (variant remarks): tranche 01's «بمثل حديث سليمان بن بلال» (t01-30fa50): one route and a remark about another version. Both passes
+// write the route and the remark; the envelope comes from to_submission_v3_2.py, with and without --variant-notes-supported.
+const readerDirectory = path.join(REPOSITORY_ROOT, 'datasets', 'hadith-data', 'chain-reader');
+const variantItem = readFileSync(path.join(readerDirectory, 'v3_2', 'examples', 'example-packets.jsonl'), 'utf8').split('\n').filter(Boolean)
+  .map((l) => JSON.parse(l) as { id: string; text: string; context: unknown }).find((row) => row.id === 't01-30fa50')!;
+const variantReader = (withRemark: boolean) => ({
+  id: 't01-30fa50', status: 'read', shared_tail: null, needs_ruling: false, notes: [], fixes: [],
+  groups: [
+    { levels: ['محمد بن المثنى', 'عبد الوهاب', 'يحيى بن سعيد', 'عبد الله بن عامر بن ربيعة', 'عائشة'].map((surface) => [{ surface, kind: 'narrator' }]) },
+    ...(withRemark ? [{ variant: true, levels: [[{ surface: 'سليمان بن بلال', kind: 'narrator' }]] }] : []),
+  ],
+});
+const variantDirectory = path.join(work, 'variant');
+const variantRoot = (...parts: string[]) => path.join(variantDirectory, ...parts);
+mkdirSync(variantRoot('packets'), { recursive: true });
+for (const pass of ['a', 'b']) {
+  mkdirSync(variantRoot('outputs', `pass-${pass}`), { recursive: true });
+  writeFileSync(variantRoot('outputs', `pass-${pass}`, 't01-30fa50.json'), JSON.stringify(variantReader(true)), 'utf8');
+  writeFileSync(variantRoot('outputs', `pass-${pass}`, 'RUN.txt'),
+    `run_id=vt-${pass}-001 | packets=001 | model=claude-haiku-5-5 | start=2026-11-22T18:0${pass === 'a' ? 2 : 7}:00Z | end=2026-11-22T18:0${pass === 'a' ? 5 : 9}:00Z | files=1\n`, 'utf8');
+}
+writeFileSync(variantRoot('packets', 'packet-001.jsonl'), `${JSON.stringify({ id: variantItem.id, text: variantItem.text, context: variantItem.context })}\n`, 'utf8');
+const variantReports = variantRoot('reports.jsonl');
+writeFileSync(variantReports, `${JSON.stringify({ id: 't01-30fa50', hadith_id: 'hadith:test:variant', previous_reports: [], tradition: 'sunni', work: 'muslim', text: variantItem.text,
+  text_layout: 'full_text', stored_chains: [{ chain_id: 'chain:test:variant:0000', branch: 0, structure_status: 'uncertain',
+    surfaces: ['حدثناه محمد بن المثنى', 'عبد الوهاب', 'يحيى بن سعيد', 'عبد الله بن عامر بن ربيعة'] }] })}\n`, 'utf8');
+const toSubmission = (out: string, extra: string[] = []) => spawnSync('python', ['-B', '-X', 'utf8', 'v3_2/to_submission_v3_2.py', '--packets', variantRoot('packets'), '--reports', variantReports,
+  '--pass-a', variantRoot('outputs', 'pass-a'), '--pass-b', variantRoot('outputs', 'pass-b'), '--out', variantRoot(out), '--batch', 'vt', ...extra], { cwd: readerDirectory, encoding: 'utf8' });
+const variantStore = (name: string) => path.join(work, name);
+const variantSubmit = (envelopePath: string, storeDirectory: string, extra: string[] = []) =>
+  cli('chain-fix-submit', ['--envelope', envelopePath, '--reports', variantReports, '--store', storeDirectory, ...extra]);
+const decideVariant = (storeDirectory: string, overridesFile: string) => cli('chain-fix-decide', ['--store', storeDirectory, '--overrides', overridesFile]);
+const rowsOf = (file: string) => gunzipSync(readFileSync(file)).toString('utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as Record<string, unknown> & { planned: { chains: { mentions: { surface_ar: string }[] }[] } | null; variant_remarks?: { quote: string; surfaces: string[][]; passes: string[]; by: { pass: string; run_id: string }[] }[] });
+
+check('a reading with a variant remark is held without the switch; with it, it is one chain plus a remark, applied and replayed, and a rejection takes both away', () => {
+  // Without the switch the reader tool holds it: nothing reaches an envelope.
+  assert.equal(toSubmission('held').status, 0);
+  assert.match(readFileSync(variantRoot('held', 'not_submitted.tsv'), 'utf8'), /t01-30fa50\theld: has_variant_group/);
+  assert.ok(!existsSync(variantRoot('held', 'packet-001.envelope.json')));
+  // With it the envelope carries pass B's unchanged output, from which the pipeline computes the union of the two passes' remarks.
+  assert.equal(toSubmission('open', ['--variant-notes-supported']).status, 0);
+  const envelopePath = variantRoot('open', 'packet-001.envelope.json');
+  const [entry] = (JSON.parse(readFileSync(envelopePath, 'utf8')) as { fixes: { reader_output_v3_b: { id: string } }[] }).fixes;
+  assert.equal(entry.reader_output_v3_b.id, 't01-30fa50');
+
+  // The submit tool's own switch: without it the same envelope is recorded held (has_variant_group); decide queues it and applies nothing.
+  const closedStore = variantStore('store-variant-closed');
+  const closedOverrides = path.join(work, 'variant-closed.jsonl.gz');
+  assert.equal(variantSubmit(envelopePath, closedStore).status, 0);
+  assert.equal(decideVariant(closedStore, closedOverrides).status, 0);
+  assert.equal((JSON.parse(readFileSync(path.join(closedStore, 'state.json'), 'utf8')) as { fixes: { state: string; holds: string[] }[] }).fixes[0].holds.join(), 'has_variant_group');
+  assert.equal(rowsOf(closedOverrides).length, 0);
+
+  const openStore = variantStore('store-variant-open');
+  const openOverrides = path.join(work, 'variant-open.jsonl.gz');
+  const recorded = variantSubmit(envelopePath, openStore, ['--variant-notes-supported']);
+  assert.equal(recorded.status, 0, recorded.err);
+  assert.equal(decideVariant(openStore, openOverrides).status, 0);
+  const [row] = rowsOf(openOverrides);
+  assert.deepEqual([row.effect, row.state, row.planned!.chains.length], ['replace_routes', 'accepted', 1], 'one chain');
+  assert.deepEqual(row.planned!.chains[0].mentions.map((m) => m.surface_ar).includes('سليمان بن بلال'), false, 'the remark is never a link');
+  const [remark] = row.variant_remarks!;
+  assert.equal(row.variant_remarks!.length, 1);
+  assert.deepEqual([remark.surfaces, remark.passes, remark.by.map((b) => b.run_id)], [[['سليمان بن بلال']], ['a', 'b'], ['vt-a-001', 'vt-b-001']]);
+  assert.ok(remark.quote.includes('بمثل حديث سليمان بن بلال'));
+  // The projection's replay reads the same remark and the same single chain from the overrides file.
+  const replayed = spawnSync('python', ['-I', '-X', 'utf8', '-c',
+    'import sys, json; sys.path.insert(0, sys.argv[1]); import replay; rows = replay.load_overrides(__import__("pathlib").Path(sys.argv[2])); '
+    + 'row = rows["hadith:test:variant"]; print(json.dumps({"chains": len(row["planned"]["chains"]), "remarks": replay.variant_remarks_of(row)}, ensure_ascii=False))',
+    path.join(REPOSITORY_ROOT, 'datasets', 'hadith-data', 'chain-fixes'), openOverrides], { encoding: 'utf8' });
+  assert.equal(replayed.status, 0, replayed.stderr);
+  const replay = JSON.parse(replayed.stdout) as { chains: number; remarks: { quote: string }[] };
+  assert.deepEqual([replay.chains, replay.remarks.map((r) => r.quote)], [1, [remark.quote]]);
+  // A human rejection leaves both: the override (chain and remark) goes in the same call.
+  const [state] = (JSON.parse(readFileSync(path.join(openStore, 'state.json'), 'utf8')) as { fixes: { fix_id: string }[] }).fixes;
+  const rejected = cli('chain-fix-review', ['--fix', state.fix_id, '--decision', 'rejected', '--reviewer', 'Reviewer One', '--note', 'The remark names the wrong version.', '--store', openStore, '--overrides', openOverrides]);
+  assert.equal(rejected.status, 0, rejected.err);
+  assert.equal(rowsOf(openOverrides).length, 0);
 });
 
 rmSync(work, { recursive: true, force: true });

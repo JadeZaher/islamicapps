@@ -1,0 +1,232 @@
+{
+ "expanded_a": {
+  "id": "t02-be471a",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "مسلم",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "زهير بن حرب",
+      "start": 6,
+      "end": 17,
+      "kind": "narrator"
+     },
+     {
+      "surface": "هاشم بن القاسم",
+      "start": 48,
+      "end": 62,
+      "kind": "narrator"
+     },
+     {
+      "surface": "ورقاء بن عمر اليشكري",
+      "start": 71,
+      "end": 91,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عبيد الله بن أبي يزيد",
+      "start": 102,
+      "end": 123,
+      "kind": "narrator"
+     },
+     {
+      "surface": "ابن عباس",
+      "start": 133,
+      "end": 141,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   },
+   {
+    "links": [
+     {
+      "surface": "مسلم",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "أبو بكر بن النضر",
+      "start": 20,
+      "end": 36,
+      "kind": "narrator"
+     },
+     {
+      "surface": "هاشم بن القاسم",
+      "start": 48,
+      "end": 62,
+      "kind": "narrator"
+     },
+     {
+      "surface": "ورقاء بن عمر اليشكري",
+      "start": 71,
+      "end": 91,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عبيد الله بن أبي يزيد",
+      "start": 102,
+      "end": 123,
+      "kind": "narrator"
+     },
+     {
+      "surface": "ابن عباس",
+      "start": 133,
+      "end": 141,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 141,
+  "notes": [
+   "«في رواية زهير قالوا» and «وفي رواية أبي بكر قلت ابن عباس» are wording variants of the same saying: left out",
+   "«أنوسلم» is garbled in the stored text (it should read as «أن رسول الله»); the surface is not changed",
+   "Ibn Abbas is the last link; the Prophet is the end"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t02-be471a",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "زهير بن حرب",
+       "kind": "narrator"
+      },
+      {
+       "surface": "أبو بكر بن النضر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "هاشم بن القاسم",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ورقاء بن عمر اليشكري",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبيد الله بن أبي يزيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن عباس",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«في رواية زهير قالوا» and «وفي رواية أبي بكر قلت ابن عباس» are wording variants of the same saying: left out",
+   "«أنوسلم» is garbled in the stored text (it should read as «أن رسول الله»); the surface is not changed",
+   "Ibn Abbas is the last link; the Prophet is the end"
+  ],
+  "fixes": [
+   {
+    "kind": "text_garbled",
+    "reason": "the Arabic joins «أن» and «رسول» into a non-word, which hides the Prophet's name in the saying",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "أنوسلم أتى الخلاء"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "t02-be471a",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "زهير بن حرب",
+       "kind": "narrator"
+      },
+      {
+       "surface": "أبو بكر بن النضر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "هاشم بن القاسم",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ورقاء بن عمر اليشكري",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبيد الله بن أبي يزيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن عباس",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«قال سمعت عبيد الله بن أبي يزيد، يحدث عن ابن عباس» gives the links ورقاء ← عبيد الله ← ابن عباس (rule 5)",
+   "«في رواية زهير قالوا» and «قلت ابن عباس» are wording variants of the answer: no route, left out",
+   "«أنوسلم» in the matn is garbled in the stored text; the matn is not read further"
+  ],
+  "fixes": [
+   {
+    "kind": "text_garbled",
+    "reason": "«أنوسلم» appears to fuse «أن» with a clipped «رسول الله صلى الله عليه وسلم»; the matn is unreadable as written.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "أنوسلم أتى الخلاء"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}

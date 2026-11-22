@@ -22,7 +22,7 @@ import type { ChainGraph, ChainMentionCandidate, ChainNode, HadithTraditionCode 
 import { groupCandidates, type IdentityGroup, type IdentityRecord } from '@/db/queries/identity-groups';
 import { sourceForLatinName, sourcesForIdentityClaim } from '@/lib/sources/registry';
 import { ChainSourceCredits } from './family/SourceCredits';
-import { chainFixNote, compilerNote, noChainNote, structureNote } from './chain-structure';
+import { chainFixNote, compilerNote, noChainNote, structureNote, VARIANT_REMARK_LEAD, variantRemarkCaveat, variantRemarkNames, variantRemarksOf } from './chain-structure';
 
 /** Which registry a record belongs to, in words, for a second record of the same person. */
 const RECORD_SOURCE: Record<string, string> = {
@@ -275,6 +275,7 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
     const tradition = chain?.tradition ?? null;
 
     const noChain = branches.length === 0 ? noChainNote(chain?.disposition) : null;
+    const variantRemarks = variantRemarksOf(chain?.nodes ?? []);
     if (branches.length === 0 && !sourceSanad && !noChain) return null;
 
     return (
@@ -379,6 +380,18 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                     </ol>
                 </div>
             ))}
+            {variantRemarks.length > 0 && (
+                <div className="space-y-2" data-chain-variant-remarks>
+                    {variantRemarks.map((remark) => (
+                        <p key={remark.quote} className="type-small text-ink-muted" data-chain-variant-remark>
+                            {VARIANT_REMARK_LEAD}{' '}
+                            <ArabicText as="span" variant="inline" className="text-ink">{remark.quote}</ArabicText>
+                            {' · '}names <bdi>{variantRemarkNames(remark)}</bdi>
+                            {variantRemarkCaveat(remark) && ` (${variantRemarkCaveat(remark)})`}
+                        </p>
+                    ))}
+                </div>
+            )}
             <ChainSourceCredits chain={chain} />
         </div>
     );

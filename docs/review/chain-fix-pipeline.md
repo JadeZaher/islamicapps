@@ -235,6 +235,13 @@ are rows repeating the earlier report's written mention, held unless that chain 
 (`public_chain_fix_mention_kinds`). The projection replay now rewrites rows by the apply's own rule instead of re-running identity
 rules on replayed branches (`datasets/hadith-data/chain-fixes/AGENTS.md` §replay), so apply and replay write the same rows.
 
+**Variant remarks and the compiler mark per route (2026-11-22, no migration).** A reader group marked `variant: true` (a remark that another
+version names another transmitter, «بمثل حديث X») is stored with the fix as `planned.variant_remarks` (the union of both passes, each marked
+with the pass that wrote it), shown under the chain ("The report mentions another version: ...") and counted as no route, mention, pair or
+agreement input; the submit tool's `--variant-notes-supported` lifts the `has_variant_group` hold. A fix's later routes carry their own
+compiler `direct`/`indirect` mark from their opening words (`planned.chains[].compiler_link`, replay computes it for older plans).
+Detail: `datasets/hadith-data/chain-fixes/AGENTS.md`, `reviews/ai/AGENTS.md`.
+
 ## Integration checklist (for the next schema owner, in order)
 
 1. **Promote the schema.** Move the five tables and the view from `src/db/ops/pending/chain-fixes-schema.ts` into

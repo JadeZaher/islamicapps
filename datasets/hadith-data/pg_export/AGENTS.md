@@ -432,6 +432,10 @@ and `compiler_link`; no mention is added, so ids, positions, review units and th
   works that open with the shaykh's name (al-Kafi, al-Saduq, al-Husayn b. Saʿid ...) are direct unless the opening is «قال»,
   «روى», «وعن», «عنه», «بهذا الإسناد» ... (`INDIRECT_OPENING`); al-Rabiʿ only when the first link is Abu ʿUbayda (the work's fixed
   shape). Otherwise `indirect`: the head is shown, no pair.
+- **A model-read fix's later routes (2026-11-22)**: `WorkRegister.route_links` marks each later route from its OWN opening words (the text
+  between the nearest earlier written link and its first name): a hearing verb is `direct`, «وقال X» `indirect`, a co-transmitter joined by
+  «و» shares the route before it; a name-opening work and the first chain keep the report's mark. Replay passes the report text, so a
+  fix planned before the rule existed is corrected at the next load (`chain_fix_projection.rewrite_rows`); `chain-fixes/AGENTS.md`.
 - **Records** (`narrators` with authority `work_register`, profile `work_register` naming the work): reused only where a standing
   rule of the tradition already identifies the person (counted on production; `reuse_basis` in the JSON), else created and credited
   to the work. Works without a compiler and why: `works_without_compiler`.

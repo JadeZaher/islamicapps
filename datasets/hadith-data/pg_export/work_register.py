@@ -167,3 +167,41 @@ class WorkRegister:
         else:
             direct = fold(surfaces[0]) in compiler.direct_first
         return compiler.narrator_id, "direct" if direct else "indirect"
+
+    def route_links(self, work: str, reader_text: str, planned_chains: Sequence[dict]) -> list[str | None]:
+        """Per planned chain, the compiler's 'direct' | 'indirect' mark from that route's OWN opening words; None for the first
+        chain (it keeps the report-opening mark `head` gave it), for a route whose opening cannot be read (no written link) and
+        for a co-transmitter joined by «و» before the first alike (None means "as the first chain"; later joined routes repeat
+        the mark of the route before them).
+
+        A fix's other routes used to copy the first chain's mark: «وقال الليث» in al-Bukhari then read as heard directly.
+        The route's opening is the word(s) between the nearest earlier written link and its first written name (the hearing
+        verb or «وقال»), read by the same per-work rule as `head` (verb: the last word must be a hearing verb, alone or after
+        «قال»; fixed: its own first link; a name-opening work keeps the report's mark: no verb to read per route)."""
+        compiler = self.compilers.get(work)
+        spans = [tuple(m["span"]) for chain in planned_chains for m in chain["mentions"] if m.get("span")]
+        marks: list[str | None] = []
+        previous: str | None = None
+        for index, chain in enumerate(planned_chains):
+            written = [m for m in chain["mentions"] if m.get("span")]
+            if index == 0 or compiler is None or not written or chain["mentions"][0] is not written[0] or compiler.opening == "name":
+                marks.append(None)           # a name-opening work (al-Kafi, al-Saduq) has no hearing verb to read per route: the report's mark stands
+                continue
+            if chain.get("suspension"):
+                previous = "indirect"
+                marks.append(previous)
+                continue
+            first_start = written[0]["span"][0]
+            boundary = max((end for _, end in spans if end <= first_start), default=0)
+            words = opening_words(reader_text[boundary:first_start]).split()
+            last = words[-1].strip(":،,.؛-") if words else ""
+            surface = written[0]["surface_ar"]
+            if compiler.opening == "fixed":
+                previous = "direct" if fold(surface) in compiler.direct_first else "indirect"
+            elif last in ("", "و", "ف"):
+                pass                    # a co-transmitter joined by «و»: shares the opening verb of the route before it
+            else:
+                candidates = [last, " ".join(words[-2:]).replace(":", " ")]
+                previous = "direct" if any(DIRECT_VERB.match(opening_words(candidate)) for candidate in candidates) else "indirect"
+            marks.append(previous)
+        return marks

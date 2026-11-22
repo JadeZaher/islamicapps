@@ -6,8 +6,9 @@
 
 `--only` keeps the reports listed (one id per line); `--reader-prompt v3` / `v3_1` records that the outputs were read under that prompt (`v3/prompt-v3.json`, `v3_1/prompt-v3_1.json`), while this tool (v3.2)
 expanded and held them: the envelope's `run.prompt_sha256` is the prompt the reader ran, `run.tool_version` is `v3_2` (the fix pipeline stores both).
-v3.2: a variant remark is never a route. A fix carries it as `variant_remarks` ([{surfaces, quote}]) and as a line in `output.notes`; until the fix pipeline accepts notes the triage holds such a reading
-(`has_variant_group`), and `--variant-notes-supported` lifts that hold.
+v3.2: a variant remark is never a route. A fix carries it as `variant_remarks` ([{surfaces, quote}], pass A's, informational) and as a line in `output.notes`; the second pass's unchanged output rides as
+`reader_output_v3_b`, from which the submit tool (engine) computes the stored remarks: the union of both passes, each marked with the pass that wrote it, the routes of the two checked equal.
+Until the fix pipeline accepts notes the triage holds such a reading (`has_variant_group`); `--variant-notes-supported` lifts that hold here and in `chain-fix-submit.ts`.
 
 Per packet one envelope `<out>/<packet>.envelope.json` (a reading with chain links) and, when the packet has any, `<out>/<packet>.no_chain.envelope.json` (agreed EMPTY readings: "this report has no
 isnad"), to be submitted with
@@ -197,6 +198,7 @@ def main(argv: list[str] | None = None) -> int:
             envelope = {"format": ENVELOPE_FORMAT, "run": run, "packet": packet_path,
                         "fixes": [{"output": item["shaped"], "reason": f"Two independent readers (runs {run_a['run_id']} and {run_b['run_id']}, prompt {prompt['version']}) read the same routes from the text and its context; no hold fired.",
                                    "evidence": [{"quote": item["quote"]}], "external_citation": None, "reader_output_v3": item["row"]["reading"]["output_a"],
+                                   "reader_output_v3_b": item["row"]["reading"]["output_b"],
                                    **({"inherited_from": item["inherited_from"]} if item["inherited_from"] else {}),
                                    **({"variant_remarks": [{"surfaces": r["surfaces"], "quote": r["quote"]} for r in item["row"]["reading"]["expanded_a"]["variant_remarks"]]} if item["row"]["reading"]["expanded_a"].get("variant_remarks") else {})} for item in chain_items]}
             (out / f"{packet_file.replace('.jsonl', '')}.envelope.json").write_text(json.dumps(envelope, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")

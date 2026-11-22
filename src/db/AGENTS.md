@@ -296,6 +296,12 @@ states, rules: `docs/review/chain-fix-pipeline.md`; tools: `reviews/ai/tools/cha
   Two new `db:verify-data` checks: an applied no-chain fix leaves no live chain and plans none; an inherited name in a model-read chain
   repeats a mention of a rule-checked or reviewer-verified chain.
 
+- **Variant remarks (2026-11-22, no migration).** A remark that another version names another transmitter lives in
+  `chain_fixes.planned -> 'variant_remarks'` (the immutable fix row already holds `planned` jsonb; its check only types `chains`), never in
+  `chains`, `chain_mentions` or a view of its own. The page's chain query (`chainNodesJson`) reads it beside `public_chain_fix_labels`
+  (which gates publication), so a revert, a rejection or a changed text removes it with the chain. `routes_key` and the structure
+  gate ignore it. A view would have meant a migration and a load for no new data.
+
 ## Compiler as first transmitter (0019; owner ruling 2026-11-22)
 
 Every chain of a work with a known compiler is headed by him: `chains.compiler_narrator_id` and `compiler_link` (`direct` |

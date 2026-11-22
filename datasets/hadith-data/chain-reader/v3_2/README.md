@@ -137,7 +137,7 @@ python -B -X utf8 v3_2/tools/build_example_packets_v3_2.py && python -B -X utf8 
 
 ## 9. Deferred / not built
 
-- **The fix pipeline cannot carry variant notes**: until the owner switches it on (`--variant-notes-supported`) every reading with a variant remark stays held (27 of tranche 01's 747 v3.1-eligible readings: 23 held, 4 no longer agree).
+- **Variant notes (built 2026-11-22; the switch is not yet used on production)**: `--variant-notes-supported` now works end to end. `to_submission_v3_2.py` ships pass B's output (`reader_output_v3_b`); `chain-fix-submit --variant-notes-supported` stores the union of both passes' remarks on the fix (`planned.variant_remarks`, each marked with its pass), the page shows it under the chain, and nothing counts it as a route (`chain-fixes/AGENTS.md`). Without the flag every reading with a variant remark stays held (27 of tranche 01's 747 v3.1-eligible readings: 23 held, 4 no longer agree).
 - An epithet the applied reading (pass A's) wrote stays in the stored surface («أبا النضر، مولى عمر بن عبيد الله»): the comparison folds it, the envelope does not trim it. Trim in `to_submission` or let the pipeline's resolver strip it; trigger: the first tranche applied with v3.2.
 - The restated-name dedupe of 871527 («ابن علية» + «إسماعيل ابن علية»), the three-men-in-one-link check (69ae9b) and the reader typo repair are not built.
 - 0706da (the one asked answers, dropped) and a20cb6 (a narrated encounter) have no tool cue; the prompt example (v3.2) is the only guard and the draft has not run.

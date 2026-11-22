@@ -1592,7 +1592,9 @@ def project(args: argparse.Namespace) -> dict:
     # External claims were consumed by the rule-built mentions, so the unused-claims check below reads their ids.
     mention_ids_built = {row[0] for row in mentions}
     chains, mentions, identity_rows = chain_fix_projection.rewrite_rows(chain_fix_replacing, chains, mentions, identity_rows,
-                                                                        Verbatim, chain_fix_counts)
+                                                                        Verbatim, chain_fix_counts, hadith_text, chain_field,
+                                                                        {key: value["source_work_id"] for key, value in hadith_info.items()},
+                                                                        work_register)
     counts["chain_fixes"] = {"overrides": len(chain_fix_overrides), **dict(sorted(chain_fix_counts.items()))}
     counts["chain_structure"] = dict(sorted(structure_counts.items()))
     counts["compiler_heads"] = dict(sorted(compiler_counts.items()))

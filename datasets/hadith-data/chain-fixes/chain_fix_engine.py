@@ -21,7 +21,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE.parent
-for extra in (DATA / "chain-reader" / "v3_2", DATA / "chain-reader" / "v3_1", DATA / "chain-reader" / "v3", DATA / "chain-reader" / "context", DATA / "chain-reader", DATA):   # -I drops the script directory
+for extra in (DATA / "pg_export", DATA / "chain-reader" / "v3_2", DATA / "chain-reader" / "v3_1", DATA / "chain-reader" / "v3", DATA / "chain-reader" / "context", DATA / "chain-reader", DATA):   # -I drops the script directory
     if str(extra) not in sys.path:
         sys.path.insert(0, str(extra))
 
@@ -38,7 +38,7 @@ from validate_v3 import validate_v3  # noqa: E402
 from expand_v3_1 import expand as expand_v3_1  # noqa: E402  (tool v3.1: folds, empty readings, asker rule; v3_1/AGENTS.md)
 from holds_v3_1 import compute_holds as compute_holds_v3_1  # noqa: E402  (v3.1 holds: chain-reader/v3_1/HOLDS.md)
 from validate_v3_1 import validate_v3_1  # noqa: E402
-from expand_v3_2 import expand as expand_v3_2  # noqa: E402  (tool v3.2: a variant group is a remark, never a route; v3_2/README.md)
+from expand_v3_2 import expand as expand_v3_2, link_key as link_key_v3_2, readings_agree as readings_agree_v3_2  # noqa: E402  (tool v3.2: a variant group is a remark, never a route; v3_2/README.md)
 from holds_v3_2 import compute_holds as compute_holds_v3_2  # noqa: E402  (v3.2 holds: chain-reader/v3_2/HOLDS.md)
 from validate_v3_2 import validate_v3_2  # noqa: E402
 
@@ -435,6 +435,36 @@ def proposals_of(output: dict, kind: str) -> list[dict]:
     return found
 
 
+def variant_remarks_union(expanded_a: dict, expanded_b: dict | None) -> list[dict]:
+    """The variant remarks of the two passes as one list, each marked with the pass(es) that wrote it (`passes`: a, b).
+
+    A remark is about another version of the saying («بمثل حديث X»): never a route, never part of agreement. The two passes may
+    differ on remarks without disagreeing; the stored remark is the union, a remark both wrote kept once (pass A's span)."""
+    merged: dict[tuple, dict] = {}
+    for tag, expanded in (("a", expanded_a), ("b", expanded_b)):
+        for remark in (expanded or {}).get("variant_remarks") or []:
+            key = tuple(sorted(link_key_v3_2(name) for level in remark["surfaces"] for name in level))
+            entry = merged.setdefault(key, {"surfaces": remark["surfaces"], "quote": remark["quote"], "start": remark["start"],
+                                            "end": remark["end"], "passes": []})
+            entry["passes"].append(tag)
+    return sorted(merged.values(), key=lambda entry: (entry["start"], entry["end"]))
+
+
+def compiler_links_for(planned: dict, text: str, source_work_id: str) -> None:
+    """Mark each later planned route with the compiler's own direct/indirect from ITS opening words (pg_export/work_register.py
+    `route_links`, the rule the projection uses); the first chain keeps the report's mark, so no key is written for it."""
+    from work_register import WorkRegister  # noqa: E402  (pg_export; imported late: only a work with a compiler needs it)
+    global _REGISTER
+    if _REGISTER is None:
+        _REGISTER = WorkRegister()
+    for chain, mark in zip(planned["chains"], _REGISTER.route_links(source_work_id, text, planned["chains"])):
+        if mark is not None:
+            chain["compiler_link"] = mark
+
+
+_REGISTER = None
+
+
 def run_item(item: dict) -> dict:
     result = {"key": item["key"], "errors": [], "reading": None, "offsets_repaired": False, "comparison": None, "planned": None,
               "computed_evidence": [], "holds": [], "proposals": [], "needs_ruling": False, "derived_links": [], "disposition": None, "variant_remarks": []}
@@ -471,7 +501,22 @@ def run_item(item: dict) -> dict:
         result["derived_links"] = derived_links(expanded)
         # v3.2: a variant group is a remark about another version, kept with the fix and never a route; the v3.2 holds keep such a
         # reading back (has_variant_group) until the page shows the remark.
-        result["variant_remarks"] = expanded.get("variant_remarks") or []
+        other_expanded = None
+        if tool == "v3_2" and isinstance(item.get("other_output"), dict) and item["other_output"].get("status") == "read":
+            # The second pass: it must be a valid reading of the same text whose ROUTES agree with the first's (variant remarks
+            # may differ); only its remarks are used here (the agreement itself was found by the triage and is re-checked).
+            other_errors = validate_tool(item["other_output"], item["text"], item["expected_id"], item.get("context") or {})
+            other_expanded, other_expand_errors = (None, []) if other_errors else expand_tool(item["other_output"], item["text"], item.get("context") or {})
+            if other_errors or other_expanded is None:
+                result["errors"] = ["second reading: not a valid reading of this text: " + "; ".join((other_errors or other_expand_errors)[:2])]
+                return result
+            if not readings_agree_v3_2(expanded, other_expanded):
+                result["errors"] = ["second reading: its routes differ from the first's; agreement is on the routes (variant remarks may differ)"]
+                return result
+        result["variant_remarks"] = variant_remarks_union(expanded, other_expanded) if tool == "v3_2" else (expanded.get("variant_remarks") or [])
+        if tool == "v3_2" and item.get("variant_notes_supported"):
+            # The pipeline carries a variant remark (planned.variant_remarks, shown on the page): the reading is no longer held for having one.
+            result["holds"] = [hold for hold in result["holds"] if hold["code"] != "has_variant_group"]
         if any(route.get("variant") for route in expanded["routes"]):
             # A variant group is a remark that another version names another transmitter («بمثل حديث X»), never a route: until it is
             # kept as a labelled remark, the whole reading waits (AGENTS.md §reader formats, tranche-01 judge 2026-11-22).
@@ -521,6 +566,9 @@ def run_item(item: dict) -> dict:
                                             item["source_work_id"])
             result["holds"] += holds
             planned = spliced or planned
+    compiler_links_for(planned, item["text"], item["source_work_id"])
+    if result["variant_remarks"]:
+        planned["variant_remarks"] = result["variant_remarks"]       # kept with the fix, never a route (AGENTS.md §variant remarks)
     result.update(reading=reading, offsets_repaired=repaired, comparison=comparison,
                   computed_evidence=computed_evidence(item["text"], comparison), planned=planned)
     return result

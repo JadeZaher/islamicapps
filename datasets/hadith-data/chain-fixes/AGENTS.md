@@ -66,12 +66,25 @@ with kind and origin. Every format returns `holds` and `proposals` (the reader's
 - **Source named in the text** (`imam_in_text`: the Imam asked or speaking, read as the last link): a written mention whose planned
   `reader_kind` stays `imam_in_text` (`mark_named_in_text`), so the page labels it (view `public_chain_fix_mention_kinds`). The compiler
   head is never a mention (the projection derives it).
-- **Variant groups** (`variant: true`: «بمثل حديث X», «زاد في حديث Y»: another version's transmitter, never a route) are not yet
-  handled by `to_submission_v3_1.py` or the planned rows, which would write them as ordinary chains (tranche-01 judge, confirmed on
-  batch 001: 4 of the 394 readings). Until a variant is kept as a labelled remark and agreement is computed on the other routes, a
-  reading with any variant group is held (`has_variant_group`; the four batch-001 fixes by archive hold). Tool `v3_2` (`TOOLS`) keeps
-  variants out of the routes and returns them as `variant_remarks` (recorded on the submission); its holds still hold the reading
-  until the page shows the remark.
+- **Variant groups and remarks** (`variant: true`: «بمثل حديث X», «زاد في حديث Y»: another version's transmitter, never a route). Tool `v3_2`
+  (`TOOLS`) keeps them out of the routes; `variant_remarks_union` returns each as `{surfaces, quote, start, end, passes}` where `passes`
+  says which reader pass wrote it. The submit tool sends the second pass's unchanged output as `other_output` (envelope
+  `fixes[].reader_output_v3_b`); the engine validates and expands it with the same tool, **refuses the fix when its routes do not agree
+  with the first pass's** (agreement is on the routes only) and stores the **union** of both passes' remarks, a remark both wrote kept
+  once, one pass only marked so. The union is `planned.variant_remarks` (on the fix, so the existing `chain_fixes.planned` jsonb carries it:
+  no migration) and `Submission.variant_remarks`. It forms no route, mention, pair or `routes_key` (so none of the structure gate, the
+  agreement rule or the teacher-student view sees it). The hold `has_variant_group` (v3.2 holds) is dropped only when the item says
+  `variant_notes_supported` (CLI `--variant-notes-supported`); `variant_only_reading` is never dropped. Overrides carry
+  `variant_remarks` for every effect (a confirmed stored chain can carry one); replay exposes `variant_remarks_of` and counts
+  `reports_with_variant_remark` / `variant_remarks`; the page reads `chain_fixes.planned -> 'variant_remarks'` beside the fix label
+  (`src/db/queries/isnad.ts`), so a revert (chain's `chain_fix_id` back to null) removes the remark from the page with the chain.
+- **Compiler mark per route.** `plan` leaves the first chain's `direct`/`indirect` to the report (it copies the stored first chain's); each
+  later planned chain carries `compiler_link` computed by `pg_export/work_register.py` `route_links` from ITS opening words (the text
+  between the nearest earlier written link and its first name: a hearing verb is direct, «وقال» is indirect, a co-transmitter joined by «و»
+  shares the route before it; a name-opening work keeps the report's mark). The apply (`writeRoutes`) writes the planned mark; replay uses
+  the planned mark or, for a plan made before it existed, computes it from the report text (`rewrite_rows(..., route_links)`), so a load
+  corrects such a plan's later routes (hadith:k6:2400 «وقال الليث» was marked direct). Apply and replay must agree: change `route_links` only
+  with its test (`CompilerHeadPerRouteTest`).
 - **Inherited links** (`plan_inherited`): each inherited name becomes a mention repeating the cited report's written mention
   (`inherited_from_mention_id` its root, its surface). `resolve_inherited` holds instead of guessing: no earlier report given
   (`inherited_previous_report_unknown`), its chain not rule-checked or verified (`inherited_source_chain_uncertain`), a name not found

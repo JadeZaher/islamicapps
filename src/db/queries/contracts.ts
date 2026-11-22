@@ -227,6 +227,19 @@ export interface ChainFixConfirmation {
   citation: { url?: string; edition_locator?: string; quote: string } | null;
 }
 
+/**
+ * A remark in the report that another version names another transmitter («بمثل حديث X»), kept with the model reading
+ * (`chain_fixes.planned.variant_remarks`). Never a route, a link or a teacher-student pair; shown under the chain.
+ */
+export interface ChainVariantRemark {
+  /** The transmitters the other version names, as levels of alternatives. */
+  surfaces: string[][];
+  /** The sentence of the remark, as the report writes it. */
+  quote: string;
+  /** Which reader passes wrote it (`a`, `b`); one pass only is a weaker claim. */
+  passes: ('a' | 'b')[];
+}
+
 /** A model reading a chain shows (0019; docs/review/chain-fix-pipeline.md). "Verified" only with a human confirmation. */
 export interface ChainFixLabel {
   fix_id: string;
@@ -237,6 +250,8 @@ export interface ChainFixLabel {
   decided_at: string;
   awaiting_final_review: boolean;
   human_confirmations: ChainFixConfirmation[];
+  /** Remarks about another version the readers noted in the report; absent when none. */
+  variant_remarks?: ChainVariantRemark[] | null;
 }
 
 export interface ChainEdge {

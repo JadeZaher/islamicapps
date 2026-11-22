@@ -295,5 +295,129 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(replay.load_overrides(Path(directory) / "absent.jsonl.gz"), {})
 
 
+V3_2 = HERE.parent / "chain-reader" / "v3_2"
+MUSLIM_PACKET = next(json.loads(line) for line in (V3_2 / "examples" / "example-packets.jsonl").read_text(encoding="utf-8").splitlines()
+                     if json.loads(line)["id"] == "t01-30fa50")     # «بمثل حديث سليمان بن بلال»: one route and a remark about another version
+ROUTE = [[{"surface": name, "kind": "narrator"}] for name in ("محمد بن المثنى", "عبد الوهاب", "يحيى بن سعيد", "عبد الله بن عامر بن ربيعة", "عائشة")]
+VARIANT_GROUP = {"variant": True, "levels": [[{"surface": "سليمان بن بلال", "kind": "narrator"}]]}
+
+
+def muslim_reading(*extra_groups: dict) -> dict:
+    return {"id": "t01-30fa50", "status": "read", "groups": [{"levels": ROUTE}, *extra_groups], "shared_tail": None, "needs_ruling": False, "notes": [], "fixes": []}
+
+
+class VariantRemarkTest(unittest.TestCase):
+    """A variant remark is kept with the fix (planned.variant_remarks), never a route, mention or part of agreement (AGENTS.md §variant remarks)."""
+
+    def read(self, first: dict, second: dict | None, supported: bool = True, tool: str = "v3_2") -> dict:
+        stored = {"chains": [{"branch": 0, "mentions": [{"id": f"mention:k6:13638:0000:{p:04d}", "surface_ar": s}
+                                                         for p, s in enumerate(["حدثناه محمد بن المثنى", "عبد الوهاب", "يحيى بن سعيد", "عبد الله بن عامر بن ربيعة"])]}]}
+        return engine.run_item({"key": "0", "text": MUSLIM_PACKET["text"], "expected_id": "t01-30fa50", "output": first, "other_output": second,
+                                "base": stored, "record_id": "k6:13638", "source_work_id": "sunni:muslim", "evidence": [MUSLIM_PACKET["text"][:40]],
+                                "reader_format": "v3_2", "tool_version": tool, "context": MUSLIM_PACKET["context"],
+                                "variant_notes_supported": supported})
+
+    def test_one_route_and_one_remark_are_one_chain_plus_a_remark_the_union_marks_the_passes(self):
+        result = self.read(muslim_reading(VARIANT_GROUP), muslim_reading(VARIANT_GROUP))
+        self.assertEqual((result["errors"], result["holds"]), ([], []))
+        self.assertEqual(len(result["planned"]["chains"]), 1)
+        remark, = result["planned"]["variant_remarks"]
+        self.assertEqual((remark["surfaces"], remark["passes"]), ([["سليمان بن بلال"]], ["a", "b"]))
+        self.assertIn("بمثل حديث سليمان بن بلال", remark["quote"])
+        self.assertTrue(MUSLIM_PACKET["text"][remark["start"]:remark["end"]].strip() == remark["quote"])
+        names = [m["surface_ar"] for c in result["planned"]["chains"] for m in c["mentions"]]
+        self.assertNotIn("سليمان بن بلال", names)                   # never a link, so never a pair
+
+    def test_passes_that_differ_on_remarks_still_agree_and_the_stored_remark_is_the_union(self):
+        other_remark = {"variant": True, "levels": [[{"surface": "عبد الوهاب", "kind": "narrator"}]]}
+        result = self.read(muslim_reading(VARIANT_GROUP), muslim_reading(other_remark))
+        self.assertEqual(result["errors"], [])
+        self.assertEqual(sorted((tuple(map(tuple, r["surfaces"])), tuple(r["passes"])) for r in result["variant_remarks"]),
+                         [((("سليمان بن بلال",),), ("a",)), ((("عبد الوهاب",),), ("b",))])
+        self.assertEqual(result["planned"]["variant_remarks"], result["variant_remarks"])
+        alone = self.read(muslim_reading(VARIANT_GROUP), muslim_reading())
+        self.assertEqual([r["passes"] for r in alone["variant_remarks"]], [["a"]])
+
+    def test_passes_whose_routes_differ_do_not_agree(self):
+        shorter = muslim_reading()
+        shorter["groups"][0]["levels"] = ROUTE[:-1]
+        result = self.read(muslim_reading(VARIANT_GROUP), shorter)
+        self.assertTrue(result["errors"][0].startswith("second reading: its routes differ"), result["errors"])
+
+    def test_the_switch_lifts_only_the_variant_hold(self):
+        held = self.read(muslim_reading(VARIANT_GROUP), muslim_reading(VARIANT_GROUP), supported=False)
+        self.assertEqual([h["code"] for h in held["holds"]], ["has_variant_group"])
+        self.assertEqual(held["planned"]["variant_remarks"][0]["passes"], ["a", "b"])        # recorded either way
+        only = self.read({**muslim_reading(VARIANT_GROUP), "groups": [VARIANT_GROUP]}, None)
+        self.assertIn("variant_only_reading", [h["code"] for h in only["holds"]])             # a reading of remarks alone stays held
+
+    def test_replay_carries_the_remark_on_any_effect_and_makes_no_row(self):
+        result = self.read(muslim_reading(VARIANT_GROUP), muslim_reading(VARIANT_GROUP))
+        row = {"format": replay.OVERRIDES_FORMAT, "hadith_id": "hadith:k6:13638", "fix_id": "chain-fix:t", "effect": "set_status",
+               "variant_remarks": result["planned"]["variant_remarks"]}
+        self.assertEqual(replay.variant_remarks_of(row)[0]["quote"], result["variant_remarks"][0]["quote"])
+        self.assertEqual(replay.variant_remarks_of({"effect": "annotate"}), [])
+
+
+class CompilerHeadPerRouteTest(unittest.TestCase):
+    """The compiler's direct/indirect mark is read per route from its own opening words (work_register.py `route_links`)."""
+
+    fixture = json.loads((HERE / "fixtures" / "k6-2400.json").read_text(encoding="utf-8"))
+
+    def planned_chains(self) -> list[dict]:
+        return [{"suspension": None, "mentions": [{"surface_ar": surface, "span": span} for surface, span in route]} for route in self.fixture["routes"]]
+
+    def test_bukhari_k6_2400_marks_the_quoted_route_indirect(self):
+        from work_register import WorkRegister
+        marks = WorkRegister().route_links(self.fixture["source_work_id"], self.fixture["text"], self.planned_chains())
+        self.assertEqual(marks, [None, "indirect"])                 # «وقال الليث»: al-Bukhari quotes it; route 0 keeps «حدثنا» (direct)
+
+    def test_a_co_transmitter_joined_by_waw_shares_the_opening_and_a_new_hearing_verb_is_direct(self):
+        from work_register import WorkRegister
+        text = "حدثنا أبو بكر، وزهير بن حرب، عن وكيع. ح وحدثنا عمرو، عن وكيع. وقال بشر، عن وكيع"
+        at = lambda word: [text.index(word), text.index(word) + len(word)]
+        chains = [{"suspension": None, "mentions": [{"surface_ar": "أبو بكر", "span": at("أبو بكر")}]},
+                  {"suspension": None, "mentions": [{"surface_ar": "زهير بن حرب", "span": at("زهير بن حرب")}]},
+                  {"suspension": None, "mentions": [{"surface_ar": "عمرو", "span": at("عمرو")}]},
+                  {"suspension": None, "mentions": [{"surface_ar": "بشر", "span": at("بشر")}]}]
+        self.assertEqual(WorkRegister().route_links("sunni:muslim", text, chains), [None, None, "direct", "indirect"])
+
+    def test_the_engine_plans_the_mark_on_the_later_route_and_replay_writes_it(self):
+        from work_register import WorkRegister
+        planned = {"chains": [{"id": f"chain:k6:2400:{i:04d}", "branch": i, "length": len(route), "suspension": None, "extraction_method": "chain_fix_reader",
+                               "mentions": [{"id": f"mention:k6:2400:{i:04d}:{p:04d}", "position": p, "surface_ar": surface, "surface_normalized": surface,
+                                             "teacher_context_normalized": None, "student_context_normalized": None, "review_unit_id": "u",
+                                             "review_unit_fine_id": "f", "link_kind_if_new": "unclassified", "kept_mention_id": None,
+                                             "carry_identity": False, "span": span} for p, (surface, span) in enumerate(route)]}
+                              for i, route in enumerate(self.fixture["routes"])]}
+        engine.compiler_links_for(planned, self.fixture["text"], self.fixture["source_work_id"])
+        self.assertEqual([c.get("compiler_link") for c in planned["chains"]], [None, "indirect"])
+        first = ["chain:k6:2400:0000", "hadith:k6:2400", 0, 6, False, "extract_isnad_unified", None, "0", None, None, "uncertain", "{x}", None,
+                 "narrator:work:al-bukhari", "direct"]
+        row = {"hadith_id": "hadith:k6:2400", "fix_id": "chain-fix:t", "structure_status": "read_by_model", "planned": planned}
+        chains, *_ = replay.rewrite_rows(row, [first], [], [], {}, str, Counter(), WorkRegister().route_links("sunni:bukhari", self.fixture["text"], planned["chains"]))
+        self.assertEqual([c[14] for c in chains], ["direct", "indirect"])
+        copied, *_ = replay.rewrite_rows({**row, "planned": {"chains": [{k: v for k, v in c.items() if k != "compiler_link"} for c in planned["chains"]]}},
+                                         [first], [], [], {}, str, Counter())
+        self.assertEqual([c[14] for c in copied], ["direct", "direct"])       # an older plan with no per-route mark still copies the first chain's
+
+    def test_the_projection_wrapper_reads_the_report_text_for_a_plan_made_before_the_rule(self):
+        import chain_fix_projection
+        from work_register import WorkRegister
+        text = self.fixture["text"]
+        planned = {"chains": [{"id": f"chain:k6:2400:{i:04d}", "branch": i, "length": len(route), "suspension": None, "extraction_method": "chain_fix_reader",
+                               "mentions": [{"id": f"mention:k6:2400:{i:04d}:{p:04d}", "position": p, "surface_ar": surface, "surface_normalized": surface,
+                                             "teacher_context_normalized": None, "student_context_normalized": None, "review_unit_id": "u",
+                                             "review_unit_fine_id": "f", "link_kind_if_new": "unclassified", "kept_mention_id": None,
+                                             "carry_identity": False, "span": span} for p, (surface, span) in enumerate(route)]}
+                              for i, route in enumerate(self.fixture["routes"])]}
+        override = {"hadith_id": "hadith:k6:2400", "fix_id": "chain-fix:t", "structure_status": "read_by_model", "text_layout": "full_text", "planned": planned}
+        first = ["chain:k6:2400:0000", "hadith:k6:2400", 0, 6, False, "extract_isnad_unified", None, "0", None, None, "uncertain", "{x}", None,
+                 "narrator:work:al-bukhari", "direct"]
+        chains, *_ = chain_fix_projection.rewrite_rows({"hadith:k6:2400": override}, [first], [], [], str, Counter(), {"hadith:k6:2400": text}, {},
+                                                        {"hadith:k6:2400": "sunni:bukhari"}, WorkRegister())
+        self.assertEqual([c[14] for c in chains], ["direct", "indirect"])
+
+
 if __name__ == "__main__":
     unittest.main()

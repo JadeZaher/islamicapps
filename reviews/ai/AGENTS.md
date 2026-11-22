@@ -46,8 +46,11 @@ Design, states, rules and the integration checklist: `docs/review/chain-fix-pipe
   report's names (it sees that report), so that refusal now applies to v1/v2 only.
 - **v3.2 tool (0022).** `READER_PROMPTS.v3_2` registers the v3.2 draft prompt (3.2.0); `TOOLS_FOR_FORMAT` says which tool may read a
   reading of each prompt (v3: v3, v3_1, v3_2; v3.1: v3_1, v3_2; v3.2: v3_2). Under tool v3_2 a `variant: true` group never becomes a
-  route: the engine returns it as `variant_remarks` and the submission keeps them; the v3.2 holds still hold such a reading
-  (`has_variant_group`) because the page cannot yet show the remark. Batch 001 was applied under tool v3_1; its 11 readings the v3.2
+  route: the engine returns it as `variant_remarks` and the submission keeps them (the union of both passes, each marked with the pass
+  and run that wrote it; `planned.variant_remarks`). The v3.2 holds hold such a reading (`has_variant_group`) unless the submit tool is
+  given `--variant-notes-supported`, which means the pipeline stores the remark, the page shows it ("The report mentions another version:
+  ...") and nothing counts it as a route; the envelope then carries pass B's unchanged output (`reader_output_v3_b`), and the engine
+  refuses a fix whose two passes' routes differ. Without the flag the reading is recorded held, as before. Batch 001 was applied under tool v3_1; its 11 readings the v3.2
   tool holds were recorded as archive holds with the v3.2 codes (9 applied ones reverted).
 - **Hold `stored_chain_checked_by_rule`** (submit tool, not a reader hold): this round a reading replaces only uncertain chains. A
   report that also has a rule-checked chain (which may feed teacher and student lists) waits for the owner, so applying a batch never

@@ -37,6 +37,10 @@ def apply_overrides(overrides: dict[str, dict], branches_by_hadith: dict[str, li
         if problem:
             counts[f"dropped:{problem}"] += 1
             continue
+        remarks = replay.variant_remarks_of(row)
+        if remarks:                          # kept with the fix, shown on the page; no row, no pair (AGENTS.md §variant remarks)
+            counts["reports_with_variant_remark"] += 1
+            counts["variant_remarks"] += len(remarks)
         if row["effect"] == "replace_routes":
             replacing[hadith_id] = row
             continue
@@ -48,10 +52,12 @@ def apply_overrides(overrides: dict[str, dict], branches_by_hadith: dict[str, li
 
 
 def rewrite_rows(replacing: dict[str, dict], chains: list[list], mentions: list[list], identity_rows: list[list], verbatim,
-                 counts: Counter) -> tuple[list[list], list[list], list[list]]:
+                 counts: Counter, hadith_text: dict[str, str] | None = None, chain_field: dict[str, str] | None = None,
+                 work_of: dict[str, str] | None = None, register=None) -> tuple[list[list], list[list], list[list]]:
     """The projection's chain, mention and candidate rows with every replaced report's rows swapped for its fix's
     (`replay.rewrite_rows`). An inherited name reads its cited mention from the rows as built (a rule-checked chain, never
-    one a fix rewrote: the engine holds otherwise)."""
+    one a fix rewrote: the engine holds otherwise). With `register` (work_register.WorkRegister) a later route's compiler mark
+    is read from its own opening words in the reader text, not copied from the first chain."""
     if not replacing:
         return chains, mentions, identity_rows
     candidates_by_mention: dict[str, list[list]] = {}
@@ -67,8 +73,12 @@ def rewrite_rows(replacing: dict[str, dict], chains: list[list], mentions: list[
                 into.setdefault(item[1 if rows is chains else 2], []).append(item)
     new_chains, new_mentions, new_candidates = [], [], []
     for hadith_id, row in sorted(replacing.items()):
+        route_links = None
+        if register is not None and row["planned"]["chains"]:
+            reader = replay.reader_text(row["text_layout"], hadith_text[hadith_id], (chain_field or {}).get(hadith_id))
+            route_links = register.route_links(work_of[hadith_id], reader, row["planned"]["chains"])
         rewritten = replay.rewrite_rows(row, old_chains.get(hadith_id, []), old_mentions.get(hadith_id, []),
-                                        old_candidates.get(hadith_id, []), written, verbatim, counts)
+                                        old_candidates.get(hadith_id, []), written, verbatim, counts, route_links)
         new_chains += rewritten[0]
         new_mentions += rewritten[1]
         new_candidates += rewritten[2]
