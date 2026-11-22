@@ -179,3 +179,10 @@ for these works): the recorded hy-mt2 spend is US$0.40369 for 9,191 reports, abo
 - Zayd sub-sayings inside one record (`(وقال)`, `وسألت`) are advisory only; whether each is a report is a curation call.
 - Gloss detection after a closing quote (rabi, 109 advisory) is a heuristic; the 72 defect-grade commentary tails are structural (source paragraph evidence).
 - Offsets index the decoded file (LF); the three sources contain no CRLF.
+
+## Corrected OpenITI reports, scored 2026-11-22
+
+The 1,901 corrected reports now in production (rabi 1,005, zayd 691, rida 205) were scored by `qwen/qwen3.7-flash` (US$0.0995). `build_corrected_windows.py` builds the input
+(`output/records_with_windows_corrected.jsonl.gz`) from a production read (`output/production_snapshot_corrected_2026-11-22.jsonl.gz`) and the OpenITI source; the three works ran as three
+processes (`model_verdicts_corrected.jsonl` for rabi, `_zayd`, `_rida`; `run_manifest_corrected*.json`; one retry of failed batches each). 1,898 scored, 3 failed twice. `output/score_summary_corrected.json`:
+score distribution per work and axis, flags, and the 20 lowest reports. Advice only: no parsing, text or sanad was changed on a score.

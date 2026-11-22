@@ -4,7 +4,7 @@
 
 Which model did which work in this project. One entry per (model, kind of work). Built from recorded evidence only; docs/models.md is generated from this file by render_model_docs.py.
 
-As of 2026-11-21. Source of truth: `datasets/hadith-data/model_registry.json` (schema `model_registry.schema.json`).
+As of 2026-11-22. Source of truth: `datasets/hadith-data/model_registry.json` (schema `model_registry.schema.json`).
 
 ## Pinned translator
 
@@ -15,17 +15,17 @@ Changing this file is a reviewed edit: update model_registry.json and regenerate
 What its output may and may not be used for:
 
 - May: Candidate text for a curator to review against the Arabic and the source edition.
-- May: Display on a curator or preview surface only if labelled 'unreviewed machine translation' together with this model id.
+- May: Public display only for a report with no source-provided English, labelled 'Unreviewed machine translation' with this model id and credited to SWI (public_translations, migration 0018); source-provided English is always shown instead where it exists.
 - May not: Writing to canonical CSV/GZIP, translation_overrides.jsonl or any release input without a hash-bound human review (release accepts only human_verified or source_verified).
 - May not: Presenting the mechanical screen as evidence that the translation is faithful: it checks shape (refusal, Arabic leakage, Latin ratio, loops, truncation), not meaning.
 - May not: Publishing as reviewed English, or attributing the wording to any scholar or source.
-- Review state: machine_unreviewed; no human review of any hy-mt2 output is recorded. 9,191 distinct reports translated by the pinned model (2,145 in the first run, 7,046 in gap-fill run 2); 9,161 passed the mechanical screen (screen-v2, plus a terminology-echo guard and a macron/dot-transliteration guard in run 2). Spend 0.40369 USD in total (0.11841 first run, 0.28528 run 2 including the three pilots), 2,485,087 tokens. The lane agent's own reading of 58 run-2 outputs found 7 with a meaning-level error; that is one reader's reading, not a reviewed measurement.
+- Review state: machine_unreviewed; no human review of any hy-mt2 output is recorded. Published under the label 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)' for reports with no source English, state machine_unreviewed in translations (0018). 33,307 reports carry a draft (2,025 from the first run under prompt v1, 31,282 from gap-fill run 2: 20,056 terminology prompt, 11,226 base prompt after fallback or no matching term); 113 reports stay without English (91 failed the screen twice, 22 not translatable: sources with no Arabic letters or a sentence over 5,500 characters). Spend: US$0.40369 up to 2026-11-21 and US$0.7767 on 2026-11-22 (journal usage.cost; 4,876,971 tokens that day), about US$1.18 and 7.36 million tokens in all. Reading of 40 random outputs on 2026-11-22 (10 per tradition, one reader): 5 with a meaning-level error (see quality_findings).
 
 ## Summary
 
 | Model as recorded | Kind | Work | Output | Status | Identity |
 | --- | --- | --- | --- | --- | --- |
-| `tencent/hy-mt2-30b-a3b` **pinned** | translation | Arabic to English candidate translations for master rows whose English fails release QA: missing, placeholder, same as Arabic, too short, fully or partly Arabic, and names-or-terms-only leakage | 60 journal events (+10 more outputs) | candidate_only | namespaced_specific |
+| `tencent/hy-mt2-30b-a3b` **pinned** | translation | Arabic to English candidate translations for master rows whose English fails release QA: missing, placeholder, same as Arabic, too short, fully or partly Arabic, and names-or-terms-only leakage | 60 journal events (+11 more outputs) | candidate_only | namespaced_specific |
 | `google/gemini-2.5-flash` | translation | Arabic to English candidate translations for the 12,833 translation-eligible backlog rows, run as pilots (prompt identities v2 to r6), a bounded r7 prefix run and an r8 suffix run | 14 journal events (+3 more outputs) | candidate_only | namespaced_specific |
 | `google/gemma-4-e4b` | translation | Arabic to English translation of the OpenITI-sourced Ibadi (Jami' al-Sahih of al-Rabi'), Zaydi (Musnad Zayd) and Sahifat al-Rida appendix reports, with a self-reported 1 to 4 confidence per row | 1,733 master rows with translation_model google/gemma-4-e4b: Ibadi 1,004, Zaydi 694, Sahifat al-Rida appendix 35 (+1 more outputs) | canonical | namespaced_specific |
 | `google/gemma-4-e4b` | translation | Candidate English for K6 rows with missing English (translation:missing); one historical pilot row and 20 rows from a two-worker bounded run | 21 journal events | candidate_only | namespaced_specific |
@@ -38,6 +38,7 @@ What its output may and may not be used for:
 | `Claude Fable 5.2` | coding_assistance | Co-authored application code (src/app, src/db, src/lib, src/components, src/scripts), data pipeline code and diagnostics (datasets/hadith-data), and documentation and planning files (docs, conductor, .omc) in 18 commits reachable from HEAD | 18 commits | not_applicable | namespaced_specific |
 | `Claude Opus 4.7 (1M context)` | coding_assistance | Co-authored application code (src/app, src/lib, src/scripts), data pipeline code (datasets/hadith-data, datasets/archive) and track documentation (conductor, .omc) in 6 commits | 6 commits | not_applicable | namespaced_specific |
 | `Claude Opus 4.6 (1M context)` | coding_assistance | Co-authored data pipeline code (datasets/hadith-data, datasets), application code (src/app, src/lib, src/components, src/scripts) and track documentation (conductor, .omc) in 2 commits | 2 commits | not_applicable | namespaced_specific |
+| `qwen/qwen3.7-flash` | extraction_audit | Scored each of the 1,901 corrected OpenITI reports in production (Musnad al-Rabi 1,005, Musnad Zayd 691, Sahifat al-Rida 205) against a window of the OpenITI source, 0 to 3 for boundaries, cleanliness and sanad/matn split, with flags and verbatim-substring proposals | 1,014 verdict events (+3 more outputs) | candidate_only | namespaced_specific |
 
 Row counts for canonical data come from the full-schema master datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz (99,283 rows, streamed; fields translation_source, translation_model, translation_review_status, translation_status). The tracked all_hadiths_unified.csv.gz has the legacy 26-column schema and carries no model fields.
 
@@ -46,13 +47,14 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
 ### tencent/hy-mt2-30b-a3b: translation (`hy-mt2-30b-a3b-translation`)
 
 - Runtime: OpenRouter API (provider policy data_collection deny, allow_fallbacks false)
-- Work: Arabic to English candidate translations for master rows whose English fails release QA: missing, placeholder, same as Arabic, too short, fully or partly Arabic, and names-or-terms-only leakage. Arabic only is sent; no existing English is shown to the model. Gap-fill run 2 (2026-11-21, diagnostics/translation-run-2/): the same model, with a per-request terminology block (prompt hy-mt2-terminology-en-prompt-v2, translation_model.json prompt_terminology), over public reports that have no creditable public English; 31,090 reports selected, 7,046 translated before the OpenRouter account ran out of credits (HTTP 402); the rest is resumable.
-- Dates: 2026-11-21 to 2026-11-21 (created_at in the journals (single run timestamp supplied by the operator))
-- Identity: namespaced_specific. Response model is not stored per event; the journals' chunk_results record response_model tencent/hy-mt2-30b-a3b on all 61 pilot chunks.
-- Status: candidate_only. machine_unreviewed; no human review of any hy-mt2 output is recorded. 9,191 distinct reports translated by the pinned model (2,145 in the first run, 7,046 in gap-fill run 2); 9,161 passed the mechanical screen (screen-v2, plus a terminology-echo guard and a macron/dot-transliteration guard in run 2). Spend 0.40369 USD in total (0.11841 first run, 0.28528 run 2 including the three pilots), 2,485,087 tokens. The lane agent's own reading of 58 run-2 outputs found 7 with a meaning-level error; that is one reader's reading, not a reviewed measurement.
+- Work: Arabic to English candidate translations for master rows whose English fails release QA: missing, placeholder, same as Arabic, too short, fully or partly Arabic, and names-or-terms-only leakage. Arabic only is sent; no existing English is shown to the model. Gap-fill run 2 (2026-11-21, 2026-11-22; diagnostics/translation-run-2/): the same model, with a per-request terminology block (prompt hy-mt2-terminology-en-prompt-v2, sha256 03da4f8769e0...dfc5c9, translation_model.json prompt_terminology; fallback prompt hy-mt2-default-en-prompt-v1, sha256 bfe84676c7ff...df8ed4af) over public reports with no public English. 7,046 reports were translated on 2026-11-21 before the OpenRouter account ran out of credits (HTTP 402); on 2026-11-22 the account was topped up and the run resumed: the three corrected OpenITI works first (al-Rabi, Musnad Zayd, Sahifat al-Rida, from their current text), then every other report still without public English. 33,307 of the 33,420 reports without public English now have a gated draft; the drafts are published (migration 0018) as 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)' credited to SWI.
+- Dates: 2026-11-21 to 2026-11-22 (created_at in the journals (one operator-supplied timestamp per run label))
+- Identity: namespaced_specific. Per event the journals record the response model: tencent/hy-mt2-30b-a3b on every one of the 25,097 responses of 2026-11-22 (provider Tencent, through OpenRouter) and on all 61 pilot chunks; the 2026-11-21 gap-fill rows carry the model but no provider.
+- Status: candidate_only. machine_unreviewed; no human review of any hy-mt2 output is recorded. Published under the label 'Unreviewed machine translation (tencent/hy-mt2-30b-a3b)' for reports with no source English, state machine_unreviewed in translations (0018). 33,307 reports carry a draft (2,025 from the first run under prompt v1, 31,282 from gap-fill run 2: 20,056 terminology prompt, 11,226 base prompt after fallback or no matching term); 113 reports stay without English (91 failed the screen twice, 22 not translatable: sources with no Arabic letters or a sentence over 5,500 characters). Spend: US$0.40369 up to 2026-11-21 and US$0.7767 on 2026-11-22 (journal usage.cost; 4,876,971 tokens that day), about US$1.18 and 7.36 million tokens in all. Reading of 40 random outputs on 2026-11-22 (10 per tradition, one reader): 5 with a meaning-level error (see quality_findings).
 - Inputs:
   - `datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz (text_ar of flagged rows)`
   - `production database, read-only SELECT of public reports with no complete public English (43,914 reports; Arabic text and its SHA-256), 2026-11-21; snapshot regenerated by translate_gap_fill.py snapshot`
+  - `production database, read-only SELECT of public reports with no public English (33,420 reports, 4,653,191 Arabic characters to translate), 2026-11-22; only the public Arabic text and the translation instruction were sent to the API`
 - Outputs:
   - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_pilot_2026-11-21.jsonl`: 60 journal events; stratified pilot; original screen: 51 accepted, 9 rejected (all repetition_loop, shown to be false positives)
   - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_pilot_2026-11-21_rescreened_screen_v2.jsonl`: 60 journal events; same model outputs re-screened with screen-v2: 59 accepted, 1 rejected; derived copy, original untouched
@@ -60,14 +62,15 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
   - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_batch_names_terms_2026-11-21.jsonl`: 874 journal events; 872 accepted, 2 rejected (length_ratio_too_short, repetition_loop)
   - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_batch_no_usable_english_2026-11-21_skipped.jsonl`: 4 rows never sent; a single sentence over 5,500 characters; no defensible split
   - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_batch_names_terms_2026-11-21_skipped.jsonl`: 11 rows never sent; same reason
-  - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_gapfill_terminology_v2_2026-11-21.jsonl`: 7,535 journal events; gap-fill run 2 journal: 7,020 accepted, 26 rejected by screen-v2 plus two guards, 489 transport errors (all HTTP 402, insufficient account credits; retried on resume). 269 rows fell back from the terminology prompt to the base prompt after a guard failure.
   - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_gapfill_terminology_v2_2026-11-21_skipped.jsonl`: 6 rows never sent; five sources with fewer than three Arabic letters (for example a single letter or a row of asterisks) and one 43,117-character source with a sentence over 5,500 characters
-  - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_gapfill_load_ready_2026-11-21.jsonl`: 9,161 load-ready candidates; one row per report: 2,141 earlier accepted rows plus 7,020 gap-fill rows, each with record id, Arabic SHA-256, English, translation_source, translation_model, prompt_version, machine_unreviewed, QA result, cost and timestamp; regenerate with translate_gap_fill.py finalize after the run is resumed
+  - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_gapfill_load_ready_2026-11-21.jsonl`: 9,161 load-ready candidates; superseded by machine_english_overlay.jsonl.gz (earlier partial load-ready file, 9,161 rows, kept as evidence)
   - `datasets/hadith-data/diagnostics/translation-run-2/pilot_v1_base.jsonl`: 60 journal events; 60-row paired pilot, base prompt
   - `datasets/hadith-data/diagnostics/translation-run-2/pilot_v2_terminology.jsonl`: 58 journal events; same rows, terminology prompt revision 2 (two non-linguistic sources skipped); pilot_v2_draft1_terminology.jsonl holds the 60 draft-1 events
+  - `datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_gapfill_terminology_v2_2026-11-21.jsonl`: 32,629 journal events; gap-fill journal: 7,535 events of 2026-11-21 plus 25,094 of 2026-11-22 (24,900 accepted, 194 rejected by screen-v2 and the two guards); the 489 earlier HTTP 402 events were retried and superseded
+  - `datasets/hadith-data/machine_translation_candidates/machine_english_overlay.jsonl.gz`: 33,307 published drafts; one gated draft per report, bound to the exact Arabic by arabic_sha256, each with response model, provider (where recorded), prompt version and sha256, finish reasons, QA result, cost and timestamp; the exporter re-gates every row and binds the file by SHA-256 in the projection manifest
 - May be used for:
   - Candidate text for a curator to review against the Arabic and the source edition.
-  - Display on a curator or preview surface only if labelled 'unreviewed machine translation' together with this model id.
+  - Public display only for a report with no source-provided English, labelled 'Unreviewed machine translation' with this model id and credited to SWI (public_translations, migration 0018); source-provided English is always shown instead where it exists.
 - May not be used for:
   - Writing to canonical CSV/GZIP, translation_overrides.jsonl or any release input without a hash-bound human review (release accepts only human_verified or source_verified).
   - Presenting the mechanical screen as evidence that the translation is faithful: it checks shape (refusal, Arabic leakage, Latin ratio, loops, truncation), not meaning.
@@ -81,6 +84,8 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
   - The terminology prompt (60-row paired pilot, 58 compared) put the honorific in one parenthetical form 137 times against 56, used the glossary's ʿ scheme 64 times against 0, and 'God' 1 time against 4, with no worse meaning in a 36-pair reading; it also produced 'O the Messenger of Allah' in 7 draft-1 outputs (fixed by vocative entries) and occasional macron transliteration (guarded; the row is retried with the base prompt), and renders a bare honorific with no subject ('And (peace and blessings be upon him) said') where the Arabic omits the Prophet's name. (source: datasets/hadith-data/diagnostics/translation-run-2/pilot_comparison.json and README.md)
   - At temperature 0.7 the same prompt gave different meanings on the same source in two runs (a dropped 'not' on pc_73910), so a single sample is partly noise. (source: datasets/hadith-data/diagnostics/translation-run-2/pilot_comparison.json)
   - Run 2 stopped at 7,046 of 31,090 selected reports because the OpenRouter account balance reached zero (HTTP 402 'Insufficient credits', limit_source openrouter_credits); the key's own limit had 47.97 USD remaining. About 24,000 reports remain; the estimated remaining cost is about 1.3 USD. (source: datasets/hadith-data/diagnostics/translation-run-2/README.md, section Blocked)
+  - 2026-11-22 reading of 40 random published drafts (10 each from Sunni, Imami, Zaydi, Ibadi; one reader against the Arabic): 5 had a meaning-level error: Sunni 3 (pc_47927 'give the beggar' rendered 'They rejected the liquid'; pc_631 'harvest your palm' rendered 'Come out, my grandfather ... you will believe'; pc_15571 speaker confusion), Zaydi 2 (jubar rendered 'tyrant'; 'ta'rif' rendered 'knows'), Imami 1 partial (garbled gloss), Ibadi 0. No dropped isnad and no invented text was seen. One reader's reading, not a reviewed measurement. (source: conductor/RUNBOOK.md, Machine translation publish)
+  - The screen held 194 of 25,094 events of 2026-11-22 (0.8 percent): diacritic transliteration 53 first, repetition loop 23, length ratio 21, truncation 1, Arabic leakage 1; after one retry 91 reports remain held out and are never shown. (source: datasets/hadith-data/machine_translation_candidates/openrouter_hy_mt2_30b_a3b_gapfill_terminology_v2_2026-11-21.jsonl)
 - Evidence:
   - `datasets/hadith-data/diagnostics/translation-run/summary.json`: per_file, total_model_cost_usd, coverage_of_master_problem_rows
   - `datasets/hadith-data/diagnostics/translation-run/README.md`: Files table, Method, Spend
@@ -338,6 +343,32 @@ Row counts for canonical data come from the full-schema master datasets/hadith-d
   - `git log HEAD (trailer Co-Authored-By: Claude Opus 4.6 (1M context))`: 2 commits
 - Evidence:
   - `git log HEAD`: --format=%(trailers:key=Co-Authored-By,valueonly), grouped by trailer value
+
+### qwen/qwen3.7-flash: extraction audit (`qwen3-7-flash-openrouter-extraction-audit`)
+
+- Runtime: OpenRouter API (provider policy data_collection deny; temperature 0; reasoning disabled; no referer or title headers)
+- Work: Scored each of the 1,901 corrected OpenITI reports in production (Musnad al-Rabi 1,005, Musnad Zayd 691, Sahifat al-Rida 205) against a window of the OpenITI source, 0 to 3 for boundaries, cleanliness and sanad/matn split, with flags and verbatim-substring proposals. Arabic only; no translation; no authenticity judgement. 1,898 reports scored, 3 failed after one retry.
+- Dates: 2026-11-22 to 2026-11-22 (run manifests started_utc and finished_utc)
+- Identity: namespaced_specific. Requested id as sent to OpenRouter; every verdict row records the model field the harness stored (qwen/qwen3.7-flash).
+- Status: candidate_only. machine_unreviewed; verdicts are advice to a curator. Nothing in parsing, text_ar, sanad or matn was changed on the strength of a score.
+- Inputs:
+  - `datasets/hadith-data/extraction-quality/output/records_with_windows_corrected.jsonl.gz (production text_ar, sanad_ar, matn_ar and a source window per report, built by build_corrected_windows.py)`
+  - `datasets/hadith-data/extraction-quality/prompt.md (SHA-256 5699afa9f89b637d776027921724cd431a8030e36ede31b757a0f2278bb26848)`
+- Outputs:
+  - `datasets/hadith-data/extraction-quality/output/model_verdicts_corrected.jsonl`: 1,014 verdict events (rabi); first process; also holds 3 zayd verdicts duplicated in the zayd file
+  - `datasets/hadith-data/extraction-quality/output/model_verdicts_corrected_zayd.jsonl`: 719 verdict events (zayd)
+  - `datasets/hadith-data/extraction-quality/output/model_verdicts_corrected_rida.jsonl`: 208 verdict events (rida)
+  - `datasets/hadith-data/extraction-quality/output/score_summary_corrected.json`: 1 summary; score distribution and the 20 lowest-scoring reports
+- May be used for:
+  - Ranking reports for human review of extraction quality.
+  - Candidate corrections that a curator accepts or rejects against the OpenITI source.
+- May not be used for:
+  - Writing any proposal into text_ar, sanad or matn_ar without a hash-bound human review.
+  - Treating a score as a statement about the authenticity or grade of a report.
+- Quality findings:
+  - Reports with all three scores 3: 1,195 of 1,898 (63 percent). Lowest sub-score 0 for 209 reports, 1 for 101, 2 for 393. Most frequent flags: markup_leak 217, sanad_matn_split_wrong 184, merged_records 153, commentary_tail 120. The worst reports are mostly Musnad al-Rabi reports that open with the compiler's own 'qal al-Rabi' (judged commentary, not a report). (source: datasets/hadith-data/extraction-quality/output/score_summary_corrected.json)
+- Evidence:
+  - `datasets/hadith-data/extraction-quality/output/run_manifest_corrected_zayd.json`: whole file (run_id, model, prompt_sha256, started_utc, finished_utc, cost_usd); the rida and rabi retry manifests sit beside it
 
 ## Coverage notes
 

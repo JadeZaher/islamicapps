@@ -12,7 +12,9 @@ import argparse
 import csv
 import gzip
 import importlib.util
+import io
 import json
+import os
 import random
 import re
 import subprocess
@@ -34,6 +36,19 @@ hy = importlib.util.module_from_spec(_spec)
 sys.modules["hy_gen"] = hy
 _spec.loader.exec_module(hy)
 gen = hy.gen
+_JOURNAL_LOCK = threading.Lock()
+
+
+def append_event_in_process(path: Path, event: dict) -> None:
+    """Durable append under one in-process lock: this runner is the journal's only writer, so the cross-process file lock
+    (a polled .lock file, about 3 events a second at 40 workers) is not needed."""
+    payload = (json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+    with _JOURNAL_LOCK, path.open("ab", buffering=0) as handle:
+        handle.write(payload)
+        os.fsync(handle.fileno())
+
+
+hy.append_event = append_event_in_process
 hy.PROMPT_TEMPLATE = "{source_text}"  # this runner builds the whole user turn itself and passes it as the "text"
 
 PIN = json.loads((DATA / "translation_model.json").read_text(encoding="utf-8"))
@@ -47,10 +62,13 @@ SNAPSHOT_COLUMNS = (
     "h.record_id, h.tradition_id, c.name as work, h.arabic_sha256, h.text_ar, t.state, t.quality_status, "
     "t.model, t.source as tsource, h.chain_status, h.chapter_title"
 )
+# Reports with no row public_translations would show (same predicate as the view under the all-works policy, without its
+# join cost): no live English row, quality not complete, hash differs from the report's, or state unknown_provenance.
 SNAPSHOT_QUERY = (
     f"select {SNAPSHOT_COLUMNS} from public_hadiths h join collections c on c.id=h.collection_id "
     "left join translations t on t.hadith_id=h.id and t.language='en' and t.retired_at is null "
-    "where t.id is null or t.quality_status<>'complete' or t.arabic_sha256<>h.arabic_sha256 order by h.record_id"
+    "where t.id is null or t.quality_status<>'complete' or t.arabic_sha256<>h.arabic_sha256 "
+    "or t.state::text not in ('human_verified','source_verified','source_provided','machine_unreviewed') order by h.record_id"
 )
 
 
@@ -229,7 +247,8 @@ def compute_event(item: dict, key: str, args, budget, variant: str) -> dict:
         parts.append(text)
         chunk_events.append(
             {"chunk_index": index, "source_start": start, "source_end": end, "translation": text,
-             "finish_reason": choice.get("finish_reason"), "response_model": response.get("model"), "usage": usage}
+             "finish_reason": choice.get("finish_reason"), "response_model": response.get("model"),
+             "response_provider": response.get("provider"), "usage": usage}
         )
     event = {
         "record_id": row["record_id"],
@@ -259,6 +278,7 @@ def compute_event(item: dict, key: str, args, budget, variant: str) -> dict:
         event["chunk_results"] = chunk_events
     elif chunk_events:
         event["response_model"] = chunk_events[0]["response_model"]
+        event["response_provider"] = chunk_events[0]["response_provider"]
     if error or len(parts) != len(item["chunks"]):
         event.update({"validation_status": "error", "validation_errors": [error or "incomplete"], "text_en": None})
     else:
@@ -429,6 +449,8 @@ def command_run(args) -> int:
                 redo_keys |= {(i["row"]["record_id"], i["row"]["arabic_sha256"]) for i in items if pattern.search(fold(i["text_ar"]))}
         final = {k: e for k, e in final.items() if k not in redo_keys or e.get("run_label") == args.run_label}
     todo = [i for i in items if (i["row"]["record_id"], i["row"]["arabic_sha256"]) not in final]
+    if args.only_prefix:
+        todo = [i for i in todo if i["row"]["record_id"].startswith(args.only_prefix)]
     if args.limit:
         todo = todo[: args.limit]
     todo.sort(key=lambda i: i["row"]["record_id"])
@@ -450,6 +472,21 @@ def command_run(args) -> int:
     return 0
 
 
+def prompt_sha256(version: str | None) -> str | None:
+    """SHA-256 of the prompt a version names (the base template, or the whole terminology block); '+' joins several."""
+    import hashlib
+    known = {BASE_VERSION: BASE_TEMPLATE}
+    if TERMS_BLOCK:
+        known[TERMS_BLOCK["version"]] = json.dumps(TERMS_BLOCK, ensure_ascii=False, sort_keys=True)
+    hashes = [hashlib.sha256(known[v].encode("utf-8")).hexdigest() if v in known else "unknown" for v in (version or "").split("+") if v]
+    return "+".join(hashes) or None
+
+
+def response_field(event: dict, name: str):
+    """A response field as the API returned it: the single-call value, else the first chunk's."""
+    return event.get(name) or next((c.get(name) for c in event.get("chunk_results", []) if c.get(name)), None)
+
+
 def command_finalize(args) -> int:
     """Combine prior accepted pinned-model rows and this run's accepted rows into one load-ready candidate file."""
     rows = classify(read_snapshot(Path(args.snapshot)))
@@ -466,7 +503,11 @@ def command_finalize(args) -> int:
                 chosen[k] = (e, Path(journal).name, "gap-fill run 2")
     out = Path(args.output)
     counts = Counter()
-    with out.open("w", encoding="utf-8", newline="\n") as handle:
+    # A .gz output is written with a zero mtime so the file (and the manifest hash that binds it) is reproducible.
+    raw = out.open("wb")
+    handle = io.TextIOWrapper(gzip.GzipFile(fileobj=raw, mode="wb", mtime=0), encoding="utf-8", newline="\n") if out.suffix == ".gz" \
+        else io.TextIOWrapper(raw, encoding="utf-8", newline="\n")
+    with raw, handle:
         for k in sorted(chosen):
             e, origin, run = chosen[k]
             row = wanted[k]
@@ -479,6 +520,11 @@ def command_finalize(args) -> int:
                 "translation_source": e["translation_source"],
                 "translation_model": e["translation_model"],
                 "prompt_version": e.get("prompt_version") or BASE_VERSION,
+                "prompt_sha256": prompt_sha256(e.get("prompt_version") or BASE_VERSION),
+                "response_model": response_field(e, "response_model"),
+                "response_provider": response_field(e, "response_provider"),
+                "finish_reasons": e.get("finish_reasons"),
+                "model_usage": e.get("model_usage"),
                 "translation_review_status": "machine_unreviewed",
                 "candidate_only": True,
                 "qa": {"screen_version": e.get("screen_version"), "status": e["validation_status"], "errors": e["validation_errors"]},
@@ -712,6 +758,7 @@ def main() -> int:
             p.add_argument("--output", required=True)
             p.add_argument("--variant", choices=["terminology", "base"], default="terminology")
             p.add_argument("--limit", type=int, default=0)
+            p.add_argument("--only-prefix", default="", help="translate only record ids starting with this (e.g. openiti:)")
             p.add_argument("--retry-rejected", action="store_true")
             p.add_argument("--redo-term", action="append", help="re-translate rows matching this terminology entry (its Arabic); repeatable")
             p.add_argument("--dry-run", action="store_true")

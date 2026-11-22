@@ -32,6 +32,7 @@ for _path in (HADITH_DATA_DIR, DATASETS_DIR, CORRESPONDENCE_JOB_DIR, GRADING_REC
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import external_identity as xid  # noqa: E402
+import machine_english  # noqa: E402
 from chain_chronology import DEATH_GAP_YEARS as CHRONOLOGY_DEATH_GAP_YEARS  # noqa: E402
 from chain_chronology import IRSAL_YEARS as CHRONOLOGY_IRSAL_YEARS  # noqa: E402
 from chain_chronology import Lifespan, contest_chain  # noqa: E402
@@ -48,7 +49,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.22.10"
+PROJECTION_VERSION = "2026.11.22.11"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -95,7 +96,7 @@ HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
 ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
 MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py",
                 "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json", "edition_identifications.json",
-                "chain_structure.py")
+                "chain_structure.py", "machine_english.py")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
 OPENING_ISNAD_LICENCE = ("Shura wa Istehsan register (opening_isnad_rules.json); the name as the work's opening isnad writes "
@@ -323,6 +324,30 @@ def verified_narrator(candidates: Sequence[tuple[str, str]]) -> str | None:
         return None
     contesting = {narrator for narrator, basis in candidates if basis not in NON_CONTESTING_BASES}
     return next(iter(confirmed)) if contesting == confirmed else None
+
+
+MACHINE_ENGLISH_OVERLAY = HADITH_DATA_DIR / "machine_translation_candidates" / "machine_english_overlay.jsonl.gz"
+TRANSLATION_PIN = HADITH_DATA_DIR / "translation_model.json"
+
+
+def machine_english_input(args: argparse.Namespace) -> dict | None:
+    """The overlay file as the manifest binds it (None when there is none)."""
+    path = args.machine_english
+    if path is None or not path.is_file():
+        return None
+    return {"path": display_path(path), "sha256": sha256_file(path), "pinned_model": json.loads(TRANSLATION_PIN.read_text(encoding="utf-8"))["model_id"]}
+
+
+def machine_english_rows(args: argparse.Namespace, translations: list[list], hadith_info: dict, hadith_text: dict,
+                         record_to_hadith: dict) -> tuple[list[list], dict]:
+    """Machine English for reports with no usable source English (state machine_unreviewed; source-provided wins)."""
+    bound = machine_english_input(args)
+    if bound is None:
+        return translations, {"overlay": None}
+    candidates = machine_english.read_overlay(args.machine_english)
+    rows, report = machine_english.overlay_translations(translations, hadith_info, hadith_text, record_to_hadith, candidates,
+                                                       bound["pinned_model"])
+    return rows, {"overlay": bound["path"], **report}
 
 
 def english_quality(status: str, text: str) -> str:
@@ -865,6 +890,7 @@ def project(args: argparse.Namespace) -> dict:
             "record_id": row["record_id"], "tradition_id": tradition_id, "source": row["source"],
             "source_work_id": collection["source_work_id"], "arabic_sha256": row["arabic_sha256"],
             "provider_hadith_id": blank_to_none(source_row["hadith_id"]), "hadith_no": hadith_no,
+            "source_record_id": blank_to_none(row["source_record_id"]),
         }
         hadiths.append([
             hadith_id, row["record_id"], blank_to_none(row["source_record_id"]),
@@ -937,6 +963,9 @@ def project(args: argparse.Namespace) -> dict:
             blank_to_none(row["review_state"]), blank_to_none(row["source"]), blank_to_none(row["model"]), None,
             blank_to_none(row["provenance_source"]), blank_to_none(row["source_record_id"]), row["arabic_sha256"],
         ])
+    machine_rows, machine_report = machine_english_rows(args, translations, hadith_info, hadith_text, record_to_hadith)
+    counts["machine_english"] = machine_report
+    translations = machine_rows
     canonical.write("translations", [
         "id", "hadith_id", "language", "text", "matn_text", "state", "quality_status", "review_state_raw", "source",
         "model", "translator", "provenance_source", "source_record_id", "arabic_sha256",
@@ -1599,6 +1628,7 @@ def project(args: argparse.Namespace) -> dict:
             "report_correspondence": {"path": display_path(args.correspondence), **correspondence_inputs},
             "external_identity_sidecars": {f"reconciled/{name}": digest for name, digest in sorted(external.hashes.items())},
             "imam_kunya_conventions_sha256": sha256_file(CONVENTIONS_PATH),
+            "machine_english": machine_english_input(args),
             "imami_english_lexicon": {"path": display_path(args.imami_english_lexicon),
                                       "sha256": sha256_file(args.imami_english_lexicon)},
             "name_modules_sha256": {name: sha256_file(HERE / name) for name in MODULE_FILES},
@@ -1649,6 +1679,8 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="reconciled sidecar directory (K6 source index, Pure Canon chains, no-chain flags)")
     parser.add_argument("--correspondence", type=Path, default=CORRESPONDENCE_JOB_DIR / "output",
                         help="report-correspondence output (pairs, cluster members, summary.json)")
+    parser.add_argument("--machine-english", type=Path, default=MACHINE_ENGLISH_OVERLAY,
+                        help="gated machine English (translate_gap_fill.py finalize); a missing file means none")
     parser.add_argument("--imami-english-lexicon", type=Path, default=IMAMI_ENGLISH_LEXICON,
                         help="Thaqalayn English-sanad surface lexicon (diagnostics/chain-reconciliation)")
     return parser

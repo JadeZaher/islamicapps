@@ -5,9 +5,28 @@ status: candidate_only_unreviewed
 
 # translation-run-2 (2026-11-21): gap-fill English for reports with no creditable public English
 
-**Status: partial. The run stopped at 7,046 of 31,090 reports because the OpenRouter account ran out of credits (see "Blocked").**
+**Status: complete on 2026-11-22 (see "Resume"). The 2026-11-21 run had stopped at 7,046 of 31,090 reports because the OpenRouter account ran out of credits (see "Blocked").**
 Everything here and in `machine_translation_candidates/` is a review-only candidate. No database write, no canonical file, no `src/` or `drizzle/` change.
 Runner: `translate_gap_fill.py` (reuses `../../generate_hy_mt2_candidates.py`: sentence splitting, transport with backoff, `screen-v2`, budget, locked journal). Tests: `test_translate_gap_fill.py`.
+
+## Resume (2026-11-22): the run finished and the drafts were published
+
+The account was topped up. Gap re-measured on production 2026-11-22 (reports with no row `public_translations` would show: no live English row, quality not
+complete, hash differs, or `unknown_provenance`): **33,420** reports (Sunni 30,773, Ibadi 1,005, Imami 951, Zaydi 691), of which
+31,379 had no draft bound to their current Arabic, 2,025 had an earlier accepted draft whose hash still matched, 15 were skipped earlier (a sentence over 5,500 characters) and 1 had a
+mechanical glyph candidate. The three corrected OpenITI works were translated first from their current text (al-Rabi 1,004, Musnad Zayd 688, Sahifat al-Rida 205 reports carry a draft), then the rest.
+
+| | Reports |
+| --- | ---: |
+| Gap | 33,420 |
+| Draft published (gated; 2,025 earlier + 31,282 this run) | 33,307 |
+| Held out: failed the screen twice (diacritic transliteration 50, repetition loop 25, length ratio 16) | 91 |
+| Not translatable: no Arabic letters, or a sentence over 5,500 characters (skipped), plus 1 glyph candidate | 22 |
+
+Responses of 2026-11-22: 25,094 events, all returned `tencent/hy-mt2-30b-a3b` from provider `Tencent`; 24,900 accepted, 194 rejected (0.8 percent), then one retry of every rejected report: 31 accepted, 91 still rejected. Cost (provider `usage.cost`): US$0.7767, 4,876,971 tokens.
+The runner changed for the resume: the snapshot selects on what `public_translations` would show, `--only-prefix` runs one work first, events record the provider (`response_provider`), the journal append uses one in-process lock (a polled file lock capped it near 3 events a second), and `finalize` writes the overlay the exporter reads
+(`machine_english_overlay.jsonl.gz`: record id, `arabic_sha256`, text, model as returned, provider, prompt version and SHA-256, finish reasons, QA result, cost, time). Concurrency 16 then 40; the provider answered about 6 reports a second whatever the concurrency.
+Publication: `src/db/AGENTS.md` §Public English and `conductor/RUNBOOK.md` §Machine translation publish. The Load specification below is superseded: machine rows go in through the projection, not a separate overlay load.
 
 ## Gap
 

@@ -761,3 +761,39 @@ Detail, tables and the per-change ablation: `datasets/hadith-data/chain-audit/ro
   then export, check, load, approve. Curation rows before the load: `curation-dump-before/`.
 - Next measurement: a round 6 reading of fresh chains (passed, withheld, pairs) is the only way to put a rate on the recalibrated gate.
 
+
+## Machine translation publish (2026-11-22)
+
+The owner topped up OpenRouter and asked for the translations to be finished and shown. Detail: `datasets/hadith-data/diagnostics/translation-run-2/README.md`
+§Resume; publication path `src/db/AGENTS.md` §Public English and `datasets/hadith-data/pg_export/AGENTS.md` §Machine English overlay; model record
+`datasets/hadith-data/model_registry.json`, `docs/models.md`. Logs, projection, curation dump: `datasets/hadith-data/development/machine-english-2026-11-22/`.
+
+- **Translation**: `tencent/hy-mt2-30b-a3b` (every response returned that exact id, provider `Tencent`) over the 33,420 public reports with no public English. The three
+  corrected OpenITI works first, from their current text (al-Rabi 1,004, Musnad Zayd 688, Sahifat al-Rida 205 reports), then the rest. 33,307 reports carry a gated draft
+  (Sunni 30,684, Ibadi 1,004, Imami 931, Zaydi 688); 113 stay without English (91 failed the screen twice, 22 not translatable). Spend US$0.7767 (journal) and US$0.8767 in all
+  with the scorer, measured on the key's own usage (`GET /api/v1/key`: 2.0295 -> 2.9062), against a US$15 cap; 4.88 million tokens.
+- **Publication** (smallest path, no candidate table): the projection writes the drafts as `translations` rows (`state machine_unreviewed`, `model`, `provenance_source`) through
+  `pg_export/machine_english.py`, which re-gates each one; source-provided English always wins (a report has one English row); a failing row was replaced in place (731 rows).
+  `0018_machine_english_gate` (additive) makes the view require `model` and `provenance_source` for the machine branch; `db:verify` and `db:verify-data` check it.
+- **Projection `2026.11.22.11`** (dataset version `6df54aa39ff7...`): translations 66,776 -> 99,352 (+32,576 inserted, 731 updated); the loader's 46 invariants passed; the approval was
+  re-recorded at once (`approve.log`). Production now: 99,437 public reports, 99,324 with English (33,307 machine), 113 without.
+- **Read of 40 random drafts** (10 per tradition): 5 meaning-level errors (Sunni 3, Zaydi 2), Ibadi 0; worst: «ردوا السائل» ("give the beggar") rendered "They rejected the liquid".
+  The page's label says "Unreviewed machine translation (tencent/hy-mt2-30b-a3b)"; nothing says it is reliable.
+- **Scorer** (`qwen/qwen3.7-flash`, 1,901 corrected OpenITI reports, US$0.0995): 1,898 scored; 1,195 (63%) score 3 on all three axes; results in `extraction-quality/output/score_summary_corrected.json`. Parsing was not changed.
+
+### Deploy
+
+1. Order: `0018` first (applied to production before the load, `prod-migrate-0018.log`), then the load, then the approval; no app code changed, so no redeploy is needed for the data to show.
+2. Re-run later: `python -I datasets/hadith-data/diagnostics/translation-run-2/translate_gap_fill.py snapshot|run|finalize ...` (resumable, journals the `usage.cost` of every call; a rerun never pays for a report
+   whose Arabic hash already has a final event), then `finalize --output datasets/hadith-data/machine_translation_candidates/machine_english_overlay.jsonl.gz`, then the export (`--machine-english` defaults to that file),
+   `check_projection.py`, `npm run db:load -- --bundle <dir> --database production --confirm-production`, `npm run db:approve-preview -- --database production --confirm-production --by owner --reason "..."` at once,
+   `DATABASE_URL=<production> npm run db:verify`, `npm run db:verify-data -- --database production --confirm-production`.
+3. Live: an al-Rabi, a Zayd, a Rida and a Pure Canon (Ahmad) report show "Unreviewed machine translation (tencent/hy-mt2-30b-a3b)" credited to SWI; Bukhari `/hadith/k6/4643` shows its source-provided English with no machine label.
+
+### Rollback
+
+- Hide machine English at once, no load: `update collection_rights set english_policy = 'source_provided_allowed' where retired_at is null and english_policy::text = 'source_provided_and_machine_allowed'`
+  (the view's machine branch needs the machine policy); undo by setting it back (`npm run db:record-rights -- --database production --confirm-production`).
+- Remove the rows: load `development/gate-recalibration-2026-11-22/projection` (projection `2026.11.22.10`; the 32,576 machine rows leave the projection and are retired, the 731 replaced rows return to
+  their old failing text), then re-record the approval at once. Curation rows before this load: `development/machine-english-2026-11-22/curation-dump-before/`.
+- Never edit `0018`; a later migration restores the 0009 view body if the gate must be dropped.

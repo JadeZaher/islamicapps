@@ -303,14 +303,26 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and (coalesce(m.n, 0) <> c.length or m.lo <> 0 or m.hi <> c.length - 1 or m.d <> c.length)`,
   );
   await check(
-    'public_translations: complete, hash-bound, state within policy',
+    'public_translations: complete, hash-bound, state within policy, machine English with model and provenance',
     `select count(*)::int as value from public_translations t join hadiths h on h.id = t.hadith_id
      join collection_rights r on r.collection_id = h.collection_id
      where t.quality_status <> 'complete' or t.arabic_sha256 <> h.arabic_sha256
         or not (t.state in ('human_verified', 'source_verified')
                 or (t.state = 'source_provided'
                     and r.english_policy::text in ('source_provided_allowed', 'source_provided_and_machine_allowed'))
-                or (t.state = 'machine_unreviewed' and r.english_policy::text = 'source_provided_and_machine_allowed'))`,
+                or (t.state = 'machine_unreviewed' and r.english_policy::text = 'source_provided_and_machine_allowed'
+                    and t.model is not null and t.provenance_source is not null))`,
+  );
+  // Machine English (0018): every live machine row is complete, hash-bound, names its model and provenance; unknown_provenance never.
+  await check(
+    'machine English rows: complete, hash-bound, model and provenance recorded, no unknown_provenance',
+    `select count(*)::int as value from translations t join hadiths h on h.id = t.hadith_id
+     where t.retired_at is null
+       and (t.state::text = 'unknown_provenance'
+            or ((t.state = 'machine_unreviewed' or t.review_state_raw = 'machine_unreviewed')
+                and (t.state <> 'machine_unreviewed' or t.quality_status <> 'complete' or t.arabic_sha256 <> h.arabic_sha256
+                     or nullif(trim(t.model), '') is null or nullif(trim(t.provenance_source), '') is null
+                     or nullif(trim(t.source), '') is null)))`,
   );
   await check(
     'no cross_parallels.source_translation_id outside translations',
@@ -323,9 +335,8 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and (nullif(trim(grade_raw), '') is null or grade_raw in ('no_extant_evaluation', 'ungraded_placeholder'))`,
   );
   await check(
-    'no candidate-only rows in canonical tables',
-    `select (select count(*) from translations where retired_at is null
-               and (state in ('machine_unreviewed', 'unknown_provenance') or review_state_raw = 'machine_unreviewed'))
+    'no candidate-only rows in canonical tables (unknown-provenance English; machine English has its own check)',
+    `select (select count(*) from translations where retired_at is null and state::text = 'unknown_provenance')
           + (select count(*) from hadith_assessments where retired_at is null and review_state = 'candidate_only')
           + (select count(*) from citations where retired_at is null and review_state = 'candidate_only') as value`,
   );

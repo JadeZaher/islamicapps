@@ -85,8 +85,16 @@ or `grade_value`; non-contiguous mention positions.
   `english_quality`: the bundle's `arabic_leakage` becomes `complete` when the only Arabic-script characters are the
   honorific symbols ﷺ ﷻ ﷽ and ؐ-ؓ (10,650 Sunni, 9 Imami in `2026.11.21.4`); real Arabic stays held. The rule belongs
   in `regen_unified_csvs.translation_issue` too (not changed here: the resolver's hash binds the K6 sidecar).
-- **Candidates.** `machine_unreviewed` English goes to `candidates/translation_candidates.csv` (`machine_unreviewed`
-  when a model is named, else `unknown_provenance`). The table is not migrated yet, so the loader does not read it.
+- **Candidates.** `machine_unreviewed` English from the master still goes to `candidates/translation_candidates.csv`
+  (`machine_unreviewed` when a model is named, else `unknown_provenance`); the loader does not read it.
+- **Machine English overlay** (projection `2026.11.22.11`; `machine_english.py`, `test_machine_english.py`). `--machine-english` (default
+  `machine_translation_candidates/machine_english_overlay.jsonl.gz`; no file means none, recorded as `inputs.machine_english: null`) is bound
+  in the manifest by SHA-256 with the pinned model. Per report: complete `human_verified`/`source_verified`/`source_provided` English is kept
+  (source first); otherwise the draft is gated (`machine_english.gate`: hash, screen status, pinned model, finish reason, Arabic script,
+  Latin share, length ratio 1.0 to 3.2, refusal or meta text) and becomes the report's one English row (`state` and `review_state_raw`
+  `machine_unreviewed`, `quality_status` complete, `source` `hy-mt2-openrouter-v1`, `model` as the API returned it, `provenance_source`
+  `machine_translation_candidates/<journal>|prompt=<version>|prompt_sha256=<12>|provider=<p>|at=<time>`). A failing existing row keeps its id
+  and is replaced in place. A draft that fails is counted in `counts.machine_english.held_out_by_reason` and never shown.
 - **Review units** are SHA-256 over `\x1f`-joined parts, NULL context as `''`: coarse (surface, teacher, work), fine
   (surface, teacher, student, work).
 - **Report correspondences** (`--correspondence`, default `diagnostics/report-correspondence/output`). Refused when

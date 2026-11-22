@@ -305,4 +305,5 @@ are not evidence and cannot be promoted through a manifest flip.
 ## Models
 
 `translation_model.json` pins the Arabic-to-English translator (`tencent/hy-mt2-30b-a3b`, candidates only); `generate_machine_translation_candidates.py` refuses any other model without `--allow-unpinned-model`.
+Since 2026-11-22 the pinned model's gated drafts (`machine_translation_candidates/machine_english_overlay.jsonl.gz`, built by `diagnostics/translation-run-2/translate_gap_fill.py finalize`) are published through the projection as `machine_unreviewed` `translations` rows for reports with no source English (`pg_export/AGENTS.md` §Machine English overlay, `src/db/AGENTS.md` §Public English). The master CSV and the release gate above are unchanged: machine text never enters the canonical CSV or `translation_overrides.jsonl`.
 `model_registry.json` records which model did which work and its output status; `docs/models.md` is generated from it by `render_model_docs.py`.

@@ -1,0 +1,388 @@
+{
+ "records": 1901,
+ "ok": 1898,
+ "by_work_score_distribution": {
+  "rabi:boundaries": {
+   "3": 805,
+   "2": 150,
+   "1": 28,
+   "0": 22
+  },
+  "rabi:cleanliness": {
+   "3": 866,
+   "2": 92,
+   "1": 27,
+   "0": 20
+  },
+  "rabi:sanad_matn_split": {
+   "3": 821,
+   "0": 94,
+   "2": 55,
+   "1": 35
+  },
+  "zayd:boundaries": {
+   "3": 388,
+   "0": 39,
+   "2": 216,
+   "1": 45
+  },
+  "zayd:cleanliness": {
+   "3": 378,
+   "0": 28,
+   "2": 242,
+   "1": 40
+  },
+  "zayd:sanad_matn_split": {
+   "3": 473,
+   "0": 67,
+   "2": 119,
+   "1": 29
+  },
+  "rida:boundaries": {
+   "0": 35,
+   "3": 150,
+   "2": 18,
+   "1": 2
+  },
+  "rida:cleanliness": {
+   "0": 32,
+   "3": 171,
+   "2": 2
+  },
+  "rida:sanad_matn_split": {
+   "0": 34,
+   "3": 163,
+   "2": 7,
+   "1": 1
+  }
+ },
+ "lowest_subscore": {
+  "3": 1195,
+  "0": 209,
+  "2": 393,
+  "1": 101
+ },
+ "flags": {
+  "commentary_tail": 120,
+  "sanad_matn_split_wrong": 184,
+  "markup_leak": 217,
+  "fragment_only_chain": 44,
+  "truncated": 46,
+  "not_a_report": 50,
+  "merged_records": 153,
+  "footnote_leak": 4
+ },
+ "worst_20": [
+  {
+   "id": "openiti:ibadi:rabi_0057|57|V01P021",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The extracted text is compiler commentary ('قال الربيع') rather than a hadith report; it should not be treated as a standalone report with this structure.",
+   "text_ar_start": "قال الربيع: بلغني عن عبادة بن الصامت قال: جاء رجل إلى النبيء صلى الله عليه وسلم: فقال: يا نبي الله، أي العمل أ",
+   "chars": 223
+  },
+  {
+   "id": "openiti:ibadi:rabi_0063|63|V01P022",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text is compiler commentary by Rabi' ('قال الربيع:') rather than a hadith report; it contains no valid sanad/matn structure for extraction.",
+   "text_ar_start": "قال الربيع: قال أبو عبيدة: بلغني عن النبيء صلى الله عليه وسلم قال: «إن كان زيد بن عمرو لأول من عاب علي عبادة ا",
+   "chars": 748
+  },
+  {
+   "id": "openiti:ibadi:rabi_0238|238|V01P063",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "fragment_only_chain"
+   ],
+   "reason": "The extracted text is correct but sanad and matn are null; the record contains only the chain opener without the body in the stored fields.",
+   "text_ar_start": "أبو عبيدة عن جابر بن زيد عن ابن عباس عن النبيء صلى الله عليه وسلم أنه نهى المصلي أن يقعي في صلاته إقعاء الكلب،",
+   "chars": 189
+  },
+  {
+   "id": "openiti:ibadi:rabi_0298|298|V01P077",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The extracted text is empty/null while a valid report exists in the source window; it appears to be a missing extraction.",
+   "text_ar_start": "أبو عبيدة عن جابر بن زيد عن ابن عباس عن النبيء صلى الله عليه وسلم أنه نهى أن يصلي الرجل وهو يدافع الأخبثين.",
+   "chars": 107
+  },
+  {
+   "id": "openiti:ibadi:rabi_0450|450|V01P121",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The text is compiler commentary starting with 'قال الربيع', not a hadith report, and sanad/matn are empty.",
+   "text_ar_start": "قال الربيع: قال ابن عباس: قال النبيء صلى الله عليه وسلم: «الشهيد يغفر له عند أول قطرة تقطر من دمه في سبيل الله",
+   "chars": 133
+  },
+  {
+   "id": "openiti:ibadi:rabi_0469|469|V01P126",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text includes editorial commentary ('وغزوة السلاسل...') appended to the end of the hadith body, which is not part of the original report.",
+   "text_ar_start": "الربيع عن عبادة بن الصامت قال: صلى بنا رسول الله صلى الله عليه وسلم ومر بنا بعير من المغنم فلما انصرفت تناول ق",
+   "chars": 315
+  },
+  {
+   "id": "openiti:ibadi:rabi_0509|509|V01P137",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report",
+    "truncated"
+   ],
+   "reason": "The record contains only a fragment ending in ellipsis and 'mentioned', lacking a complete chain or body, and is not a valid standalone report.",
+   "text_ar_start": "أبو عبيدة عن جابر بن زيد عن أبي سعيد الخدري أن رسول الله صلى الله عليه وسلم كان إذا أقبل من حج أو غزو يكبر على",
+   "chars": 144
+  },
+  {
+   "id": "openiti:ibadi:rabi_0570|570|V01P152",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text merges the main report (570) with Ibn Abbas's commentary and the beginning of the next report (571), violating boundaries and cleanliness.",
+   "text_ar_start": "أبو عبيدة عن جابر عن ابن عباس قال: اشترى رسول الله صلى الله عليه وسلم من جابر بن عبد الله بعيرا واشترط جابر ظه",
+   "chars": 452
+  },
+  {
+   "id": "openiti:ibadi:rabi_0834|834|V01P216",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The extracted text is compiler commentary ('قال الربيع:') rather than a hadith report itself; it should not be treated as a standalone report record.",
+   "text_ar_start": "قال الربيع: وبلغنا عن أبان بن عياش عن أنس بن مالك قال: خرج النبيء صلى الله عليه وسلم على قوم جلوس فقال: «ما أج",
+   "chars": 419
+  },
+  {
+   "id": "openiti:ibadi:rabi_0835|835|V01P217",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The extracted text is compiler commentary ('قال الربيع:') introducing a report, but the record structure treats the commentary as the report body/sanad incorrectly. The actual report content is embedded within the commentary or follows it, but this specific ex",
+   "text_ar_start": "قال الربيع: بلغني عن أبي مسعود عن عثمان بن عبد الرحمن المدني عن أبي إسحاق والشعبي قال: كان علي بن أبي طالب يقو",
+   "chars": 349
+  },
+  {
+   "id": "openiti:ibadi:rabi_0840|840|V01P220",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The extracted text begins with 'قال الربيع:', which is explicitly defined as compiler's commentary, not part of the report itself. The actual report chain starts after this commentary marker.",
+   "text_ar_start": "قال الربيع: وأخبرنا محمد بن علي الكوفي عن أبي بكر الهذلي عن سعيد بن جبير قال: لما رأى ابن الأزرق أنه لا يسأل ا",
+   "chars": 933
+  },
+  {
+   "id": "openiti:ibadi:rabi_0853|853|V01P225",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text is the compiler's commentary by Al-Rabi' summarizing the report, not the hadith itself; it lacks a proper sanad and starts with 'قال الربيع'.",
+   "text_ar_start": "قال الربيع: بلغني عن جويبر عن الضحاك عن ابن عباس أنه خرج ذات يوم فإذا هو برجل يدعو ربه شاخصا بصره إلى السماء ر",
+   "chars": 758
+  },
+  {
+   "id": "openiti:ibadi:rabi_0854|854|V01P226",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records"
+   ],
+   "reason": "The record merges two distinct reports (854 and the subsequent narration of Mukhtaf) into one text block.",
+   "text_ar_start": "قال: حدثنا أفلح بن محمد عن أبي معمر السعدي عن علي بن أبي طالب، في قوله: {وجوه يومئذ ناضرة الى ربها ناظرة} قال:",
+   "chars": 770
+  },
+  {
+   "id": "openiti:ibadi:rabi_0855|855|V01P227",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records",
+    "fragment_only_chain"
+   ],
+   "reason": "The record contains the main report 855 but also merges multiple other narrations (Mujahid, Hasan, Saeed ibn Jubayr, etc.) and ends with a list of scholars without a complete chain for the final statement.",
+   "text_ar_start": "قال: وأخبرنا أبو نعيم عن العباس عن أبي إسحاق عن سعيد بن جبير عن نافع بن الأزرق أنه سأل ابن عباس عن قوله تعالى:",
+   "chars": 1024
+  },
+  {
+   "id": "openiti:ibadi:rabi_0862|862|V01P232",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text includes the main report but also merges subsequent commentary by Jabir, Mujahid, etc., which are separate interpretations/commentary blocks in the source.",
+   "text_ar_start": "قال الربيع: روى أبو عبيدة عن جابر بن زيد عن ابن عباس قال: قال رسول الله صلى الله عليه وسلم: «إن أهل الجنة لا ي",
+   "chars": 820
+  },
+  {
+   "id": "openiti:ibadi:rabi_0863|863|V01P233",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text contains the initial report and chain opener for 863, but incorrectly merges the subsequent detailed commentary/interpretation by Ibn Abbas and others into the same record instead of stopping at the end of the primary report body.",
+   "text_ar_start": "قال جابر بن زيد: سئل ابن عباس عن قوله عز وجل: {وما قدروا الله حق قدره والارض جميعا قبضته يوم القيامة ... } الآ",
+   "chars": 1093
+  },
+  {
+   "id": "openiti:ibadi:rabi_0864|864|V01P233",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report",
+    "fragment_only_chain"
+   ],
+   "reason": "The record starts mid-sentence ('شرك ابن عباس...') missing the chain opener 'قال جابر بن زيد' or similar, and appears to be a fragment or continuation rather than a complete standalone report extraction.",
+   "text_ar_start": "شرك ابن عباس من ذهب إلى أن القبضة غير الملك لقوله: {سبحانه وتعالى عما يشركون}. وقد قال: {والله يقبض ويبسط} يعن",
+   "chars": 361
+  },
+  {
+   "id": "openiti:ibadi:rabi_0896|896|V01P256",
+   "work": "rabi",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The extracted_text contains a valid report, but the extracted_sanad and extracted_matn are null, indicating a failure to parse the components despite the text being present in the source window.",
+   "text_ar_start": "الربيع بن حبيب عن أبي هريرة قال: قال رسول صلى الله عليه وسلم لرجل وهو يعظه: «اغتنم خمسا قبل خمس: شبابك قبل هرم",
+   "chars": 178
+  },
+  {
+   "id": "openiti:imami:rida_0001|1|V01P439",
+   "work": "rida",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "merged_records",
+    "fragment_only_chain",
+    "commentary_tail"
+   ],
+   "reason": "The extracted text merges the compiler's introductory commentary (starting with 'ولما كانت هذه الاحاديث...') with the first full sanad and matn, and includes multiple subsequent reports linked by 'وباسناده', violating boundaries and cleanliness.",
+   "text_ar_start": "شيخه، وجاء السند من الدين ولو لا السند لقال من شاء ما شاء كان في صدرها سند كل راو إلى النبي صلى الله عليه وآله",
+   "chars": 1417
+  },
+  {
+   "id": "openiti:imami:rida_0005#2|5|V01P443",
+   "work": "rida",
+   "scores": {
+    "boundaries": 0,
+    "cleanliness": 0,
+    "sanad_matn_split": 0
+   },
+   "flags": [
+    "not_a_report"
+   ],
+   "reason": "The record is a chain opener without a body; the matn is missing and the sanad is null.",
+   "text_ar_start": "وباسناده قال: قال رسول الله صلى الله عليه وآله يقول الله ما من مخلوق يعتصم بمخلوق دوني الا قطعت أسباب السموات ",
+   "chars": 279
+  }
+ ]
+}

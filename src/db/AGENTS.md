@@ -308,7 +308,8 @@ write decisions.
   `edition_identification`, `chains.missing_link_after` and its check; hand-written: `public_chain_links` appended,
   `public_chain_mention_candidates_v2` counts the new basis) -> `0017_chain_structure_gate` (generated: `chains.structure_status`,
 `structure_reasons` and their check; hand-written: `public_chain_links` appended, `narrator_transmissions` dropped and recreated
-with the structure guard and its two indexes; see §Chain structure gate). A `--custom` generate snapshots the previous schema: after promoting a
+with the structure guard and its two indexes; see §Chain structure gate) -> `0018_machine_english_gate` (hand-written: the machine branch
+  of `public_translations` also needs a recorded model and provenance; see §Public English). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.
@@ -421,11 +422,21 @@ reviewed here" credited to the text source and its translator (`WORK_CREDITS`), 
   honorific symbol, which the bundle's release QA counts as Arabic script. The projection reclassifies a text whose only
   Arabic-script characters are those symbols as `complete` (`english_quality`, counted in
   `counts.translation_quality_reclassified`); 741 Imami texts with real Arabic stay held. Sunan Abi Dawud `k6:19122` was one.
-- **What is loaded.** The loader ingests only the canonical `translations` (66,776 rows, all `source_provided`: K6 and
-  Thaqalayn). Machine English stays in `candidates/translation_candidates.csv` (31,652 rows of projection
-  `2026.11.21.3`) because `translation_candidates` is not migrated, and the load check "no candidate-only rows in
-  canonical tables" keeps machine rows out of `translations`. So the machine branch of the view matches nothing today;
-  Ibadi, Zaydi, Pure Canon and Sahifat al-Rida show Arabic only until the candidate table ships.
+- **What is loaded (0018, 2026-11-22).** Machine English reaches `translations` through the projection, not a candidate table:
+  `export_postgres.py --machine-english machine_translation_candidates/machine_english_overlay.jsonl.gz` (written by
+  `diagnostics/translation-run-2/translate_gap_fill.py finalize`, hash-bound in the manifest) feeds
+  `pg_export/machine_english.py`, which re-gates every draft (hash equals the report's, screen accepted, pinned model, not
+  truncated, no Arabic script beyond honorific symbols, Latin share, length ratio, no refusal or meta text) and writes a
+  `machine_unreviewed` row with `model` and a `provenance_source` naming journal, prompt version and hash, provider and time.
+  The table is unique on (hadith, language), so a report has one English row: **source-provided English first** (a report with
+  complete reviewed or source English keeps it and gets no machine row); a report whose source English fails QA has that row
+  replaced in place (same id); the machine draft is never shown beside it. `translation_candidates` stays unmigrated (the
+  candidate stream still lists drafts, including those held out).
+- **Gate in the database.** `0018` adds `t.model IS NOT NULL AND t.provenance_source IS NOT NULL` to the machine branch of
+  `public_translations`; `db:verify` fails if either is missing from the view. `db:verify-data` checks that every public row is
+  complete, hash-bound and within policy, that every live `machine_unreviewed` row is complete, hash-bound and names model,
+  source and provenance, and that `unknown_provenance` English never exists (the old "no candidate-only rows" check now covers
+  only that, assessments and citations).
 
 ## Operator scripts and production
 
