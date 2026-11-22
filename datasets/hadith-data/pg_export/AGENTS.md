@@ -14,9 +14,10 @@ python datasets/hadith-data/pg_export/export_postgres.py --bundle <bundle> \
 python -I datasets/hadith-data/pg_export/test_export_postgres.py
 python -I datasets/hadith-data/pg_export/test_transliteration.py      # transliteration and mention spans
 python -I datasets/hadith-data/pg_export/test_identity_rules.py       # provider English, Imam kunyas, the tier
+python -I datasets/hadith-data/pg_export/test_chain_chronology.py     # chronology rule, seams, who is withheld
 ```
 
-Since projection `2026.11.21.4` the catalog must come from a database migrated to `0011`
+Since projection `2026.11.21.6` the catalog must come from a database migrated to `0013`
 (`npx tsx src/db/load/dump-catalog.ts <out.json> --database production --confirm-production`; read-only).
 
 ## Refusals
@@ -156,3 +157,31 @@ are built from a projection's `chain_mentions.csv`. Break the cycle with an inte
 `reconciled/` whose `external_mention_claims.jsonl.gz` has no `openiti:` rows (manifest hash updated in the copy), point
 `EXTERNAL_SIDECAR_PROJECTION` at its `canonical/`, rebuild `build_external_report_crosswalk.py` and
 `build_external_identity_sidecars.py`, then export for real. `slice_openiti_extraction_fixture.py` cuts the flow-test fixture.
+
+## Chain chronology (projection `2026.11.21.6`; `src/db/AGENTS.md` §Chain chronology guard)
+
+`chain_chronology.py` (table-tested in `test_chain_chronology.py`) runs per branch after the standing identities are known
+and before the Latin names. Years are the lexicon's (`narrator_lexicon_profiles` birth and death, 0 dropped); the lexicon's
+own teacher lists (`student_of`) are the attested pairs.
+
+- **Rule** (`transmission_chronology`, the same CASE as `narrator_transmissions`): student born after teacher died; teacher
+  born after student died; teacher died more than `DEATH_GAP_YEARS` (60) after the student. Attested pairs are exempt.
+  Between non-adjacent members only the last two apply (intermediaries make a later birth possible).
+- **Threshold.** Measured on projection `2026.11.21.5`: teacher death minus student death over the 52,175 adjacent standing
+  pairs with both deaths has median -42, 99th percentile 36; on the 26,530 lexicon-attested pairs, the share above 20/40/60/100
+  years is 1.88/0.87/0.35/0.11%. Above 40 the unattested chain pairs sampled were all misreadings (Abu Dawud al-Sijistani for
+  al-Tayalisi, Muhammad b. Yahya b. Hibban for al-Dhuhli); 60 keeps a margin for the lexicon's own date slips. Withheld
+  mentions at 40/50/60/80/100: 627/591/521/466/387.
+- **Decision** (`contest_chain`), per impossible adjacent pair outside a seam window: (1) the name in conflict with at least two
+  dated members of its route while its partner conflicts only with it; (2) else the name whose other neighbour the lexicon's
+  teacher lists do not tie to it, when the partner's are; (3) else both, the reason saying the chain cannot tell which. A
+  student born at most `IRSAL_YEARS` (20) after the teacher died stands (irsal); a narrator repeated in the chain is never
+  withheld (the seam the view computes must not move). Routes are the segments between seam windows.
+- **Output.** `chain_mentions.identity_withheld_reason` (reader-facing, "chronology: the person named here died in 23 AH,
+  before the next transmitter was born (88 AH)"); candidates unchanged; a withheld identity never gives the Latin name
+  (`identity_name`), so the name falls back to its transliteration. `counts.chain_chronology` records pairs decided,
+  undecided, left as irsal, left to the view (repeated narrator), seam pairs and seam chains, and mentions withheld by
+  tradition; `counts.identity_candidates.standing_withheld_by_chronology` by method.
+- **Lexicon fields.** `narrator_lexicon_profiles.tabaqah_raw` is the lexicon's `grade` column (its generation class);
+  `source_fields` is `lexicon_source_fields` (places of stay, family, tags, interests; tags and interests without brackets).
+- `slice_chronology_fixture.py` cuts the flow-test fixture (k6:28147, k6:28195 and the first report with an irsal pair).

@@ -71,7 +71,10 @@ verdict-like dataset fields (hadith-kg `rank`, tadlis and ikhtilat flags, Riwaya
 never reach a page. `getNarratorAppearances` pages every public chain position naming the narrator as a standing identity
 or a candidate (25 a page, count capped), in source order; it reads only public views. `getExternalLinkCandidates` lists,
 on a lexicon narrator's page, the external records a link candidate proposes as the same person. Teachers and students
-stay `getNarratorNetwork` (`narrator_transmissions`), which now includes machine-reviewed external and Imam identities.
+stay `getNarratorNetwork` (`narrator_transmissions`), which now includes machine-reviewed external and Imam identities and
+excludes `impossible` pairs from lists and totals (0013, `src/db/AGENTS.md` §Chain chronology guard). Each appearance carries
+`identity_withheld_reason` when the chronology guard withheld the identity there; the page shows it only where this
+narrator held a tier basis.
 
 ## Report families
 
@@ -122,18 +125,27 @@ interleaves chapters in works whose numbering restarts.
 
 ## Lexicon on public narrator pages (owner decision 2026-11-21)
 
-`getNarratorDetail` in public mode returns the lexicon's birth and death years (Hijri, Gregorian), places, region and
-`source_locator`, never `bio` or `lexicon_grade_label`. `LexiconRecord` (`src/app/narrator/[id]/components/`) labels
-them "Narrator lexicon, not yet cited" (linking `/glossary#rijal`) with an `MSD` reference naming the entry. A recorded
-year 0 is dropped (the Hijri count has none).
+`getNarratorDetail` in public mode returns the lexicon's birth and death years (Hijri, Gregorian), places, region,
+`source_locator`, generation (`tabaqah_raw`), `death_reason` and `source_fields` (places of stay, family with entry
+numbers, tags, interests; 0013), never `bio` or `lexicon_grade_label`. `LexiconRecord` (`src/app/narrator/[id]/components/`)
+is "The lexicon's record" at the top of the Biography tab, labelled "Narrator lexicon, not yet cited" (linking
+`/glossary#rijal`) with an `MSD` reference naming the entry; family names with an entry number link that narrator. A
+recorded year 0 is dropped (the Hijri count has none).
+
+- **Why biographies were empty** (production, 2026-11-21): `narrator_bios` holds 21 rows, all `proposed`, provenance
+  `manual_phase_0`, none cited, so none is public; the lexicon's `bio` column is NULL on all 24,326 rows because the lexicon
+  (`all_rawis.csv`) has no prose biography. The Biography tab now shows a reviewed biography when published, else the
+  lexicon's record, else "No biography recorded yet". Then the per-narrator detail follows: teachers and students, the
+  hadith tab, and "Named in chains" below the tabs (owner: biography before the per-narrator hadith detail).
 
 - **Held back.** `lexicon-held-back.json` (built by `src/scripts/db/build-lexicon-held-back.ts` from
   `diagnostics/biography-verification/lexicon_source_comparisons.jsonl.gz`, input hash recorded) lists the 61 death years
   Ibn Hajar's Taqrib contradicts by three years or more (gross conflict 28, exactly a century 13, 3-10 years 20). The
   mapper removes both death years for those narrators and returns `held_back` with the reason and Taqrib entry; the page
   says the year is held back until reviewed and credits `RIJ`. Reviewer mode is unchanged (everything, unlabelled).
-- **Not shown, because not loaded.** Generation (tabaqa) markers: `narrator_lexicon_profiles.tabaqah_raw` is null on
-  every row of projection `2026.11.21.3`. Cited (Taqrib, Tahdhib) values: candidates only, not in any table yet. The
+- **Generation.** `tabaqah_raw` is the lexicon's `grade` column (projection `2026.11.21.6`), its generation class, shown as
+  "Companion, 1st generation" by `generationLabel`; other bracketed notes (a madhhab) are not shown.
+- **Not shown, because not loaded.** Cited (Taqrib, Tahdhib) values: candidates only, not in any table yet. The
   narrator timeline (`timeline.ts`) still draws only cited public bounds.
 
 ## Rights decisions

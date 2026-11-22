@@ -317,6 +317,32 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
     `select count(*)::int as value from narrator_transmissions
      where temporal_plausibility is null or confidence is null or cardinality(extraction_methods) = 0`,
   );
+  // Chain chronology guard (src/db/AGENTS.md §Chain chronology guard): a withheld identity keeps its candidates.
+  await check(
+    'a withheld identity has no automatic narrator_id and keeps a confirmed candidate',
+    `select count(*)::int as value from chain_mentions m
+     where m.retired_at is null and m.identity_withheld_reason is not null
+       and (m.resolution_basis = 'source_index'
+            or not exists (select 1 from chain_mention_candidates c
+                           where c.mention_id = m.id and c.retired_at is null
+                             and c.basis::text in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
+                                                   'source_riwayat_confirmed_by_text', 'imam_kunya_convention')))`,
+  );
+  await check(
+    'no machine-reviewed pair in narrator_transmissions is impossible on the lexicon years outside irsal range',
+    `select count(*)::int as value from narrator_transmissions nt
+     join narrator_lifespans sl on sl.narrator_id = nt.student_id
+     join narrator_lifespans tl on tl.narrator_id = nt.teacher_id
+     where nt.temporal_plausibility = 'impossible'
+       and (nullif(tl.birth_min, 0) > nullif(sl.death_max, 0) or nullif(tl.death_min, 0) > nullif(sl.death_max, 0) + 60
+            or nullif(sl.birth_min, 0) > nullif(tl.death_max, 0) + 20)
+       and exists (select 1 from chain_mentions a join chain_mentions b on b.chain_id = a.chain_id and b.position = a.position + 1
+                   where a.narrator_id = nt.student_id and b.narrator_id = nt.teacher_id
+                     and a.retired_at is null and b.retired_at is null
+                     and a.resolution_basis = 'source_index' and b.resolution_basis = 'source_index'
+                     and (select count(*) from chain_mentions x where x.chain_id = a.chain_id and x.retired_at is null
+                            and x.narrator_id in (nt.student_id, nt.teacher_id)) = 2)`,
+  );
   // Matn (review 2026-11-21): a stored matn is the report's own, its Arabic letters inside the report's own text.
   await check(
     'a stored matn is contained in its own report text (Arabic letters compared)',

@@ -73,10 +73,16 @@ export const narratorLexiconProfiles = pgTable(
     reviewState: evidenceReviewStateEnum('review_state').notNull().default('lexicon_unverified'),
     sourceStatus: text('source_status').notNull(),
     sourceLocator: text('source_locator'),
+    /** The lexicon's descriptive fields verbatim (places of stay, family, tags, interests; 0013). */
+    sourceFields: jsonb('source_fields'),
     ...pipelineBookkeeping(),
   },
   (table) => [
     unique('narrator_lexicon_profiles_bundle_id_key').on(table.bundleId),
+    check(
+      'narrator_lexicon_profiles_source_fields_check',
+      sql`${table.sourceFields} is null or jsonb_typeof(${table.sourceFields}) = 'object'`,
+    ),
     restrictForeignKey('narrator_lexicon_profiles_narrator_id_fk', table.narratorId, narrators.id),
     ...pipelineBookkeepingForeignKeys('narrator_lexicon_profiles', table),
   ],

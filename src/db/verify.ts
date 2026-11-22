@@ -293,6 +293,13 @@ async function main() {
     expect(!english.includes('unknown_provenance'), 'public_translations exposes English of unknown provenance');
     expect(english.includes("'complete'") && english.includes('arabic_sha256'), 'public_translations lost the quality or hash gate');
 
+    // The chain chronology guard (0013): symmetric impossibility, the 60-year bound and the repeated-narrator seam.
+    const [{ network }] = await sql<{ network: string }[]>`select pg_get_viewdef('narrator_transmissions'::regclass) as network`;
+    expect(network.includes('teacher born after student died') && network.includes('+ 60') && network.includes('first_pos'),
+      'narrator_transmissions lost the 0013 chronology or seam guard');
+    const [{ withheld }] = await sql<{ withheld: string }[]>`select pg_get_viewdef('public_chain_links'::regclass) as withheld`;
+    expect(withheld.includes('identity_withheld_reason'), 'public_chain_links does not expose identity_withheld_reason');
+
     console.log(
       [
         `server:              ${(await sql<{ version: string }[]>`select current_setting('server_version') as version`)[0].version}`,

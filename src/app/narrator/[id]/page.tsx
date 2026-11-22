@@ -11,7 +11,7 @@ import { getExternalLinkCandidates, getNarratorAppearances, getNarratorSourceRec
 import type { Metadata } from 'next';
 import { loadNarrator } from './data';
 import { NarratorName } from '@/components/NarratorName';
-import { LexiconRecord } from './components/LexiconRecord';
+import { hasLexiconRecord, LexiconRecord } from './components/LexiconRecord';
 import { NarratorChains } from './components/NarratorChains';
 import { ExternalCandidates, SourceRecord } from './components/SourceRecord';
 import { notFound } from 'next/navigation';
@@ -105,18 +105,11 @@ export default async function NarratorPage({ params, searchParams }: PageProps) 
                 return record ? <SourceRecord record={record} /> : null;
             })()}
 
-            {narrator.lexicon && <LexiconRecord lexicon={narrator.lexicon} />}
-
-            <ExternalCandidates links={settled(externalResult) ?? []} />
-
-            {(() => {
-                const appearances = settled(appearancesResult);
-                return appearances ? <NarratorChains narratorId={id} appearances={appearances} /> : null;
-            })()}
-
+            {/* Biography first (owner 2026-11-21): the per-narrator hadith detail follows it, never precedes it. */}
             <NarratorClientPage
                 narratorDetails={toNarratorDetails(narrator)}
                 verdicts={narrator.verdicts}
+                sourceRecord={hasLexiconRecord(narrator.lexicon) ? <LexiconRecord lexicon={narrator.lexicon} /> : undefined}
                 lifeAndTimes={(() => {
                     const timeline = settled(timelineResult);
                     return timeline ? <NarratorTimeline timeline={timeline} /> : null;
@@ -127,6 +120,15 @@ export default async function NarratorPage({ params, searchParams }: PageProps) 
                     (settled(connections) ?? { traditions: [], hadiths_with_parallels: [] }) as unknown as NarratorClientPageProps['traditionConnections']
                 }
             />
+
+            <div className="mt-12">
+                <ExternalCandidates links={settled(externalResult) ?? []} />
+
+                {(() => {
+                    const appearances = settled(appearancesResult);
+                    return appearances ? <NarratorChains narratorId={id} appearances={appearances} /> : null;
+                })()}
+            </div>
         </main>
     );
 }

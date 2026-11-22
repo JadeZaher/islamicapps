@@ -51,7 +51,9 @@ export const PIPELINE_TABLES: PipelineTableSpec[] = [
     name: 'chain_mentions',
     key: ['id'],
     loaderDerived: ['decision_id'],
-    derivedFromStaging: ['link_kind', 'resolution', 'resolution_basis', 'narrator_id', 'confidence', 'extraction_method'],
+    // identity_withheld_reason (0013) belongs to the identity tuple: written with resolution_basis, so its check holds mid-merge.
+    derivedFromStaging: ['link_kind', 'resolution', 'resolution_basis', 'narrator_id', 'confidence', 'extraction_method',
+      'identity_withheld_reason'],
   },
   // After chain_mentions and narrators: every candidate references both (src/db/AGENTS.md §Identity candidates).
   { name: 'chain_mention_candidates', key: ['id'], loaderDerived: [], derivedFromStaging: [] },

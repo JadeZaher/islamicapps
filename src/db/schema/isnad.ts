@@ -56,7 +56,7 @@ export const chains = pgTable(
   ],
 );
 
-/** A name as written at one position of one branch; position 0 is the collector. */
+/** A name as written at one position of one branch; position 0 is the collector's own shaykh, p+1 is p's teacher. */
 export const chainMentions = pgTable(
   'chain_mentions',
   {
@@ -82,6 +82,8 @@ export const chainMentions = pgTable(
     nameLatinBasis: nameLatinBasisEnum('name_latin_basis'),
     /** The narrator whose English name was used (basis identity_name only). */
     nameLatinNarratorId: text('name_latin_narrator_id'),
+    /** Why the machine-reviewed identity was withheld (0013 chronology guard); the candidates stay. */
+    identityWithheldReason: text('identity_withheld_reason'),
     ...pipelineBookkeeping(),
   },
   (table) => [
@@ -96,6 +98,10 @@ export const chainMentions = pgTable(
     restrictForeignKey('chain_mentions_hadith_id_fk', table.hadithId, hadiths.id),
     restrictForeignKey('chain_mentions_narrator_id_fk', table.narratorId, narrators.id),
     restrictForeignKey('chain_mentions_decision_id_fk', table.decisionId, narratorSurfaceDecisions.id),
+    check(
+      'chain_mentions_identity_withheld_check',
+      sql`${table.identityWithheldReason} is null or ${table.resolutionBasis} is distinct from 'source_index'`,
+    ),
     check(
       'chain_mentions_resolved_confidence_check',
       sql`${table.narratorId} is null or ${table.confidence} is not null`,
@@ -232,7 +238,7 @@ export const narratorLifespans = pgView('narrator_lifespans', {
   basis: text('basis').notNull(),
 }).existing();
 
-/** Derived materialized view: consecutive verified links only (hand-written SQL, drizzle/core/0003). */
+/** Derived materialized view: consecutive standing identities, seams excluded (hand-written SQL, drizzle/core/0013). */
 export const narratorTransmissions = pgMaterializedView('narrator_transmissions', {
   studentId: text('student_id').notNull(),
   teacherId: text('teacher_id').notNull(),
@@ -262,6 +268,8 @@ export const publicChainLinks = pgView('public_chain_links', {
   nameLatinBasis: nameLatinBasisEnum('name_latin_basis'),
   nameLatinNarratorId: text('name_latin_narrator_id'),
   standingBasis: text('standing_basis'),
+  /** Appended in 0013: why a machine-reviewed identity was withheld (chronology guard). */
+  identityWithheldReason: text('identity_withheld_reason'),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */

@@ -172,6 +172,44 @@ edition's own notes from the text. Four nullable columns on `hadiths` carry it; 
 - Load invariants (`load/verify-data.ts`): a stored span lies inside its own text and a low-confidence split stores none; a
   continuation names a live report of the same collection; every source note has a known kind and Arabic text.
 
+## Chain chronology guard (0013; owner report 2026-11-21)
+
+The owner found wrong teachers on narrator pages (ʿUmar b. al-Khattab, d. 23, "taught by" al-Awzaʿi, d. 157). Three causes:
+the K6 source index names a homonym and "confirmed by text" only checks that the name agrees; a flattened tahwil puts two
+routes in one chain; and the 0006 view tested only one side of the chronology. Positions: 0 is the collector's own shaykh,
+p+1 is the teacher of p (in Bukhari the higher position dies earlier in 12,348 of 14,071 dated pairs).
+
+- **One rule, two places.** `datasets/hadith-data/pg_export/chain_chronology.py` `transmission_chronology` and the
+  `narrator_transmissions` CASE: a pair is impossible when the student was born after the teacher died, the teacher was
+  born after the student died, or the teacher died more than 60 years after the student (lexicon years; a recorded 0 is not
+  a year). The 60 is measured: of the 26,530 pairs the lexicon's own teacher lists name with both deaths known, 0.35% put
+  the teacher's death more than 60 years after the student's (0.87% at 40, 0.11% at 100), and those are mostly the
+  lexicon's own century slips (Khalid b. al-Harith d. 106 for 186). A pair the lexicon's teacher list names is never
+  impossible: it is `disputed` ("the lexicon lists this teacher, but its years say ..."), because a year is wrong, not the
+  identity. `narrator_teachers` stays "never transmission evidence"; it is used only as evidence that a date is wrong.
+- **Projection (identity).** A standing identity that makes an adjacent pair impossible is withheld:
+  `chain_mentions.narrator_id` stays NULL, every candidate stays, and `identity_withheld_reason` says why in plain words
+  (check: never on a `source_index` row). The loader treats it as part of the derived identity tuple
+  (`derivedFromStaging` in `load/tables.ts`), written in the same statement as `resolution_basis`: as a content column it
+  was merged first and the check failed mid-load (first production attempt, rolled back). Who is withheld is decided per pair (`pg_export/AGENTS.md` §Chain chronology):
+  the name in conflict with two or more dated members of its route while its partner conflicts only with it; else the one
+  the lexicon's teacher lists do not tie to its other neighbour; else both, with "the chain cannot tell which of the two
+  names is wrong". A student born at most 20 years after the teacher died is left standing (a broken chain, irsal, does
+  not show a wrong identity; al-Nakhaʿi from Ibn Masʿud is 15): the view still labels the pair impossible.
+- **Seam guard (view).** A narrator standing twice in one chain marks a flattened tahwil. Every pair between his first and
+  last position is dropped (`seams` CTE): the seam lies in that window and nowhere else, so no cross-route pair survives and
+  no pair outside it is lost. A repeated narrator is never withheld by the projection (that would move the seam). Re-splitting
+  branches is not done (the Sunni audit lane's seam list, next round).
+- **Reads.** `getNarratorNetwork` drops `impossible` pairs from both lists and both totals; undated pairs stay.
+  `public_chain_links` appends `identity_withheld_reason` (CREATE OR REPLACE); the chain view and the narrator's chain list
+  show it beside the candidate. `db:verify` checks the view keeps the symmetric rule, the 60 and the seam CTE; `db:verify-data`
+  checks a withheld mention keeps a tier candidate and that no standing source-index pair outside irsal range is impossible.
+- **Lexicon fields (same migration).** `narrator_lexicon_profiles.source_fields` (jsonb object): places of stay, parents,
+  spouses, siblings, children (with the lexicon's `[N]` entry numbers), tags and interests verbatim, brackets stripped from
+  tags and interests (they carry slugs and a `[Grade:Thiqah]` label, which is never shown). `tabaqah_raw` now carries the
+  lexicon's `grade` column, which is its generation class (`Comp.(RA) [1st Generation]`; 43 distinct values, all classes,
+  centuries, generations or a madhhab), never a reliability verdict.
+
 ## Report correspondences (0007; design §5.5.1)
 
 Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
@@ -211,7 +249,9 @@ write decisions.
   `0010_external_identity` (generated: enum values, the three external tables, Latin-name and source-reference columns,
   checks) -> `0011_external_identity_views` (hand-written views, see §External identity) -> `0012_openiti_extraction_fields` (generated:
   four nullable `hadiths` columns and two checks, then a hand-written `CREATE OR REPLACE VIEW public_hadiths`, see §OpenITI
-  extraction fields). A `--custom` generate snapshots the previous schema: after promoting a
+  extraction fields) -> `0013_chain_chronology_guard` (generated: `chain_mentions.identity_withheld_reason`,
+  `narrator_lexicon_profiles.source_fields` and two checks; hand-written: `public_chain_links` appended, `narrator_transmissions`
+  dropped and recreated with its two indexes; see §Chain chronology guard). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

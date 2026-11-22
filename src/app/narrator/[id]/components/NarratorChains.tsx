@@ -7,6 +7,12 @@ import { TraditionMark } from '@/components/marks';
 import type { Paginated } from '@/db/queries/contracts';
 import type { NarratorAppearance } from '@/db/queries/narrator-sources';
 import { hadithPath } from '@/lib/hadith-address';
+import { WithheldIdentity } from '@/components/archive/WithheldIdentity';
+
+/** Bases that could have made this narrator the standing identity, so a withheld reason is about him. */
+const TIER_BASES: ReadonlySet<string> = new Set([
+  'source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text', 'source_riwayat_confirmed_by_text', 'imam_kunya_convention',
+]);
 
 /**
  * Every public chain position that names this narrator, as its standing identity or as a candidate, in source order and
@@ -52,12 +58,17 @@ export function NarratorChains({ narratorId, appearances }: { narratorId: string
                   {STANDING_BASIS_LABEL[item.standing_basis] ?? 'machine-reviewed'}
                 </p>
               ) : (
-                item.bases.map((basis) => (
-                  <p key={basis} className="relative ps-[1.125rem] text-ink-muted">
-                    <BasisMark basis={basis} decorative className="absolute start-0 top-[0.3125rem]" />
-                    candidate: {IDENTITY_BASIS_LABEL[basis] ?? basis}
-                  </p>
-                ))
+                <>
+                  {item.bases.map((basis) => (
+                    <p key={basis} className="relative ps-[1.125rem] text-ink-muted">
+                      <BasisMark basis={basis} decorative className="absolute start-0 top-[0.3125rem]" />
+                      candidate: {IDENTITY_BASIS_LABEL[basis] ?? basis}
+                    </p>
+                  ))}
+                  {item.identity_withheld_reason && item.bases.some((basis) => TIER_BASES.has(basis)) && (
+                    <WithheldIdentity reason={item.identity_withheld_reason} />
+                  )}
+                </>
               )}
             </div>
           </li>

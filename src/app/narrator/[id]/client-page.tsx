@@ -7,7 +7,6 @@ import { CommentarySection } from '@/components/CommentarySection';
 import { TraditionBadge, ParallelTypeBadge, IsraIliyyatBadge } from '@/components/TraditionBadge';
 import { ConsensusBadge } from '@/components/ConsensusBadge';
 import { ArabicText } from '@/components/ArabicText';
-import { EmptyState } from '@/components/EmptyState';
 import { BilingualTitle, NarratorName } from '@/components/NarratorName';
 import type { NarratorVerdict } from '@/db/queries/contracts';
 import { VerdictsByTradition } from './components/VerdictsByTradition';
@@ -18,6 +17,8 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 export interface NarratorClientPageProps {
+    /** Server-rendered record of the narrator's source (the lexicon's fields with its credit); first in Biography. */
+    sourceRecord?: ReactNode;
     /** Server-rendered life-and-times section (dates, generation, places, eras, events); replaces the old Life block. */
     lifeAndTimes?: ReactNode;
     /** Published verdicts; shown grouped by tradition above the tabs. */
@@ -120,10 +121,14 @@ const TAB_TRIGGER_CLASS =
 const LINK_ROW_CLASS =
     '-mx-3 block px-3 py-2.5 transition-colors hover:bg-sunken ';
 
-/** Narrator tabs. Every section renders only what the record holds; unknowns say "Unknown". See src/components/AGENTS.md §Narrator detail. */
+/**
+ * Narrator tabs, Biography first and default: a reviewed biography, else the source's own record, else "No biography
+ * recorded yet". Every section renders only what the record holds. See src/components/AGENTS.md §Narrator detail.
+ */
 export default function NarratorClientPage({
     narratorDetails,
     verdicts = [],
+    sourceRecord,
     lifeAndTimes,
     narratorNetwork,
     commentaries = [],
@@ -141,7 +146,8 @@ export default function NarratorClientPage({
     const hasAssessment = !narratorDetails.is_prophet &&
         Boolean(narratorDetails.reliability_consensus || narratorDetails.bio_tadil || narratorDetails.bio_jarh);
     const hasOtherTabs = hasNetwork || otherHadiths.length > 0 || commentaries.length > 0 || hasTraditions;
-    const isSparse = !summary && !hasAssessment && !hasNetwork && otherHadiths.length === 0;
+    // "No biography" only when neither a reviewed biography nor the source's own record exists.
+    const noBiography = !summary && !sourceRecord;
 
     return (
         <>
@@ -159,6 +165,7 @@ export default function NarratorClientPage({
             </div>
 
             <TabsContent value="biography" className="max-w-[var(--measure-wide)] space-y-10">
+                {noBiography && <p className="text-ink-muted" data-no-biography>No biography recorded yet.</p>}
                 {summary && (
                     <section>
                         <SectionHeading>Summary</SectionHeading>
@@ -169,6 +176,8 @@ export default function NarratorClientPage({
                         )}
                     </section>
                 )}
+
+                {sourceRecord}
 
                 {narratorDetails.is_prophet && (
                     <p className="border-s-2 border-rule ps-4 text-sm leading-relaxed text-ink-muted">
@@ -226,13 +235,6 @@ export default function NarratorClientPage({
                 )}
 
                 {lifeAndTimes}
-
-                {isSparse && (
-                    <EmptyState
-                        title="Little is recorded about this narrator yet"
-                        description="No biography, assessments, teachers, students or hadith are linked to this record."
-                    />
-                )}
             </TabsContent>
 
             {hasNetwork && (

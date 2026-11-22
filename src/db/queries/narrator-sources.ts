@@ -157,6 +157,8 @@ export interface NarratorAppearance {
   standing_basis: string | null;
   /** Every basis by which a source names this narrator at the position. */
   bases: IdentityBasis[];
+  /** Why the machine-reviewed identity at this position was withheld (chronology guard); null otherwise. */
+  identity_withheld_reason: string | null;
 }
 
 const APPEARANCE_PAGE_SIZE = 25;
@@ -194,6 +196,7 @@ export async function getNarratorAppearances(narratorId: string, request?: PageR
                  'volume', h.volume, 'page_ref', h.page_ref, 'book_number', b.number, 'branch', l.branch,
                  'position', l.position, 'surface_ar', l.surface_ar, 'name_latin', l.name_latin,
                  'standing_basis', case when l.is_link and l.narrator_id = ${narratorId} then l.standing_basis end,
+                 'identity_withheld_reason', case when not l.is_link then l.identity_withheld_reason end,
                  'bases', coalesce((select json_agg(distinct c.basis) from chain_mention_candidates c
                                     where c.mention_id = l.id and c.narrator_id = ${narratorId} and c.retired_at is null), '[]'::json))
                order by p.collection_sort_key, p.hadith_no_int nulls last, p.hadith_id collate "C", p.branch, p.position)
@@ -222,6 +225,7 @@ export async function getNarratorAppearances(narratorId: string, request?: PageR
     name_latin: text(item.name_latin),
     standing_basis: text(item.standing_basis),
     bases: ((item.bases as string[]) ?? []) as IdentityBasis[],
+    identity_withheld_reason: text(item.identity_withheld_reason),
   }));
   return paginated(items, row?.counted ?? 0, window, true);
 }

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
+import { WithheldIdentity } from '@/components/archive/WithheldIdentity';
 
 import { ArabicText } from '@/components/ArabicText';
 import { SourceCodeLink } from '@/components/archive/SourceCredit';
@@ -130,6 +131,7 @@ function MentionIdentityCell({ node, tradition }: { node: ChainNode; tradition: 
                 </p>
             )}
             {node.identity === 'differ' && <p className="text-ink-muted">Sources differ on who this is</p>}
+            {node.identity_withheld_reason && <WithheldIdentity reason={node.identity_withheld_reason} />}
             <div className="space-y-3">
                 {ordered.map((group) => (
                     <IdentityGroupView key={group.personKey} group={group} tradition={tradition} />
@@ -185,10 +187,10 @@ function WrittenName({ node }: { node: ChainNode }) {
     );
 }
 
-/** The rail mark of a position (DESIGN.md §Isnad list): outline when unidentified, two bars when sources differ. */
+/** The rail mark of a position (DESIGN.md §Isnad list): outline when unidentified, two bars when sources differ or the dates do. */
 function nodeKind(node: ChainNode): NarratorNodeKind {
     if (node.candidates.length === 0) return 'unidentified';
-    return node.identity === 'differ' ? 'contested' : 'identified';
+    return node.identity === 'differ' || node.identity_withheld_reason ? 'contested' : 'identified';
 }
 
 interface IsnadChainProps {

@@ -32,6 +32,9 @@ for _path in (HADITH_DATA_DIR, DATASETS_DIR, CORRESPONDENCE_JOB_DIR, GRADING_REC
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 import external_identity as xid  # noqa: E402
+from chain_chronology import DEATH_GAP_YEARS as CHRONOLOGY_DEATH_GAP_YEARS  # noqa: E402
+from chain_chronology import IRSAL_YEARS as CHRONOLOGY_IRSAL_YEARS  # noqa: E402
+from chain_chronology import Lifespan, contest_chain  # noqa: E402
 from imam_kunya import ImamKunyaRegister, CONVENTIONS_PATH  # noqa: E402
 from mention_text import PlainText, locate_mentions  # noqa: E402
 from provider_english import ProviderEnglish  # noqa: E402
@@ -43,7 +46,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.21.5"
+PROJECTION_VERSION = "2026.11.21.6"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -88,9 +91,13 @@ IMAMI_ENGLISH_LEXICON = DIAGNOSTICS_DIR / "chain-reconciliation" / "output" / "i
 # Honorific symbols an English translation writes as one character (ﷺ, ﷻ, ﷽ and the small marks ؐ-ؓ): not Arabic text.
 HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
 ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
-MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py")
+MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py",
+                "chain_chronology.py")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
+# The lexicon's descriptive fields kept verbatim in narrator_lexicon_profiles.source_fields (never a reliability label).
+LEXICON_SOURCE_FIELDS = ("places_of_stay", "parents", "spouse", "siblings", "children", "tags", "area_of_interest")
+LEXICON_BRACKETED = re.compile(r"\s*\[[^\]]*\]")
 INT4_MAX = 2**31 - 1
 
 _csv_limit = sys.maxsize
@@ -148,6 +155,18 @@ def english_name(lexicon_name: str) -> str | None:
     if match:
         return blank_to_none(match.group(1).strip())
     return None if ARABIC_LETTER.search(lexicon_name) else blank_to_none(lexicon_name.strip())
+
+
+def lexicon_source_fields(row: dict[str, str]) -> str | None:
+    """The lexicon's descriptive fields as compact JSON; tags and interests lose their brackets (slugs, a [Grade:] label)."""
+    fields = {}
+    for name in LEXICON_SOURCE_FIELDS:
+        value = (row.get(name) or "").strip()
+        if name in ("tags", "area_of_interest"):
+            value = ", ".join(part.strip() for part in LEXICON_BRACKETED.sub("", value).split(",") if part.strip())
+        if value and value != "NA":
+            fields[name] = value
+    return json.dumps(fields, ensure_ascii=False, sort_keys=True, separators=(",", ":")) if fields else None
 
 
 def _normalise_grade_text(value: str) -> str:
@@ -989,27 +1008,31 @@ def project(args: argparse.Namespace) -> dict:
     counts["narrator_placeholders"] = dict(sorted(Counter(placeholders.values()).items()))
     biography_subject = bundle.one_to_one("relationships/biography_of.csv")
     profiles = []
+    lifespans: dict[str, Lifespan] = {}   # lexicon years for the chain chronology guard; a recorded 0 is not a year
     for row in bundle.rows("nodes/biographies.csv"):
         if biography_subject[row["id"]] != row["subject_id"]:
             raise ProjectionError(f"{row['id']} subject disagrees")
+        birth = int4_or_none(parse_hijri_year(row["birth_date_hijri"], row["birth_date"], row["birth_date_place"]))
+        death = int4_or_none(parse_hijri_year(row["death_date_hijri"], None, row["death_date_place"]))
+        lifespans[row["subject_id"]] = Lifespan(birth or None, death or None)
+        # The lexicon's `grade` column is its generation class ("Comp.(RA) [1st Generation]"), so it is also tabaqah_raw.
         profiles.append([
-            row["subject_id"], row["id"], row["raw_profile_sha256"], blank_to_none(row["grade"]), None, None, None,
-            int4_or_none(parse_hijri_year(row["birth_date_hijri"], row["birth_date"], row["birth_date_place"])),
+            row["subject_id"], row["id"], row["raw_profile_sha256"], blank_to_none(row["grade"]), None,
+            blank_to_none(row["grade"].strip()), None, birth,
             int4_or_none(parse_exact_safe_integer(row["birth_date_gregorian"])),
             blank_to_none(row["birth_date_hijri"].strip()), blank_to_none(row["birth_date_gregorian"].strip()),
-            blank_to_none(row["birth_date"].strip()), blank_to_none(row["birth_place"]),
-            int4_or_none(parse_hijri_year(row["death_date_hijri"], None, row["death_date_place"])),
+            blank_to_none(row["birth_date"].strip()), blank_to_none(row["birth_place"]), death,
             int4_or_none(parse_exact_safe_integer(row["death_date_gregorian"])),
             blank_to_none(row["death_date_hijri"].strip()), blank_to_none(row["death_date_gregorian"].strip()),
             None, blank_to_none(row["death_place"]), blank_to_none(row["death_reason"]),
-            "lexicon_unverified", row["review_state"], blank_to_none(row["source_locator"]),
+            "lexicon_unverified", row["review_state"], blank_to_none(row["source_locator"]), lexicon_source_fields(row),
         ])
     canonical.write("narrator_lexicon_profiles", [
         "narrator_id", "bundle_id", "raw_profile_sha256", "lexicon_grade_label", "bio", "tabaqah_raw",
         "geographic_region", "birth_year_hijri", "birth_year_gregorian", "birth_year_hijri_raw",
         "birth_year_gregorian_raw", "birth_source_text", "birth_place", "death_year_hijri", "death_year_gregorian",
         "death_year_hijri_raw", "death_year_gregorian_raw", "death_source_text", "death_place", "death_reason",
-        "review_state", "source_status", "source_locator",
+        "review_state", "source_status", "source_locator", "source_fields",
     ], profiles)
     aliases = []
     for alias_id, narrator_id in bundle.one_to_one("relationships/alias_of.csv").items():
@@ -1017,7 +1040,9 @@ def project(args: argparse.Namespace) -> dict:
         aliases.append([alias_id, narrator_id, row["surface"], row["normalized_surface"], row["alias_kind"]])
     canonical.write("narrator_aliases", ["id", "narrator_id", "surface", "normalized_surface", "alias_kind"], aliases)
     teachers = []
+    lexicon_pairs: set[tuple[str, str]] = set()   # (student, teacher) the lexicon's own teacher lists name
     for row in bundle.rows("relationships/student_of.csv"):
+        lexicon_pairs.add((row["start"], row["end"]))
         teachers.append([row["start"], row["end"], pg_array(row["evidence_fields"].split("|")),
                          int(row["evidence_count"]), row["reciprocal"] == "true", row["review_state"]])
     canonical.write("narrator_teachers", ["student_id", "teacher_id", "evidence_fields", "evidence_count",
@@ -1101,6 +1126,7 @@ def project(args: argparse.Namespace) -> dict:
     identity: dict[str, Counter] = defaultdict(Counter)
     latin_counts: Counter = Counter()
     external_counts: Counter = Counter()
+    chronology: Counter = Counter()
     empty_normalized = 0
     for hadith_id in sorted(branches_by_hadith):
         branches = sorted(branches_by_hadith[hadith_id], key=lambda branch: branch["branch"])
@@ -1118,14 +1144,11 @@ def project(args: argparse.Namespace) -> dict:
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
                            branch["extraction_method"], None, branch["sanad_confidence"]])
             spans = locate_mentions(report_text, [surface_ar for _, surface_ar, _ in rows])
+            resolved = []   # per position: (found, standing), before the chronology contest
             for position, (mention_id, surface_ar, normalized) in enumerate(rows):
                 # A surface such as a bare conjunction 'و' normalizes to '': keep '' (known empty), never NULL.
-                surface = Verbatim(normalized)
-                teacher = Verbatim(rows[position + 1][2]) if position + 1 < len(rows) else None
-                student = Verbatim(rows[position - 1][2]) if position > 0 else None
-                if surface == "":
+                if normalized == "":
                     empty_normalized += 1
-                coarse, fine = review_unit_ids(surface, teacher, student, work)
 
                 found: list[xid.Candidate] = []
                 if tradition in NAME_MATCH_TRADITIONS:
@@ -1177,13 +1200,37 @@ def project(args: argparse.Namespace) -> dict:
                 standing = xid.standing_identity(found, person_keys)
                 if standing is None and any(c.basis in xid.CONFIRMED_SOURCE_BASES for c in found):
                     identity["confirmed_but_contested_or_not_counted"][tradition] += 1
-                if standing:
+                resolved.append((found, standing))
+
+            # Chain chronology guard (chain_chronology.py, AGENTS.md §Chain chronology): a standing identity may not
+            # make an adjacent pair impossible on the lexicon's years; seams of a repeated narrator are only counted.
+            contest = contest_chain([standing[0] if standing else None for _, standing in resolved], lifespans,
+                                    lexicon_pairs)
+            chronology["pairs_decided_against_one_name"] += contest.decided
+            chronology["pairs_undecided_both_withheld"] += contest.undecided
+            chronology["pairs_left_standing_possible_irsal"] += contest.irsal
+            chronology["pairs_left_to_the_view_repeated_narrator"] += contest.repeated_left
+            chronology["seam_pairs_never_a_transmission"] += contest.seam_pairs
+            chronology["seam_chains"] += 1 if contest.seam_pairs else 0
+            for position, (mention_id, surface_ar, normalized) in enumerate(rows):
+                found, standing = resolved[position]
+                surface = Verbatim(normalized)
+                teacher = Verbatim(rows[position + 1][2]) if position + 1 < len(rows) else None
+                student = Verbatim(rows[position - 1][2]) if position > 0 else None
+                coarse, fine = review_unit_ids(surface, teacher, student, work)
+                withheld = contest.withheld.get(position)
+                if withheld:
+                    kind = "undecided" if "cannot tell" in withheld else "decided"
+                    chronology[f"mentions_withheld:{tradition}:{kind}"] += 1
+                    identity["standing_withheld_by_chronology"][f"{tradition}:{standing[1]}"] += 1
+                if standing and not withheld:
                     narrator_id, method = standing
                     resolved_as, resolution_basis, confidence = "source_index", "source_index", 1.0
                     identity["standing_by_method"][f"{tradition}:{method}"] += 1
                 else:
                     narrator_id, resolved_as, resolution_basis, confidence, method = UNRESOLVED
                 identity["mentions"][tradition] += 1
+                span = spans[position]
 
                 # The name in Latin letters (AGENTS.md §Latin names): the provider's English, then an identity's
                 # English name, then a transliteration of the name as written; else none (Arabic alone).
@@ -1194,7 +1241,7 @@ def project(args: argparse.Namespace) -> dict:
                         latin = (hit[0], "provider_english", None)
                 if latin is None:
                     named = narrator_id
-                    if named is None:
+                    if named is None and not withheld:   # a withheld identity never names the mention
                         people = {c.narrator_id for c in found
                                   if c.basis not in xid.NON_CONTESTING_BASES and not c.placeholder}
                         named = next(iter(people)) if len(people) == 1 else None
@@ -1210,7 +1257,7 @@ def project(args: argparse.Namespace) -> dict:
                     mention_id, branch["id"], hadith_id, position, surface_ar, surface, teacher, student, coarse, fine,
                     "person" if narrator_id else "unclassified", resolved_as, resolution_basis, narrator_id,
                     confidence, method, latin[0] if latin else None, latin[1] if latin else None,
-                    latin[2] if latin else None,
+                    latin[2] if latin else None, withheld,
                 ])
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
                                "sanad_confidence"], chains)
@@ -1218,7 +1265,7 @@ def project(args: argparse.Namespace) -> dict:
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",
         "resolution_basis", "narrator_id", "confidence", "extraction_method", "name_latin", "name_latin_basis",
-        "name_latin_narrator_id",
+        "name_latin_narrator_id", "identity_withheld_reason",
     ], mentions)
     canonical.write("chain_mention_candidates", ["id", "mention_id", "hadith_id", "narrator_id", "basis", "detail",
                                                  "source_position", "source_ref", "source_assertion_origin"],
@@ -1231,6 +1278,8 @@ def project(args: argparse.Namespace) -> dict:
     counts["mentions_with_empty_normalized_surface"] = empty_normalized
     counts["k6_source_index"] = dict(sorted(source_counts.items()))
     counts["identity_candidates"] = {key: dict(sorted(value.items())) for key, value in sorted(identity.items())}
+    counts["chain_chronology"] = {"death_gap_years": CHRONOLOGY_DEATH_GAP_YEARS, "irsal_years": CHRONOLOGY_IRSAL_YEARS,
+                                  **dict(sorted(chronology.items()))}
     counts["k6_sidecar_built_with_current_resolver"] = k6_resolver_sha == sha256_file(Path(resolver_module.__file__))
 
     # hadith assessments

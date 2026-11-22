@@ -42,7 +42,9 @@ placeholders so nothing shifts when data arrives.
 
 Same rhythm as the hadith page: uppercase section labels, no nested cards, one emerald accent (the design token
 `--color-accent`). The tab bar is
-hidden (kept for screen readers) when Biography is the only tab. `TabaqahTimeline` is an inline five-step scale
+hidden (kept for screen readers) when Biography is the only tab. Order (owner 2026-11-21): Biography first and default (a
+reviewed biography, else the lexicon's record via `sourceRecord`, else "No biography recorded yet"), then teachers and
+students and the hadith tab, then "Named in chains" below the tabs; per-narrator hadith detail never precedes the biography. `TabaqahTimeline` is an inline five-step scale
 that highlights only a recorded generation.
 
 ## Time and place (`timeline/`, `TabaqahTimeline.tsx`)

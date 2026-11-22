@@ -175,6 +175,8 @@ export interface ChainNode {
   name_latin_narrator_id?: string | null;
   /** What set the standing identity (e.g. `two_sources_agree`, `imam_kunya_convention`); null when none. */
   standing_basis?: string | null;
+  /** Why a machine-reviewed identity was withheld (chronology guard, 0013); its candidates are still listed. */
+  identity_withheld_reason?: string | null;
 }
 
 export interface ChainEdge {
@@ -248,6 +250,12 @@ export interface NarratorLexicon {
   /** Where in the lexicon the row comes from, e.g. `all_rawis.csv#scholar_indx=10`. */
   source_locator: string | null;
   held_back: Array<{ field: 'death_year'; reason: string; taqrib_entry: string | null }>;
+  /** The lexicon's generation field as written, e.g. `Comp.(RA) [1st Generation]`; never a reliability label. */
+  generation: string | null;
+  /** How the lexicon says the narrator died, e.g. `Martyred`, `Natural`. */
+  death_reason: string | null;
+  /** The lexicon's descriptive fields verbatim; family fields keep its `[N]` entry numbers. */
+  source_fields: Partial<Record<'places_of_stay' | 'parents' | 'spouse' | 'siblings' | 'children' | 'tags' | 'area_of_interest', string>>;
 }
 
 export interface NarratorHadithSummary {

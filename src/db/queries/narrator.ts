@@ -169,7 +169,8 @@ export async function getNarratorDetail(narratorId: string, mode: VerdictMode = 
           ? sql`(select json_build_object('review_state', p.review_state, 'birth_year_hijri', p.birth_year_hijri,
                    'death_year_hijri', p.death_year_hijri, 'birth_year_gregorian', p.birth_year_gregorian,
                    'death_year_gregorian', p.death_year_gregorian, 'birth_place', p.birth_place, 'death_place', p.death_place,
-                   'geographic_region', p.geographic_region, 'source_locator', p.source_locator)
+                   'geographic_region', p.geographic_region, 'source_locator', p.source_locator,
+                   'tabaqah_raw', p.tabaqah_raw, 'death_reason', p.death_reason, 'source_fields', p.source_fields)
                  from narrator_lexicon_profiles p where p.narrator_id = n.id and p.retired_at is null)`
           : sql`(select row_to_json(p) from narrator_lexicon_profiles p where p.narrator_id = n.id and p.retired_at is null)`
       },
@@ -240,6 +241,16 @@ function lexiconYear(value: unknown): number | null {
   return year === 0 ? null : year;
 }
 
+/** The lexicon's descriptive fields (0013), string values only; tags and interests already lost their brackets. */
+function lexiconSourceFields(value: unknown): NarratorLexicon['source_fields'] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const fields: NarratorLexicon['source_fields'] = {};
+  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof entry === 'string' && entry.trim() !== '') fields[key as keyof NarratorLexicon['source_fields']] = entry;
+  }
+  return fields;
+}
+
 /** Lexicon dates and places; on public pages the held-back death years are removed and the prose bio is never read. */
 function mapLexicon(narratorId: string, lexicon: Record<string, unknown>, mode: VerdictMode): NarratorLexicon {
   const held = mode === 'public' ? (LEXICON_HELD_BACK.get(narratorId) ?? []) : [];
@@ -256,6 +267,9 @@ function mapLexicon(narratorId: string, lexicon: Record<string, unknown>, mode: 
     bio: mode === 'public' ? null : text(lexicon.bio),
     source_locator: text(lexicon.source_locator),
     held_back: held,
+    generation: text(lexicon.tabaqah_raw),
+    death_reason: text(lexicon.death_reason),
+    source_fields: lexiconSourceFields(lexicon.source_fields),
   };
 }
 
@@ -263,6 +277,9 @@ function mapLexicon(narratorId: string, lexicon: Record<string, unknown>, mode: 
 export async function getVisibleNarrator(narratorId: string, visibility: ReadVisibility): Promise<NarratorDetail | null> {
   return getNarratorDetail(narratorId, verdictModeFor(visibility));
 }
+
+/** Pairs the lexicon years rule out (0013 chronology guard) are never a teacher or student; undated pairs stay. */
+const POSSIBLE_PAIR = sql`nt.temporal_plausibility <> 'impossible'`;
 
 /** Teachers and students from `narrator_transmissions`, strongest first, limited and counted (section 8). */
 export async function getNarratorNetwork(narratorId: string): Promise<NarratorNetwork> {
@@ -273,7 +290,7 @@ export async function getNarratorNetwork(narratorId: string): Promise<NarratorNe
                                         'hadith_count', x.hadith_count, 'temporal_plausibility', x.temporal_plausibility)
                       order by x.hadith_count desc, p.id)
       from (select ${peer} as peer_id, nt.hadith_count, nt.temporal_plausibility
-            from narrator_transmissions nt where ${self} = ${narratorId}
+            from narrator_transmissions nt where ${self} = ${narratorId} and ${POSSIBLE_PAIR}
             order by nt.hadith_count desc, ${peer} limit ${NETWORK_LIMIT}) x
       join narrators p on p.id = x.peer_id and p.retired_at is null
     ), '[]'::json)`;
@@ -281,8 +298,8 @@ export async function getNarratorNetwork(narratorId: string): Promise<NarratorNe
   const row = await oneRow<Record<string, unknown>>(sql`
     select ${peers('teacher')} as teachers,
            ${peers('student')} as students,
-           (select count(*)::int from narrator_transmissions nt where nt.student_id = ${narratorId}) as teacher_total,
-           (select count(*)::int from narrator_transmissions nt where nt.teacher_id = ${narratorId}) as student_total,
+           (select count(*)::int from narrator_transmissions nt where nt.student_id = ${narratorId} and ${POSSIBLE_PAIR}) as teacher_total,
+           (select count(*)::int from narrator_transmissions nt where nt.teacher_id = ${narratorId} and ${POSSIBLE_PAIR}) as student_total,
            v.attribution_disclaimer, v.network_refreshed_at
     from (select 1) one
     left join dataset_versions v on v.is_current

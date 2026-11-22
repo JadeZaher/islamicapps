@@ -500,3 +500,39 @@ fields, `datasets/hadith-data/pg_export/AGENTS.md` §OpenITI report structure, `
   catalog, so `projection-v4` as it stands cannot be loaded). Curation rows before the load: `development/openiti-fix-2026-11-21/curation-dump-before/`.
 - After any load into production, run `npm run db:approve-preview -- --database production --confirm-production --by owner
   --reason "..."` at once: a new current version has no override and `public_hadiths` is empty until it is recorded (this load: about a minute).
+
+## Chain chronology guard (2026-11-21)
+
+The owner's report: wrong teachers on narrator pages (ʿUmar b. al-Khattab, d. 23, listed as a student of al-Awzaʿi, ʿUbaydullah
+b. ʿUmar b. Hafs and al-Faryabi). Detail: `src/db/AGENTS.md` §Chain chronology guard, `datasets/hadith-data/pg_export/AGENTS.md`
+§Chain chronology, `src/db/queries/AGENTS.md` §Lexicon on public narrator pages.
+
+- **Rule.** A machine-reviewed identity may not make an adjacent pair impossible on the lexicon's years (student born after
+  teacher died; teacher born after student died; teacher died more than 60 years after the student). The projection withholds
+  it (candidates kept, reason stored in `chain_mentions.identity_withheld_reason`); the view labels anything left impossible
+  and the network drops it. Pairs between two occurrences of one narrator (a flattened tahwil) never form.
+- **Loaded**: migration `0013_chain_chronology_guard` (additive) applied to production first, then projection `2026.11.21.6`
+  (`development/openiti-fix-2026-11-21/projection-v6`, catalog `catalog-0013.json`), preview approval re-recorded. Curation rows
+  before the load: `development/chronology-guard-2026-11-21/curation-dump-before/`; logs beside it.
+- **Biography tab**: the lexicon's record (generation, dates, places, family, tags, credited MSD) first, then the per-narrator
+  hadith detail. `narrator_bios` has 21 proposed, uncited rows, so no reviewed biography is public yet.
+
+### Deploy
+
+1. Order matters: `0013` before the code (the code reads `public_chain_links.identity_withheld_reason` and
+   `narrator_lexicon_profiles.source_fields`). It is applied; the pre-deploy `migrate.mjs` finds it recorded.
+2. Checks: `npx tsc --noEmit`; `DATABASE_URL=<production> npm run db:verify`; `npm run db:verify-data -- --database production
+   --confirm-production`; `python -I datasets/hadith-data/pg_export/test_chain_chronology.py`;
+   `npx tsx --conditions=react-server src/db/queries/__tests__/chronology-flows.test.ts` (private schema on the development
+   server; does not migrate the development database).
+3. Push to `refactor/postgres-drizzle` and `main`.
+4. Live: `/narrator/narrator%3Arawi%3A3` lists no al-Awzaʿi, ʿUbaydullah b. ʿUmar or al-Faryabi under teachers;
+   `/hadith/k6/28147/chains` shows «عمر» with "Identity withheld. Chronology: ..." and the K6 candidate.
+
+### Rollback
+
+- Code: redeploy `88b54f5`; it ignores the two new columns, and the 0013 view only removes impossible and seam pairs.
+- Data: `projection-v5` cannot be loaded as it stands (its header lacks the two 0013 columns). To restore the withheld
+  identities, re-export with `contest_chain` returning no withholdings (same ids: the load only rewrites the 522 changed
+  mention rows) and load it, then re-record the preview approval at once.
+- View: a new migration restoring the 0006 definition of `narrator_transmissions` (drop, create, two indexes). Never edit 0013.
