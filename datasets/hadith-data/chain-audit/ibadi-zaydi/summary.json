@@ -1,0 +1,471 @@
+{
+ "sample_size": 228,
+ "by_stratum": {
+  "random": 132,
+  "detector": 96
+ },
+ "rates": {
+  "rabi": {
+   "n_random": 44,
+   "structural_errors": 11,
+   "structural_rate": 0.25,
+   "structural_ci95": [
+    0.14574066080685744,
+    0.39440849808414946
+   ],
+   "identity_errors": 12,
+   "identity_rate": 0.2727272727272727,
+   "identity_ci95": [
+    0.16346223395491324,
+    0.41849154685509304
+   ],
+   "relation_literal": 0,
+   "relation_rate": 0.0,
+   "relation_ci95": [
+    6.938893903907228e-18,
+    0.08029831778201396
+   ]
+  },
+  "zayd": {
+   "n_random": 44,
+   "structural_errors": 11,
+   "structural_rate": 0.25,
+   "structural_ci95": [
+    0.14574066080685744,
+    0.39440849808414946
+   ],
+   "identity_errors": 0,
+   "identity_rate": 0.0,
+   "identity_ci95": [
+    6.938893903907228e-18,
+    0.08029831778201396
+   ],
+   "relation_literal": 41,
+   "relation_rate": 0.9318181818181818,
+   "relation_ci95": [
+    0.8177467866338279,
+    0.9765410298271597
+   ]
+  },
+  "rida": {
+   "n_random": 44,
+   "structural_errors": 44,
+   "structural_rate": 1.0,
+   "structural_ci95": [
+    0.9197016822179859,
+    0.9999999999999999
+   ],
+   "identity_errors": 0,
+   "identity_rate": 0.0,
+   "identity_ci95": [
+    6.938893903907228e-18,
+    0.08029831778201396
+   ],
+   "relation_literal": 0,
+   "relation_rate": 0.0,
+   "relation_ci95": [
+    6.938893903907228e-18,
+    0.08029831778201396
+   ]
+  },
+  "pooled_population_weighted": {
+   "structural_rate": 0.33087848500789063,
+   "ci95": [
+    0.2493381978705667,
+    0.41241877214521455
+   ]
+  }
+ },
+ "detector_precision_on_sample": {
+  "D1a": {
+   "sampled_hits": 71,
+   "confirmed_structural": 71,
+   "precision": 1.0
+  },
+  "D1b": {
+   "sampled_hits": 81,
+   "confirmed_structural": 81,
+   "precision": 1.0
+  },
+  "D1c": {
+   "sampled_hits": 7,
+   "confirmed_structural": 7,
+   "precision": 1.0
+  },
+  "D2b": {
+   "sampled_hits": 1,
+   "confirmed_structural": 1,
+   "precision": 1.0
+  },
+  "D2c": {
+   "sampled_hits": 16,
+   "note": "informational: compiler stored as a mention"
+  },
+  "D3a": {
+   "sampled_hits": 66,
+   "confirmed_relation_literal": 64,
+   "precision": 0.9696969696969697
+  },
+  "D3b": {
+   "sampled_hits": 47,
+   "confirmed_structural": 47,
+   "precision": 1.0
+  },
+  "D3c": {
+   "sampled_hits": 8,
+   "confirmed_structural": 8,
+   "precision": 1.0
+  },
+  "D3d": {
+   "sampled_hits": 16,
+   "confirmed_structural": 16,
+   "precision": 1.0
+  },
+  "D3e": {
+   "sampled_hits": 4,
+   "confirmed_structural": 4,
+   "precision": 1.0
+  },
+  "D3f": {
+   "sampled_hits": 13,
+   "confirmed_structural": 13,
+   "precision": 1.0
+  },
+  "D3g": {
+   "sampled_hits": 11,
+   "confirmed_structural": 11,
+   "precision": 1.0
+  },
+  "D3h": {
+   "sampled_hits": 6,
+   "confirmed_structural": 6,
+   "precision": 1.0
+  },
+  "D3i": {
+   "sampled_hits": 8,
+   "confirmed_structural": 8,
+   "precision": 1.0
+  },
+  "D3j": {
+   "sampled_hits": 3,
+   "confirmed_structural": 3,
+   "precision": 1.0
+  },
+  "D3k": {
+   "sampled_hits": 1,
+   "confirmed_structural": 1,
+   "precision": 1.0
+  },
+  "D4a": {
+   "sampled_hits": 10,
+   "confirmed_identity": 10,
+   "precision": 1.0
+  },
+  "D4c": {
+   "sampled_hits": 1,
+   "confirmed_structural": 1,
+   "precision": 1.0
+  },
+  "D5a": {
+   "sampled_hits": 5,
+   "confirmed_structural": 3,
+   "precision": 0.6
+  },
+  "D5c": {
+   "sampled_hits": 11,
+   "confirmed_structural": 11,
+   "precision": 1.0
+  },
+  "D5d": {
+   "sampled_hits": 54,
+   "chain_sane": 13,
+   "chain_defective": 41
+  },
+  "D6a": {
+   "sampled_hits": 11,
+   "confirmed_structural": 11,
+   "precision": 1.0
+  },
+  "D6b": {
+   "sampled_hits": 1,
+   "confirmed_structural": 1,
+   "precision": 1.0
+  },
+  "D6c": {
+   "sampled_hits": 2,
+   "confirmed_structural": 2,
+   "precision": 1.0
+  },
+  "D6d": {
+   "sampled_hits": 5,
+   "confirmed_structural": 5,
+   "precision": 1.0
+  }
+ },
+ "recall_on_random_half": {
+  "structurally_wrong": 66,
+  "flagged_by_a_structural_detector": 66,
+  "missed": []
+ },
+ "false_positive_random_half": [],
+ "online_located": {
+  "located": 204,
+  "total": 228
+ },
+ "reports_with_hit": {
+  "D1a opener_as_narrator": {
+   "rabi": 46,
+   "rida": 180
+  },
+  "D1b inherited_chain_missing": {
+   "rabi": 27,
+   "rida": 202
+  },
+  "D1c undeclared_continuation": {
+   "rabi": 22
+  },
+  "D2b prophet_as_mention": {
+   "rabi": 1
+  },
+  "D2c compiler_as_mention": {
+   "rabi": 61,
+   "zayd": 11
+  },
+  "D3a relation_as_mention": {
+   "zayd": 661,
+   "rabi": 1,
+   "rida": 1
+  },
+  "D3b not_a_narrator": {
+   "rida": 142,
+   "zayd": 1,
+   "rabi": 2
+  },
+  "D3c not_a_narrator": {
+   "zayd": 16
+  },
+  "D3d not_a_narrator": {
+   "rabi": 47,
+   "rida": 10,
+   "zayd": 40
+  },
+  "D3e merged_names": {
+   "rabi": 3,
+   "zayd": 1
+  },
+  "D3f other": {
+   "rabi": 26,
+   "zayd": 77,
+   "rida": 1
+  },
+  "D3g not_a_narrator": {
+   "rabi": 2,
+   "zayd": 17
+  },
+  "D3h not_a_narrator": {
+   "rabi": 7,
+   "rida": 1,
+   "zayd": 5
+  },
+  "D3i not_a_narrator": {
+   "rabi": 18,
+   "zayd": 11,
+   "rida": 1
+  },
+  "D3j other": {
+   "rabi": 11,
+   "zayd": 1
+  },
+  "D3k not_a_narrator": {
+   "rabi": 4,
+   "zayd": 1
+  },
+  "D4a misidentified": {
+   "rabi": 272
+  },
+  "D4c same_narrator_twice": {
+   "zayd": 1
+  },
+  "D5a missing_chain": {
+   "rabi": 2,
+   "zayd": 3
+  },
+  "D5c inheriting_no_chain": {
+   "rabi": 1,
+   "rida": 12
+  },
+  "D5d low_confidence_chain": {
+   "rabi": 226,
+   "rida": 51,
+   "zayd": 46
+  },
+  "D6a other": {
+   "rabi": 56,
+   "rida": 3,
+   "zayd": 11
+  },
+  "D6b missing_chain": {
+   "rida": 1
+  },
+  "D6c other": {
+   "rabi": 9
+  },
+  "D6d other": {
+   "zayd": 53
+  }
+ },
+ "hits": {
+  "D1a opener_as_narrator": {
+   "rabi": 50,
+   "rida": 195
+  },
+  "D1b inherited_chain_missing": {
+   "rabi": 27,
+   "rida": 202
+  },
+  "D1c undeclared_continuation": {
+   "rabi": 22
+  },
+  "D2b prophet_as_mention": {
+   "rabi": 1
+  },
+  "D2c compiler_as_mention": {
+   "rabi": 70,
+   "zayd": 12
+  },
+  "D3a relation_as_mention": {
+   "zayd": 1486,
+   "rabi": 8,
+   "rida": 1
+  },
+  "D3b not_a_narrator": {
+   "rida": 150,
+   "zayd": 1,
+   "rabi": 5
+  },
+  "D3c not_a_narrator": {
+   "zayd": 16
+  },
+  "D3d not_a_narrator": {
+   "rabi": 63,
+   "rida": 11,
+   "zayd": 73
+  },
+  "D3e merged_names": {
+   "rabi": 3,
+   "zayd": 1
+  },
+  "D3f other": {
+   "rabi": 30,
+   "zayd": 79,
+   "rida": 1
+  },
+  "D3g not_a_narrator": {
+   "rabi": 2,
+   "zayd": 22
+  },
+  "D3h not_a_narrator": {
+   "rabi": 8,
+   "rida": 1,
+   "zayd": 5
+  },
+  "D3i not_a_narrator": {
+   "rabi": 34,
+   "zayd": 42,
+   "rida": 1
+  },
+  "D3j other": {
+   "rabi": 15,
+   "zayd": 1
+  },
+  "D3k not_a_narrator": {
+   "rabi": 4,
+   "zayd": 1
+  },
+  "D4a misidentified": {
+   "rabi": 272
+  },
+  "D4c same_narrator_twice": {
+   "zayd": 8
+  },
+  "D5a missing_chain": {
+   "rabi": 2,
+   "zayd": 3
+  },
+  "D5c inheriting_no_chain": {
+   "rabi": 1,
+   "rida": 12
+  },
+  "D5d low_confidence_chain": {
+   "rabi": 226,
+   "rida": 51,
+   "zayd": 46
+  },
+  "D6a other": {
+   "rabi": 56,
+   "rida": 3,
+   "zayd": 12
+  },
+  "D6b missing_chain": {
+   "rida": 1
+  },
+  "D6c other": {
+   "rabi": 9
+  },
+  "D6d other": {
+   "zayd": 53
+  }
+ },
+ "fix_group_report_counts": {
+  "F1_inherit_chain": {
+   "rabi": 49,
+   "rida": 204,
+   "total": 253
+  },
+  "F2_chain_from_sanad_ar": {
+   "rabi": 98,
+   "rida": 151,
+   "zayd": 126,
+   "total": 375
+  },
+  "F3_honorific_waw_split": {
+   "rabi": 6,
+   "zayd": 18,
+   "total": 24
+  },
+  "F4_missing_link": {
+   "rabi": 64,
+   "rida": 3,
+   "zayd": 59,
+   "total": 126
+  },
+  "F5_relation_words": {
+   "zayd": 661,
+   "rabi": 1,
+   "rida": 1,
+   "total": 663
+  },
+  "F6_riwayat_kunya": {
+   "rabi": 272,
+   "total": 272
+  }
+ },
+ "reports_with_any_structural_hit": {
+  "rabi": 213,
+  "rida": 205,
+  "zayd": 199
+ },
+ "corrections_rows": {
+  "inherited_chain_missing|high": 264,
+  "misidentified|medium": 272,
+  "missing_chain|high": 1,
+  "missing_chain|medium": 5,
+  "not_a_narrator|high": 434,
+  "not_a_narrator|medium": 6,
+  "opener_as_narrator|high": 245,
+  "other|high": 254,
+  "other|medium": 99,
+  "relation_as_mention|high": 1495
+ },
+ "corrections_total": 3075
+}

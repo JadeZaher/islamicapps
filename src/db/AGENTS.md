@@ -210,6 +210,23 @@ p+1 is the teacher of p (in Bukhari the higher position dies earlier in 12,348 o
   lexicon's `grade` column, which is its generation class (`Comp.(RA) [1st Generation]`; 43 distinct values, all classes,
   centuries, generations or a madhhab), never a reliability verdict.
 
+## Chain builder (0014; owner request 2026-11-22, round 2)
+
+Two audits (`datasets/hadith-data/chain-audit/ibadi-zaydi/`, `imami/`) found order right everywhere and the defects in how
+chains are cut. The builder, not rows by hand, is fixed: `datasets/hadith-data/pg_export/chain_builder.py`
+(`pg_export/AGENTS.md` §Chain builder).
+
+- `chain_mentions.inherited_from_mention_id` (nullable, no FK: a self-reference would order the merge): the written mention
+  a continuation repeats. The row copies that mention's surface and candidates, so the name shows and feeds the teacher list.
+  Checked at load: a live written mention of the same collection with the same surface, in a report that inherits a chain.
+- `mention_candidate_basis.named_in_opening_isnad`: the work's own opening isnad names the person (Musnad Zayd only,
+  `opening_isnad_rules.json`); the detail cites the opening report. A tier basis (`public_chain_mention_candidates_v2`,
+  `standing_identity`), credited `OITI`. Register rows may be its target (`narrator:imam:<n>`, and `narrator:imam:zayd`, which
+  the register lacked: added under the register mechanism, its profile naming Musnad Zayd `zayd_0001`).
+- `link_kind` is now written for these chains: `derived_relation` («أبيه», «جده» read through the rule), `anonymous` (a
+  balagh gap). The chain view words them ("From the earlier report's chain", "Unnamed transmitter").
+- `public_chain_links` appends `inherited_from_mention_id` (CREATE OR REPLACE). `db:verify` checks it and the tier basis.
+
 ## Report correspondences (0007; design §5.5.1)
 
 Reports that carry the same matn in another work or tradition, from `diagnostics/report-correspondence/`. Reports are
@@ -251,7 +268,9 @@ write decisions.
   four nullable `hadiths` columns and two checks, then a hand-written `CREATE OR REPLACE VIEW public_hadiths`, see §OpenITI
   extraction fields) -> `0013_chain_chronology_guard` (generated: `chain_mentions.identity_withheld_reason`,
   `narrator_lexicon_profiles.source_fields` and two checks; hand-written: `public_chain_links` appended, `narrator_transmissions`
-  dropped and recreated with its two indexes; see §Chain chronology guard). A `--custom` generate snapshots the previous schema: after promoting a
+  dropped and recreated with its two indexes; see §Chain chronology guard) -> `0014_chain_builder_openiti` (generated:
+  enum value `named_in_opening_isnad`, `chain_mentions.inherited_from_mention_id`; hand-written: `public_chain_links` appended,
+  `public_chain_mention_candidates_v2` counts the new basis; see §Chain builder). A `--custom` generate snapshots the previous schema: after promoting a
   table into `schema/`, check `drizzle-kit generate` reports no changes, and fold its snapshot into the custom one if not.
 - Hand-written migrations are created with `npx drizzle-kit generate --custom --name=<name>` so the journal
   and snapshot stay consistent; views are declared in TypeScript with `.existing()` so drizzle-kit ignores them.

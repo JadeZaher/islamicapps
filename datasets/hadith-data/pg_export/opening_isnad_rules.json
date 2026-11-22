@@ -1,0 +1,27 @@
+{
+  "meaning": "Persons a work's own opening isnad names, used to read the relation words of the same fixed chain shape in later reports of that work. Owner request 2026-11-21 (chain builder round 2, P8). The surface stays as written; the identity is a candidate with basis named_in_opening_isnad whose detail names the opening report. Reviewable data, not a scholarly claim: edit this file to change the rule, then rebuild the projection.",
+  "status": "proposed_for_owner_review",
+  "works": {
+    "zaydi:musnad-zayd": {
+      "opening_record_id": "openiti:zaydi:zayd_0001|1|V01P059",
+      "opening_isnad_ar": "حدثني زيد بن علي عن ابيه علي بن الحسين عن جده الحسين بن علي امير المؤمنين علي بن أبي طالب عليهم السلام",
+      "rule": "A chain of this work that opens «زيد بن علي، أبيه» and continues, if at all, with «جده» and then «علي» exactly in that order and nothing else. Any other shape (آبائه, another name, a missing link) gets nothing.",
+      "shape": [
+        {"pattern": "زيد بن علي", "narrator_id": "narrator:imam:zayd", "written": "«زيد بن علي»"},
+        {"pattern": "ابيه(?: علي بن الحسين)?", "narrator_id": "narrator:imam:4", "written": "«عن ابيه علي بن الحسين»"},
+        {"pattern": "جده(?: الحسين(?: بن علي)?)?", "narrator_id": "narrator:imam:3", "written": "«عن جده الحسين بن علي»"},
+        {"pattern": "(?:امير المؤمنين )?علي(?: بن ابي طالب)?", "narrator_id": "narrator:imam:1", "written": "«امير المؤمنين علي بن أبي طالب»"}
+      ]
+    }
+  },
+  "register_additions": [
+    {
+      "id": "narrator:imam:zayd",
+      "name_ar": "زيد بن علي بن الحسين",
+      "name_latin": "Zayd ibn ʿAli ibn al-Husayn",
+      "known_as": "Imam of the Zaydiyya; the source of Musnad Zayd",
+      "tradition": "Zaydi",
+      "asserted_by": "Musnad Zayd (OpenITI 0125AH Zaydiyya0000052-ara1), report zayd_0001: «حدثني زيد بن علي عن ابيه علي بن الحسين»; the name joins the two"
+    }
+  ]
+}

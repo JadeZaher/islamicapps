@@ -299,6 +299,9 @@ async function main() {
       'narrator_transmissions lost the 0013 chronology or seam guard');
     const [{ withheld }] = await sql<{ withheld: string }[]>`select pg_get_viewdef('public_chain_links'::regclass) as withheld`;
     expect(withheld.includes('identity_withheld_reason'), 'public_chain_links does not expose identity_withheld_reason');
+    // The chain builder (0014): continuations name the written mention they repeat; the opening-isnad rule is a tier basis.
+    expect(withheld.includes('inherited_from_mention_id'), 'public_chain_links does not expose inherited_from_mention_id');
+    expect(tier.includes("'named_in_opening_isnad'"), 'public_chain_mention_candidates_v2 does not count named_in_opening_isnad');
 
     console.log(
       [

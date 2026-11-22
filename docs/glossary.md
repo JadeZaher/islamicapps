@@ -15,7 +15,7 @@ Definitions of the terms used in the Shura wa Istehsan app, its documentation an
 - [Report grading](#section-report-grading) (16)
 - [Works and genres](#section-works) (10)
 - [Comparative study and history](#section-comparative) (13)
-- [Archive terms](#section-archive) (54)
+- [Archive terms](#section-archive) (55)
 - [Needs the owner’s review](#owner-review)
 - [Enum values without an entry](#enum-values-without-an-entry)
 
@@ -1038,6 +1038,16 @@ In Imami chains the Imams are often named by kunya alone, followed by the honori
 - **In this archive:** In an Imami chain, a kunya with the honorific identifies the Imam and counts toward the machine-reviewed tier (owner, 2026-11-21). A kunya several Imams share (Abu Jaʿfar, Abu al-Hasan, Abu Muhammad) is decided only when a word after it names one Imam (al-Rida, al-Thani); otherwise every Imam who shares it is shown as an undecided candidate. The rule is a reviewable file, never applied outside Imami chains.
 - **Related:** [kunya](#kunya), [Matched by kunya only](#matched-by-kunya-only), [Machine-reviewed](#confirmed-by-source-and-text)
 - **Data values:** `mention_candidate_basis.imam_kunya_convention`, `mention_candidate_basis.imam_kunya_candidate`, `narrator_authority.imam_register`
+
+<a id="opening-isnad"></a>
+
+### Named in the opening isnad (e.g. «عن أبيه عن جده» in Musnad Zayd)
+
+A work often writes its full chain once, in its first report, and later writes only «from his father, from his grandfather». The first report says who they are.
+
+- **In this archive:** In Musnad Zayd only, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.
+- **Related:** [Imam’s conventional kunya](#imam-kunya), [Machine-reviewed](#confirmed-by-source-and-text)
+- **Data values:** `mention_candidate_basis.named_in_opening_isnad`
 
 <a id="external-source-record"></a>
 

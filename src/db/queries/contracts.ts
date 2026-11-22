@@ -119,7 +119,8 @@ export type IdentityBasis =
   | 'source_riwayat_confirmed_by_text'
   | 'source_riwayat'
   | 'imam_kunya_convention'
-  | 'imam_kunya_candidate';
+  | 'imam_kunya_candidate'
+  | 'named_in_opening_isnad';
 
 /** Narrator record authority: the lexicon, an external dataset's own record, or the Imam register (0010). */
 export type NarratorAuthority = 'rawi' | 'imami_rijal' | 'hadith_kg' | 'riwayat' | 'imam_register';
@@ -177,6 +178,8 @@ export interface ChainNode {
   standing_basis?: string | null;
   /** Why a machine-reviewed identity was withheld (chronology guard, 0013); its candidates are still listed. */
   identity_withheld_reason?: string | null;
+  /** The written mention this name repeats: the chain continues from an earlier report (0014). */
+  inherited_from_mention_id?: string | null;
 }
 
 export interface ChainEdge {

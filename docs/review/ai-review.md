@@ -113,6 +113,26 @@ Every candidate identity for a name is kept with its basis. Where sources disagr
 
 **Code.** `datasets/hadith-data/pg_export/imam_kunya.py`, `datasets/hadith-data/pg_export/imam_kunya_conventions.json`.
 
+### Relation words read through the work’s opening isnad (Musnad Zayd) {#identity-opening-isnad}
+
+`identity-opening-isnad` version `2026.11.22` · Checked by rule · Adopted, not yet loaded
+
+**Rule.** In Musnad Zayd, a chain of exactly the shape «زيد بن علي، أبيه، جده، علي» (or its first two or three links) names the persons the work’s own first report names: Zayd b. ʿAli, ʿAli b. al-Husayn, al-Husayn b. ʿAli, ʿAli b. Abi Talib. Any other shape gets nothing.
+
+**Evidence.** The work’s report No. 1 («حدثني زيد بن علي عن ابيه علي بن الحسين عن جده الحسين بن علي ...»); The chain shape as written.
+
+**Measured.** No measured accuracy. Not yet measured by a reviewer; 617 chains take the rule.
+
+**Known failure modes.** A report whose «أبيه» refers to someone other than Zayd’s father (the shape check excludes any other first name).
+
+**Reader sees.** “AI-reviewed (checked by rule): the work’s opening isnad names him”
+
+**Excluded.** Every other work and every other chain shape.
+
+**Credited.** `OITI` OpenITI: a Machine-Readable Corpus of Islamicate Texts; `SWI` Shura wa Istehsan (this archive).
+
+**Code.** `datasets/hadith-data/pg_export/chain_builder.py`, `datasets/hadith-data/pg_export/opening_isnad_rules.json`.
+
 ### Two independent sources agree {#identity-two-sources-agree}
 
 `identity-two-sources-agree` version `2026.11.21` · Checked by rule · Adopted, not yet loaded

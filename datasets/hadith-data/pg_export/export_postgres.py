@@ -36,6 +36,7 @@ from chain_chronology import DEATH_GAP_YEARS as CHRONOLOGY_DEATH_GAP_YEARS  # no
 from chain_chronology import IRSAL_YEARS as CHRONOLOGY_IRSAL_YEARS  # noqa: E402
 from chain_chronology import Lifespan, contest_chain  # noqa: E402
 from imam_kunya import ImamKunyaRegister, CONVENTIONS_PATH  # noqa: E402
+import chain_builder  # noqa: E402
 from mention_text import PlainText, locate_mentions  # noqa: E402
 from provider_english import ProviderEnglish  # noqa: E402
 from transliteration import latin_name  # noqa: E402
@@ -46,7 +47,7 @@ from neo4j_export.contract import (  # noqa: E402
     typed_column_name,
 )
 
-PROJECTION_VERSION = "2026.11.21.6"
+PROJECTION_VERSION = "2026.11.22.1"
 CORRESPONDENCE_CLASSES = frozenset({"same_wording", "same_report_variant_wording", "partial_overlap"})
 CORRESPONDENCE_SCOPES = frozenset({"same_work", "cross_work_same_tradition", "cross_tradition"})
 ATTRIBUTION_DISCLAIMER = (
@@ -92,9 +93,11 @@ IMAMI_ENGLISH_LEXICON = DIAGNOSTICS_DIR / "chain-reconciliation" / "output" / "i
 HONORIFIC_SYMBOLS = re.compile(r"[\ufdfa\ufdfb\ufdfd\u0610-\u0613]")
 ARABIC_SCRIPT = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]")
 MODULE_FILES = ("transliteration.py", "mention_text.py", "imam_kunya.py", "external_identity.py", "provider_english.py",
-                "chain_chronology.py")
+                "chain_chronology.py", "chain_builder.py", "opening_isnad_rules.json")
 RECONCILED_SIDECARS = ("k6_source_index.jsonl.gz", "pure_canon_chain.jsonl.gz", "no_chain_in_source.jsonl.gz")
 MAX_SAFE_INTEGER = 2**53 - 1
+OPENING_ISNAD_LICENCE = ("Shura wa Istehsan register (opening_isnad_rules.json); the name as the work's opening isnad writes "
+                         "it, OpenITI text (CC BY-NC-SA 4.0)")
 # The lexicon's descriptive fields kept verbatim in narrator_lexicon_profiles.source_fields (never a reliability label).
 LEXICON_SOURCE_FIELDS = ("places_of_stay", "parents", "spouse", "siblings", "children", "tags", "area_of_interest")
 LEXICON_BRACKETED = re.compile(r"\s*\[[^\]]*\]")
@@ -836,13 +839,15 @@ def project(args: argparse.Namespace) -> dict:
         hadith_no = blank_to_none(row["hadith_no"].strip())
         attributed = attribution_target.get(hadith_id)
         # A matn is stored only when it is this report's own (1,597 K6 rows carry a neighbour's; ~13k carry the chain).
-        matn_ar, matn_rejection = accepted_matn(isolator, row["record_id"], text_ar, blank_to_none(row["matn_ar"]))
+        extraction = openiti_extraction.get(row["record_id"])
+        # OpenITI: the parser's own matn (the sidecar), the same parse the unified CSV copied, read fresh.
+        source_matn = extraction.get("matn_ar") if extraction is not None else blank_to_none(row["matn_ar"])
+        matn_ar, matn_rejection = accepted_matn(isolator, row["record_id"], text_ar, source_matn)
         if matn_rejection:
             matn_counts[f"rejected:{matn_rejection}"] += 1
             matn_counts[f"rejected_by_work:{collection['source_work_id']}"] += 1
         elif matn_ar is not None:
             matn_counts["stored"] += 1
-        extraction = openiti_extraction.get(row["record_id"])
         if row["record_id"].startswith("openiti:") and extraction is None:
             raise ProjectionError(f"{hadith_id}: OpenITI report without a row in reconciled/openiti_extraction.jsonl.gz")
         if extraction is not None:
@@ -985,6 +990,17 @@ def project(args: argparse.Namespace) -> dict:
              "kunyas": [entry["kunya"] for entry in imam_register.data["kunyas"] if imam["ordinal"] in entry["shared_by"]]},
             ensure_ascii=False, sort_keys=True), xid.LICENCE["imam_register"], None,
             "Shura wa Istehsan register, for the owner to review", "source_unverified"])
+    # Persons a work's own opening isnad names and the register lacks (opening_isnad_rules.json), credited to the work.
+    for person in chain_builder.load_zayd_rule()[1]:
+        narrator_ids.add(person["id"])
+        narrator_english[person["id"]] = person["name_latin"]
+        narrators.append([person["id"], "imam_register", person["id"].rsplit(":", 1)[1], None, person["name_ar"],
+                          person["name_ar"], person["name_latin"], arabic_norm(person["name_ar"]), None,
+                          person["name_latin"], "identity_name"])
+        imam_profiles.append([person["id"], "imam_register", json.dumps(
+            {"known_as": person["known_as"], "tradition": person["tradition"], "named_by": person["asserted_by"]},
+            ensure_ascii=False, sort_keys=True), OPENING_ISNAD_LICENCE, None, person["asserted_by"],
+            "source_unverified"])
     external = xid.ExternalSources(args.reconciled)
     for row in external.narrator_rows(arabic_norm):
         narrator_ids.add(row[0])
@@ -1076,6 +1092,42 @@ def project(args: argparse.Namespace) -> dict:
         branches_by_hadith, sidecars["no_chain_in_source.jsonl.gz"], sidecars["pure_canon_chain.jsonl.gz"],
         hadith_info, record_to_hadith, name_normalize).items()))
 
+    # OpenITI works: the chain is cut from the parser's sanad_ar, continuations inherit (chain_builder.py).
+    zayd_rule, register_additions = chain_builder.load_zayd_rule()
+    openiti_reports = []
+    for hadith_id, info in hadith_info.items():
+        extraction = openiti_extraction.get(info["record_id"])
+        if extraction is None:
+            continue
+        if info["source_work_id"] not in chain_builder.OPENITI_WORKS:
+            raise ProjectionError(f"{hadith_id}: OpenITI extraction row outside the three parsed works")
+        openiti_reports.append(chain_builder.OpenitiReport(
+            info["record_id"], chain_builder.work_of(info["record_id"]), hadith_text[hadith_id], extraction["sanad_ar"],
+            extraction.get("matn_ar"), extraction["split_confidence"], extraction["sanad_inherits_from_record_id"]))
+    built = chain_builder.build_openiti_chains(openiti_reports, zayd_rule)
+    # A continuation copies the candidates of the written mentions it repeats, so those reports are projected first.
+    build_order = {record_to_hadith[record_id]: index for index, record_id in enumerate(built.branches)}
+    openiti_counts: Counter = Counter(built.counts)
+    inheriting_hadiths: set[str] = set()
+    for record_id, branches in built.branches.items():
+        hadith_id = record_to_hadith[record_id]
+        openiti_counts["bundle_chains_replaced"] += len(branches_by_hadith.pop(hadith_id, []))
+        for index, branch in enumerate(branches):
+            inherited = any(mention.inherited_from for mention in branch)
+            inheriting_hadiths.update([hadith_id] if inherited else [])
+            branches_by_hadith[hadith_id].append({
+                "id": f"chain:{record_id}:{index:04d}", "branch": index, "resolved": False,
+                "extraction_method": "openiti_inherited_chain" if inherited else "openiti_sanad_span",
+                "sanad_confidence": None,
+                "mentions": [(f"mention:{record_id}:{index:04d}:{position:04d}", mention.surface,
+                              name_normalize(mention.surface)) for position, mention in enumerate(branch)],
+                "built": branch,
+            })
+            openiti_counts["chains"] += 1
+            openiti_counts["mentions"] += len(branch)
+            openiti_counts["mentions_inherited"] += sum(1 for mention in branch if mention.inherited_from)
+    counts["openiti_chain_builder"] = dict(sorted(openiti_counts.items()))
+
     # K6 source index: mapped onto the extracted branches only where the sidecar's text branches are exactly them.
     source_counts: Counter = Counter()
     source_alignment: dict[str, tuple[dict, dict]] = {}
@@ -1128,7 +1180,9 @@ def project(args: argparse.Namespace) -> dict:
     external_counts: Counter = Counter()
     chronology: Counter = Counter()
     empty_normalized = 0
-    for hadith_id in sorted(branches_by_hadith):
+    written_candidates: dict[str, list[xid.Candidate]] = {}   # candidates of every written OpenITI mention
+    for hadith_id in sorted(branches_by_hadith,
+                            key=lambda item: (item in inheriting_hadiths, build_order.get(item, 0), item)):
         branches = sorted(branches_by_hadith[hadith_id], key=lambda branch: branch["branch"])
         if [branch["branch"] for branch in branches] != list(range(len(branches))):
             raise ProjectionError(f"{hadith_id}: chain branches are not contiguous 0..n-1")
@@ -1141,9 +1195,18 @@ def project(args: argparse.Namespace) -> dict:
         provider_text = tradition == "Imami" and hadith_id.startswith("hadith:thaqalayn:")
         for branch in branches:
             rows = branch["mentions"]
+            built_mentions = branch.get("built")
             chains.append([branch["id"], hadith_id, branch["branch"], len(rows), branch["resolved"],
                            branch["extraction_method"], None, branch["sanad_confidence"]])
-            spans = locate_mentions(report_text, [surface_ar for _, surface_ar, _ in rows])
+            if built_mentions and any(mention.inherited_from for mention in built_mentions):
+                # An inherited name is not written in this report: only the written ones are located in its text.
+                written_at = [position for position, mention in enumerate(built_mentions) if not mention.inherited_from]
+                located = locate_mentions(report_text, [rows[position][1] for position in written_at])
+                spans = [None] * len(rows)
+                for position, span in zip(written_at, located):
+                    spans[position] = span
+            else:
+                spans = locate_mentions(report_text, [surface_ar for _, surface_ar, _ in rows])
             resolved = []   # per position: (found, standing), before the chronology contest
             for position, (mention_id, surface_ar, normalized) in enumerate(rows):
                 # A surface such as a bare conjunction 'و' normalizes to '': keep '' (known empty), never NULL.
@@ -1151,50 +1214,68 @@ def project(args: argparse.Namespace) -> dict:
                     empty_normalized += 1
 
                 found: list[xid.Candidate] = []
-                if tradition in NAME_MATCH_TRADITIONS:
-                    match = name_match(surface_ar)
-                    if match:
-                        scholar, basis, detail = match
-                        if f"narrator:rawi:{scholar}" not in narrator_ids:
-                            identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
-                        elif placeholders.get(scholar) and basis != "name_kunya_only":
-                            raise ProjectionError(f"{mention_id}: {basis} targets placeholder rawi {scholar}")
-                        else:
-                            found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail,
-                                                       placeholder=placeholders.get(scholar)))
-                if source is not None:
-                    row, alignment = source
-                    hit = alignment.get((branch["branch"], position))
-                    if hit is not None:
-                        source_position, shared_trunk = hit
-                        scholar = row["source_ids"][source_position]
-                        basis = "source_index_confirmed_by_text" if row["basis"] == K6_CONFIRMED_BASIS else "source_index"
-                        if f"narrator:rawi:{scholar}" not in narrator_ids:
-                            identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
-                        elif placeholders.get(scholar):
-                            # Owner decision (d): a placeholder row is never a match target, whoever names it.
-                            identity["dropped"][f"{basis}:placeholder:{placeholders[scholar]}"] += 1
-                        else:
-                            detail = row["agreement_class"] + (":shared_trunk" if shared_trunk else "")
-                            found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail, source_position))
+                built_mention = built_mentions[position] if built_mentions else None
+                if built_mention is not None and built_mention.inherited_from:
+                    # A continuation repeats a written mention: the same candidates, from the same sources.
+                    root_id = "mention:{}:{:04d}:{:04d}".format(*built_mention.inherited_from)
+                    found = list(written_candidates[root_id])
+                    identity["inherited_mentions"][tradition] += 1
+                else:
+                    if tradition in NAME_MATCH_TRADITIONS:
+                        match = name_match(surface_ar)
+                        if match:
+                            scholar, basis, detail = match
+                            if f"narrator:rawi:{scholar}" not in narrator_ids:
+                                identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
+                            elif placeholders.get(scholar) and basis != "name_kunya_only":
+                                raise ProjectionError(f"{mention_id}: {basis} targets placeholder rawi {scholar}")
+                            else:
+                                found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail,
+                                                           placeholder=placeholders.get(scholar)))
+                    if source is not None:
+                        row, alignment = source
+                        hit = alignment.get((branch["branch"], position))
+                        if hit is not None:
+                            source_position, shared_trunk = hit
+                            scholar = row["source_ids"][source_position]
+                            basis = "source_index_confirmed_by_text" if row["basis"] == K6_CONFIRMED_BASIS else "source_index"
+                            if f"narrator:rawi:{scholar}" not in narrator_ids:
+                                identity["dropped"][f"{basis}:narrator_not_in_bundle"] += 1
+                            elif placeholders.get(scholar):
+                                # Owner decision (d): a placeholder row is never a match target, whoever names it.
+                                identity["dropped"][f"{basis}:placeholder:{placeholders[scholar]}"] += 1
+                            else:
+                                detail = row["agreement_class"] + (":shared_trunk" if shared_trunk else "")
+                                found.append(xid.Candidate(f"narrator:rawi:{scholar}", basis, detail, source_position))
 
-                # External source claims (hadith-kg, Riwayat) at this mention, bound to its surface and Arabic.
-                found.extend(external.candidates_for(mention_id, hadith_id, surface_ar, owner["arabic_sha256"],
-                                                     external_counts))
-                # The Imams' conventional kunyas, with the honorific marker after the name in the text.
-                span = spans[position]
-                marker = report_text.honorific_after(*span) if span else False
-                imam = imam_register.match(surface_ar, tradition, marker)
-                if imam:
-                    identity["imam_kunya"][f"{imam.basis}:{imam.detail}"] += 1
-                    for imam_id in imam.imam_ids:
-                        found.append(xid.Candidate(imam_id, imam.basis, imam.detail))
+                    # External source claims (hadith-kg, Riwayat) at this mention, bound to its surface and Arabic.
+                    external_found = external.candidates_for(mention_id, hadith_id, surface_ar, owner["arabic_sha256"],
+                                                             external_counts)
+                    if work in chain_builder.OPENITI_WORKS:
+                        demoted = [xid.demote_kunya_only(candidate, surface_ar) for candidate in external_found]
+                        identity["kunya_only_demoted"][tradition] += sum(
+                            1 for before, after in zip(external_found, demoted) if before.basis != after.basis)
+                        external_found = demoted
+                    found.extend(external_found)
+                    if built_mention is not None and built_mention.rule_identity:
+                        narrator_id, detail = built_mention.rule_identity
+                        found.append(xid.Candidate(narrator_id, xid.OPENING_ISNAD_BASIS, detail))
+                    # The Imams' conventional kunyas, with the honorific marker after the name in the text.
+                    span = spans[position]
+                    marker = report_text.honorific_after(*span) if span else False
+                    imam = imam_register.match(surface_ar, tradition, marker)
+                    if imam:
+                        identity["imam_kunya"][f"{imam.basis}:{imam.detail}"] += 1
+                        for imam_id in imam.imam_ids:
+                            found.append(xid.Candidate(imam_id, imam.basis, imam.detail))
 
                 for candidate in found:
                     identity_rows.append([candidate_id(mention_id, candidate.basis, candidate.narrator_id), mention_id,
                                           hadith_id, candidate.narrator_id, candidate.basis, candidate.detail,
                                           candidate.source_position, candidate.source_ref, candidate.origin])
                     identity["candidates_by_basis"][f"{tradition}:{candidate.basis}"] += 1
+                if built_mentions:
+                    written_candidates[mention_id] = found
                 agreement = candidate_agreement(candidate.narrator_id for candidate in found)
                 identity["mentions_by_agreement"][f"{tradition}:{agreement}"] += 1
                 standing = xid.standing_identity(found, person_keys)
@@ -1253,11 +1334,16 @@ def project(args: argparse.Namespace) -> dict:
                     if reading:
                         latin = (reading[0], reading[1], None)
                 latin_counts[f"{tradition}:{latin[1] if latin else 'none'}"] += 1
+                built_mention = built_mentions[position] if built_mentions else None
+                link_kind = (built_mention.link_kind if built_mention is not None else None) or (
+                    "person" if narrator_id else "unclassified")
+                inherited_from = ("mention:{}:{:04d}:{:04d}".format(*built_mention.inherited_from)
+                                  if built_mention is not None and built_mention.inherited_from else None)
                 mentions.append([
                     mention_id, branch["id"], hadith_id, position, surface_ar, surface, teacher, student, coarse, fine,
-                    "person" if narrator_id else "unclassified", resolved_as, resolution_basis, narrator_id,
+                    link_kind, resolved_as, resolution_basis, narrator_id,
                     confidence, method, latin[0] if latin else None, latin[1] if latin else None,
-                    latin[2] if latin else None, withheld,
+                    latin[2] if latin else None, withheld, inherited_from,
                 ])
     canonical.write("chains", ["id", "hadith_id", "branch", "length", "resolved", "extraction_method", "confidence",
                                "sanad_confidence"], chains)
@@ -1265,7 +1351,7 @@ def project(args: argparse.Namespace) -> dict:
         "id", "chain_id", "hadith_id", "position", "surface_ar", "surface_normalized", "teacher_context_normalized",
         "student_context_normalized", "review_unit_id", "review_unit_fine_id", "link_kind", "resolution",
         "resolution_basis", "narrator_id", "confidence", "extraction_method", "name_latin", "name_latin_basis",
-        "name_latin_narrator_id", "identity_withheld_reason",
+        "name_latin_narrator_id", "identity_withheld_reason", "inherited_from_mention_id",
     ], mentions)
     canonical.write("chain_mention_candidates", ["id", "mention_id", "hadith_id", "narrator_id", "basis", "detail",
                                                  "source_position", "source_ref", "source_assertion_origin"],

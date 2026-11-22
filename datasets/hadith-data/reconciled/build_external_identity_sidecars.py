@@ -64,10 +64,17 @@ def load_crosswalk() -> dict:
     return used
 
 
+# Mentions a continuation repeats from an earlier report (pg_export chain_builder): they copy that mention's claims, so
+# no external claim is aligned onto them.
+INHERITED_MENTIONS: set = set()
+
+
 def load_mentions(hadith_ids: set) -> dict:
     """{hadith_id: [[(mention_id, surface_ar), ...] per branch]} from the loaded projection, branches in order."""
     grouped = defaultdict(lambda: defaultdict(list))
     for row in xio.iter_projection("chain_mentions.csv"):
+        if row.get("inherited_from_mention_id"):
+            INHERITED_MENTIONS.add(row["id"])
         if row["hadith_id"] in hadith_ids:
             branch = int(row["chain_id"].rsplit(":", 1)[1])
             grouped[row["hadith_id"]][branch].append((int(row["position"]), row["id"], row["surface_ar"]))
@@ -266,6 +273,9 @@ def main() -> None:
                 continue
             basis = logic.mention_basis(dataset, label, reason)
             mention_id = branches_with_ids[b][j][0]
+            if mention_id in INHERITED_MENTIONS:
+                stats["claims_skipped_inherited_mention"][f"{dataset}:{row['tradition']}"] += 1
+                continue
             claims.append((mention_id, dataset, record_id, b, j, i, external_id, tier_at.get((b, j)), shared, basis,
                            reason))
             stats["claims_by_basis"][f"{dataset}:{row['tradition']}:{basis}"] += 1

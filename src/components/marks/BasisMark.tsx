@@ -16,6 +16,7 @@ export const IDENTITY_BASIS_LABEL: Record<IdentityBasis, string> = {
   source_riwayat: 'Riwayat corpus',
   imam_kunya_convention: "the Imam's conventional kunya with the honorific",
   imam_kunya_candidate: 'a kunya several Imams share; not decided',
+  named_in_opening_isnad: "named by the work's own opening isnad (report No. 1)",
 };
 
 /** What set a standing (machine-reviewed) identity, from `chain_mentions.extraction_method`. */
@@ -25,6 +26,7 @@ export const STANDING_BASIS_LABEL: Record<string, string> = {
   source_hadith_kg_confirmed_by_text: "machine-reviewed: hadith-kg's index and the text agree",
   source_riwayat_confirmed_by_text: 'machine-reviewed: the annotation and the text agree',
   imam_kunya_convention: "machine-reviewed: the Imam's kunya in Imami usage",
+  named_in_opening_isnad: "machine-reviewed: the work's opening isnad names him",
 };
 
 /** Riwayat's id origin in words: Thaqalayn's annotation in Imami chains, hadith-kg's elsewhere (reconciled/README.md). */
@@ -59,6 +61,7 @@ function Shape({ basis }: { basis: IdentityBasis }) {
     case 'source_hadith_kg_confirmed_by_text':
     case 'source_riwayat_confirmed_by_text':
     case 'imam_kunya_convention':
+    case 'named_in_opening_isnad':
       return (
         <>
           <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1" />

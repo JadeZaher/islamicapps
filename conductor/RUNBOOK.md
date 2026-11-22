@@ -536,3 +536,29 @@ b. ʿUmar b. Hafs and al-Faryabi). Detail: `src/db/AGENTS.md` §Chain chronology
   identities, re-export with `contest_chain` returning no withholdings (same ids: the load only rewrites the 522 changed
   mention rows) and load it, then re-record the preview approval at once.
 - View: a new migration restoring the 0006 definition of `narrator_transmissions` (drop, create, two indexes). Never edit 0013.
+
+## Chain builder round 2 (2026-11-22)
+
+The isnad fix cycle's second round: two finished audits (`datasets/hadith-data/chain-audit/ibadi-zaydi/`, `imami/`) agree order
+is right and chains are cut wrong. The builder is fixed, not rows. Detail: `src/db/AGENTS.md` §Chain builder,
+`datasets/hadith-data/pg_export/AGENTS.md` §Chain builder. Logs and dumps: `datasets/hadith-data/development/chain-builder-r2-2026-11-22/`.
+
+### Milestone 1: al-Rabi, Musnad Zayd, Sahifat al-Rida (projection `2026.11.22.1`)
+
+- **Parser**: `RE_CONTINUATION_CHAIN` accepts «ومن طريق X»; 22 al-Rabi reports now declare their parent (text unchanged; old
+  files `*.20261122_r2m1.bak`). The OpenITI sidecar now carries `matn_ar` and the projection reads it.
+- **Schema**: `0014_chain_builder_openiti` (additive) applied to production before the load.
+- **External claims** rebuilt against an interim projection without OpenITI claims (`EXTERNAL_SIDECAR_PROJECTION`); Sunni and
+  Imami claims identical (364,579 rows), OpenITI 1,662 -> 1,551; claims are no longer aligned onto inherited mentions.
+- **Loaded**: dataset version `2c42b08e…`, 16,655 rows changed, preview approval re-recorded at once. Sunni and Thaqalayn chains,
+  mentions and candidates: 0 rows differ from projection `2026.11.21.6`.
+
+Deploy: migration `0014` first (done), then push to `refactor/postgres-drizzle` and `main`; the pre-deploy `migrate.mjs` finds it
+recorded. Live checks: `/hadith/openiti/ibadi/rabi_0332%7C332%7CV01P084` (inherited names, "From the earlier report's chain"),
+`/hadith/openiti/imami/rida_0001%7C1%7CV01P439` (Imam chain), `/hadith/openiti/imami/rida_0003%7C3%7CV01P441`,
+`/hadith/openiti/zaydi/zayd_0170%7C170%7CV01P167` (Imam register links), `/narrator/narrator%3Ariwayat%3AN0001547` (Jabir b. Zayd).
+
+Rollback: code, redeploy `877b700` (it ignores the new column; the new basis reads as its raw name). Data: load
+`development/openiti-fix-2026-11-21/projection-v6` again after re-exporting it with the 0014 catalog (its chain_mentions header
+lacks `inherited_from_mention_id`, so re-export from the `*.20261122_r2m1.bak` sidecars), then re-record the preview approval.
+Never edit 0014; a later migration restores the two view bodies of 0013/0011 if needed.

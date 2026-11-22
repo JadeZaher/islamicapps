@@ -1364,6 +1364,19 @@ export const GLOSSARY_ENTRIES: readonly GlossaryEntry[] = [
     ],
   },
   {
+    slug: 'opening-isnad',
+    section: 'archive',
+    term: 'Named in the opening isnad',
+    english: 'e.g. «عن أبيه عن جده» in Musnad Zayd',
+    definition:
+      'A work often writes its full chain once, in its first report, and later writes only «from his father, from his grandfather». The first report says who they are.',
+    inArchive:
+      'In Musnad Zayd only, a chain of exactly the shape «Zayd b. ʿAli, from his father, from his grandfather, from ʿAli» is read through the work’s own report No. 1, which names ʿAli b. al-Husayn and al-Husayn b. ʿAli. The words stay as written; the identity names that report as its basis and counts toward the machine-reviewed tier. Any other shape gets nothing. The rule is a reviewable file.',
+    related: ['imam-kunya', 'confirmed-by-source-and-text'],
+    aliases: ['abihi', 'jaddihi', 'his father, his grandfather'],
+    enumValues: ['mention_candidate_basis.named_in_opening_isnad'],
+  },
+  {
     slug: 'external-source-record',
     section: 'archive',
     term: 'External source record',

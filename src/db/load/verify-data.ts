@@ -181,7 +181,7 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
      where m.retired_at is null and m.narrator_id is not null and m.decision_id is null
        and not (m.resolution = 'source_index' and (
          (m.extraction_method in ('source_index_confirmed_by_text', 'source_hadith_kg_confirmed_by_text',
-                                  'imam_kunya_convention')
+                                  'imam_kunya_convention', 'named_in_opening_isnad')
           and exists (select 1 from chain_mention_candidates c where c.mention_id = m.id and c.retired_at is null
                         and c.narrator_id = m.narrator_id and c.basis::text = m.extraction_method))
          or (m.extraction_method = 'source_riwayat_confirmed_by_text'
@@ -228,8 +228,29 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
              where m.retired_at is null and m.extraction_method = 'imam_kunya_convention'
                and h.tradition_id <> 'tradition:imami')
           + (select count(*) from chain_mention_candidates c join narrators n on n.id = c.narrator_id
-             where c.retired_at is null and ((c.basis::text like 'imam_kunya_%') <> (n.authority::text = 'imam_register')))
+             where c.retired_at is null
+               and ((c.basis::text like 'imam_kunya_%' and n.authority::text <> 'imam_register')
+                 or (n.authority::text = 'imam_register' and c.basis::text not like 'imam_kunya_%'
+                     and c.basis::text <> 'named_in_opening_isnad')))
           as value`,
+  );
+  // Chain builder (0014; src/db/AGENTS.md §Chain builder).
+  await check(
+    "an inherited mention repeats a live written mention of the same collection, with the same surface, in a report that inherits a chain",
+    `select count(*)::int as value from chain_mentions m
+     join hadiths h on h.id = m.hadith_id
+     left join chain_mentions w on w.id = m.inherited_from_mention_id and w.retired_at is null
+       and w.inherited_from_mention_id is null and w.surface_ar = m.surface_ar
+     left join hadiths wh on wh.id = w.hadith_id and wh.collection_id = h.collection_id
+     where m.retired_at is null and m.inherited_from_mention_id is not null
+       and (wh.id is null or h.sanad_inherits_from is null)`,
+  );
+  await check(
+    'the opening-isnad rule (named_in_opening_isnad) names only register rows, only in Musnad Zayd',
+    `select count(*)::int as value from chain_mention_candidates c
+     join hadiths h on h.id = c.hadith_id join narrators n on n.id = c.narrator_id
+     where c.retired_at is null and c.basis::text = 'named_in_opening_isnad'
+       and (h.collection_id <> 'collection:zaydi:musnad-zayd' or n.authority::text <> 'imam_register')`,
   );
   await check(
     'external-authority narrators carry their source: one live profile naming that source, and no profile on a lexicon row',

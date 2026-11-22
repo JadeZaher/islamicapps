@@ -1,14 +1,14 @@
 {
   "artifact": "openiti_extraction",
   "code_sha256": {
-    "datasets/hadith-data/reconciled/build_openiti_extraction_sidecar.py": "8d24c330be7f91b368d34e602742734f65f56b237c03ce309b108e2eec1b754d",
+    "datasets/hadith-data/reconciled/build_openiti_extraction_sidecar.py": "b174fcfccb69df90ea0a2a31d13cd72dd414c17d1a0d6d99aa3ee253fbe732f5",
     "datasets/hadith-data/reconciled/sidecar_io.py": "e4564e31cc2e6f16d8e1640b179c1cfc5b771d71a3e424646a03df8dde9e9eb2"
   },
   "command": "python -B datasets/hadith-data/reconciled/build_openiti_extraction_sidecar.py",
   "counts": {
-    "ibadi:high": 746,
-    "ibadi:inherits": 27,
-    "ibadi:low": 259,
+    "ibadi:high": 745,
+    "ibadi:inherits": 49,
+    "ibadi:low": 260,
     "ibadi:notes": 149,
     "rida:high": 147,
     "rida:inherits": 204,
@@ -22,16 +22,16 @@
   },
   "inputs_sha256": {
     "datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz": "98187511b3fd2a9388fa0b62b8a569be7e86c751de7590ef06e7e14c09b52b12",
-    "datasets/hadith-data/ibadi-hadith/parsed_hadiths.json": "eb7b5c61b8fd28c3d6092360f0c355b657c270cf953ae2bfb0aa4f4b753b66be",
+    "datasets/hadith-data/ibadi-hadith/parsed_hadiths.json": "09598678d615914aa56d7ff03eb2f3ca5e0a84b9beff99893aca70aaf4f417cf",
     "datasets/hadith-data/rida-hadith/parsed_hadiths.json": "b6600f422ddc49258a7265989913a839188ce3c6db5175710303be89e4cff209",
     "datasets/hadith-data/zaydi-hadith/parsed_hadiths.json": "3ee177038c6515210bce6bcae1f1baa8189296ad15d069b22f9a71434be4d982"
   },
-  "meaning": "Arabic chain span, chain inheritance, split confidence and source notes of OpenITI reports, bound to the exact Arabic of the unified CSV",
+  "meaning": "Arabic chain span and matn, chain inheritance, split confidence and source notes of OpenITI reports, bound to the exact Arabic of the unified CSV",
   "outputs": [
     {
       "file": "openiti_extraction.jsonl.gz",
       "rows": 1901,
-      "sha256": "a77e5df308ab3e84104e3e1c3b23690397512849b4b0dd97d1506d529053f88e"
+      "sha256": "2832dedfb72b22e1549f171bffb0e2eeb9db3e152c0d04683794e2307e895662"
     }
   ],
   "status": "sidecar_unreviewed_not_a_release_input"

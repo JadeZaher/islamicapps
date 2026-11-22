@@ -255,6 +255,10 @@ list (tradition, work, number, book, attribution, tellings, address in mono) and
   Only records of one registry known to name different people disagree; records in different registries with no link
   between them are listed without that line. Kunya-only candidates and an undecided shared Imam kunya are a note, never a
   disagreement.
+- A position that is not a name written in this report says so on one 12px muted line under the name: "From the earlier
+  report's chain" (a continuation repeats the earlier report's names; the section already opens with "Chain continues
+  from No. N"), "Unnamed transmitter: the text names no one here" (a gap the text marks: balagh, «عن رجل»). Text only,
+  no new mark.
 - Rows are divided by hairlines; no boxes. *Shown in:* `#isnad`.
 
 ### Identity basis labels (`BasisMark`, basis wording)
@@ -514,3 +518,5 @@ marks (`TraditionBadge`, tellings, all-chains, timeline group labels, filter chi
   specimen (`docs/design/preview.html`). Contrast computed for all pairs in both themes; all pass, with light faint at
   4.29:1 restricted to non-text. Open for the owner: the wordmark mark; following the system theme instead of forcing
   dark.
+- 2026-11-22: Isnad list position notes for inherited names and unnamed transmitters (chain builder round 2); identity
+  basis "named by the work's own opening isnad (report No. 1)" drawn with the confirmed mark.

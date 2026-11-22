@@ -35,8 +35,27 @@ RIWAYAT_AUTOMATIC = "riwayat_automatic_linking"
 # Which evidence set the standing identity, strongest first (chain_mentions.extraction_method).
 STANDING_METHODS = (
     "source_index_confirmed_by_text", "two_sources_agree", "source_hadith_kg_confirmed_by_text",
-    "source_riwayat_confirmed_by_text", "imam_kunya_convention",
+    "source_riwayat_confirmed_by_text", "imam_kunya_convention", "named_in_opening_isnad",
 )
+# The work's own opening isnad names the person (opening_isnad_rules.json); the detail cites the report.
+OPENING_ISNAD_BASIS = "named_in_opening_isnad"
+# A surface that is a kunya alone («أبو عبيدة»): no source can be confirmed by such text (owner, round 2, P7).
+KUNYA_ONLY_SURFACE = re.compile(r"^(?:أبو|ابو|أبي|ابي|أبا|ابا|أم|ام)\s+\S+$")
+KUNYA_ONLY_DEMOTION = {
+    "source_hadith_kg_confirmed_by_text": "source_hadith_kg", "source_riwayat_confirmed_by_text": "source_riwayat",
+    "source_index_confirmed_by_text": "source_index",
+}
+
+
+def demote_kunya_only(candidate: "Candidate", surface_ar: str) -> "Candidate":
+    """A kunya-only surface cannot confirm a source's identity: the candidate stays, without the confirmation."""
+    lowered = KUNYA_ONLY_DEMOTION.get(candidate.basis)
+    if lowered is None or not KUNYA_ONLY_SURFACE.match(strip_marks(surface_ar).strip()):
+        return candidate
+    reason = "kunya-only surface: not confirmable by text"
+    return Candidate(candidate.narrator_id, lowered, f"{reason} (was {candidate.detail})" if candidate.detail else reason,
+                     candidate.source_position, candidate.source_ref, candidate.origin, candidate.placeholder,
+                     candidate.label_like)
 
 RIWAYAT_LABEL_FLAGS = frozenset({"merged_names_suspect", "compound_source_name", "junk_name"})
 
@@ -122,6 +141,8 @@ def standing_identity(candidates: Sequence[Candidate], keys: PersonKeys) -> tupl
             found.append(("source_riwayat_confirmed_by_text", c.narrator_id))
         elif c.basis == "imam_kunya_convention":
             found.append(("imam_kunya_convention", c.narrator_id))
+        elif c.basis == OPENING_ISNAD_BASIS:
+            found.append((OPENING_ISNAD_BASIS, c.narrator_id))
     if not found:
         return None
     found.sort(key=lambda item: (STANDING_METHODS.index(item[0]), item[1]))

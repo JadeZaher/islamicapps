@@ -84,6 +84,8 @@ export const chainMentions = pgTable(
     nameLatinNarratorId: text('name_latin_narrator_id'),
     /** Why the machine-reviewed identity was withheld (0013 chronology guard); the candidates stay. */
     identityWithheldReason: text('identity_withheld_reason'),
+    /** The written mention a continuation repeats (0014; src/db/AGENTS.md §Chain builder). No FK: a self-reference. */
+    inheritedFromMentionId: text('inherited_from_mention_id'),
     ...pipelineBookkeeping(),
   },
   (table) => [
@@ -270,6 +272,8 @@ export const publicChainLinks = pgView('public_chain_links', {
   standingBasis: text('standing_basis'),
   /** Appended in 0013: why a machine-reviewed identity was withheld (chronology guard). */
   identityWithheldReason: text('identity_withheld_reason'),
+  /** Appended in 0014: the written mention a continuation repeats (the chain continues from an earlier report). */
+  inheritedFromMentionId: text('inherited_from_mention_id'),
 }).existing();
 
 /** Public view: every identity candidate of a public mention with its basis (hand-written SQL, drizzle/core/0006). */

@@ -282,6 +282,7 @@ export function sourceForIdentityBasis(basis: string): SourceCode {
   if (basis.startsWith('name_')) return 'MSD';
   if (basis.startsWith('source_hadith_kg')) return 'HKG';
   if (basis.startsWith('source_riwayat')) return 'RWY';
+  if (basis === 'named_in_opening_isnad') return 'OITI';
   return 'SWI';
 }
 

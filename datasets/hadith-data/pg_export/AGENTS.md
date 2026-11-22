@@ -185,3 +185,39 @@ own teacher lists (`student_of`) are the attested pairs.
 - **Lexicon fields.** `narrator_lexicon_profiles.tabaqah_raw` is the lexicon's `grade` column (its generation class);
   `source_fields` is `lexicon_source_fields` (places of stay, family, tags, interests; tags and interests without brackets).
 - `slice_chronology_fixture.py` cuts the flow-test fixture (k6:28147, k6:28195 and the first report with an irsal pair).
+
+## Chain builder (projection `2026.11.22.1`; `src/db/AGENTS.md` §Chain builder)
+
+`chain_builder.py` (table-tested in `test_chain_builder.py` on the real parsed works and the audit's cases,
+`chain-audit/ibadi-zaydi/`) replaces the bundle's chains of al-Rabi, Musnad Zayd and Sahifat al-Rida. The canonical
+extractor is reused unchanged, so no Sunni or Thaqalayn chain can move (measured: 0 rows differ outside OpenITI).
+
+- **One span.** A report's own chain is cut from the parser's `sanad_ar`, never from `text_ar`. A low-confidence split
+  (`split_confidence = low`) has no own chain: 307 reports lose a chain the old whole-text guess gave them (the audit found
+  41 of 54 sampled such chains wrong).
+- **Continuations.** A report the parser marks as continuing («وبهذا السند», «وباسناده», «ومن طريقه», and since round 2
+  «ومن طريق X»: `parse_openiti.py` `RE_CONTINUATION_CHAIN`, 22 al-Rabi reports) carries its parent's mentions, each naming
+  the written mention it repeats (`chain_mentions.inherited_from_mention_id`) and copying that mention's candidates. The
+  opener is never a mention. A named link after the opener that is in the parent's chain shortens it there («وباسناده قال:
+  حدثني علي بن الحسين»); for a low-confidence split only the head up to the first colon is read, and only to shorten.
+  «ومن طريق X» replaces the parent's last link with X and becomes the route its own continuations repeat; «وباسناده» always
+  repeats the work's route (a report that shortens it does not shorten the next one).
+- **Compiler.** al-Rabi and Abu Khalid al-Wasiti (and the book transmitters written before them) are the work's
+  attribution, never a mention. Sahifat al-Rida's chain is the Imam chain written in `rida_0001` from «علي بن موسى الرضا» to
+  «علي بن أبي طالب»; the 16 editorial transmitters before it are not mentions. The «أبي» before «عن علي بن أبي طالب» is kept
+  as written (the al-Tabarsi edition reads «حدثني أبي علي بن أبي طالب»; owner to decide).
+- **Not names.** Honorifics and blessings (including «كرم الله وجهه», «(ع م)») are removed before the waw split; year
+  phrases, «صاحب رسول الله», a leading «وعن / وكان / أن / حدثني», a trailing «أنه / أنها / قال / يقول / عنه ...» and the
+  title «أمير المؤمنين» are not part of a name; a clause with a matn verb and no nasab is dropped. «قال: قال X:» at the head
+  of an al-Rabi matn and «عن علي ...» at the head of a Musnad Zayd matn (the parser's span stops at «جده (ع م)») are links.
+- **Balagh** («بلغني عن X») stays a balagh: an `anonymous` mention «بلغني» between the narrator and X, never repaired.
+- **Musnad Zayd relations** (`opening_isnad_rules.json`, owner-reviewable): a chain of exactly «زيد بن علي، أبيه[، جده[،
+  علي]]» gets candidates with basis `named_in_opening_isnad` and the detail citing `zayd_0001`: Zayd b. ʿAli
+  (`narrator:imam:zayd`, a register row added and credited to the work), `narrator:imam:4`, `:3`, `:1`. The surfaces stay as
+  written; «أبيه» and «جده» are `derived_relation`. Standing tier method `named_in_opening_isnad`.
+- **Kunya alone** (`external_identity.demote_kunya_only`, the three works only): a surface that is a kunya alone can never be
+  confirmed by text, so an external `*_confirmed_by_text` claim on it becomes the plain basis with the reason in `detail`
+  (Abu ʿUbayda / Riwayat N0013779: 272; Abu Hurayra / N0000518: 60; 3 others). Applied to Sunni and Imami chains it would
+  change many more; that is the owner's call.
+- **External claims** are not aligned onto inherited mentions (`build_external_identity_sidecars.py`), which copy their
+  written mention's candidates instead.

@@ -6,8 +6,8 @@
     "datasets/hadith-data/diagnostics/chain-reconciliation/reconcile_common.py": "7cde52ce8e2ef403bc6d708020c0af10b68287da4876e8fef5d228e3538392cd",
     "datasets/hadith-data/diagnostics/name_invariant.py": "9fdefba8cb8546c5f414271cfe163593937381e20db6ad328851bceb581c9214",
     "datasets/hadith-data/extract_isnad_unified.py": "56ea1ae0968d1cddfa4d0dcdd630e8145e897a1b82413cb3c271cf8023708212",
-    "datasets/hadith-data/pg_export/export_postgres.py": "a31892903d5a98f23f79af760565e66e0fa4e8b53f7253db5ebf2b38bf3173e6",
-    "datasets/hadith-data/reconciled/build_external_identity_sidecars.py": "954857ece5f6967780b51e0986192d0aa20a35d443f697ce270ee1359553b5d9",
+    "datasets/hadith-data/pg_export/export_postgres.py": "51d21bd97a9e57ac0f3ffdd8893d0e2c287befcbb55c9205140fee2d197be93f",
+    "datasets/hadith-data/reconciled/build_external_identity_sidecars.py": "5dfa3c43528919ef7fc29c39fd6b6d8aeac58a264d4ef62d353d382dfac798d8",
     "datasets/hadith-data/reconciled/external_source_io.py": "44f98e19e69b5a64043cd83bdc084120de01d1ab0f7e2deb5545f7730bde952e",
     "datasets/hadith-data/reconciled/external_source_logic.py": "5fbab5c6d36b442a0cb9b03ddd42d14513c8ae918998f0e926ccbdbd9796506e",
     "datasets/hadith-data/reconciled/sidecar_io.py": "e4564e31cc2e6f16d8e1640b179c1cfc5b771d71a3e424646a03df8dde9e9eb2",
@@ -16,29 +16,30 @@
   "command": "python -B datasets/hadith-data/reconciled/build_external_identity_sidecars.py",
   "counts": {
     "claims_by_basis": {
-      "hadith_kg:Ibadi:source_hadith_kg": 600,
+      "hadith_kg:Ibadi:source_hadith_kg": 569,
       "hadith_kg:Sunni:source_hadith_kg": 105921,
       "hadith_kg:Sunni:source_hadith_kg_confirmed_by_text": 40283,
-      "hadith_kg:Zaydi:source_hadith_kg": 43,
-      "riwayat:Ibadi:source_riwayat": 183,
-      "riwayat:Ibadi:source_riwayat_confirmed_by_text": 794,
+      "hadith_kg:Zaydi:source_hadith_kg": 44,
+      "riwayat:Ibadi:source_riwayat": 142,
+      "riwayat:Ibadi:source_riwayat_confirmed_by_text": 753,
       "riwayat:Imami:source_riwayat": 45692,
       "riwayat:Imami:source_riwayat_confirmed_by_text": 15606,
       "riwayat:Sunni:source_riwayat": 66325,
       "riwayat:Sunni:source_riwayat_confirmed_by_text": 90752,
-      "riwayat:Zaydi:source_riwayat": 42
+      "riwayat:Zaydi:source_riwayat": 43
     },
     "claims_dropped_placeholder": {
-      "hadith_kg:Ibadi:bare_single_token_name": 1,
       "hadith_kg:Sunni:bare_single_token_name": 2905,
       "hadith_kg:Sunni:collective_or_anonymous_name": 2,
-      "riwayat:Ibadi:bare_single_token_name": 1,
       "riwayat:Imami:bare_single_token_name": 6380,
       "riwayat:Imami:collective_or_anonymous_name": 168,
       "riwayat:Imami:relational_name": 92,
       "riwayat:Sunni:bare_single_token_name": 3088,
       "riwayat:Sunni:collective_or_anonymous_name": 9,
       "riwayat:Sunni:relational_name": 2
+    },
+    "claims_skipped_inherited_mention": {
+      "hadith_kg:Ibadi": 37
     },
     "crosswalk_check": {
       "direct_link_equals_crosswalk": 659
@@ -69,12 +70,12 @@
       "riwayat:unique_full_name_plus_k6_position_agreement": 545
     },
     "report_class": {
-      "hadith_kg:Ibadi:length_differs_source_longer": 164,
-      "hadith_kg:Ibadi:length_differs_text_longer": 3,
-      "hadith_kg:Ibadi:multi_branch_partial": 12,
+      "hadith_kg:Ibadi:length_differs_source_longer": 71,
+      "hadith_kg:Ibadi:length_differs_text_longer": 6,
+      "hadith_kg:Ibadi:multi_branch_partial": 2,
       "hadith_kg:Ibadi:no_source_index": 27,
-      "hadith_kg:Ibadi:no_text_chain": 4,
-      "hadith_kg:Ibadi:same_length_name_mismatch": 237,
+      "hadith_kg:Ibadi:no_text_chain": 68,
+      "hadith_kg:Ibadi:same_length_name_mismatch": 273,
       "hadith_kg:Sunni:full_agreement": 7147,
       "hadith_kg:Sunni:length_differs_source_longer": 7585,
       "hadith_kg:Sunni:length_differs_text_longer": 453,
@@ -87,13 +88,14 @@
       "hadith_kg:Zaydi:length_differs_text_longer": 39,
       "hadith_kg:Zaydi:no_source_index": 163,
       "hadith_kg:Zaydi:same_length_name_mismatch": 1,
-      "riwayat:Ibadi:full_agreement": 307,
-      "riwayat:Ibadi:length_differs_source_longer": 62,
-      "riwayat:Ibadi:length_differs_text_longer": 4,
-      "riwayat:Ibadi:multi_branch_partial": 5,
+      "riwayat:Ibadi:full_agreement": 278,
+      "riwayat:Ibadi:length_differs_source_longer": 18,
+      "riwayat:Ibadi:length_differs_text_longer": 41,
+      "riwayat:Ibadi:multi_branch_all_source_ids_aligned": 1,
+      "riwayat:Ibadi:multi_branch_partial": 1,
       "riwayat:Ibadi:no_source_index": 23,
-      "riwayat:Ibadi:no_text_chain": 2,
-      "riwayat:Ibadi:same_length_name_mismatch": 32,
+      "riwayat:Ibadi:no_text_chain": 65,
+      "riwayat:Ibadi:same_length_name_mismatch": 8,
       "riwayat:Imami:full_agreement": 3735,
       "riwayat:Imami:length_differs_source_longer": 1411,
       "riwayat:Imami:length_differs_text_longer": 2366,
@@ -111,14 +113,15 @@
       "riwayat:Sunni:no_text_chain": 295,
       "riwayat:Sunni:same_length_name_mismatch": 5345,
       "riwayat:Zaydi:length_differs_text_longer": 57,
-      "riwayat:Zaydi:same_length_name_mismatch": 2
+      "riwayat:Zaydi:no_text_chain": 1,
+      "riwayat:Zaydi:same_length_name_mismatch": 1
     }
   },
   "inputs_sha256": {
+    "C:/Users/atooz/AppData/Local/Temp/claude/8b9ecadf913d98e6/95b7dde3-527e-49ce-8f56-83c964db48b2/scratchpad/r2/proj-m1-interim/canonical/chain_mention_candidates.csv": "1172c756628789119e084478845467dd71140c0ec32f0a9e3d9ff80d6e3972de",
+    "C:/Users/atooz/AppData/Local/Temp/claude/8b9ecadf913d98e6/95b7dde3-527e-49ce-8f56-83c964db48b2/scratchpad/r2/proj-m1-interim/canonical/chain_mentions.csv": "00ccc5010764c88ad24ebd5f690a7b1cca34f6613c88d03f9181867011dbef22",
+    "C:/Users/atooz/AppData/Local/Temp/claude/8b9ecadf913d98e6/95b7dde3-527e-49ce-8f56-83c964db48b2/scratchpad/r2/proj-m1-interim/canonical/manifest.json": "4ff4b9b02bbccc03872bf39d19a8ac1677000e7b206bc16fadb5c995a4fb427f",
     "datasets/hadith-data/development/incomplete-curation/all_hadiths_unified.incomplete.csv.gz": "98187511b3fd2a9388fa0b62b8a569be7e86c751de7590ef06e7e14c09b52b12",
-    "datasets/hadith-data/development/openiti-fix-2026-11-21/projection-interim/canonical/chain_mention_candidates.csv": "05926df7dbed089bbc8c6bdd0fd23edea500c59dac5540ee4e7fce7c59102f96",
-    "datasets/hadith-data/development/openiti-fix-2026-11-21/projection-interim/canonical/chain_mentions.csv": "f0e64b6661680bf81c436468339a286e0ca10f065d7d14df161e15a2e5d0d1c2",
-    "datasets/hadith-data/development/openiti-fix-2026-11-21/projection-interim/canonical/manifest.json": "e75900ce98a6ccfceb5c276c4c5fec6f6606dff44ee825b73d4121b656937436",
     "datasets/hadith-data/diagnostics/biography-recovery/biographical_assertion_candidates.jsonl": "cca747fdc203230fd5b6b0fbe0e29d0315a8dd1f5afee494a2a2da7f3017cc0f",
     "datasets/hadith-data/reconciled/external_report_crosswalk.jsonl.gz": "74c25512e3d5b98296fad06b7767aa5cd4b673ad92dbe43f607819b1edb43c8a",
     "datasets/narrator-data/all_rawis.csv": "d87c3af64d48b3cd585294ab5f6381536a51ff95a72a6707a7426ea483bf6c11",
@@ -148,13 +151,13 @@
   "outputs": {
     "claims": {
       "file": "external_mention_claims.jsonl.gz",
-      "rows": 366241,
-      "sha256": "234ee43039e892cf1163e038df4cf0136a96a245a6666b26abf00071b355b875"
+      "rows": 366130,
+      "sha256": "b06edd95e2822d49ff7f6d07627146154a673b2302f62bff1f21aa56eb0c5ff8"
     },
     "hadith_kg_narrators": {
       "file": "hadith_kg_narrators.jsonl.gz",
       "rows": 49844,
-      "sha256": "3af074776091eb909fd22cbe5f185d78fe00e7525b46db805c1962e677a35673"
+      "sha256": "735248383d6fe4e51ed5ee4c80281f846698ab577d0f0318f2e3e5254fc9ff41"
     },
     "links": {
       "file": "external_narrator_lexicon_links.jsonl.gz",
@@ -169,7 +172,7 @@
     "riwayat_narrators": {
       "file": "riwayat_narrators.jsonl.gz",
       "rows": 193014,
-      "sha256": "af5062a3eb7570242f41b6faa235563e519621f492212876a04d318543b0205c"
+      "sha256": "6e78178c35a096edb9cef16aea030a4499aef270150abdf490ececd07d687fd8"
     }
   },
   "quran": {

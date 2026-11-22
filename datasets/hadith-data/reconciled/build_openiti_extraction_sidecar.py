@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OpenITI report structure sidecar: Arabic chain span, chain inheritance, split confidence, source notes.
+"""OpenITI report structure sidecar: Arabic chain span and matn, chain inheritance, split confidence, source notes.
 
 One row per report of the three parsed OpenITI works (al-Rabi, Musnad Zayd, Sahifat al-Rida), keyed by `record_id`
 and bound to the SHA-256 of the unified CSV's exact `text_ar`. `text_ar` is never altered; every string here is a
@@ -86,6 +86,7 @@ def build_rows(unified_texts: dict[str, str]) -> tuple[list[dict], Counter]:
                 "record_id": record_id, "source_record_id": source_record_id,
                 "text_ar_sha256": io_.sha256_text(text_ar),
                 "sanad_ar": hadith.get("sanad_ar") or None,
+                "matn_ar": hadith.get("matn_ar") or None,
                 "sanad_inherits_from_record_id": inherits,
                 "split_confidence": hadith["split_confidence"], "split_kind": hadith["split_kind"],
                 "source_notes": notes, "source_code": SOURCE_CODE, "review_state": "unreviewed",
@@ -103,7 +104,7 @@ def main() -> None:
     io_.write_manifest("openiti_extraction.manifest.json", {
         "artifact": "openiti_extraction",
         "status": "sidecar_unreviewed_not_a_release_input",
-        "meaning": "Arabic chain span, chain inheritance, split confidence and source notes of OpenITI reports, "
+        "meaning": "Arabic chain span and matn, chain inheritance, split confidence and source notes of OpenITI reports, "
                    "bound to the exact Arabic of the unified CSV",
         "command": "python -B datasets/hadith-data/reconciled/build_openiti_extraction_sidecar.py",
         "inputs_sha256": common.input_fingerprints(args.input.resolve(), *PARSED.values()),

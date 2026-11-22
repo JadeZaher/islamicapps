@@ -161,8 +161,16 @@ function MentionIdentityCell({ node, tradition }: { node: ChainNode; tradition: 
     );
 }
 
+/** What a position is when it is not a name written here: repeated from an earlier report, or a gap the text marks. */
+export function positionNote(node: Pick<ChainNode, 'inherited_from_mention_id' | 'link_kind'>): string | null {
+    if (node.link_kind === 'anonymous') return 'Unnamed transmitter: the text names no one here';
+    if (node.inherited_from_mention_id) return "From the earlier report's chain";
+    return null;
+}
+
 /** The name as written: Arabic in the Arabic face at the end, its Latin form at the start with how it was obtained. */
 function WrittenName({ node }: { node: ChainNode }) {
+    const note = positionNote(node);
     return (
         <div className="min-w-0">
             <div className="flex flex-wrap items-baseline justify-between gap-x-3">
@@ -181,6 +189,11 @@ function WrittenName({ node }: { node: ChainNode }) {
                     {NAME_LATIN_BASIS_LABEL[node.name_latin_basis]}
                     {' · '}
                     <SourceCodeLink code={sourceForLatinName(node.name_latin_basis, node.name_latin_narrator_id)} />
+                </p>
+            )}
+            {note && (
+                <p className="mt-0.5 text-xs leading-4 text-ink-muted" data-position-note>
+                    {note}
                 </p>
             )}
         </div>
