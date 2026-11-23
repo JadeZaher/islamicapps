@@ -45,7 +45,8 @@ def audit_job(job, transcript, tranche_dir):
     own_output_dir = norm(job["output_dir"])
     run_txt = norm(job["run_txt"])
     prompt_file = norm(job["prompt_file"])
-    own_packets = {norm(tranche_dir / "packets" / f"packet-{number}.jsonl") for number in job["packets"]}
+    packets_dir = pathlib.Path(job["output_dir"]).parent.parent / "packets"  # <set>/outputs/pass-x -> <set>/packets (tranche or re-read set)
+    own_packets = {norm(packets_dir / f"packet-{number}.jsonl") for number in job["packets"]}
     own_pass = job["pass"]
     findings = []  # (tier, text)
     counts = collections.Counter()
@@ -106,8 +107,9 @@ def main():
     ap.add_argument("--write-contaminated", action="store_true")
     args = ap.parse_args()
     jobs = json.loads(pathlib.Path(args.jobs).read_text(encoding="utf-8"))
-    tranche = args.tranche or re.match(r"t(\d+)-", jobs[0]["job_id"]).group(1)
-    tranche_dir = CHAIN_READER / "tranches" / f"tranche-{tranche}"
+    match = re.match(r"t(\d+)-", jobs[0]["job_id"])
+    tranche = args.tranche or (match.group(1) if match else None)
+    tranche_dir = CHAIN_READER / "tranches" / f"tranche-{tranche}"  # only used by --write-contaminated
     transcripts = pathlib.Path(args.transcripts)
     totals = collections.Counter()
     contaminated_ids = []

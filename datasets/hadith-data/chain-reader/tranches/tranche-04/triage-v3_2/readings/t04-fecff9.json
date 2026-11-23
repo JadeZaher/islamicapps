@@ -1,0 +1,158 @@
+{
+ "expanded_a": {
+  "id": "t04-fecff9",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "الترمذي",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "علي بن حجر",
+      "start": 6,
+      "end": 16,
+      "kind": "narrator"
+     },
+     {
+      "surface": "شريك",
+      "start": 25,
+      "end": 29,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [
+   {
+    "group": 1,
+    "surfaces": [
+     [
+      "عدي بن ثابت"
+     ],
+     [
+      "أبيه"
+     ],
+     [
+      "جد عدي"
+     ]
+    ],
+    "start": 102,
+    "end": 256,
+    "quote": "‏ قال وسألت محمدا عن هذا الحديث فقلت عدي بن ثابت عن أبيه عن جده جد عدي ما اسمه فلم يعرف محمد اسمه وذكرت لمحمد قول يحيى بن معين أن اسمه دينار فلم يعبأ به ‏"
+   }
+  ],
+  "only_variant_groups": false,
+  "matn_start": 29,
+  "notes": [
+   "«قال أبو عيسى هذا حديث قد تفرد به شريك عن أبي اليقظان» is the compiler's remark on a continuation the text does not write as a link: not added (rule 9)",
+   "«قال وسألت محمدا ... فقلت عدي بن ثابت عن أبيه عن جده» is the compiler's own question with another chain for the same hadith: a variant group",
+   "«يحيى بن معين» and the fiqh remarks («وقال أحمد وإسحاق») are not transmitters and are left out"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t04-fecff9",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "علي بن حجر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "شريك",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   },
+   {
+    "levels": [
+     [
+      {
+       "surface": "عدي بن ثابت",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "جد عدي",
+       "kind": "relation"
+      }
+     ]
+    ],
+    "variant": true
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«قال أبو عيسى هذا حديث قد تفرد به شريك عن أبي اليقظان» is the compiler's remark on a continuation the text does not write as a link: not added (rule 9)",
+   "«قال وسألت محمدا ... فقلت عدي بن ثابت عن أبيه عن جده» is the compiler's own question with another chain for the same hadith: a variant group",
+   "«يحيى بن معين» and the fiqh remarks («وقال أحمد وإسحاق») are not transmitters and are left out"
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "t04-fecff9",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "علي بن حجر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "شريك",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "The text gives only «أخبرنا شريك، نحوه بمعناه»: the saying is not written here, so the chain ends at Sharik as written.",
+   "The compiler's comments (Abu al-Yaqzan, «عدي بن ثابت عن أبيه عن جده», the question put to «محمدا») are not chain: left out."
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "K6I's third link is Muhammad b. Sirin, but the only Muhammad in the text is the one the compiler asks in his own comment, not a transmitter.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "وسألت محمدا عن هذا الحديث"
+     },
+     {
+      "source": "K6I",
+      "quote": "محمد بن سيرين الأنصاري"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}

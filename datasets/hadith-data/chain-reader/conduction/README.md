@@ -43,3 +43,8 @@ Tool audit from the transcripts: the only Reads are `prompt-v3.md` and the job's
 - Read paths and Bash commands are not restricted by Conduction (only claims for Write/Edit and a destructive-command filter): "read nothing else" is the brief's rule, checked afterwards by listing every tool-call line of each transcript.
 - The reader instruction is verbatim except the appended harness note (claim step).
 - Cost, not tokens, is reported. Only 4 concurrent agents were exercised, not 12.
+
+## Reruns and v3.4 post-processing (2026-11-22)
+- A failed or unparsable job is rerun once, alone: move its output files and its RUN.txt line into `outputs/pass-x/rerun-backup/<job id>/` (inside the repo, beside the outputs), write `jobs-cr-tNNr.json` with only that job, `make_mission.py ... --slug cr-tNNr`, launch, then audit its transcript separately (`audit_transcripts.py --jobs jobs-cr-tNNr.json`). Then run `post_tranche_v3_4.py NN <original run id> --rerun-jobs N --rerun-usd X`.
+- `audit_transcripts.py` takes the allowed packet directory from each job's own `output_dir` (`<set>/outputs/pass-x` -> `<set>/packets`), so tranches and re-read sets audit alike.
+- `extra_tranche_v3_4.py NN`: agreement with and without the saying label, labels per pass, needs_ruling by both, routes ending at an `imam_in_text` link.

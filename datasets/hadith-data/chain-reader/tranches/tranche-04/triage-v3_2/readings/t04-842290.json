@@ -1,0 +1,189 @@
+{
+ "expanded_a": {
+  "id": "t04-842290",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "أبو داود",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "محمد بن كثير",
+      "start": 6,
+      "end": 18,
+      "kind": "narrator"
+     },
+     {
+      "surface": "سفيان",
+      "start": 27,
+      "end": 32,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبي سنان",
+      "start": 37,
+      "end": 45,
+      "kind": "narrator"
+     },
+     {
+      "surface": "وهب بن خالد الحمصي",
+      "start": 50,
+      "end": 68,
+      "kind": "narrator"
+     },
+     {
+      "surface": "ابن الديلمي",
+      "start": 73,
+      "end": 84,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبى بن كعب",
+      "start": 95,
+      "end": 105,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 105,
+  "notes": [
+   "«قال أتيت أبى بن كعب فقلت له» is rule 6: Ubayy is asked and answers, so he is the last link for the saying",
+   "«ثم أتيت عبد الله بن مسعود ... ثم أتيت حذيفة ... ثم أتيت زيد بن ثابت فحدثني عن النبي» are visits in the story, each saying the same thing; only Ubayy's route is read, the others are not added and this is left to review",
+   "The Prophet is not a link"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t04-842290",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "محمد بن كثير",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "سفيان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي سنان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "وهب بن خالد الحمصي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن الديلمي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبى بن كعب",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«قال أتيت أبى بن كعب فقلت له» is rule 6: Ubayy is asked and answers, so he is the last link for the saying",
+   "«ثم أتيت عبد الله بن مسعود ... ثم أتيت حذيفة ... ثم أتيت زيد بن ثابت فحدثني عن النبي» are visits in the story, each saying the same thing; only Ubayy's route is read, the others are not added and this is left to review",
+   "The Prophet is not a link"
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "t04-842290",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "محمد بن كثير",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "سفيان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبو سنان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "وهب بن خالد الحمصي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن الديلمي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبى بن كعب",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": true,
+  "notes": [
+   "The later visits (ابن مسعود, حذيفة, زيد بن ثابت) are scene and repeated verdicts, not links",
+   "Zayd's «فحدثني عن النبي» is a second transmission of the saying with its own isnad (rule 11): needs a ruling"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "K6I's sequence stops at the Daylami and omits the Abu Sinan and Ubayy b. Ka'b links that the text writes before the saying",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "عن أبي سنان"
+     },
+     {
+      "source": "K6I",
+      "quote": "عبد الله بن فيروز الديلمي"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}

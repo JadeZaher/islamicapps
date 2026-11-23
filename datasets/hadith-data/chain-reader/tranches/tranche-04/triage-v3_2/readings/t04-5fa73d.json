@@ -1,0 +1,195 @@
+{
+ "expanded_a": {
+  "id": "t04-5fa73d",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "مسلم",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "يحيى بن يحيى",
+      "start": 6,
+      "end": 18,
+      "kind": "narrator"
+     },
+     {
+      "surface": "مالك",
+      "start": 33,
+      "end": 37,
+      "kind": "narrator"
+     },
+     {
+      "surface": "نافع",
+      "start": 41,
+      "end": 45,
+      "kind": "narrator"
+     },
+     {
+      "surface": "نبيه بن وهب",
+      "start": 50,
+      "end": 61,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبان",
+      "start": 70,
+      "end": 74,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عثمان بن عفان",
+      "start": 80,
+      "end": 93,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 93,
+  "notes": [
+   "«قرأت على مالك» makes مالك the teacher read to; «أنفقال أبان» reads «فقال أبان» (Aban speaks and says he heard Uthman), so أبان is a link by rule 5",
+   "the chain ends at the Companion عثمان بن عفان"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t04-5fa73d",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "يحيى بن يحيى",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "مالك",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "نافع",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "نبيه بن وهب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عثمان بن عفان",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«قرأت على مالك» makes مالك the teacher read to; «أنفقال أبان» reads «فقال أبان» (Aban speaks and says he heard Uthman), so أبان is a link by rule 5",
+   "the chain ends at the Companion عثمان بن عفان"
+  ],
+  "fixes": [
+   {
+    "kind": "text_garbled",
+    "reason": "the stored Arabic joins «أن» to «فقال» in «أنفقال أبان», which is probably «أن فقال أبان»; the reading takes it as «فقال أبان»",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "أنفقال أبان"
+     }
+    ],
+    "confidence": "low"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "t04-5fa73d",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "يحيى بن يحيى",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "مالك",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "نافع",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "نبيه بن وهب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عثمان بن عفان",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«قال قرأت على مالك» : Malik is the one read to, so a link.",
+   "«أنفقال أبان» is garbled: I read it as «أن فقال أبان», with Aban the link after Nabih, then «سمعت عثمان» (rule 5). Filed as a text problem."
+  ],
+  "fixes": [
+   {
+    "kind": "text_garbled",
+    "reason": "The token fuses «أن» and «فقال», and the link after Nabih can only be read by splitting it.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "أنفقال أبان سمعت عثمان بن عفان"
+     }
+    ],
+    "confidence": "low"
+   }
+  ]
+ }
+}

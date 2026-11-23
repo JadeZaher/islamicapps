@@ -1,0 +1,135 @@
+{
+ "expanded_a": {
+  "id": "t08-1f1e80",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "البخاري",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "أبو حازم",
+      "start": 4,
+      "end": 12,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبي سعيد الخدري",
+      "start": 110,
+      "end": 125,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false,
+    "saying": null
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 125,
+  "notes": [
+   "The text opens «قال أبو حازم» and writes no chain before him: an implicit transmission (rule 11)",
+   "«هكذا سمعت سهلا» is Nu'man's remark inside the scene, not a link; «أشهد على أبي سعيد الخدري لسمعته» gives Abu Sa'id as the Companion heard"
+  ],
+  "tool_notes": [],
+  "sayings": []
+ },
+ "output_a": {
+  "id": "t08-1f1e80",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "أبو حازم",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي سعيد الخدري",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": true,
+  "notes": [
+   "The text opens «قال أبو حازم» and writes no chain before him: an implicit transmission (rule 11)",
+   "«هكذا سمعت سهلا» is Nu'man's remark inside the scene, not a link; «أشهد على أبي سعيد الخدري لسمعته» gives Abu Sa'id as the Companion heard"
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "HKG's route names Nu'man b. Zayd b. al-Samit and Salama b. Dinar, but the text names a different Nu'man (Ibn Abi Ayyash) as a bystander and writes no Salama link",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "فسمعني النعمان بن أبي عياش"
+     },
+     {
+      "source": "HKG",
+      "quote": "نعمان بن زيد بن الصامت"
+     }
+    ],
+    "confidence": "low"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "t08-1f1e80",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "أبو حازم",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي سعيد الخدري",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   },
+   {
+    "levels": [
+     [
+      {
+       "surface": "النعمان بن أبي عياش",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "سهلا",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "variant": true
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "The report opens «قال أبو حازم»: the chain above him is not written, so the first written name is Abu Hazim.",
+   "«فسمعني النعمان ... هكذا سمعت سهلا» names Sahl as another transmitter of the same saying: a variant group, never a route (rule 4).",
+   "«أنا أشهد على أبي سعيد الخدري لسمعته» : Abu Sa'id is the link Abu Hazim heard, and the saying («إنهم مني») is his."
+  ],
+  "fixes": []
+ }
+}

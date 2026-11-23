@@ -1,0 +1,189 @@
+{
+ "expanded_a": {
+  "id": "t04-42c63a",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "الصدوق",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "أَبي",
+      "start": 15,
+      "end": 19,
+      "kind": "relation"
+     },
+     {
+      "surface": "سَعْدِ بْنِعَبْدِ اللَّه",
+      "start": 56,
+      "end": 80,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أَحْمَدِ بْنِ أَبي عَبْدِ اللَّه",
+      "start": 97,
+      "end": 129,
+      "kind": "narrator"
+     },
+     {
+      "surface": "واحِدٍ",
+      "start": 136,
+      "end": 142,
+      "kind": "unnamed"
+     },
+     {
+      "surface": "أَبي طاهِرٍ بْنِ أَبي حَمْزَة",
+      "start": 149,
+      "end": 178,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أَبي الحَسَن الرِّضا",
+      "start": 185,
+      "end": 205,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 205,
+  "notes": [
+   "«حَدَّثَنا أَبي» is the author's father, named only by relation: relation",
+   "«سعد بنعبد الله» is kept as written: the stored text has no space after «بن»",
+   "«عَنْ واحِدٍ» is a transmitter the text does not name: unnamed",
+   "The Imam after «عن» is narrator (ruling 2)"
+  ],
+  "tool_notes": []
+ },
+ "output_a": {
+  "id": "t04-42c63a",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "أبي",
+       "kind": "relation",
+       "occurrence": 1
+      }
+     ],
+     [
+      {
+       "surface": "سعد بنعبد الله",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أحمد بن أبي عبد الله",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "واحد",
+       "kind": "unnamed"
+      }
+     ],
+     [
+      {
+       "surface": "أبي طاهر بن أبي حمزة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي الحسن الرضا",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«حَدَّثَنا أَبي» is the author's father, named only by relation: relation",
+   "«سعد بنعبد الله» is kept as written: the stored text has no space after «بن»",
+   "«عَنْ واحِدٍ» is a transmitter the text does not name: unnamed",
+   "The Imam after «عن» is narrator (ruling 2)"
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "t04-42c63a",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "أبي",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "سعد بنعبد الله",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أحمد بن أبي عبد الله",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "واحد",
+       "kind": "unnamed"
+      }
+     ],
+     [
+      {
+       "surface": "أبي طاهر بن أبي حمزة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي الحسن الرضا",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«حدثنا أبي» is bare: a relation link (the compiler's father)",
+   "«عن واحد» names no one, so it is an unnamed link (rule 8)",
+   "the text joins «بن» and «عبد» without a space, so the name is kept exactly as written"
+  ],
+  "fixes": [
+   {
+    "kind": "text_garbled",
+    "reason": "the stored chain joins «بن» and «عبد» without a space, so the name cannot be read as a name without a guess",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "سَعْدِ بْنِعَبْدِ اللَّه"
+     }
+    ],
+    "confidence": "low"
+   }
+  ]
+ }
+}

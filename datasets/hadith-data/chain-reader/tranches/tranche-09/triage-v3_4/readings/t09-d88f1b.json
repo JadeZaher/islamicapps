@@ -1,0 +1,191 @@
+{
+ "expanded_a": {
+  "id": "t09-d88f1b",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "البخاري",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "معاذ",
+      "start": 5,
+      "end": 9,
+      "kind": "narrator"
+     },
+     {
+      "surface": "شعبة",
+      "start": 16,
+      "end": 20,
+      "kind": "narrator"
+     },
+     {
+      "surface": "خبيب",
+      "start": 25,
+      "end": 29,
+      "kind": "narrator"
+     },
+     {
+      "surface": "حفصا",
+      "start": 35,
+      "end": 39,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبا سعيد",
+      "start": 45,
+      "end": 53,
+      "kind": "narrator"
+     },
+     {
+      "surface": "رجلا من أصحاب النبي",
+      "start": 55,
+      "end": 74,
+      "kind": "unnamed"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false,
+    "saying": null
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 74,
+  "notes": [
+   "«وقال معاذ حدثنا شعبة» names Mu'adh bare; the lexicon's identification as the Companion cannot narrate from شعبة, so it is not adopted (see fix).",
+   "«سمع أبا سعيد، رجلا من أصحاب النبي» is read as Abu Sa'id narrating from an unnamed Companion; the Companion is not named in the text.",
+   "«بهذا» and the closing «وقال هي ...» (the saying) are not chain links."
+  ],
+  "tool_notes": [],
+  "sayings": []
+ },
+ "output_a": {
+  "id": "t09-d88f1b",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "معاذ",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "شعبة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "خبيب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "حفصا",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبا سعيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "رجلا من أصحاب النبي",
+       "kind": "unnamed"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«وقال معاذ حدثنا شعبة» names Mu'adh bare; the lexicon's identification as the Companion cannot narrate from شعبة, so it is not adopted (see fix).",
+   "«سمع أبا سعيد، رجلا من أصحاب النبي» is read as Abu Sa'id narrating from an unnamed Companion; the Companion is not named in the text.",
+   "«بهذا» and the closing «وقال هي ...» (the saying) are not chain links."
+  ],
+  "fixes": [
+   {
+    "kind": "wrong_identity",
+    "reason": "The chain's Mu'adh narrates from Shu'ba (d. 160 AH), so he cannot be the Companion Mu'adh ibn Jabal, who died in 18 AH.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "وقال معاذ حدثنا شعبة"
+     },
+     {
+      "source": "K6I",
+      "quote": "معاذ بن جبل بن عمرو بن أوس"
+     }
+    ],
+    "confidence": "high"
+   }
+  ]
+ },
+ "output_b": {
+  "id": "t09-d88f1b",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "معاذ",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "شعبة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "خبيب",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "حفصا",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبا سعيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "رجلا من أصحاب النبي",
+       "kind": "unnamed"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«سمع حفصا» and «سمع أبا سعيد» are links by rule 5: each is the source the previous person heard",
+   "The last link is an unnamed Companion («رجلا من أصحاب النبي»); the closing «بهذا» refers back to the matn, not to a chain, so it is not a back_reference"
+  ],
+  "fixes": []
+ }
+}

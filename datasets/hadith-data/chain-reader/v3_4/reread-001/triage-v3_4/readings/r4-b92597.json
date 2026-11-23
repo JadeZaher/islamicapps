@@ -1,0 +1,208 @@
+{
+ "expanded_a": {
+  "id": "r4-b92597",
+  "routes": [
+   {
+    "links": [
+     {
+      "surface": "مسلم",
+      "start": null,
+      "end": null,
+      "kind": "compiler_head",
+      "from": "work"
+     },
+     {
+      "surface": "قتيبة بن سعيد",
+      "start": 7,
+      "end": 20,
+      "kind": "narrator"
+     },
+     {
+      "surface": "مالك بن أنس",
+      "start": 25,
+      "end": 36,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عبد الله بن، أبي بكر",
+      "start": 55,
+      "end": 75,
+      "kind": "narrator"
+     },
+     {
+      "surface": "أبيه",
+      "start": 79,
+      "end": 83,
+      "kind": "relation"
+     },
+     {
+      "surface": "عمرة بنت عبد الرحمن",
+      "start": 88,
+      "end": 107,
+      "kind": "narrator"
+     },
+     {
+      "surface": "عائشة",
+      "start": 132,
+      "end": 137,
+      "kind": "narrator"
+     }
+    ],
+    "shared_tail_from": null,
+    "group": 0,
+    "variant": false,
+    "saying": null
+   }
+  ],
+  "variant_remarks": [],
+  "only_variant_groups": false,
+  "matn_start": 137,
+  "notes": [
+   "«فيما قرئ عليه» names the reading mode, not a link; left out.",
+   "«أنها أخبرته أنها سمعت عائشة» : «أخبرته» points at the father already in the chain; Amra's hearing from Aisha is the link.",
+   "«وذكر لها أن عبد الله بن عمر يقول» is the statement Aisha rebuts, with an unnamed mentioner; not a second chain. Aisha is the last link (her words)."
+  ],
+  "tool_notes": [],
+  "sayings": []
+ },
+ "output_a": {
+  "id": "r4-b92597",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "قتيبة بن سعيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "مالك بن أنس",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الله بن، أبي بكر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "عمرة بنت عبد الرحمن",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عائشة",
+       "kind": "narrator",
+       "occurrence": 1
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«فيما قرئ عليه» names the reading mode, not a link; left out.",
+   "«أنها أخبرته أنها سمعت عائشة» : «أخبرته» points at the father already in the chain; Amra's hearing from Aisha is the link.",
+   "«وذكر لها أن عبد الله بن عمر يقول» is the statement Aisha rebuts, with an unnamed mentioner; not a second chain. Aisha is the last link (her words)."
+  ],
+  "fixes": []
+ },
+ "output_b": {
+  "id": "r4-b92597",
+  "status": "read",
+  "groups": [
+   {
+    "levels": [
+     [
+      {
+       "surface": "قتيبة بن سعيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "مالك بن أنس",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الله بن، أبي بكر",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبيه",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "عمرة بنت عبد الرحمن",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عائشة",
+       "kind": "narrator"
+      }
+     ]
+    ]
+   }
+  ],
+  "shared_tail": null,
+  "needs_ruling": false,
+  "notes": [
+   "«فيما قرئ عليه» is a reading formula, not a name, and is left out.",
+   "«عبد الله بن، أبي بكر» keeps the comma the text writes inside the name; «عن أبيه» is a bare relation link (rule 7).",
+   "«وذكر، لها أن عبد الله بن عمر، يقول» places Ibn Umar's claim inside the story that Aisha answers; the saying relayed is Aisha's, so he is not a link and عائشة is the last link (rule 6)."
+  ],
+  "fixes": [
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "RWY reads the verb «أخبرته» as a transmitter name; in the text it is the verb of Amra's report, not a person.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "أنها أخبرته أنها"
+     },
+     {
+      "source": "RWY",
+      "quote": "أخبرته"
+     }
+    ],
+    "confidence": "high"
+   },
+   {
+    "kind": "chain_differs_from_source",
+    "reason": "RWY adds Ibn Umar as the last link; the text places his claim in the scene that Aisha corrects, and the saying relayed is hers.",
+    "evidence": [
+     {
+      "source": "text",
+      "quote": "وذكر، لها أن عبد الله بن عمر، يقول"
+     },
+     {
+      "source": "RWY",
+      "quote": "عبد الله بن عمر"
+     }
+    ],
+    "confidence": "medium"
+   }
+  ]
+ }
+}
