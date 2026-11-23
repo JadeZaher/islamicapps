@@ -6,6 +6,7 @@
  *   npm run db:chain-fixes -- --database production --confirm-production [--dry-run]
  *   npm run db:chain-fixes -- --database production --confirm-production --revert <chain-fix:id> [...]
  *   npm run db:chain-fixes -- --database production --confirm-production --revert-rejected   (also the 0023 queue `revert_before_apply`)
+ *   npm run db:chain-fixes -- --database production --confirm-production --repair-decided-at [--dry-run] [--plan <file>]
  *   npm run db:chain-fixes -- --database production --confirm-production --repair-compiler-links --fix <chain-fix:id> [...] [--dry-run]
  *   [--plan <file.json>]   writes what was (or, with --dry-run, would be) written, per report and in total
  *   --dry-run --no-mirror --store <scratch> --overrides <scratch file>   a store-free rehearsal: nothing is mirrored; each report's
@@ -283,8 +284,8 @@ export async function syncMirror(sql: Sql, storeRoot: string) {
   // Retire first, insert after: the live-effect index allows one effect per report at a time.
   const changed: FixState[] = [];
   const liveStates = states.filter((x) => live.has(x.hadith_id));
-  const decisions = new Map((await sql<{ id: string; fix_id: string; state: string; effect: string | null; structure_status: string | null; runs: number; dissenting_runs: number; hold_codes: string[]; marks: string }[]>`
-    select id, fix_id, state, effect, structure_status, runs, dissenting_runs, hold_codes,
+  const decisions = new Map((await sql<{ id: string; fix_id: string; state: string; effect: string | null; structure_status: string | null; runs: number; dissenting_runs: number; hold_codes: string[]; marks: string; decided_at: Date }[]>`
+    select id, fix_id, state, effect, structure_status, runs, dissenting_runs, hold_codes, decided_at,
            jsonb_build_array(ai_review, ai_disputed, ai_corrected)::text as marks from chain_fix_decisions
     where fix_id = any(${liveStates.map((x) => x.fix_id)}) and retired_at is null`).map((row) => [row.fix_id, row]));
   // The AI marks as the database prints them (jsonb normalises key order), so an unchanged mark is no transition.
@@ -297,13 +298,15 @@ export async function syncMirror(sql: Sql, storeRoot: string) {
         && current.hold_codes.join(',') === (state.state === 'held' ? state.holds : []).join(',')
         && (!(state.ai_review || state.ai_disputed || state.ai_corrected || current.marks !== '[null, null, null]') || current.marks === await marksOf(state))) continue;
     if (current) await sql`update chain_fix_decisions set retired_at = now(), retired_by = ${ACTOR}, updated_at = now(), updated_by = ${ACTOR} where id = ${current.id}`;
-    changed.push(Object.assign(state, { supersedes: current?.id ?? null }));
+    // The date a reading was decided stays when only a mark changes (an AI review): the page's "Read by two models, <date>" is that date.
+    const sameDecision = current && current.state === state.state && current.effect === state.effect && current.structure_status === state.structure_status;
+    changed.push(Object.assign(state, { supersedes: current?.id ?? null, decidedAt: sameDecision ? current.decided_at.toISOString() : now }));
   }
-  for (const state of changed as (FixState & { supersedes: string | null })[]) {
+  for (const state of changed as (FixState & { supersedes: string | null; decidedAt: string })[]) {
     await sql`insert into chain_fix_decisions (fix_id, hadith_id, state, effect, structure_status, runs, text_only_runs, dissenting_runs, models,
                 hold_codes, why, decided_at, supersedes_decision_id, created_by, updated_by, ai_review, ai_disputed, ai_corrected)
               values (${state.fix_id}, ${state.hadith_id}, ${state.state}, ${state.effect}, ${state.structure_status}, ${state.runs.length},
-                ${state.text_only_runs}, ${state.dissenting_runs}, ${state.models}, ${state.state === 'held' ? state.holds : []}, ${state.why}, ${now},
+                ${state.text_only_runs}, ${state.dissenting_runs}, ${state.models}, ${state.state === 'held' ? state.holds : []}, ${state.why}, ${state.decidedAt},
                 ${state.supersedes}, ${ACTOR}, ${ACTOR}, ${json(state.ai_review)}, ${json(state.ai_disputed)}, ${json(state.ai_corrected)})`;
   }
   return changed.length;
@@ -334,6 +337,16 @@ async function main(): Promise<number> {
     if (args.has('no-mirror') && !dryRun) throw new Error('--no-mirror is a rehearsal option: it needs --dry-run');
     if (!args.has('no-mirror')) await sql.begin(async (tx) => console.log(`mirror: ${await syncMirror(tx, storeRoot)} decision rows changed`));
 
+    if (args.has('repair-decided-at')) {
+      let repaired: { fix_id: string; from: string; to: string }[] = [];
+      await sql.begin(async (tx) => {
+        repaired = await repairDecidedAt(tx);
+        if (dryRun) throw new DryRun();
+      }).catch(swallowDryRun);
+      if (args.get('plan')) writeFileSync(args.get('plan')!, `${JSON.stringify(repaired, null, 1)}\n`);
+      console.log(`${dryRun ? 'dry run, rolled back: would have ' : ''}restored decided_at on ${repaired.length} decision(s)`);
+      return 0;
+    }
     if (args.has('repair-compiler-links')) {
       const fixIds = argv.filter((value, index) => argv[index - 1] === '--fix');
       for (const fixId of fixIds) {
@@ -503,6 +516,29 @@ export async function repairCompilerLinks(tx: Sql, fixId: string, overridesFile:
   }
   if (repairs.length > 0) await tx`select refresh_publication_facets(${[override.hadith_id]})`;
   return repairs;
+}
+
+/**
+ * Repair mode (`--repair-decided-at`): a live decision re-inserted only because an AI mark changed took the time of that write as its
+ * `decided_at`; give it back the date of the earliest decision in its unbroken chain with the same state, effect and status.
+ */
+export async function repairDecidedAt(tx: Sql): Promise<{ fix_id: string; from: string; to: string }[]> {
+  const rows = await tx<{ id: string; fix_id: string; from: Date; to: Date }[]>`
+    with recursive chain as (
+      select d.id as live_id, d.fix_id, d.id, d.supersedes_decision_id, d.decided_at, d.state, d.effect, d.structure_status
+      from chain_fix_decisions d where d.retired_at is null
+      union all
+      select c.live_id, c.fix_id, p.id, p.supersedes_decision_id, p.decided_at, c.state, c.effect, c.structure_status
+      from chain c join chain_fix_decisions p on p.id = c.supersedes_decision_id
+      where p.state = c.state and p.effect is not distinct from c.effect and p.structure_status is not distinct from c.structure_status
+    )
+    select live_id as id, fix_id, (select decided_at from chain_fix_decisions where id = live_id) as from, min(decided_at) as to
+    from chain group by live_id, fix_id
+    having min(decided_at) < (select decided_at from chain_fix_decisions where id = live_id)`;
+  for (const row of rows) {
+    await tx`update chain_fix_decisions set decided_at = ${row.to}, updated_at = now(), updated_by = ${ACTOR} where id = ${row.id}`;
+  }
+  return rows.map((row) => ({ fix_id: row.fix_id, from: row.from.toISOString(), to: row.to.toISOString() }));
 }
 
 /** Revert the latest application of one fix inside `tx`: the rows as they were, column by column. False when not applied. */

@@ -1063,3 +1063,20 @@ Data is written and loaded; push the code (`verify-data.ts` AI-correction invari
 - Ruling 5 back: re-add `stored_chain_checked_by_rule` to the submit tool and drop it from `LIFTED_HOLD_CODES`; decide; `--revert-rejected` reverts nothing by itself, so
   revert the fixes whose reports have a `checked_by_rule` chain in their base rows explicitly.
 - Data of the previous version: load `projection-m1/` (`4dfa8367…`) only after reverting the fixes (a load replays whatever the overrides file holds).
+- **Label date repair (after the push of `5bc93aa`)**: recording an AI mark had re-inserted 341 batch-001 decisions with the write time as `decided_at`, so
+  "Read by two models, <date>" read 2026-11-23. The mirror now keeps the date when state and effect are unchanged, and
+  `npm run db:chain-fixes -- --database production --confirm-production --repair-decided-at` restored the 341 to 2026-11-22 (`prod-repair-decided-at.log`); `db:verify-data` passes.
+
+## Railway config conversion (milestone 3, NOT finished, 2026-11-22)
+
+Stopped on the coordinator's budget instruction. State: `railway config migrate --apply --service islamicapps` wrote `.railway/railway.ts` (local, untracked) AND
+cleared the service's stored Config File path; Railway's docs say the builder still auto-detects the root `railway.json`, so deploys behave as before until it
+leaves the deployed commit or 2026-12-01. The generated file dropped the builder and restart policy; the local file declares `source` (github, main),
+`preserve()` for DATABASE_URL, NEXT_TELEMETRY_DISABLED, SITE_URL, `build: {builder: DOCKERFILE, dockerfilePath: Dockerfile}`, `deploy: {healthcheckPath,
+healthcheckTimeout 120, restartPolicyType ON_FAILURE, restartPolicyMaxRetries 5}` (field names from the `railway` SDK 3.17.0 types). `railway config apply --yes`
+was run: the service now stores builder DOCKERFILE, dockerfilePath Dockerfile, healthcheck /api/health 120 s, max retries 5; the restart type reads null, which
+Railway documents as its default On Failure. There is no pre-deploy migrate command and no start command in railway.json or the service (Dockerfile CMD
+`node server.js`; migrations by hand), so none is declared. To resume: `npm install --save-dev railway`; plan with
+`_=<railway.exe> <railway.exe> config plan` (the SDK runs `$_ --version`, which under Git Bash is not the CLI); commit `.railway/railway.ts` and the dependency,
+`git rm railway.json`, push both branches, check the deploy (health 200, build log says Dockerfile), and `railway config plan` shows only the restart-type line.
+Rollback: `railway config migrate undo` (restores the path if a snapshot exists) or set the Config File path to `railway.json` in the service settings.
