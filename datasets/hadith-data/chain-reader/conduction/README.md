@@ -3,13 +3,13 @@ type: runbook
 ---
 # chain-reader on Conduction
 
-Runs reader jobs (one fresh Haiku `claude-haiku-5-5` agent per job, the instruction of `v3/batch-001/RUN.md` section 1) as a Conduction factory: one wave, one agent per job, at most 12 at once.
+Runs reader jobs (default `--sdk agy`, `--model gemini-3-flash`; one fresh agent per job, the instruction of `v3/batch-001/RUN.md` section 1) as a Conduction factory: one wave, one agent per job, at most 12 at once.
 
 ## Run a tranche
 Jobs file: list of `{job_id, pass, packets, prompt_file, output_dir, run_txt, run_id, expected_files, instruction}` (`jobs-test.json` is the example; the tranche builder emits the same shape). Run from the repository root.
 ```
 # 1. build the factory (creates the output dirs, writes factory-<slug>.json next to this file)
-python -X utf8 datasets/hadith-data/chain-reader/conduction/make_mission.py <jobs.json> --slug <tranche-slug> [--concurrency 12] [--max-turns 150]
+python -X utf8 datasets/hadith-data/chain-reader/conduction/make_mission.py <jobs.json> --slug <tranche-slug> [--sdk agy] [--model gemini-3-flash] [--concurrency 12] [--max-turns 150]
 # 2. dashboard on :8000 (see Dashboard), then launch and wait (polls every 20 s, 40 min bound)
 python -X utf8 datasets/hadith-data/chain-reader/conduction/run_tranche.py --factory datasets/hadith-data/chain-reader/conduction/factory-<tranche-slug>.json [--base http://127.0.0.1:8000]
 # 3. measure with RUN.md section 3 on the jobs' output dirs
@@ -17,7 +17,7 @@ python -X utf8 datasets/hadith-data/chain-reader/conduction/run_tranche.py --fac
 `run_tranche.py` exits 0 only when the factory completed (gate passed).
 
 ## What the mission does
-- Agent `read-<pass>-<job_id>`: `sdk: claude`, `model: claude-haiku-5-5`, tools `Read, Write, Bash`, `owns` = its expected files.
+- Agent `read-<pass>-<job_id>`: `--sdk` (default `agy`), `--model` (default `gemini-3-flash`; omitted if empty), tools `Read, Write, Bash`, `owns` = its expected files.
 - Brief = `instruction` plus a short harness note: Conduction's claim ledger refuses a Write on an unclaimed file and claims are per exact path (no directory claim), so the worker calls `graph_claim` once with its expected paths. RUN.txt is appended by Bash (claims cover only Write/Edit), so concurrent jobs of one pass append to the same RUN.txt.
 - Wave gate (`check_tranche.py`): every expected file exists and parses as JSON, and every `run_id` has a RUN.txt line. The reading is not judged there; `validate_v3.py` and `triage_v3.py` do that.
 - Concurrency: `max_concurrency` of the wave (default 12; the generator refuses more). `max_turns` 150 (a job used about 50).

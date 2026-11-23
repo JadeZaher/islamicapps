@@ -317,7 +317,7 @@ async function main() {
     expect(network.includes("'compiler_of_work'") && network.includes("'direct'") && network.includes('suspension IS NULL'),
       'narrator_transmissions lost the 0019 compiler pair rule');
     const [{ structureCheck }] = await sql<{ structureCheck: string }[]>`
-      select pg_get_constraintdef(oid) as "structureCheck" from pg_constraint where conname = 'chains_structure_status_check'`;
+      select pg_get_constraintdef(oid) as "structureCheck" from pg_constraint where conname = 'chains_structure_status_check' and connamespace = 'public'::regnamespace`;
     expect(structureCheck.includes("'read_by_model'") && structureCheck.includes("'verified_by_reviewer'") && structureCheck.includes('chain_fix_id'),
       'chains_structure_status_check does not allow the two fix statuses (with their fix named)');
     expect(/chain_structure_reasons,[\s\S]*chain_fix_id,[\s\S]*chain_compiler_narrator_id,[\s\S]*chain_compiler_link\s*FROM/.test(withheld),
@@ -329,7 +329,7 @@ async function main() {
     expect(/human_confirmations,[\s\S]*ai_review,[\s\S]*ai_disputed,[\s\S]*ai_corrected,[\s\S]*witness_match/.test(labels) && labels.includes('w.matched'),
       'public_chain_fix_labels does not end with ai_review, ai_disputed, ai_corrected, witness_match (a matched row only)');
     const [{ toolCheck }] = await sql<{ toolCheck: string }[]>`
-      select pg_get_constraintdef(oid) as "toolCheck" from pg_constraint where conname = 'chain_fix_submissions_tool_version_check'`;
+      select pg_get_constraintdef(oid) as "toolCheck" from pg_constraint where conname = 'chain_fix_submissions_tool_version_check' and connamespace = 'public'::regnamespace`;
     expect(toolCheck.includes("'v3_3'") && toolCheck.includes("'v3_4'"), 'chain_fix_submissions_tool_version_check does not allow tools v3_3 and v3_4');
 
     console.log(
