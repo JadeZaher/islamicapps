@@ -165,7 +165,7 @@ check('a surface that is not an exact substring is refused with the validator’
 check('an evidence quote that is not in the text is refused', () => {
   const result = submit(envelope('run-bad', [fix(abuDawudFixed(), 'أن الليث بن سعد المصري حدثهم')]));
   assert.equal(result.status, 1);
-  assert.match(result.err, /evidence: quote 0 is not an exact substring/);
+  assert.match(result.err, /evidence: quote 0 is not in the text \(letters must be exact\)/);
 });
 
 check('a reading of an older text (stale hash) is refused', () => {

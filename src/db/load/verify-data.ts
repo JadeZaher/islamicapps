@@ -452,11 +452,15 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
             or exists (select 1 from latest l where l.fix_id = c.chain_fix_id and l.decision = 'rejected'))`,
   );
   await check(
-    'chain fixes: an automatically accepted changed reading has two reader runs, one blind to the stored chain',
+    'chain fixes: an automatically accepted changed reading has two reader runs, one blind to the stored chain (an AI correction: two review runs that correct the same fix)',
     `select count(*)::int as value from chain_fix_decisions d
      where d.retired_at is null and d.state = 'accepted' and d.effect <> 'annotate'
-       and ((select count(distinct s.orchestrator_run_id) from chain_fix_submissions s where s.fix_id = d.fix_id) < 2
-            or not exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.view in ('text_only', 'text_and_context')))`,
+       and (case when d.ai_corrected is null
+                 then (select count(distinct s.orchestrator_run_id) from chain_fix_submissions s where s.fix_id = d.fix_id) < 2
+                      or not exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.view in ('text_only', 'text_and_context'))
+                 -- 0023: a correction two independent reviews wrote alike; every run names the fix it corrects
+                 else (select count(distinct s.orchestrator_run_id) from chain_fix_submissions s where s.fix_id = d.fix_id and s.corrects_fix_id is not null) < 2
+                      or exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.corrects_fix_id is null) end)`,
   );
   await check(
     'chain fixes: in a chain a fix rewrote, an identity always has its carried candidate (a new name never invents one)',

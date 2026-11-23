@@ -744,7 +744,8 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
     }));
     // A correction (two reviews, the same routes) replaces the reading it corrects, unless a human has decided either.
     const correctedBy = new Map<string, string>();
-    for (const [fixId, runs] of correctionRuns) if (runs.length >= 2 && humanLatest(fixId).every((r) => r.decision !== 'rejected')) correctedBy.set(runs[0].corrects_fix_id!, fixId);
+    // A correction that carries a hold the reviewer may not clear does not replace anything: it waits, the reading stays.
+    for (const [fixId, runs] of correctionRuns) if (runs.length >= 2 && holdsOf(fixId, runs).length === 0 && humanLatest(fixId).every((r) => r.decision !== 'rejected')) correctedBy.set(runs[0].corrects_fix_id!, fixId);
 
     for (const [fixId, runs] of [...byFix, ...correctionRuns]) {
       const isCorrection = correctionRuns.has(fixId);
@@ -774,6 +775,9 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
       } else if (humanConfirmed.size > 0) {
         state = 'superseded';
         why = `a human reviewer confirmed another reading of this report (${[...humanConfirmed].join(', ')})`;
+      } else if (isCorrection && holds.length > 0) {
+        state = 'held';
+        why = `the AI reviewer's correction is held: ${holds.join(', ')}; the reading it corrects stays`;
       } else if (isCorrection) {
         state = runs.length >= 2 ? 'accepted' : 'awaiting_human';
         why = runs.length >= 2 ? `the AI reviewer's correction, written alike by ${runs.length} independent reviews` : 'one review wrote this correction; a second independent review must repeat it';

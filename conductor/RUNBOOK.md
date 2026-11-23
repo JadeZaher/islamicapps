@@ -1006,3 +1006,60 @@ Logs: `datasets/hadith-data/development/ai-review-tier-2026-11-22/` (local).
 - **Compiler marks** repaired through the pipeline (`npm run db:chain-fixes -- ... --repair-compiler-links --fix <id>`; dry run over all 76 multi-route fixes
   found exactly these 4: `prod-repair-dry-run.log`, `prod-repair.log`, store `records/chain-fixes/repairs/2026-11-22.jsonl`): `chain:k6:2400:0001`,
   `chain:k6:348:0001`, `chain:k6:6230:0001` direct -> indirect; `chain:k6:23555:0002` indirect -> direct.
+
+### Deploy (milestone 1, done)
+
+1. `0023` applied to production before any write; compiler marks repaired; projection `4dfa8367…` (replays the 348) loaded: **0 rows changed** in every table;
+   approval re-recorded at once (`approve.log`); `db:verify`, `db:verify-data` pass. Commit `6db705c` pushed to `refactor/postgres-drizzle` and `main`; Railway
+   deployment `1ffb936c` SUCCESS; `/api/health` 200; `/method#chain-tiers` serves the live table; `/hadith/k6/4950/chains` reads "Read by two models (claude-haiku-5-5), 2026-11-22".
+2. Checks: Python suites (`chain-fixes` 32, `chain-reader` v3 24, v3_1 45, v3_2 27, v3_3 19, v3_4 17, reviewer 23, tests 21, `pg_export` 7 suites); `chain-fix.test.ts`;
+   `chain-review.test.ts`; `chain-fix-apply.test.ts` (4); `npx tsx "src/app/hadith/[id]/components/__tests__/chain-tier-labels.test.ts"`; `tsc`; `npm run build`.
+
+### Rollback (milestone 1)
+
+- Code: redeploy `305f0ed` (it ignores 0023's columns and views). Schema: never edit 0023; its columns are nullable and its table empty.
+- Compiler marks: the four repairs are logged in `records/chain-fixes/repairs/`; a revert of the fix restores its base rows (the old marks). The v3.3 correction: point
+  `TOOLS["v3_3"]` at `holds_v3_3.compute_holds`.
+
+## Tranches 01/02 applied, 27 batch-001 readings released, batch-001 AI reviews recorded (milestone 2, 2026-11-22)
+
+Logs, plans, snapshots, diffs: `datasets/hadith-data/development/ai-review-tier-2026-11-22/` (local). Every write went through `chain-fix-submit` / `chain-fix-decide` /
+`chain-review-record` / `npm run db:chain-fixes`; no hand SQL.
+
+- **Envelopes**: `v3_3/to_submission_v3_3.py --only tranches/tranche-0N/triage-v3_3/eligible_v3_3.txt` (730 and 695; no variant flag, no release flag), all clean
+  under `--check-only --database production`; rehearsal `tranches/dry_run_tranche.py --tool v3_3 --only ...` (`rehearsal/`): t01 719 apply / 11 held, t02 688 / 7
+  held, 0 refused, 0 stale, 0 skipped. Recorded in the store (`--database production`), decided: 1782 accepted (348 + 27 + 719 + 688).
+- **Ruling 5**: the 27 batch-001 readings held only by `stored_chain_checked_by_rule` (30 carry the code; 3 also have another hold and stay held) were re-checked
+  with the corrected v3.3 tool (`b1_lifted.json`: no hold) and released by the lifted code. `narrator_transmissions` 28,468 -> 28,426: **42 pairs lost, 0 gained**, 206
+  pairs lost a supporting report (`pairs-lost.json`); 3 narrators lost every teacher (rawi 12496 Muharrar b. Abi Hurayra, 2308 ʿAbd Allah b. Wahb b. Zamʿa, 24168
+  al-Sakan b. al-Mughira) and 5 every student (those three, 11581 Hajjaj b. Hajjaj al-Bahili, 12256 ʿAbd Allah b. Nistas).
+- **Apply**: `prod-apply.log` (1434 reports, 0 skipped, 59 min). Then the batch-001 reviews (`reviewer/review-applied-b001/`, the refolded record):
+  `chain-review-record.ts --batch ... --extra-second .../second-pass-refolded --expect .../outputs-refolded/outcomes.tsv` (every outcome equal to the reviewer side's):
+  332 AI reviewed, 6 disputed (stay applied), 10 corrections (two reviews alike) written as new fixes; their 10 readings reverted (`--revert-rejected`, queue
+  `revert_before_apply`) and the corrections applied (`prod-revert-corrected.log`, `prod-apply-corrections.log`).
+- **Replay**: a full export (`projection/`, 1782 overrides) equals production for every row of the 1782 reports (0 differences in 2,886 chain / 15,705 mention /
+  18,469 candidate rows: `replay-diff.json`; control against the pre-apply projection: 9,847 / 23,233 / 5,290 differences). Revert test on `hadith:k6:30143`: rows equal
+  `base_rows` on every column (`revert_equal.ts`), then re-applied.
+- **Load gate**: the first load attempt failed one invariant and rolled back: the "two reader runs, one blind" check did not know the AI-correction path; it now
+  requires two review runs that name the corrected fix (`load/verify-data.ts`), as 0023's decision check does.
+- **Load**: projection `314221fa…` (second attempt, `prod-load-m2.log`): **0 rows changed**; approval re-recorded at once (`approve-m2.log`); `db:verify` and
+  `db:verify-data` pass. 20 newly applied reports read against the Arabic (`read20.json`, seed 20261123): 20 right; page rows equal the plan in all 17 rewrites;
+  the 3 confirmed-stored reports have every chain `read_by_model`.
+- **Not done here**: the reviewer's built sets (`reviewer/review-*/`) still list 348 applied readings (its test `test_the_applied_set_is_the_fix_stores` fails by
+  design now that the store moved): rebuild with `build_review_packets_v1_1.py --sets` before the next reviewer run. The two disputed readings that wait for a
+  second review (b1-fea4e5, b1-2958ef: `second-pass-refolded/`) and the three referrals are listed in `queue.json` `ai_disputed_awaiting_second_review`.
+
+### Deploy (milestone 2)
+
+Data is written and loaded; push the code (`verify-data.ts` AI-correction invariant, the correction hold) to both branches. Live: a tranche rewrite
+(`/hadith/k6/30143/chains`: "Read by two models"), an AI-reviewed batch-001 chain ("...; AI reviewed (claude-opus-5-5), <date>"), an AI correction
+(`/hadith/k6/24636/chains`: "Corrected by AI review (claude-opus-5-5, 2 runs), <date>"), `/method#chain-tiers`.
+
+### Rollback (milestone 2)
+
+- One fix: `npm run db:chain-fixes -- --database production --confirm-production --revert <chain-fix:id>`, record why (`chain-fix-hold.ts` or a human review), decide.
+- A tranche: pass every applied fix id of the tranche (`state.json`, submissions `t0N-*`) to `--revert`; move `accepted_overrides.jsonl.gz` aside only if every fix goes.
+- An AI correction: a human `superseded`/`rejected` review on it, decide, `--revert-rejected`, then re-apply the readers' fix (it returns to the overrides).
+- Ruling 5 back: re-add `stored_chain_checked_by_rule` to the submit tool and drop it from `LIFTED_HOLD_CODES`; decide; `--revert-rejected` reverts nothing by itself, so
+  revert the fixes whose reports have a `checked_by_rule` chain in their base rows explicitly.
+- Data of the previous version: load `projection-m1/` (`4dfa8367…`) only after reverting the fixes (a load replays whatever the overrides file holds).
