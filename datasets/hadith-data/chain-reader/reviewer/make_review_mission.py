@@ -1,7 +1,7 @@
-"""Turn a reviewer jobs file (shura-chain-review-jobs/1) into a Conduction factory: one wave, one fresh claude-opus-5-5 reviewer per packet (reviewer/RUN.md). The reader tranches' scripts in
+"""Turn a reviewer jobs file (shura-chain-review-jobs/1) into a Conduction factory: one wave, one fresh reviewer per packet (reviewer/RUN.md). The reader tranches' scripts in
 conduction/ are imported, not edited: their factory builder and gate are reused; only the job shape (one packet and one output per job) and the model differ.
 
-    python -X utf8 reviewer/make_review_mission.py reviewer/review-t01/held/jobs.json --slug rv-t01-held [--concurrency 6] [--max-turns 60]
+    python -X utf8 reviewer/make_review_mission.py reviewer/review-t01/held/jobs.json --slug rv-t01-held [--sdk agy] [--model gemini-3-flash] [--concurrency 6] [--max-turns 60]
     -> reviewer/review-t01/held/conduction-jobs.json (flat list, the reader jobs' shape) and reviewer/review-t01/held/factory-<slug>.json
 then, with the dashboard up:  python -X utf8 datasets/hadith-data/chain-reader/conduction/run_tranche.py --factory <that factory path relative to the repository root>
 """
@@ -20,7 +20,9 @@ REPO = HERE.parents[3]
 sys.path.insert(0, str(CONDUCTION))
 import make_mission  # noqa: E402  (conduction/make_mission.py: build_factory, CLAIM_ADDENDUM; unchanged)
 
-REVIEWER_MODEL = "claude-opus-5-5"
+SDK = "agy"
+MODEL = "gemini-3-flash"
+REVIEWER_MODEL = MODEL
 
 
 def flat_jobs(doc: dict) -> list[dict]:
@@ -36,7 +38,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("jobs")
     parser.add_argument("--slug", required=True, help="[A-Za-z0-9._-]{1,64}; also the factory run id prefix")
-    parser.add_argument("--concurrency", type=int, default=6, help="at most 12 (Conduction's cap); Opus workers read ~30k tokens each, so 6 by default")
+    parser.add_argument("--sdk", default=SDK, help=f"Conduction agent SDK (default: {SDK})")
+    parser.add_argument("--model", default=MODEL, help=f"Model name (default: {MODEL}; pass empty string to omit)")
+    parser.add_argument("--concurrency", type=int, default=6, help="at most 12 (Conduction's cap); reviewer workers read ~30k tokens each, so 6 by default")
     parser.add_argument("--max-turns", type=int, default=60)
     args = parser.parse_args(argv)
     if args.concurrency > 12:
@@ -50,16 +54,16 @@ def main(argv: list[str] | None = None) -> int:
         Path(job["output_dir"]).mkdir(parents=True, exist_ok=True)           # graph_claim needs the parent to exist
     flat_path = jobs_path.with_name("conduction-jobs.json" if str(doc["pass"]) == "1" else f"conduction-jobs-pass-{doc['pass']}.json")
     flat_path.write_text(json.dumps(jobs, indent=1, ensure_ascii=False), encoding="utf-8", newline="\n")
-    factory = make_mission.build_factory(jobs, args.slug, str(flat_path), args.concurrency, args.max_turns)
-    factory["description"] = f"chain reviewer {args.slug} (pass {doc['pass']}): {len(jobs)} Opus reviewer jobs, {doc['expected']['items']} reports"
+    factory = make_mission.build_factory(jobs, args.slug, str(flat_path), args.concurrency, args.max_turns, sdk=args.sdk, model=args.model)
+    model_label = f"{args.sdk}/{args.model}" if args.model else args.sdk
+    factory["description"] = f"chain reviewer {args.slug} (pass {doc['pass']}): {len(jobs)} {model_label} reviewer jobs, {doc['expected']['items']} reports"
     for agent in factory["waves"][0]["agents"]:
-        agent["model"] = REVIEWER_MODEL
         agent["name"] = agent["name"].replace("read-", "review-", 1)
         agent["tools"] = ["Read", "Write", "Bash"]
     factory["waves"][0]["slug"] = "reviewers"
     out = flat_path.with_name(f"factory-{args.slug}.json")
     out.write_text(json.dumps(factory, indent=1, ensure_ascii=False), encoding="utf-8", newline="\n")
-    print(f"wrote {flat_path.relative_to(REPO).as_posix()} and {out.relative_to(REPO).as_posix()} ({len(jobs)} agents, concurrency {args.concurrency}, model {REVIEWER_MODEL})")
+    print(f"wrote {flat_path.relative_to(REPO).as_posix()} and {out.relative_to(REPO).as_posix()} ({len(jobs)} agents, concurrency {args.concurrency}, model {model_label})")
     print(f"run: python -X utf8 datasets/hadith-data/chain-reader/conduction/run_tranche.py --factory {out.relative_to(REPO).as_posix()}")
     return 0
 
