@@ -1,8 +1,8 @@
 """Dry-run one tranche through the chain-fix pipeline, applying nothing (tranches/AGENTS.md §Dry run).
 
-    python -B -X utf8 tranches/dry_run_tranche.py --tranche 01 --reader-prompt v3_1 [--variant-notes-supported] [--tool v3_3 --only <ids file> --label <name>]
+    python -B -X utf8 tranches/dry_run_tranche.py --tranche 01 --reader-prompt v3_1 [--variant-notes-supported] [--tool v3_3|v3_4 [--sayings-supported] --only <ids file> --label <name>]
 
-Builds the envelopes with `v3_2/to_submission_v3_2.py`, checks each with `chain-fix-submit --check-only --database production` (read-only;
+Builds the envelopes with `v3_2`/`v3_3`/`v3_4/to_submission_*.py`, checks each with `chain-fix-submit --check-only --database production` (read-only;
 a refused fix is dropped and its reason kept, so one bad fix does not hide the others), records the clean ones in a SCRATCH store,
 decides there, and rehearses the database apply (`chain-fix-apply.ts --dry-run --no-mirror`: every report's transaction is rolled
 back). The real store, the overrides file and the database are never written. Everything lands in `development/tranche-dry-run-*`
@@ -72,26 +72,31 @@ def clean_envelope(envelope: Path, reports: Path, flag: list[str], scratch: Path
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--tranche", required=True)
-    parser.add_argument("--reader-prompt", choices=("v3", "v3_1", "v3_2"), required=True)
+    parser.add_argument("--reader-prompt", choices=("v3", "v3_1", "v3_2", "v3_4"), required=True)
     parser.add_argument("--variant-notes-supported", action="store_true")
+    parser.add_argument("--sayings-supported", action="store_true", help="the fix pipeline stores `sayings` on a fix (v3_4): submit readings that carry two sayings")
     parser.add_argument("--out", default=str(ROOT / "datasets" / "hadith-data" / "development" / "tranche-dry-run-2026-11-22"))
     parser.add_argument("--jobs", type=int, default=4)
-    parser.add_argument("--tool", choices=("v3_2", "v3_3"), default="v3_2", help="the reader tool that builds the envelopes (v3_3: the pipeline engine runs its corrected holds)")
+    parser.add_argument("--tool", choices=("v3_2", "v3_3", "v3_4"), default="v3_2", help="the reader tool that builds the envelopes (v3_3: corrected holds; v3_4: saying-labelled readings)")
     parser.add_argument("--only", help="ids file: build envelopes for these readings only (an apply list)")
     parser.add_argument("--label", help="scratch folder name (default t<NN>-with|without)")
     parser.add_argument("--baseline", help="a finished run of the same tranche (the 'without' run): only the fixes it did not have are rehearsed, its plan stands for the rest")
     args = parser.parse_args()
+    if args.sayings_supported and args.tool != "v3_4":
+        parser.error("--sayings-supported requires --tool v3_4")
     label = args.label or f"t{args.tranche}-{'with' if args.variant_notes_supported else 'without'}"
-    scratch = Path(args.out) / label
+    scratch = (Path(args.out) / label).resolve()
     scratch.mkdir(parents=True, exist_ok=True)
     tranche = READER / "tranches" / f"tranche-{args.tranche}"
     reports = tranche / "private" / "reports.jsonl"
-    flag = ["--variant-notes-supported"] if args.variant_notes_supported else []
+    flag = (["--variant-notes-supported"] if args.variant_notes_supported else []) + (["--sayings-supported"] if args.sayings_supported else [])
     only = ["--only", str(Path(args.only).resolve())] if args.only else []
     built = run([sys.executable, "-B", "-X", "utf8", f"{args.tool}/to_submission_{args.tool}.py", "--packets", str(tranche / "packets"), "--reports", str(reports),
                  "--pass-a", str(tranche / "outputs" / "pass-a"), "--pass-b", str(tranche / "outputs" / "pass-b"), "--out", str(scratch),
                  "--batch", f"t{args.tranche}", "--reader-prompt", args.reader_prompt, *flag, *only], cwd=READER)
     print(built.stderr.strip(), file=sys.stderr)
+    if built.returncode != 0:
+        return built.returncode
     report_rows = {row["id"]: row for row in (json.loads(l) for l in reports.read_text(encoding="utf-8").splitlines() if l.strip())}
     envelopes = sorted(scratch.glob("packet-*.envelope.json"))
     eligible = {}                                                  # id -> envelope kind
