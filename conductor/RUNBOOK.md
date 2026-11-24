@@ -1080,3 +1080,27 @@ On Failure). There is no pre-deploy migrate command and no start command (Docker
   and verified `railway config plan` (with `_=...railway.exe` because the SDK checks `$_ --version`) shows no deprecation warning and only
   `~ Update islamicapps deploy.restartPolicyType (null -> "ON_FAILURE")` (`Plan: 0 to add, 1 to change, 0 to destroy`).
 - **Rollback**: `railway config migrate undo` (restores the path if a snapshot exists) or re-add `railway.json` and set the Config File path to `railway.json` in the service settings.
+
+## Tranches 03–10 applied (milestone 4, 2026-11-23)
+
+Logs, plans, catalog, projection, and diffs: `datasets/hadith-data/development/tranche-apply-2026-11-23/` (local). Every write ran sequentially through `chain-fix-submit` / `chain-fix-decide` / `npm run db:chain-fixes` / `db:load` / `db:approve-preview`.
+
+- **Submit & Decide** (`submit-t03-t10.log`, `decide-t03-t10.log`): all 8 tranches' 0-refused envelopes (`t03-submissions/`–`t10-submissions/`, adding `--sayings-supported` for Tranches 07–10) submitted against `--database production`; `chain-fix-decide.ts` recorded **5,587** new fixes (**5,532** accepted, **55** held), bringing the store to **7,416** total fixes (**7,314** accepted, 92 held, 10 superseded) and rewriting `datasets/hadith-data/chain-fixes/accepted_overrides.jsonl.gz` to **7,314** reports:
+  - `t03`: 672 accepted, 3 held (`route_at_most_half_the_longest` 1, `inherited_source_chain_uncertain` 2)
+  - `t04`: 689 accepted, 12 held (`route_at_most_half_the_longest` 2, `cited_by_later_report` 3, `inherited_source_chain_uncertain` 6, `inherited_name_not_in_source_chain` 1)
+  - `t05`: 700 accepted, 9 held (`route_at_most_half_the_longest` 1, `cited_by_later_report` 5, `inherited_source_chain_uncertain` 3)
+  - `t06`: 673 accepted, 2 held (`inherited_source_chain_uncertain` 1, `cited_by_later_report` 1)
+  - `t07`: 701 accepted, 8 held (`inherited_source_chain_uncertain` 6, `cited_by_later_report` 1, `inherited_name_not_in_source_chain` 1)
+  - `t08`: 698 accepted, 7 held (`inherited_source_chain_uncertain` 4, `inherited_name_not_in_source_chain` 1, `cited_by_later_report` 2)
+  - `t09`: 707 accepted, 9 held (`route_at_most_half_the_longest` 2, `inherited_source_chain_uncertain` 7)
+  - `t10`: 692 accepted, 5 held (`inherited_source_chain_uncertain` 2, `cited_by_later_report` 2, `inherited_name_not_in_source_chain` 1)
+- **Production Apply** (`prod-apply-t03-t10.log`, `plan-applied-t03-t10-run1.json`): succeeded on attempt 1 with exit 0; `mirror: 5587 decision rows changed`; `refresh_network: [{"refreshed":true}]`; **5,532** reports applied, **0** skipped (`replace_routes` 4,234, `set_status` 1,138, `replace_routes:no_chain_by_reading` 160; 984 chains retired, 6,793 chains written, 37,279 mentions written: 5,040 `kept_identity`, 22,283 `kept_candidates_only`, 9,889 `new`, 67 `inherited`, 507 `named_in_text`). Applications recorded in `reviews/ai/records/chain-fixes/applications/2026-11-24.jsonl`.
+- **Replay & Load**:
+  - Full export (`projection/`, `projection.log`) produced canonical `643da72450145efd00e6af6d76f8b44bcf8016b36724f150e4c72420a6f59b82`; `check_projection.py` (`check-projection.log`) checked 110,623 chains and 542,515 mentions (`PASS every file-level chain invariant`).
+  - Replay diff over all 7,314 overridden reports (`replay-diff.json`): **0 differences** across 12,142 `chains`, 66,339 `chain_mentions`, and 81,265 `chain_mention_candidates`.
+  - Production load (`prod-load-m4.log`, `prod-load-m4.report.json`): version `643da72450145efd00e6af6d76f8b44bcf8016b36724f150e4c72420a6f59b82`, **0 rows changed** across all 23 tables (`facets 0`, `network refreshed: false`); preview approval re-recorded immediately (`approve-m4.log`).
+- **Verify**:
+  - `npm run db:verify` against production (`verify-m4.log`): `OK: catalog matches src/db/schema and drizzle/core` (55 tables, 14 views, 1 materialized view, 24 of 24 migrations).
+  - `npm run db:verify-data -- --database production --confirm-production` (`verify-data-m4.log`): `OK: all section 11.4 data invariants hold` (`public_hadiths=99437`, `override=true`, `transmissions=28271`).
+  - Live `https://islamicapps-production.up.railway.app/api/health`: HTTP 200 (`{"status":"ok","database":"reachable","latencyMs":39}`).
+  - Live `/method#chain-tiers` (`method.html`, HTTP 200): Rule-built, uncertain **10,743** (Ibadi 43, Imami 2,651, Sunni 8,044, Zaydi 5); Rule-built, checked **87,737** (Ibadi 798, Imami 28,411, Sunni 57,866, Zaydi 662); Read by two models **11,650** (Imami 1,838, Sunni 9,812); AI reviewed **492** (Imami 178, Sunni 314); Agent verified **0**; Verified by a person **0**; No chain, by reading (reports) **217** (Imami 215, Sunni 2).
