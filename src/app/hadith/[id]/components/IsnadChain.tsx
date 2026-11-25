@@ -22,7 +22,8 @@ import type { ChainGraph, ChainMentionCandidate, ChainNode, HadithTraditionCode 
 import { groupCandidates, type IdentityGroup, type IdentityRecord } from '@/db/queries/identity-groups';
 import { sourceForLatinName, sourcesForIdentityClaim } from '@/lib/sources/registry';
 import { ChainSourceCredits } from './family/SourceCredits';
-import { chainFixNote, compilerNote, noChainNote, sayingHeading, structureNote, VARIANT_REMARK_LEAD, variantRemarkCaveat, variantRemarkNames, variantRemarksOf } from './chain-structure';
+import { ChainReviewIndicator } from './ChainReviewIndicator';
+import { chainFixReviewMeta, compilerNote, noChainReviewMeta, sayingHeading, structureNote, VARIANT_REMARK_LEAD, variantRemarkCaveat, variantRemarkNames, variantRemarksOf } from './chain-structure';
 
 /** Which registry a record belongs to, in words, for a second record of the same person. */
 const RECORD_SOURCE: Record<string, string> = {
@@ -281,9 +282,9 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
     const sourceSanad = sourceSanadText?.trim() || null;
     const tradition = chain?.tradition ?? null;
 
-    const noChain = branches.length === 0 ? noChainNote(chain?.disposition) : null;
+    const noChainMeta = branches.length === 0 ? noChainReviewMeta(chain?.disposition) : null;
     const variantRemarks = variantRemarksOf(chain?.nodes ?? []);
-    if (branches.length === 0 && !sourceSanad && !noChain) return null;
+    if (branches.length === 0 && !sourceSanad && !noChainMeta) return null;
 
     return (
         <div className="space-y-8">
@@ -301,10 +302,10 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                 </ArabicText>
             )}
 
-            {noChain && (
-                <p className="type-small text-ink-muted" data-chain-disposition={chain?.disposition?.disposition}>
-                    {noChain}
-                </p>
+            {noChainMeta && (
+                <div>
+                    <ChainReviewIndicator meta={noChainMeta} dataChainDisposition={chain?.disposition?.disposition} />
+                </div>
             )}
 
             {branches.map((branch, branchIndex) => (
@@ -328,11 +329,14 @@ export function IsnadChain({ chain, sourceSanadText, chainLabel }: IsnadChainPro
                             {structureNote(branch.nodes[0])}
                         </p>
                     )}
-                    {chainFixNote(branch.nodes[0].chain_fix, branch.nodes[0].chain_structure_status) && (
-                        <p className="mb-2 type-small text-ink-muted" data-chain-fix={branch.nodes[0].chain_fix?.fix_id}>
-                            {chainFixNote(branch.nodes[0].chain_fix, branch.nodes[0].chain_structure_status)}
-                        </p>
-                    )}
+                    {(() => {
+                        const reviewMeta = chainFixReviewMeta(branch.nodes[0].chain_fix, branch.nodes[0].chain_structure_status);
+                        return reviewMeta ? (
+                            <div className="mb-2">
+                                <ChainReviewIndicator meta={reviewMeta} dataChainFix={branch.nodes[0].chain_fix?.fix_id} />
+                            </div>
+                        ) : null;
+                    })()}
                     {branch.nodes[0].chain_fix?.human_confirmations.map((confirmation) => (
                         <p key={`${confirmation.reviewer}:${confirmation.reviewed_at}`} className="mb-2 type-small text-ink-muted">
                             {confirmation.note}

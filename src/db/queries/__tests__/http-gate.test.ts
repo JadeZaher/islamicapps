@@ -206,10 +206,7 @@ flow('curator: sign-in sets an httpOnly SameSite=Strict cookie that opens /admin
   assert.equal(admin.status, 200);
 
   const action = actionId('createCommentary');
-  if (!action.file.includes('actions/curation')) {
-    console.log('    (authorized HTTP write skipped: the admin client still imports the Neo4j createCommentary)');
-    return;
-  }
+  assert.ok(action.file.includes('actions/curation'), `expected Postgres curation createCommentary, got ${action.file}`);
   const created = await callAction(action.id, action.page || '/admin/commentaries', [{ text: 'Written over HTTP by a curator.' }], { Cookie: session });
   assert.equal(created.status, 200);
   const rows = await fixture.sql`select c.created_by, a.actor from commentaries c join curation_audit a on a.entity_id = c.id
@@ -303,9 +300,6 @@ async function main() {
     AUTH_ENABLED: '1',
     ADMIN_SESSION_SECRET: 'http-gate-session-secret-'.padEnd(48, 'y'),
     CURATOR_PASSPHRASES: JSON.stringify({ [CURATOR]: await hashPassphrase(PASSPHRASE) }),
-    NEO4J_URL: 'bolt://127.0.0.1:1',
-    NEO4J_USERNAME: 'unused',
-    NEO4J_PASSWORD: 'unused',
     // Production refuses to start without SITE_URL (src/lib/site-origin.ts); a loopback http origin is accepted.
     SITE_URL: BASE,
     NODE_ENV: 'production',

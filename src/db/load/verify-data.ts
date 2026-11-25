@@ -458,9 +458,10 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and (case when d.ai_corrected is null
                  then (select count(distinct s.orchestrator_run_id) from chain_fix_submissions s where s.fix_id = d.fix_id) < 2
                       or not exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.view in ('text_only', 'text_and_context'))
-                 -- 0023: a correction two independent reviews wrote alike; every run names the fix it corrects
+                 -- 0023: a correction two independent reviews wrote alike; no pre-existing reader run shares its fix_id (a later re-read may confirm the applied chain)
                  else (select count(distinct s.orchestrator_run_id) from chain_fix_submissions s where s.fix_id = d.fix_id and s.corrects_fix_id is not null) < 2
-                      or exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.corrects_fix_id is null) end)`,
+                      or exists (select 1 from chain_fix_submissions s where s.fix_id = d.fix_id and s.corrects_fix_id is null
+                                   and s.submitted_at <= (select min(c.submitted_at) from chain_fix_submissions c where c.fix_id = d.fix_id and c.corrects_fix_id is not null)) end)`,
   );
   await check(
     'chain fixes: in a chain a fix rewrote, an identity always has its carried candidate (a new name never invents one)',

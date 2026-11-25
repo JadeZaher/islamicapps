@@ -1,7 +1,8 @@
 'use client';
 
 import type { FamilyTelling } from '@/db/queries/contracts';
-import { noChainNote } from '../chain-structure';
+import { ChainReviewIndicator } from '../ChainReviewIndicator';
+import { noChainReviewMeta } from '../chain-structure';
 import { IsnadChain } from '../IsnadChain';
 import styles from './family.module.css';
 import { groupTellings, tellingReference } from './labels';
@@ -21,9 +22,17 @@ function ChainBlock({ telling, isFocal }: { telling: FamilyTelling; isFocal: boo
       </h3>
       <TextCredit hadithId={telling.hadith_id} role="Chain as written" className="mb-4 !text-xs !leading-4" />
       {chainIds.size === 0 ? (
-        <p className={`type-small ${styles.muted}`}>
-          {noChainNote(telling.chain.disposition) ?? 'No chain was extracted for this telling; its source text is shown above.'}
-        </p>
+        telling.chain.disposition ? (
+          <ChainReviewIndicator
+            meta={noChainReviewMeta(telling.chain.disposition)}
+            className={styles.muted}
+            dataChainDisposition={telling.chain.disposition.disposition}
+          />
+        ) : (
+          <p className={`type-small ${styles.muted}`}>
+            No chain was extracted for this telling; its source text is shown above.
+          </p>
+        )
       ) : (
         // The shared chain renderer; the tradition and work are already in the heading above.
         <IsnadChain chain={{ ...telling.chain, tradition: null, source_work: null }} chainLabel={reference} />

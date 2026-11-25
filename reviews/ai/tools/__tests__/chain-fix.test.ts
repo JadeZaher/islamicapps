@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { readerPrompt, REPOSITORY_ROOT, type Submission } from '../chain-fix-lib';
+import { buildOverrides, computeStates, readerPrompt, REPOSITORY_ROOT, type Submission } from '../chain-fix-lib';
 
 const failures: string[] = [];
 function check(name: string, run: () => void): void {
@@ -478,6 +478,83 @@ check('a reading with a variant remark is held without the switch; with it, it i
   const rejected = cli('chain-fix-review', ['--fix', state.fix_id, '--decision', 'rejected', '--reviewer', 'Reviewer One', '--note', 'The remark names the wrong version.', '--store', openStore, '--overrides', openOverrides]);
   assert.equal(rejected.status, 0, rejected.err);
   assert.equal(rowsOf(openOverrides).length, 0);
+});
+
+check('a later no_change reader run with the same fix_id as an AI correction emits one FixState and one override', () => {
+  const baseSub = (overridesSub: Partial<Submission>): Submission => ({
+    format: 'shura-chain-fix-submission/1',
+    submission_id: 'chain-fix-submission:test-1',
+    fix_id: 'chain-fix:deadbeef0000000000000001',
+    hadith_id: 'hadith:test:dedup',
+    record_id: 'test:dedup',
+    tradition: 'sunni',
+    source_work_id: 'sunni:bukhari',
+    arabic_sha256: 'a'.repeat(64),
+    reader_text_sha256: 'b'.repeat(64),
+    text_layout: 'full_text',
+    text_checked_against: 'database',
+    routes_key: 'r0',
+    fix_kinds: ['link_added'],
+    comparison: {},
+    base: { read_from: 'production@2026-11-22T18:00:00Z', chain_sha256: 'base-old', chains: [{ chain_id: 'c0', branch: 0, structure_status: 'uncertain', mentions: [] }] },
+    reading: { routes: [], matn_start: 0, notes: [], offsets_repaired: false },
+    planned: { chains: [{ id: 'c0', branch: 0, length: 1, extraction_method: 'chain_fix_reader', suspension: null, mentions: [] }] },
+    disposition: null,
+    reason: 'test',
+    evidence: [],
+    computed_evidence: [],
+    external_citation: null,
+    holds: [],
+    view: 'text_and_stored_chain',
+    review_kind: 'specialist',
+    label: 'AI reviewed',
+    specialist_id: 'chain-reviewer',
+    specialist_version: '1.1.0',
+    prompt_path: 'p',
+    prompt_version: '1.0.0',
+    prompt_sha256: 'c'.repeat(64),
+    model_id: 'claude-opus-5-5',
+    provider_runtime: 'test',
+    orchestrator_run_id: 'review-1',
+    packet_path: 'p.json',
+    packet_sha256: 'd'.repeat(64),
+    packet_item_id: 'item-1',
+    started_at: '2026-11-23T02:00:00Z',
+    finished_at: '2026-11-23T02:01:00Z',
+    submitted_at: '2026-11-23T02:20:00Z',
+    corrects_fix_id: 'chain-fix:old000000000000000000001',
+    ...overridesSub,
+  });
+  const submissions: Submission[] = [
+    baseSub({ submission_id: 'chain-fix-submission:corr-1', orchestrator_run_id: 'review-p1' }),
+    baseSub({ submission_id: 'chain-fix-submission:corr-2', orchestrator_run_id: 'review-p2' }),
+    baseSub({ submission_id: 'chain-fix-submission:reread-a', orchestrator_run_id: 'reread-a', view: 'text_and_context', specialist_id: 'chain-reader', model_id: 'claude-haiku-5-5', fix_kinds: ['no_change'], base: { read_from: 'production@2026-11-24T06:00:00Z', chain_sha256: 'base-corrected', chains: [{ chain_id: 'c0', branch: 0, structure_status: 'read_by_model', mentions: [] }] }, submitted_at: '2026-11-24T06:38:00Z', corrects_fix_id: undefined }),
+    baseSub({ submission_id: 'chain-fix-submission:reread-b', orchestrator_run_id: 'reread-b', view: 'text_and_context', specialist_id: 'chain-reader', model_id: 'claude-haiku-5-5', fix_kinds: ['no_change'], base: { read_from: 'production@2026-11-24T06:00:00Z', chain_sha256: 'base-corrected', chains: [{ chain_id: 'c0', branch: 0, structure_status: 'read_by_model', mentions: [] }] }, submitted_at: '2026-11-24T06:38:00Z', corrects_fix_id: undefined }),
+  ];
+  const states = computeStates(submissions, [], []);
+  assert.equal(states.length, 1);
+  assert.equal(states[0].fix_id, 'chain-fix:deadbeef0000000000000001');
+  assert.equal(states[0].effect, 'replace_routes');
+  assert.equal(states[0].ai_corrected?.corrects_fix_id, 'chain-fix:old000000000000000000001');
+  const lines = gunzipSync(buildOverrides(states, submissions)).toString('utf8').split('\n').filter(Boolean);
+  assert.equal(lines.length, 1);
+  const override = JSON.parse(lines[0]) as { effect: string; base_chain_sha256: string };
+  assert.equal(override.effect, 'replace_routes');
+  assert.equal(override.base_chain_sha256, 'base-old');
+
+  const noChainSubs: Submission[] = [
+    baseSub({ submission_id: 'chain-fix-submission:nc-1', fix_id: 'chain-fix:deadbeef0000000000000002', hadith_id: 'hadith:test:nochain-reread', orchestrator_run_id: 't02-a', view: 'text_and_context', specialist_id: 'chain-reader', model_id: 'claude-haiku-5-5', fix_kinds: ['link_removed', 'chain_removed'], disposition: 'no_chain_by_reading', planned: { chains: [] }, base: { read_from: 'production@2026-11-23T00:00:00Z', chain_sha256: 'base-stored', chains: [{ chain_id: 'c1', branch: 0, structure_status: 'uncertain', mentions: [] }] }, submitted_at: '2026-11-23T00:27:00Z', corrects_fix_id: undefined }),
+    baseSub({ submission_id: 'chain-fix-submission:nc-2', fix_id: 'chain-fix:deadbeef0000000000000002', hadith_id: 'hadith:test:nochain-reread', orchestrator_run_id: 't02-b', view: 'text_and_context', specialist_id: 'chain-reader', model_id: 'claude-haiku-5-5', fix_kinds: ['link_removed', 'chain_removed'], disposition: 'no_chain_by_reading', planned: { chains: [] }, base: { read_from: 'production@2026-11-23T00:00:00Z', chain_sha256: 'base-stored', chains: [{ chain_id: 'c1', branch: 0, structure_status: 'uncertain', mentions: [] }] }, submitted_at: '2026-11-23T00:27:00Z', corrects_fix_id: undefined }),
+    baseSub({ submission_id: 'chain-fix-submission:nc-3', fix_id: 'chain-fix:deadbeef0000000000000002', hadith_id: 'hadith:test:nochain-reread', orchestrator_run_id: 'r4-a', view: 'text_and_context', specialist_id: 'chain-reader', model_id: 'claude-haiku-5-5', fix_kinds: ['no_change'], disposition: 'no_chain_by_reading', planned: { chains: [] }, base: { read_from: 'production@2026-11-24T06:00:00Z', chain_sha256: 'base-empty', chains: [] }, submitted_at: '2026-11-24T06:38:00Z', corrects_fix_id: undefined }),
+    baseSub({ submission_id: 'chain-fix-submission:nc-4', fix_id: 'chain-fix:deadbeef0000000000000002', hadith_id: 'hadith:test:nochain-reread', orchestrator_run_id: 'r4-b', view: 'text_and_context', specialist_id: 'chain-reader', model_id: 'claude-haiku-5-5', fix_kinds: ['no_change'], disposition: 'no_chain_by_reading', planned: { chains: [] }, base: { read_from: 'production@2026-11-24T06:00:00Z', chain_sha256: 'base-empty', chains: [] }, submitted_at: '2026-11-24T06:38:00Z', corrects_fix_id: undefined }),
+  ];
+  const ncStates = computeStates(noChainSubs, [], []);
+  assert.equal(ncStates.length, 1);
+  assert.equal(ncStates[0].effect, 'replace_routes');
+  assert.equal(ncStates[0].structure_status, 'read_by_model');
+  const [ncLine] = gunzipSync(buildOverrides(ncStates, noChainSubs)).toString('utf8').split('\n').filter(Boolean);
+  const ncOverride = JSON.parse(ncLine) as { effect: string; base_chain_sha256: string; disposition: string };
+  assert.deepEqual([ncOverride.effect, ncOverride.base_chain_sha256, ncOverride.disposition], ['replace_routes', 'base-stored', 'no_chain_by_reading']);
 });
 
 rmSync(work, { recursive: true, force: true });

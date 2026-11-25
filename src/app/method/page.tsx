@@ -170,7 +170,7 @@ const TIER_LABEL: Record<ChainTier, string> = {
   rule_uncertain: 'Rule-built, uncertain',
   rule_checked: 'Rule-built, checked',
   read_by_two_models: 'Read by two models',
-  ai_reviewed: 'AI reviewed',
+  agent_reviewed: 'Agent reviewed',
   agent_verified: 'Agent verified',
   verified_by_person: 'Verified by a person',
   no_chain_by_reading: 'No chain, by reading (reports)',
@@ -265,10 +265,23 @@ export default function MethodPage() {
         <h2 id="chain-tiers-heading" className="type-h2">
           How far each chain has been checked
         </h2>
-        <p id="chain-tiers-intro" className="type-small text-ink-muted mt-1">
-          The goal is that every chain is read by two independent models that agree, reviewed against the Arabic by a stronger model, and matched to a primary witness of the text. “Verified” is kept for a named person’s decision. Counts are of public chains, live.
+        <p id="chain-tiers-intro" className="type-small text-ink-muted mt-1 max-w-[var(--measure-reading)]">
+          Every model-read chain is read by two independent models that agree, reviewed against the Arabic under unified{' '}
+          <strong className="font-semibold text-ink">Agent Review</strong>, and matched to a primary witness of the text for{' '}
+          <span className="text-ink">Agent verified</span>. “Verified” alone is kept for a named person’s decision. Counts are of public chains, live.
         </p>
-        <ul className="type-small mt-[var(--archive-space-2)] list-disc pl-5">
+        <dl className="mt-[var(--archive-space-3)]" id="chain-verification-process">
+          <Row label="Agent Review supersedes AI review">
+            There is no separate ongoing AI-review-only lane. Agent Review unifies automated chain review: when a newer Agent Review mark exists, it supersedes any prior AI review; historical AI-reviewed records from the initial pilot remain displayed under Agent Review and are noted as superseded/historical in each indicator’s tooltip.
+          </Row>
+          <Row label="Prompt &amp; model stamping">
+            Every chain review indicator stamps the exact <span className="archive-code">model_id</span> and original prompt provenance (<span className="archive-code">prompt_version</span>, <span className="archive-code">prompt_path</span>, and <span className="archive-code">prompt_sha256</span> digest when recorded) in its tooltip for both reader and reviewer runs. Older records without recorded prompt fields note them as not recorded.
+          </Row>
+          <Row label="Tier precedence">
+            A named person’s verification overrides all automated stages; next is Agent verified (Agent review plus primary witness match), then Agent reviewed (including two-run corrections), then disputed readings awaiting a second review, then readings agreed by two models.
+          </Row>
+        </dl>
+        <ul className="type-small mt-[var(--archive-space-3)] list-disc pl-5">
           {CHAIN_TIER_WORDING.map((line) => (
             <li key={line}>“{line}”</li>
           ))}

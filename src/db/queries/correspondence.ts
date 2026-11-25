@@ -12,7 +12,16 @@ import type {
   TellingCorrespondence,
 } from './contracts';
 import { englishAttribution } from './hadith';
-import { chainEdges, chainNodesJson, PUBLIC_CHAIN_RELATIONS, REVIEW_CHAIN_RELATIONS, toChainNode, type ChainRelations } from './isnad';
+import {
+  chainEdges,
+  chainNodesJson,
+  PUBLIC_CHAIN_RELATIONS,
+  readerPromptLateralSql,
+  REVIEW_CHAIN_RELATIONS,
+  stampReviewMarkSql,
+  toChainNode,
+  type ChainRelations,
+} from './isnad';
 import { text } from './mappers';
 import { oneRow } from './sql-helpers';
 import { hadithRelationsFor, isCuratorVisibility, PUBLIC_VISIBILITY, type ReadVisibility } from './visibility';
@@ -121,8 +130,12 @@ function familyStatement(relations: FamilyRelations, hadithId: string, cap: numb
       ) as tellings,
       ${chainNodesJson(relations.chains, sql`array(select id from members)`)} as nodes,
       (select json_object_agg(d.hadith_id, json_build_object('fix_id', d.fix_id, 'disposition', d.disposition, 'models', d.models,
-                'runs', d.runs, 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review, 'ai_review', d.ai_review))
-       from public_chain_fix_dispositions d where d.hadith_id in (select id from members)) as dispositions
+                'runs', d.runs, 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review,
+                'prompt_version', rp.prompt_version, 'prompt_path', rp.prompt_path, 'prompt_sha256', rp.prompt_sha256,
+                'ai_review', ${stampReviewMarkSql(sql`d.ai_review`)}))
+       from public_chain_fix_dispositions d
+       left join lateral ${readerPromptLateralSql(sql`d.fix_id`)} rp on true
+       where d.hadith_id in (select id from members)) as dispositions
   `;
 }
 

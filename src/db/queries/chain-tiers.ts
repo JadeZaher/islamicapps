@@ -8,7 +8,7 @@ export const CHAIN_TIERS = [
   'rule_uncertain',
   'rule_checked',
   'read_by_two_models',
-  'ai_reviewed',
+  'agent_reviewed',
   'agent_verified',
   'verified_by_person',
   'no_chain_by_reading',
@@ -24,9 +24,9 @@ export interface ChainTierCoverage {
 const emptyRow = (): Record<ChainTier, number> => Object.fromEntries(CHAIN_TIERS.map((tier) => [tier, 0])) as Record<ChainTier, number>;
 
 /**
- * One tier per live public chain: a person's confirmation; else, read by model, "agent verified" (AI reviewed and a matched witness),
- * "AI reviewed" (confirmed or its correction, not disputed) or "read by two models"; else the structure gate's status. Disputed readings
- * stay in "read by two models". Reports whose applied reading found no chain are counted once each.
+ * One tier per live public chain: a person's confirmation; else, read by model, "agent verified" (Agent reviewed and a matched witness),
+ * "Agent reviewed" (unified Agent Review, including historical AI-reviewed or corrected records, not disputed) or "read by two models";
+ * else the structure gate's status. Disputed readings stay in "read by two models". Reports whose applied reading found no chain are counted once each.
  */
 export async function getChainTierCoverage(): Promise<ChainTierCoverage> {
   const found = await rows<{ tradition: string; tier: ChainTier; n: number }>(sql`
@@ -35,7 +35,7 @@ export async function getChainTierCoverage(): Promise<ChainTierCoverage> {
       select h.tradition_id,
              case when c.structure_status = 'verified_by_reviewer' then 'verified_by_person'
                   when c.structure_status = 'read_by_model' and fl.ai_review is not null and fl.ai_disputed is null and fl.witness_match is not null then 'agent_verified'
-                  when c.structure_status = 'read_by_model' and (fl.ai_review is not null or fl.ai_corrected is not null) and fl.ai_disputed is null then 'ai_reviewed'
+                  when c.structure_status = 'read_by_model' and (fl.ai_review is not null or fl.ai_corrected is not null) and fl.ai_disputed is null then 'agent_reviewed'
                   when c.structure_status = 'read_by_model' then 'read_by_two_models'
                   when c.structure_status = 'uncertain' then 'rule_uncertain'
                   else 'rule_checked' end as tier

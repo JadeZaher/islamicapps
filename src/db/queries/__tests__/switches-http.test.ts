@@ -67,7 +67,7 @@ function publicCurationAction(): { id: string; page: string } | null {
     node: Record<string, { exportedName?: string; filename?: string; workers: Record<string, unknown> }>;
   };
   for (const [id, entry] of Object.entries(manifest.node)) {
-    if (!/actions\/(curation|graph-actions|comparative-actions)/.test(entry.filename ?? '')) continue;
+    if (!/actions\/curation/.test(entry.filename ?? '')) continue;
     if (!/^(create|update|delete|publish|retire|set|add|remove)/.test(entry.exportedName ?? '')) continue;
     const page = Object.keys(entry.workers).find((worker) => !worker.startsWith('app/admin'));
     if (page) return { id, page: page.replace(/^app/, '').replace(/\/page$/, '') || '/' };
@@ -349,9 +349,6 @@ async function main() {
     ADMIN_SESSION_SECRET: '',
     CURATOR_PASSPHRASES: '',
     SITE_URL: BASE,
-    NEO4J_URL: 'bolt://127.0.0.1:1',
-    NEO4J_USERNAME: 'unused',
-    NEO4J_PASSWORD: 'unused',
     NODE_ENV: 'production',
   };
   await startServer(baseEnv);

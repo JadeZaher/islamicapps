@@ -211,23 +211,23 @@ Every candidate identity for a name is kept with its basis. Where sources disagr
 
 ### Chains read by model readers: when a reading replaces the stored chain {#chain-fix-agreement}
 
-`chain-fix-agreement` version `2026.11.22` · Checked by rule · Adopted, not yet loaded
+`chain-fix-agreement` version `2026.11.22.3` · Checked by rule · In use
 
-**Rule.** A model reader reads one report’s Arabic and writes its routes, name by name; a tool checks that every name is written in the text and in order, and compares the reading with the stored chain. A reading replaces the stored chain only when at least two independent reader runs gave exactly the same routes, at least one of them blind to the stored chain, with at least twice the runs of every other reading together, and the tool holds nothing against it. A held reading (it drops a name the stored chain has and the text writes; more than eight routes; nested «جميعا» or several «؛»; a back-reference with no previous report; a point the owner’s rulings do not settle) is never applied: it waits for a third reader or a person. The page then says "Read by model (<model>), <date>; awaiting final review". A chain read by model forms no teacher–student pair in any work until that work’s agreed-reading error rate is measured and the owner lifts it. Only a named person’s confirmation turns it into "Verified by <name>, <date>"; one person’s rejection restores the rule-built chain. Readers’ other findings (identity, lexicon dates, duplicate records, text, translation, metadata) are filed for reviewers and never applied by a tool.
+**Rule.** A model reader reads one report’s Arabic and writes its routes, name by name; a tool checks that every name is written in the text and in order, and compares the reading with the stored chain. A reading replaces the stored chain only when at least two independent reader runs gave exactly the same routes, at least one of them blind to the stored chain, with at least twice the runs of every other reading together, and the tool holds nothing against it. A held reading (it drops a name the stored chain has and the text writes; a route at most half as long as the longest; more than eight routes; nested «جميعا» or several «؛»; a mutabaʿa marker «تابعه» with several routes; a back-reference with no previous report; a point the owner’s rulings do not settle) is never applied by the tool. The page then says "Read by two models (<model>), <date>". Agent review supersedes the earlier standalone AI-review lane (there is no separate ongoing AI-review flow; historical AI-reviewed records are unified under Agent review with their original prompt and model stamped): a stronger reviewer model reads the Arabic against the reading; its confirmation adds "Agent reviewed (<model>), <date>" and stamps the model and prompt provenance in the indicator tooltip; it may clear the holds its rules list as clearable (never a point the owner has not ruled), and a held reading it confirms is applied; a correction is applied only when a second independent review writes the same routes ("Corrected by Agent review (<model>, 2 runs), <date>"); a reading already shown that it does not confirm stays shown and says "Disputed by Agent review; awaiting second review"; it reverts a shown reading only when it keeps the stored chain and that chain differs. The goal state reads "Agent verified: two readers agree, reviewed by <model>, text matched to <witness>", and needs a match of the text to a primary witness, which is not yet built, so no chain says it. When both readings find no isnad in the text, the stored chain is retired and the page says "No chain is written in this report (read by two models (<model>), <date>)". The source named in the text (an Imam asked or speaking) is a link, labelled "Named in the report text"; in a narrated encounter the one who speaks is the last link; two sayings in one report keep their own chains, each headed "Chain of the first saying" / "Chain of the second saying" with the saying’s opening words. A name taken from an earlier report repeats that report’s written name, only when its chain is rule-checked. A kept name keeps its identity only when both its neighbours are unchanged; a new or changed name starts unresolved. Owner ruling (2026-11-22): a report with both a rule-checked and an uncertain chain is read too; when its reading is applied, all its chains are model-read and leave teacher and student lists until a reviewer confirms. A chain read by model forms no teacher–student pair in any work until the owner lifts it per work. Only a named person’s confirmation turns it into "Verified by <name>, <date>", and a person’s decision overrides every agent or AI one; one person’s rejection restores the rule-built chain. Readers’ other findings (identity, lexicon dates, duplicate records, text, translation, metadata) are filed for reviewers and never applied by a tool.
 
 **Evidence.** The report’s Arabic (Pure Canon: the source’s chain field, then the text); Two or more independent readings of it, each with the reader’s model, prompt and quotes; The stored chain, for comparison only.
 
-**Measured.** No measured accuracy. Not measured, and no reading has been applied. The figure this rule needs is how often an agreed reading is wrong, per work, on the 284 labelled pilot reports; two readers can share a mistake, so agreement alone is not that figure. Until it is measured and published here, nothing read by model reaches teacher and student lists.
+**Measured.** Batch 001 (2026-11-22): 500 reports drawn from chains marked uncertain in the six Sunni books, Man la yahduruhu al-Faqih and the other Imami works except al-Kafi, read twice by claude-haiku-5-5 (prompt 3.0.0, blind to the stored chain). An independent reader read 244 of the agreed, unheld readings against the Arabic: the reading was right in 98.6% (96.8–99.4, weighted by group) against 16.0% (11.4–21.9) for the stored chains, and no reading broke a correct stored chain (0 of 244; upper bound about 1.6%). Per group: six Sunni books 85 of 85, al-Faqih 78 of 80, other Imami 76 of 79. Under the owner’s rulings of the same day (the asker is a link; al-Faqih openers lean on the earlier report) and the v3.1 tool that encodes them, the readings the tool lets through were right in 237 of 241 (98.3%, 96–99), none wrong, 4 undecided; the 36 "no chain" readings it lets through were all right. Caveats: the judge was a single model reader, not a scholar, and not blind (it saw the reading while judging the stored chain); 125 of the applied readings were not read by the judge; the empty-reading and asker detectors were tuned on these same cases; the inherited-name path was barely tested (one reading). Of the 394 readings the v3.1 tool lets through, 348 stand applied (2026-11-22); 46 wait: 30 reports that also have a rule-checked chain, 3 whose chain later reports repeat, 4 with a variant remark, 1 inheriting from an uncertain chain, and 11 the corrected v3.2 tool holds (a route at most half the longest, «؛» in a several-route isnad, an Imami single narrator with no source, the Prophet speaking with no transmitter; 9 of them had been applied and were reverted the same day) (datasets/hadith-data/chain-reader/v3_1/batch-001/RETRIAGE.md, conductor/RUNBOOK.md). Sample: 244 agreed, unheld readings of batch 001 (85 six Sunni books, 80 al-Faqih, 79 other Imami) and 57 empty readings, each read against the Arabic by one independent model reader (2026-11-22). Where: `datasets/hadith-data/chain-reader/analysis-batch-001/README.md`.
 
-**Known failure modes.** Two readers sharing one mistake (the same model under the same prompt drops the same Companion named in a matn); A reading of an older text: refused, re-read against the current text; A report whose chain repeats an earlier report’s names: out of scope for a reader of one text.
+**Known failure modes.** Two readers sharing one mistake (the same model under the same prompt drops the same Companion named in a matn); A reading of an older text: refused, re-read against the current text; A point the owner has not ruled (a judgment of the Imam with no transmitter, a cited book’s author, a narrated encounter): only the readers’ own flag guards it; The measurement is one model judge’s, not blind: a shared blind spot of reader and judge is not seen.
 
-**Reader sees.** “Read by model (<model>), <date>; awaiting final review”
+**Reader sees.** “Read by two models (<model>), <date>; then Agent reviewed (<model>), <date>”
 
-**Excluded.** Readers’ findings other than the chain: filed as proposals for reviewers, never applied; An Imam named in the text as the last link, and the Prophet as the end of a chain: not applied this round.
+**Excluded.** Readers’ findings other than the chain: filed as proposals for reviewers, never applied; Names inherited from an earlier report whose chain is uncertain: held; The Prophet as the speaker of a report with no transmitter (not ruled): held, not shown as “no chain”; A reading with a variant remark («بمثل حديث X», another version’s transmitter): held until the remark is kept as a note, never written as a chain; An earlier report whose chain later reports repeat: held, so theirs is not broken.
 
 **Credited.** `SWI` Shura wa Istehsan (this archive).
 
-**Code.** `reviews/ai/tools/chain-fix-lib.ts`, `datasets/hadith-data/chain-fixes/chain_fix_engine.py`, `datasets/hadith-data/chain-reader/context/holds.py`, `src/db/ops/chain-fix-apply.ts`.
+**Code.** `reviews/ai/tools/chain-fix-lib.ts`, `datasets/hadith-data/chain-fixes/chain_fix_engine.py`, `datasets/hadith-data/chain-reader/v3_3/holds_v3_3_pipeline.py`, `datasets/hadith-data/chain-reader/v3_4/holds_v3_4.py`, `datasets/hadith-data/chain-reader/reviewer/review_rules_v1_1.py`, `reviews/ai/tools/chain-review-record.ts`, `src/db/ops/chain-fix-apply.ts`, `datasets/hadith-data/chain-fixes/replay.py`.
 
 ### The compiler heads every chain of his work {#compiler-of-the-work}
 
@@ -280,6 +280,34 @@ Every candidate identity for a name is kept with its basis. Where sources disagr
 **Recommended model.** `claude-opus-5-5`: Rijal reasoning over classical Arabic; Fable 5.2 only for contested names and the Imams’ kunyas. Not: Any model that produced the candidate (Riwayat’s automatic linking used Claude labels: review those with a non-Claude model or flag the overlap).
 
 **Measured agreement.** None yet. Pilot not yet run.
+
+### Isnad reader {#specialist-chain-reader}
+
+`chain-reader` version `3.1.0` · AI specialist review · Ready for its pilot
+
+**Question.** Which routes of transmission does this report’s Arabic write, name by name?
+
+**System prompt.** [`datasets/hadith-data/chain-reader/v3_1/prompt-v3_1.md`](../../datasets/hadith-data/chain-reader/v3_1/prompt-v3_1.md) (version and SHA-256 in `reviews/ai/specialists.json`).
+
+**Packet.** The report’s Arabic exactly as stored (Pure Canon: the source’s chain field, a blank line, then the text); The work’s conventions, the sources’ own claims and the earlier reports a back-reference needs (v3, v3.1), never the stored chain or another reader. Nothing about how the pipeline scored the claim.
+
+**Recommended model.** `claude-haiku-5-5`: A mechanical reading checked by a validator, held by the tool where it is known to fail, and read by a second independent reader; disputes go to a person.
+
+**Measured agreement.** None yet. Batch 001 (prompt 3.0.0, 500 uncertain reports, two blind passes) was judged by one independent model reader: agreed, unheld readings right in 98.6% (96.8–99.4) against 16% for the stored chains (datasets/hadith-data/chain-reader/analysis-batch-001/README.md); prompt 3.1.0 has not yet been run, and no per-work rate is established for lifting the list exclusion.
+
+### Chain reviewer (AI first pass of final review) {#specialist-chain-reviewer}
+
+`chain-reviewer` version `1.1.0` · AI specialist review · Ready for its pilot
+
+**Question.** Does the readers’ reading of this report’s routes match the Arabic, and if not, what does?
+
+**System prompt.** [`datasets/hadith-data/chain-reader/reviewer/prompt-reviewer-v1_1.md`](../../datasets/hadith-data/chain-reader/reviewer/prompt-reviewer-v1_1.md) (version and SHA-256 in `reviews/ai/specialists.json`).
+
+**Packet.** The report’s Arabic and the sources’ context; Both readers’ readings and notes, and the tool’s holds in plain words; The stored chain, for comparison. Nothing about how the pipeline scored the claim.
+
+**Recommended model.** `claude-opus-5-5`: Close reading of the Arabic against two model readings; it must out-read the readers it reviews. Not: claude-haiku-5-5 (the readers it reviews).
+
+**Measured agreement.** None yet. Pilot (prompt 1.0.0, 81 tranche-02 readings, one Opus adjudicator over 55, not blind, not a person), re-scored under the v1.1 rule: 26 of 26 wrong readings caught, 52 of 52 right readings confirmed (3 by a cosmetic correction counted as a confirmation), no harmful outcome (datasets/hadith-data/chain-reader/reviewer/README-v1_1.md §4). Prompt 1.1.0 has not been run.
 
 ## Tellings of the same report {#correspondence}
 

@@ -107,7 +107,7 @@ export const REVIEWER_SPECIALIST_ID = 'chain-reviewer';
 /** What a review by the AI reviewer led to (review_rules_v1_1.ACTION_CLASS keys). */
 export type ReviewOutcome = 'apply_reading' | 'apply_reader_a' | 'apply_reader_b' | 'apply_correction' | 'apply_no_chain' | 'label_ai_reviewed' | 'label_disputed'
   | 'queue_for_human' | 'keep_held' | 'discard_reading' | 'revert_to_stored' | 'human_decides';
-/** An AI review's mark on a fix's state (model, run, time); never worded "verified". */
+/** An agent/AI review's mark on a fix's state (model, prompt provenance, run, time); never worded "verified". */
 export interface AiMark {
   model_id: string;
   run_id: string;
@@ -115,6 +115,10 @@ export interface AiMark {
   review_id: string;
   outcome: ReviewOutcome;
   decision: string;
+  prompt_version?: string;
+  prompt_path?: string | null;
+  prompt_sha256?: string | null;
+  specialist_id?: string;
 }
 /** A previous report an inherited reading takes names from (to_submission_v3_1.py `inherited_from`), resolved to the archive. */
 export interface InheritedSource {
@@ -684,7 +688,16 @@ const latestAiReview = (reviews: Review[]) =>
   [...reviews].filter((r) => r.reviewer_kind === 'ai' && r.outcome).sort((a, b) => a.reviewed_at.localeCompare(b.reviewed_at) || a.review_id.localeCompare(b.review_id)).at(-1) ?? null;
 
 const aiMark = (review: Review): AiMark => ({
-  model_id: review.model_id ?? '', run_id: review.run_id ?? '', at: review.reviewed_at, review_id: review.review_id, outcome: review.outcome!, decision: review.review_decision ?? '',
+  model_id: review.model_id ?? '',
+  run_id: review.run_id ?? '',
+  at: review.reviewed_at,
+  review_id: review.review_id,
+  outcome: review.outcome!,
+  decision: review.review_decision ?? '',
+  ...(review.specialist_version ? { prompt_version: review.specialist_version } : {}),
+  ...(review.prompt_path ? { prompt_path: review.prompt_path } : {}),
+  ...(review.prompt_sha256 ? { prompt_sha256: review.prompt_sha256 } : {}),
+  ...(review.reviewer ? { specialist_id: review.reviewer } : {}),
 });
 
 /** Outcomes that apply a held or pending reading (review_rules_v1_1.ACTION_CLASS "apply" for the readers' own fix). */
@@ -747,9 +760,11 @@ export function computeStates(submissions: Submission[], reviews: Review[], appl
     // A correction that carries a hold the reviewer may not clear does not replace anything: it waits, the reading stays.
     for (const [fixId, runs] of correctionRuns) if (runs.length >= 2 && holdsOf(fixId, runs).length === 0 && humanLatest(fixId).every((r) => r.decision !== 'rejected')) correctedBy.set(runs[0].corrects_fix_id!, fixId);
 
-    for (const [fixId, runs] of [...byFix, ...correctionRuns]) {
+    // When a later reader re-read matches an applied AI correction (same fix_id), the AI correction stays authoritative; emit one FixState per fix_id.
+    for (const [fixId, runs] of [...[...byFix].filter(([id]) => !correctionRuns.has(id)), ...correctionRuns]) {
       const isCorrection = correctionRuns.has(fixId);
-      const representative = [...runs].sort((a, b) => (a.text_checked_against === 'database' ? 0 : 1) - (b.text_checked_against === 'database' ? 0 : 1) || b.submitted_at.localeCompare(a.submitted_at))[0];
+      // Prefer the earliest reading against the live database so a later no_change re-read of the already-applied fix keeps the original base and effect.
+      const representative = [...runs].sort((a, b) => (a.text_checked_against === 'database' ? 0 : 1) - (b.text_checked_against === 'database' ? 0 : 1) || a.submitted_at.localeCompare(b.submitted_at) || a.submission_id.localeCompare(b.submission_id))[0];
       const isNoChange = representative.fix_kinds.includes('no_change');
       const latest = latestPerReviewer(reviewsByFix.get(fixId) ?? []);
       const humans = latest.filter((r) => r.reviewer_kind === 'human');

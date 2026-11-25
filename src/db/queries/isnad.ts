@@ -125,6 +125,36 @@ export function chainRelationsFor(visibility: ReadVisibility): ChainRelations {
 }
 
 /**
+ * Enrich a stored JSONB review mark (`ai_review`, `ai_disputed`) with original prompt provenance from
+ * `chain_fix_reviews` when not already stamped on the mark.
+ */
+export function stampReviewMarkSql(mark: SQL): SQL {
+  return sql`case when ${mark} is not null then ${mark}::jsonb || coalesce(
+    (select jsonb_strip_nulls(jsonb_build_object(
+       'prompt_version', r.specialist_version,
+       'prompt_path', r.prompt_path,
+       'prompt_sha256', r.prompt_sha256,
+       'specialist_id', r.reviewer
+     ))
+     from chain_fix_reviews r
+     where r.id = ${mark} ->> 'review_id'
+     limit 1),
+    '{}'::jsonb
+  ) end`;
+}
+
+/** Reader prompt provenance from the earliest submission of a fix (if any). */
+export function readerPromptLateralSql(fixId: SQL): SQL {
+  return sql`(
+    select s.prompt_version, s.prompt_path, s.prompt_sha256
+    from chain_fix_submissions s
+    where s.fix_id = ${fixId}
+    order by s.corrects_fix_id is not null, s.submitted_at asc, s.id asc
+    limit 1
+  )`;
+}
+
+/**
  * One JSON array of chain nodes for the reports in `hadithIds` (an SQL expression yielding a text[]), ordered by
  * report, branch, position. Each node carries all its identity candidates. Used inside a larger statement, so a page
  * section stays one round trip.
@@ -165,7 +195,17 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
                'fix_id', fl.fix_id, 'state', fl.state, 'effect', fl.effect, 'models', fl.models, 'runs', fl.runs,
                'decided_at', fl.decided_at, 'awaiting_final_review', fl.awaiting_final_review,
                'human_confirmations', fl.human_confirmations, 'variant_remarks', cf.planned -> 'variant_remarks',
-               'ai_review', fl.ai_review, 'ai_disputed', fl.ai_disputed, 'ai_corrected', fl.ai_corrected, 'witness_match', fl.witness_match) end,
+               'prompt_version', rp.prompt_version, 'prompt_path', rp.prompt_path, 'prompt_sha256', rp.prompt_sha256,
+               'ai_review', ${stampReviewMarkSql(sql`fl.ai_review`)},
+               'ai_disputed', ${stampReviewMarkSql(sql`fl.ai_disputed`)},
+               'ai_corrected', case when fl.ai_corrected is not null then fl.ai_corrected::jsonb || coalesce(
+                 (select jsonb_strip_nulls(jsonb_build_object(
+                    'prompt_version', cs.prompt_version, 'prompt_path', cs.prompt_path,
+                    'prompt_sha256', cs.prompt_sha256, 'specialist_id', cs.specialist_id))
+                  from chain_fix_submissions cs
+                  where cs.fix_id = fl.fix_id and cs.corrects_fix_id is not null
+                  order by cs.submitted_at desc, cs.id desc limit 1), '{}'::jsonb) end,
+               'witness_match', fl.witness_match) end,
              'reader_link_kind', mk.reader_kind,
              -- Tool v3.4: the saying this route belongs to, from the fix's plan (label and opening words of planned.sayings).
              'chain_saying', (select jsonb_build_object('saying', s ->> 'saying', 'label', s ->> 'label', 'opens', s ->> 'opens')
@@ -178,6 +218,7 @@ export function chainNodesJson(relations: ChainRelations, hadithIds: SQL): SQL {
     left join narrators cn on cn.id = l.chain_compiler_narrator_id and cn.retired_at is null
     left join public_chain_fix_labels fl on fl.chain_id = l.chain_id
     left join chain_fixes cf on cf.id = fl.fix_id
+    left join lateral ${readerPromptLateralSql(sql`fl.fix_id`)} rp on fl.fix_id is not null
     left join public_chain_fix_mention_kinds mk on mk.mention_id = l.id
     left join candidates k on k.mention_id = l.id
     where l.hadith_id = any (${hadithIds})
@@ -267,8 +308,12 @@ export async function getChainGraph(hadithId: string, visibility: ReadVisibility
       ) as verdicts,
       (
         select json_build_object('fix_id', d.fix_id, 'disposition', d.disposition, 'models', d.models, 'runs', d.runs,
-                                 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review, 'ai_review', d.ai_review)
-        from public_chain_fix_dispositions d where d.hadith_id = ${hadithId}
+                                 'decided_at', d.decided_at, 'awaiting_final_review', d.awaiting_final_review,
+                                 'prompt_version', rp.prompt_version, 'prompt_path', rp.prompt_path, 'prompt_sha256', rp.prompt_sha256,
+                                 'ai_review', ${stampReviewMarkSql(sql`d.ai_review`)})
+        from public_chain_fix_dispositions d
+        left join lateral ${readerPromptLateralSql(sql`d.fix_id`)} rp on true
+        where d.hadith_id = ${hadithId}
         limit 1
       ) as disposition
   `);

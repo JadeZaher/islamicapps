@@ -208,13 +208,19 @@ export interface ChainSaying {
   opens: string;
 }
 
-/** An AI reviewer's mark on a model reading (0023): the model, its run and when; never "verified". */
+/** An agent or legacy AI reviewer mark on a model reading (0023): the model, prompt provenance, run and when; never "verified". */
 export interface ChainAiMark {
   model_id: string;
   run_id: string;
   at: string;
   outcome: string;
   decision: string;
+  review_id?: string | null;
+  /** Original prompt provenance stamped on the review (from `chain_fix_reviews` or the mark itself). */
+  prompt_version?: string | null;
+  prompt_path?: string | null;
+  prompt_sha256?: string | null;
+  specialist_id?: string | null;
 }
 
 /** 0021: a report whose applied model reading found no isnad in the text (`public_chain_fix_dispositions`). */
@@ -225,7 +231,13 @@ export interface ChainDisposition {
   runs: number;
   decided_at: string;
   awaiting_final_review: boolean;
-  /** 0023: the AI reviewer confirmed the reading. */
+  /** Optional reader prompt provenance from `chain_fix_submissions`. */
+  prompt_version?: string | null;
+  prompt_path?: string | null;
+  prompt_sha256?: string | null;
+  /** Unified Agent Review confirmation (supersedes legacy `ai_review`). */
+  agent_review?: ChainAiMark | null;
+  /** 0023: legacy AI reviewer confirmation (historical under unified Agent Review). */
   ai_review?: ChainAiMark | null;
 }
 
@@ -260,6 +272,17 @@ export interface ChainVariantRemark {
   passes: ('a' | 'b')[];
 }
 
+/** Provenance-stamped correction mark (two independent reviews writing the same routes). */
+export interface ChainCorrectionMark {
+  runs: string[];
+  models: string[];
+  at: string;
+  prompt_version?: string | null;
+  prompt_path?: string | null;
+  prompt_sha256?: string | null;
+  specialist_id?: string | null;
+}
+
 /** A model reading a chain shows (0019; docs/review/chain-fix-pipeline.md). "Verified" only with a human confirmation. */
 export interface ChainFixLabel {
   fix_id: string;
@@ -270,12 +293,20 @@ export interface ChainFixLabel {
   decided_at: string;
   awaiting_final_review: boolean;
   human_confirmations: ChainFixConfirmation[];
+  /** Optional reader prompt provenance from `chain_fix_submissions`. */
+  prompt_version?: string | null;
+  prompt_path?: string | null;
+  prompt_sha256?: string | null;
   /** Remarks about another version the readers noted in the report; absent when none. */
   variant_remarks?: ChainVariantRemark[] | null;
-  /** 0023: the AI reviewer confirmed it; disputed it (it stays, awaiting a second review); or this reading is its correction (two runs). */
+  /** Unified Agent Review marks (supersede legacy `ai_review` / `ai_disputed` / `ai_corrected` when present). */
+  agent_review?: ChainAiMark | null;
+  agent_disputed?: ChainAiMark | null;
+  agent_corrected?: ChainCorrectionMark | null;
+  /** 0023: legacy AI reviewer marks (superseded by / historical under unified Agent Review). */
   ai_review?: ChainAiMark | null;
   ai_disputed?: ChainAiMark | null;
-  ai_corrected?: { runs: string[]; models: string[]; at: string } | null;
+  ai_corrected?: ChainCorrectionMark | null;
   /** 0023: a primary witness the report's text was matched to (none exists yet: text witness matching is not built). */
   witness_match?: { witness: string; locator: string; method: string; matched_at: string } | null;
 }
