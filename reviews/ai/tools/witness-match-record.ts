@@ -639,7 +639,9 @@ async function main(): Promise<number> {
     console.log(`dup  ${r.packet_item_id}: already recorded as ${r.id}`);
   }
 
-  if (!checkOnly && fresh.length > 0) {
+  const dryRun = args.has('dry-run');
+
+  if (!checkOnly && !dryRun && fresh.length > 0) {
     const dir = path.join(storeRoot, 'witness-matches');
     mkdirSync(dir, { recursive: true });
     const byRun = new Map<string, WitnessMatchRecord[]>();
@@ -654,8 +656,8 @@ async function main(): Promise<number> {
 
   let dbSummary = '';
   if (useDatabase && !checkOnly) {
-    const dbResult = await recordWitnessMatchesToDatabase(records, argv, args.has('dry-run'));
-    dbSummary = `; db inserted=${dbResult.inserted}, db_existing=${dbResult.skippedExisting}${args.has('dry-run') ? ' (dry-run rolled back)' : ''}`;
+    const dbResult = await recordWitnessMatchesToDatabase(records, argv, dryRun);
+    dbSummary = `; db inserted=${dbResult.inserted}, db_existing=${dbResult.skippedExisting}${dryRun ? ' (dry-run rolled back)' : ''}`;
   }
 
   console.log(
