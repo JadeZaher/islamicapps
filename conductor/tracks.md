@@ -16,14 +16,14 @@ Status: `[~]` in progress, `[ ]` planned, `[x]` done. All ids end in `_20261121`
 
 | | Track | Steps | Depends on | Blocks |
 | --- | --- | --- | --- | --- |
-| [~] | [`build-fix-and-deploy-config`](./tracks/build-fix-and-deploy-config_20261121/spec.md) | 2 | none | containment (done-when), railway-cutover |
-| [ ] | [`containment-and-access-control`](./tracks/containment-and-access-control_20261121/spec.md) | 0.5, 1 | build-fix (final done-when only) | query-port, railway-cutover |
-| [~] | [`postgres-foundation`](./tracks/postgres-foundation_20261121/spec.md) | 4 | none | loader, query-port |
-| [ ] | [`bundle-to-postgres-loader`](./tracks/bundle-to-postgres-loader_20261121/spec.md) | 5 | postgres-foundation | query-port, curation-export, grading-coverage |
-| [ ] | [`query-port-and-action-switch`](./tracks/query-port-and-action-switch_20261121/spec.md) | 6 | foundation, loader, containment, ui-polish (phase 6 only) | railway-cutover, identity, evidence, vectors |
-| [ ] | [`neo4j-curation-export`](./tracks/neo4j-curation-export_20261121/spec.md) | 7 | loader | railway-cutover, evidence |
-| [ ] | [`railway-cutover`](./tracks/railway-cutover_20261121/spec.md) | 8, 9 | build-fix, containment, query-port, curation-export | retirement-sweep, vectors |
-| [ ] | [`neo4j-retirement-sweep`](./tracks/neo4j-retirement-sweep_20261121/spec.md) | 10 | railway-cutover | none |
+| [x] | [`build-fix-and-deploy-config`](./tracks/build-fix-and-deploy-config_20261121/spec.md) | 2 | none | containment (done-when), railway-cutover |
+| [x] | [`containment-and-access-control`](./tracks/containment-and-access-control_20261121/spec.md) | 0.5, 1 | build-fix (final done-when only) | query-port, railway-cutover |
+| [x] | [`postgres-foundation`](./tracks/postgres-foundation_20261121/spec.md) | 4 | none | loader, query-port |
+| [x] | [`bundle-to-postgres-loader`](./tracks/bundle-to-postgres-loader_20261121/spec.md) | 5 | postgres-foundation | query-port, curation-export, grading-coverage |
+| [x] | [`query-port-and-action-switch`](./tracks/query-port-and-action-switch_20261121/spec.md) | 6 | foundation, loader, containment, ui-polish (phase 6 only) | railway-cutover, identity, evidence, vectors |
+| [x] | [`neo4j-curation-export`](./tracks/neo4j-curation-export_20261121/spec.md) | 7 | loader | railway-cutover, evidence |
+| [x] | [`railway-cutover`](./tracks/railway-cutover_20261121/spec.md) | 8, 9 | build-fix, containment, query-port, curation-export | retirement-sweep, vectors |
+| [x] | [`neo4j-retirement-sweep`](./tracks/neo4j-retirement-sweep_20261121/spec.md) | 10 | railway-cutover | none |
 | [ ] | [`vectors-semantic-search`](./tracks/vectors-semantic-search_20261121/spec.md) | 11 | query-port, railway-cutover; owner Q8 | none |
 
 Containment phase 0 (step 0.5: inspect the `*_CSV_URLS` variables, rotate the
