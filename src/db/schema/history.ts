@@ -32,11 +32,17 @@ export const locations = pgTable(
     longitude: doublePrecision('longitude'),
     verificationStatus: eventVerificationEnum('verification_status').notNull().default('unverified'),
     origin: recordOriginEnum('origin').notNull(),
+    kind: text('kind'),
+    formsAr: text('forms_ar').array().notNull().default(sql`'{}'::text[]`),
+    ambiguousForms: jsonb('ambiguous_forms'),
+    citedInCitationIds: text('cited_in_citation_ids').array().notNull().default(sql`'{}'::text[]`),
+    coordinatesBasis: text('coordinates_basis'),
     ...curationBookkeeping(),
   },
   (table) => [
     check('locations_latitude_check', sql`${table.latitude} between -90 and 90`),
     check('locations_longitude_check', sql`${table.longitude} between -180 and 180`),
+    check('locations_ambiguous_forms_check', sql`${table.ambiguousForms} is null or jsonb_typeof(${table.ambiguousForms}) = 'object'`),
   ],
 );
 
@@ -68,23 +74,39 @@ function historicalEventColumns() {
 }
 
 /** A historical event; the publish gate is a check constraint here and a view on read. */
-export const historicalEvents = pgTable('historical_events', historicalEventColumns(), (table) => [
-  restrictForeignKey('historical_events_location_id_fk', table.locationId, locations.id),
-  restrictForeignKey('historical_events_citation_id_fk', table.citationId, citations.id),
-  check(
-    'historical_events_year_order_check',
-    sql`${table.startYearHijri} is null or ${table.endYearHijri} is null or ${table.endYearHijri} >= ${table.startYearHijri}`,
-  ),
-  check(
-    'historical_events_publication_gate_check',
-    sql`not ${table.publicationReady} or (${table.verificationStatus} in ('human_verified', 'source_verified') and nullif(trim(${table.citationSource}), '') is not null and (nullif(trim(${table.citationLocator}), '') is not null or nullif(trim(${table.citationUrl}), '') is not null))`,
-  ),
-  index('historical_events_year_range_idx').on(table.startYearHijri, table.endYearHijri),
-  index('historical_events_category_idx').on(table.category),
-  index('historical_events_published_start_idx')
-    .on(table.startYearHijri)
-    .where(sql`${table.publicationReady}`),
-]);
+export const historicalEvents = pgTable(
+  'historical_events',
+  {
+    ...historicalEventColumns(),
+    /** Stable slug key for history-lane candidate events and cross-lane event references (0024). */
+    key: text('key'),
+    traditionContext: hadithTraditionEnum('tradition_context'),
+    aiReview: jsonb('ai_review'),
+    humanReviews: jsonb('human_reviews').notNull().default(sql`'[]'::jsonb`),
+  },
+  (table) => [
+    restrictForeignKey('historical_events_location_id_fk', table.locationId, locations.id),
+    restrictForeignKey('historical_events_citation_id_fk', table.citationId, citations.id),
+    check(
+      'historical_events_year_order_check',
+      sql`${table.startYearHijri} is null or ${table.endYearHijri} is null or ${table.endYearHijri} >= ${table.startYearHijri}`,
+    ),
+    check(
+      'historical_events_publication_gate_check',
+      sql`not ${table.publicationReady} or (${table.verificationStatus} in ('human_verified', 'source_verified') and nullif(trim(${table.citationSource}), '') is not null and (nullif(trim(${table.citationLocator}), '') is not null or nullif(trim(${table.citationUrl}), '') is not null))`,
+    ),
+    check('historical_events_ai_review_check', sql`${table.aiReview} is null or jsonb_typeof(${table.aiReview}) = 'object'`),
+    check('historical_events_human_reviews_check', sql`jsonb_typeof(${table.humanReviews}) = 'array'`),
+    uniqueIndex('historical_events_live_key_key')
+      .on(table.key)
+      .where(sql`${table.retiredAt} is null and ${table.key} is not null`),
+    index('historical_events_year_range_idx').on(table.startYearHijri, table.endYearHijri),
+    index('historical_events_category_idx').on(table.category),
+    index('historical_events_published_start_idx')
+      .on(table.startYearHijri)
+      .where(sql`${table.publicationReady}`),
+  ],
+);
 
 /** Link: a narrator's involvement in an event. */
 export const narratorEvents = pgTable(
@@ -94,14 +116,22 @@ export const narratorEvents = pgTable(
     narratorId: text('narrator_id').notNull(),
     eventId: text('event_id').notNull(),
     role: text('role').notNull().default('Participant'),
+    citationId: text('citation_id'),
+    statedAr: text('stated_ar'),
+    aiReview: jsonb('ai_review'),
+    humanReviews: jsonb('human_reviews').notNull().default(sql`'[]'::jsonb`),
   },
   (table) => [
     restrictForeignKey('narrator_events_narrator_id_fk', table.narratorId, narrators.id),
     restrictForeignKey('narrator_events_event_id_fk', table.eventId, historicalEvents.id),
+    restrictForeignKey('narrator_events_citation_id_fk', table.citationId, citations.id),
+    check('narrator_events_ai_review_check', sql`${table.aiReview} is null or jsonb_typeof(${table.aiReview}) = 'object'`),
+    check('narrator_events_human_reviews_check', sql`jsonb_typeof(${table.humanReviews}) = 'array'`),
     uniqueIndex('narrator_events_live_key')
       .on(table.narratorId, table.eventId, table.role)
       .where(isLive(table.retiredAt)),
     index('narrator_events_event_id_idx').on(table.eventId),
+    index('narrator_events_citation_id_idx').on(table.citationId),
   ],
 );
 
