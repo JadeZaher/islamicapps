@@ -62,6 +62,60 @@
   gap: 0 var(--timeline-space-2);
 }
 
+.citationWrap {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--timeline-space-1);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+}
+
+.citationLink {
+  color: var(--timeline-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--timeline-rule);
+}
+
+.citationLink:hover {
+  color: var(--timeline-ink);
+  text-decoration-color: var(--timeline-ink);
+}
+
+.candidateTag {
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--timeline-muted);
+  border-inline-start: 2px solid var(--timeline-rule);
+  padding-inline-start: var(--timeline-space-1);
+}
+
+.itemDetail {
+  margin: var(--timeline-space-1) 0 0;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  color: var(--timeline-muted);
+}
+
+.assertionList {
+  margin: var(--timeline-space-1) 0 0;
+  padding: 0 0 0 var(--timeline-space-3);
+  list-style: none;
+  border-inline-start: var(--timeline-hairline) solid var(--timeline-rule);
+}
+
+.assertionItem {
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--timeline-muted);
+}
+
+.assertionYear {
+  color: var(--timeline-ink);
+  margin-inline-end: var(--timeline-space-1);
+}
+
 .credit {
   display: inline;
   margin: 0;

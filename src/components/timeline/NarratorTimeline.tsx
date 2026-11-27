@@ -5,9 +5,11 @@
  */
 import type { EpochEntry, EventEntry, LifeRelation, NarratorTimeline as NarratorTimelineData, RelatedInterval } from '@/db/queries/timeline-contracts';
 import { formatInterval } from '@/db/queries/timeline-rules';
+import { ArabicText } from '@/components/ArabicText';
 import { GlossaryTerm } from '@/components/GlossaryTerm';
 import { TabaqahTimeline } from '@/components/TabaqahTimeline';
 import { BasisLabel } from './BasisLabel';
+import { CitationLink, TemporalAssertionsList } from './CitationLink';
 import { buildScale } from './scale';
 import { AxisRow, EpochLane, EventLane, Legend, LifeMarks } from './TimelineGeometry';
 import { LifespanFacts, PlaceFacts } from './TimelineFacts';
@@ -30,7 +32,7 @@ function RelatedList<T extends EpochEntry | EventEntry>({ items }: { items: Arra
         <li key={entry.id} className={styles.listItem}>
           <span className={styles.listYear}>{formatInterval(entry)}</span>
           <div>
-            {entry.name}
+            <span>{entry.name}</span>
             <span className={styles.basis}> · {RELATION_LABELS[relation]}</span>
             {entry.kind === 'epoch' && entry.alternate_names.length > 0 && (
               <span className={styles.basis}>
@@ -41,6 +43,14 @@ function RelatedList<T extends EpochEntry | EventEntry>({ items }: { items: Arra
             {entry.kind === 'epoch' && entry.boundary_note && <span className={styles.basis}> · Boundary disputed: {entry.boundary_note}</span>}
             {entry.kind === 'event' && entry.location_name && <span className={styles.basis}> · {entry.location_name}</span>}{' '}
             {!shared && <BasisLabel basis={entry.basis} />}
+            {entry.citation && (
+              <>
+                {' · '}
+                <CitationLink citation={entry.citation} />
+              </>
+            )}
+            {entry.kind === 'event' && entry.description && <p className={styles.itemDetail}>{entry.description}</p>}
+            <TemporalAssertionsList assertions={entry.temporal_assertions} />
           </div>
         </li>
       ))}
@@ -109,13 +119,43 @@ export function NarratorTimeline({ timeline }: { timeline: NarratorTimelineData 
           <RelatedList items={timeline.epochs.filter((item) => item.entry.tradition_context === tradition)} />
         </div>
       ))}
+      {timeline.narrator_events.length > 0 && (
+        <>
+          <h3 className={styles.subheading}>Recorded narrator events</h3>
+          <ul className={styles.list}>
+            {timeline.narrator_events.map((item) => (
+              <li key={item.id} className={styles.listItem}>
+                <span className={styles.listYear}>{formatInterval(item.event)}</span>
+                <div>
+                  <span>{item.event.name}</span>
+                  <span className={styles.basis}> · {item.role}</span>
+                  {item.event.location_name && <span className={styles.basis}> · {item.event.location_name}</span>}{' '}
+                  <BasisLabel basis={item.event.basis} />
+                  {item.citation && (
+                    <>
+                      {' · '}
+                      <CitationLink citation={item.citation} />
+                    </>
+                  )}
+                  {item.stated_ar && (
+                    <p className={styles.itemDetail}>
+                      <ArabicText>{item.stated_ar}</ArabicText>
+                    </p>
+                  )}
+                  <TemporalAssertionsList assertions={item.event.temporal_assertions} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       {timeline.events.length > 0 && (
         <>
-          <h3 className={styles.subheading}>Events</h3>
+          <h3 className={styles.subheading}>Contextual historical events</h3>
           <RelatedList items={timeline.events} />
         </>
       )}
-      {scale && timeline.epochs.length === 0 && timeline.events.length === 0 && (
+      {scale && timeline.epochs.length === 0 && timeline.events.length === 0 && timeline.narrator_events.length === 0 && (
         <p className={styles.note}>No era or event{timeline.audience === 'public' ? ' that has been reviewed and cited' : ''} falls within the recorded dates.</p>
       )}
       {!timeline.epochs_available && timeline.audience === 'review' && <p className={styles.note}>Eras are not yet available in this database.</p>}

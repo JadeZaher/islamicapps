@@ -11,6 +11,7 @@ import { GlossaryTerm } from '@/components/GlossaryTerm';
 import { BilingualTitle, NarratorName } from '@/components/NarratorName';
 import { HADITH_TRADITIONS, TraditionMark, type HadithTradition } from '@/components/marks';
 import { BasisLabel } from './BasisLabel';
+import { CitationLink, TemporalAssertionsList } from './CitationLink';
 import { buildScale } from './scale';
 import { AxisRow, EpochLane, EventLane, Legend, LifeMarks } from './TimelineGeometry';
 import { GenerationFacts, LifespanFacts, PlaceFacts, shortLife } from './TimelineFacts';
@@ -214,10 +215,18 @@ export function ChainTimeline({ family, headingId = 'chain-timeline-heading' }: 
                 <li key={entry.id} className={styles.listItem}>
                   <span className={styles.listYear}>{formatInterval(entry)}</span>
                   <div>
-                    {entry.name}
+                    <span>{entry.name}</span>
                     {entry.kind === 'epoch' && entry.boundary_note && <span className={styles.basis}> · Boundary disputed: {entry.boundary_note}</span>}
                     {entry.kind === 'event' && entry.location_name && <span className={styles.basis}> · {entry.location_name}</span>}{' '}
                     {!sharedAxisBasis && <BasisLabel basis={entry.basis} />}
+                    {entry.citation && (
+                      <>
+                        {' · '}
+                        <CitationLink citation={entry.citation} />
+                      </>
+                    )}
+                    {entry.kind === 'event' && entry.description && <p className={styles.itemDetail}>{entry.description}</p>}
+                    <TemporalAssertionsList assertions={entry.temporal_assertions} />
                   </div>
                 </li>
               ))}

@@ -80,12 +80,38 @@ export interface TimelineInterval {
   basis: DatumBasis;
 }
 
+export interface TimelineCitation {
+  id: string | null;
+  work_title: string | null;
+  work_title_ar: string | null;
+  author: string | null;
+  edition: string | null;
+  volume: string | null;
+  page: string | null;
+  locator: string | null;
+  url: string | null;
+  review_state: string | null;
+}
+
+export interface TimelineTemporalAssertion {
+  id: string;
+  predicate: string;
+  year_min: number | null;
+  year_max: number | null;
+  statement_en: string | null;
+  stated_ar: string | null;
+  review_state: string;
+  citation: TimelineCitation | null;
+}
+
 export interface EpochEntry extends TimelineInterval {
   kind: 'epoch';
   parent_id: string | null;
   tradition_context: string | null;
   alternate_names: Array<{ name: string; name_arabic?: string; used_by: string }>;
   overview: string | null;
+  citation?: TimelineCitation | null;
+  temporal_assertions?: TimelineTemporalAssertion[];
 }
 
 export interface EventEntry extends TimelineInterval {
@@ -94,6 +120,18 @@ export interface EventEntry extends TimelineInterval {
   location_name: string | null;
   location_id: string | null;
   description: string | null;
+  significance?: string | null;
+  citation?: TimelineCitation | null;
+  temporal_assertions?: TimelineTemporalAssertion[];
+}
+
+export interface NarratorEventEntry {
+  id: string;
+  event_id: string;
+  role: string;
+  stated_ar: string | null;
+  event: EventEntry;
+  citation: TimelineCitation | null;
 }
 
 /** How an era or event relates to what is known of a life. Never inferred from an unknown bound. */
@@ -112,6 +150,8 @@ export interface NarratorTimeline {
   places: PlaceClaim[];
   epochs: Array<RelatedInterval<EpochEntry>>;
   events: Array<RelatedInterval<EventEntry>>;
+  /** Direct narrator-to-event links (`narrator_events`), distinct from contextual lifespan overlap. */
+  narrator_events: NarratorEventEntry[];
   /** False when the epochs table is not yet in this database (pending migration). */
   epochs_available: boolean;
 }
