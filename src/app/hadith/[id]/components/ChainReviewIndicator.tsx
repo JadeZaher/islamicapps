@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
-import { formatPromptStamp, type ChainReviewIndicatorMeta } from './chain-structure';
+import type { ChainReviewIndicatorMeta } from './chain-structure';
 
 interface ChainReviewIndicatorProps {
   meta: ChainReviewIndicatorMeta | null;
@@ -12,8 +12,8 @@ interface ChainReviewIndicatorProps {
 }
 
 /**
- * Accessible review indicator with hover/focus/click tooltip showing stamped model & prompt provenance
- * and a link to the verification-process definition on `/method#chain-tiers`.
+ * Accessible review indicator with hover/focus/click tooltip explaining how the chain is
+ * currently reviewed, with a link to `/method#chain-tiers`.
  */
 export function ChainReviewIndicator({ meta, className, dataChainFix, dataChainDisposition }: ChainReviewIndicatorProps) {
   const [hovered, setHovered] = useState(false);
@@ -41,11 +41,7 @@ export function ChainReviewIndicator({ meta, className, dataChainFix, dataChainD
 
   if (!meta) return null;
 
-  const accessibleSummary = [
-    meta.tierLabel,
-    meta.supersededNote,
-    ...meta.stamps.map((stamp) => `${stamp.role}: ${stamp.models.join(', ') || 'Not recorded'} (${formatPromptStamp(stamp)})`),
-  ].filter(Boolean).join('. ');
+  const accessibleSummary = [meta.tierLabel, meta.summary].filter(Boolean).join('. ');
 
   return (
     <div
@@ -99,56 +95,25 @@ export function ChainReviewIndicator({ meta, className, dataChainFix, dataChainD
       <div
         id={tooltipId}
         role="region"
-        aria-label="Review provenance and verification details"
+        aria-label="Chain review details"
         hidden={!open}
-        className="absolute start-0 top-full z-30 w-[min(26rem,calc(100vw-2rem))] pt-1"
+        className="absolute start-0 top-full z-30 w-[min(22rem,calc(100vw-2rem))] pt-1"
       >
         <div className="border border-control bg-[var(--color-surface)] p-3 type-small text-ink">
           <div className="flex items-baseline justify-between gap-2">
             <span className="archive-label text-ink">{meta.tierLabel}</span>
-            {meta.supersededAiReview && (
-              <span className="archive-code text-ink-muted">AI → Agent</span>
-            )}
+            {meta.reviewedAt && <span className="archive-code text-ink-muted">{meta.reviewedAt}</span>}
           </div>
 
-          {meta.supersededNote && (
-            <p className="mt-1 text-xs leading-4 text-ink-muted">
-              {meta.supersededNote}
-            </p>
-          )}
+          <p className="mt-1.5 text-xs leading-4 text-ink-muted">
+            {meta.summary}
+          </p>
 
           {meta.witness && (
             <p className="mt-2 border-t border-rule pt-2 text-xs leading-4 text-ink-muted">
-              <span className="text-ink">Witness:</span> {meta.witness.witness} ({meta.witness.locator}, {meta.witness.method})
+              <span className="text-ink">Witness:</span> {meta.witness.witness} ({meta.witness.locator})
             </p>
           )}
-
-          <dl className="mt-2 space-y-2 border-t border-rule pt-2">
-            {meta.stamps.map((stamp, index) => (
-              <div key={`${stamp.role}:${index}`} className={index > 0 ? 'border-t border-rule pt-2' : undefined}>
-                <dt className="flex flex-wrap items-baseline justify-between gap-x-2 text-xs leading-4">
-                  <span className={stamp.superseded ? 'text-ink-muted' : 'font-medium text-ink'}>
-                    {stamp.role}
-                  </span>
-                  {stamp.date && <span className="archive-code text-ink-muted">{stamp.date}</span>}
-                </dt>
-                <dd className="mt-0.5 space-y-0.5 text-xs leading-4 text-ink-muted">
-                  <div>
-                    <span>Model: </span>
-                    <span className="archive-code text-ink">
-                      {stamp.models.length > 0 ? stamp.models.join(', ') : 'Not recorded'}
-                    </span>
-                  </div>
-                  {stamp.role !== 'Human verification' && (
-                    <div title={stamp.promptPath ?? undefined}>
-                      <span>Prompt: </span>
-                      <span className="archive-code text-ink">{formatPromptStamp(stamp)}</span>
-                    </div>
-                  )}
-                </dd>
-              </div>
-            ))}
-          </dl>
 
           <div className="mt-2 border-t border-rule pt-2">
             <Link href={meta.methodHref} className="link-prose text-xs leading-4 font-medium">

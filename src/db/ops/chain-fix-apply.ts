@@ -377,12 +377,19 @@ async function main(): Promise<number> {
         }).catch(swallowDryRun);
       }
     } else {
-      for (const override of readOverrides(args.get('overrides') ?? DEFAULT_OVERRIDES)) {
+      const overrides = readOverrides(args.get('overrides') ?? DEFAULT_OVERRIDES);
+      // Batch the latest application action per fix once before the loop (avoids N+1 queries over the proxy).
+      const lastActions = new Map(
+        (await sql<{ fix_id: string; action: string }[]>`
+          select distinct on (fix_id) fix_id, action from chain_fix_applications order by fix_id, id desc`
+        ).map((row) => [row.fix_id, row.action]),
+      );
+      for (const override of overrides) {
         const tally = emptyTally();
         await sql.begin(async (tx) => {
           // A rehearsal mirrors nothing: the fix row the chain rows point at lives only inside this rolled-back transaction.
           if (args.has('no-mirror')) await insertRehearsalFix(tx, override);
-          const outcome = await applyOverride(tx, override, version, tally);
+          const outcome = await applyOverride(tx, override, version, tally, lastActions);
           if (outcome !== true) {
             if (outcome) skipped.push({ fix_id: override.fix_id, hadith_id: override.hadith_id, why: outcome });
             return;
@@ -391,6 +398,7 @@ async function main(): Promise<number> {
           plan.push({ fix_id: override.fix_id, hadith_id: override.hadith_id, effect: override.effect, disposition: override.disposition ?? null, tally });
           touched += 1;
           if (dryRun) throw new DryRun();
+          lastActions.set(override.fix_id, 'applied');
         }).catch(swallowDryRun);
       }
     }
@@ -425,14 +433,16 @@ async function insertRehearsalFix(tx: Sql, override: Override) {
  * Apply one override inside `tx`: true when written; otherwise why it waits or must be re-read (stale), or false when it is
  * already in the database.
  */
-export async function applyOverride(tx: Sql, override: Override, version: string, tally: ApplicationTally = emptyTally()): Promise<true | false | string> {
+export async function applyOverride(tx: Sql, override: Override, version: string, tally: ApplicationTally = emptyTally(), lastActions?: Map<string, string>): Promise<true | false | string> {
   const [hadith] = await tx<{ arabic_sha256: string }[]>`select arabic_sha256 from hadiths where id = ${override.hadith_id} and retired_at is null for update`;
   if (!hadith) return skip(`${override.fix_id}: ${override.hadith_id} is not live`);
   if (hadith.arabic_sha256 !== override.arabic_sha256) return skip(`${override.fix_id}: stale: the Arabic changed since it was read (stays queued)`);
   const base = await liveRows(tx, override.hadith_id);
   const fixIds = new Set(base.chains.map((c) => c.chain_fix_id as string | null));
-  const [last] = await tx<{ action: string }[]>`select action from chain_fix_applications where fix_id = ${override.fix_id} order by id desc limit 1`;
-  const noChainStands = base.chains.length === 0 && Boolean(override.disposition) && last?.action === 'applied';
+  const lastAction = lastActions
+    ? lastActions.get(override.fix_id)
+    : (await tx<{ action: string }[]>`select action from chain_fix_applications where fix_id = ${override.fix_id} order by id desc limit 1`)[0]?.action;
+  const noChainStands = base.chains.length === 0 && Boolean(override.disposition) && lastAction === 'applied';
   if ((fixIds.size === 1 && fixIds.has(override.fix_id)) || noChainStands) {
     // Already written (by this tool or a load's replay); a later human confirmation only changes the status.
     if (override.structure_status && base.chains.some((c) => c.structure_status !== override.structure_status)) {

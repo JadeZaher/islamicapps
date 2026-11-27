@@ -58,6 +58,10 @@ export interface ChainReviewIndicatorMeta {
   text: string;
   tier: ChainReviewTierKind;
   tierLabel: string;
+  /** Brief 1–2 sentence plain-language explanation of how this chain is currently reviewed. */
+  summary: string;
+  /** Date of the current active review (YYYY-MM-DD), if recorded. */
+  reviewedAt: string | null;
   /** True when a legacy `ai_*` record is displayed under Agent Review or superseded by an explicit `agent_*` mark. */
   supersededAiReview: boolean;
   supersededNote: string | null;
@@ -207,7 +211,7 @@ function collectChainStamps(fix: ChainFixLabel, status: ChainNode['chain_structu
 }
 
 /**
- * Full indicator text, tier classification, stamped prompt/model provenance, and /method verification link
+ * Concise review tag, tier classification, plain-language summary, and /method verification link
  * under the unified Agent Review model. "Verified" (capitalized) names a person only.
  */
 export function chainFixReviewMeta(
@@ -215,54 +219,75 @@ export function chainFixReviewMeta(
   status: ChainNode['chain_structure_status'],
 ): ChainReviewIndicatorMeta | null {
   if (!fix) return null;
-  const models = [...new Set(fix.models)].join(', ');
   const { activeCorrected, activeDisputed, activeReview } = resolveReviewMarks(fix);
   const { stamps, supersededAiReview, supersededNote } = collectChainStamps(fix, status);
 
   let text: string;
   let tier: ChainReviewTierKind;
   let tierLabel: string;
+  let summary: string;
+  let reviewedAt: string | null;
 
   if (status === 'verified_by_reviewer' && fix.human_confirmations.length > 0) {
-    text = fix.human_confirmations.map((confirmation) => `Verified by ${confirmation.reviewer}, ${day(confirmation.reviewed_at)}`).join('; ');
+    const reviewers = fix.human_confirmations.map((confirmation) => confirmation.reviewer).join(', ');
+    text = `Verified by ${reviewers}`;
     tier = 'verified_by_person';
     tierLabel = 'Verified by a person';
+    summary = `Checked and confirmed against the Arabic text by ${reviewers}.`;
+    reviewedAt = day(fix.human_confirmations[0].reviewed_at);
   } else if (fix.effect === 'annotate') {
-    text = `A model reader read the same routes (${models}, ${day(fix.decided_at)})`;
+    text = 'Read by model';
     tier = 'read_by_two_models';
     tierLabel = 'Read by model';
+    summary = 'Checked against the Arabic text by a model reader, confirming the stored routes.';
+    reviewedAt = cleanText(fix.decided_at) ? day(fix.decided_at) : null;
   } else if (activeCorrected) {
-    text = `Corrected by Agent review (${activeCorrected.models.join(', ')}, ${activeCorrected.runs.length} runs), ${day(activeCorrected.at)}`;
-    tier = 'agent_reviewed';
-    tierLabel = 'Agent reviewed (correction)';
-  } else if (activeDisputed) {
-    text = `${readByModelsLine(fix)}; Disputed by Agent review; awaiting second review`;
-    tier = 'disputed';
-    tierLabel = 'Disputed by Agent review';
-  } else if (activeReview && fix.witness_match) {
-    text = `Agent verified: ${COUNT_WORDS[fix.runs] ?? fix.runs} readers agree, reviewed by ${activeReview.model_id}, text matched to ${fix.witness_match.witness}`;
-    tier = 'agent_verified';
-    tierLabel = 'Agent verified';
-  } else if (activeReview) {
-    text = `${readByModelsLine(fix)}; Agent reviewed (${activeReview.model_id}), ${day(activeReview.at)}`;
+    text = 'Agent reviewed';
     tier = 'agent_reviewed';
     tierLabel = 'Agent reviewed';
+    summary = 'Reviewed and corrected against the Arabic text by an automated agent.';
+    reviewedAt = cleanText(activeCorrected.at) ? day(activeCorrected.at) : null;
+  } else if (activeDisputed) {
+    text = 'Disputed';
+    tier = 'disputed';
+    tierLabel = 'Disputed';
+    summary = 'Flagged by an automated review for a discrepancy with the Arabic text; awaiting a second review.';
+    reviewedAt = cleanText(activeDisputed.at) ? day(activeDisputed.at) : null;
+  } else if (activeReview && fix.witness_match) {
+    text = 'Agent verified';
+    tier = 'agent_verified';
+    tierLabel = 'Agent verified';
+    summary = `Checked by an automated review against the Arabic text and corroborated against an independent witness (${fix.witness_match.witness}).`;
+    reviewedAt = cleanText(activeReview.at) ? day(activeReview.at) : null;
+  } else if (activeReview) {
+    text = 'Agent reviewed';
+    tier = 'agent_reviewed';
+    tierLabel = 'Agent reviewed';
+    summary = 'Checked by an automated review against the Arabic text.';
+    reviewedAt = cleanText(activeReview.at) ? day(activeReview.at) : null;
   } else {
-    text = readByModelsLine(fix);
+    const readerLabel = `Read by ${readers(fix.runs)}`;
+    text = readerLabel;
     tier = 'read_by_two_models';
-    tierLabel = 'Read by two models';
+    tierLabel = readerLabel;
+    summary = fix.runs === 1
+      ? 'Checked against the Arabic text by a model reader.'
+      : `Checked by ${COUNT_WORDS[fix.runs] ?? fix.runs} independent readers against the Arabic text.`;
+    reviewedAt = cleanText(fix.decided_at) ? day(fix.decided_at) : null;
   }
 
   return {
     text,
     tier,
     tierLabel,
+    summary,
+    reviewedAt,
     supersededAiReview,
     supersededNote,
     witness: fix.witness_match ?? null,
     stamps,
     methodHref: CHAIN_VERIFICATION_METHOD_HREF,
-    methodLinkLabel: 'Verification process & chain tiers',
+    methodLinkLabel: 'How chains are reviewed',
   };
 }
 
@@ -291,11 +316,15 @@ export function noChainReviewMeta(disposition: ChainDisposition | null | undefin
   }
   stamps.push(readerStamp(disposition));
 
-  const review = activeReview ? `; Agent reviewed (${activeReview.model_id}), ${day(activeReview.at)}` : '';
+  const readerLabel = `Read by ${readers(disposition.runs)}`;
   return {
-    text: `No chain is written in this report (${readByModelsLine(disposition).replace(/^Read/, 'read')}${review}).`,
+    text: activeReview ? 'No chain in text · Agent reviewed' : `No chain in text · ${readerLabel}`,
     tier: activeReview ? 'agent_reviewed' : 'read_by_two_models',
-    tierLabel: activeReview ? 'Agent reviewed (no chain)' : 'Read by two models (no chain)',
+    tierLabel: activeReview ? 'Agent reviewed' : readerLabel,
+    summary: activeReview
+      ? 'No isnad is written in this report, confirmed by an automated review of the Arabic text.'
+      : `No isnad is written in this report, confirmed by ${COUNT_WORDS[disposition.runs] ?? disposition.runs} independent readers against the Arabic text.`,
+    reviewedAt: activeReview?.at ? day(activeReview.at) : cleanText(disposition.decided_at) ? day(disposition.decided_at) : null,
     supersededAiReview: hasLegacyAi,
     supersededNote: hasExplicitAgent && hasLegacyAi
       ? 'Agent review supersedes the prior standalone AI review; both original prompt and model stamps are recorded below.'
@@ -305,7 +334,7 @@ export function noChainReviewMeta(disposition: ChainDisposition | null | undefin
     witness: null,
     stamps,
     methodHref: CHAIN_VERIFICATION_METHOD_HREF,
-    methodLinkLabel: 'Verification process & chain tiers',
+    methodLinkLabel: 'How chains are reviewed',
   };
 }
 

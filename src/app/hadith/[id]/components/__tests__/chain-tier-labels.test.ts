@@ -1,6 +1,6 @@
 /**
- * Flow tests for unified Agent Review tier labels, Agent-supersedes-AI precedence, original prompt + model
- * provenance stamping, and accessible tooltip + /method#chain-tiers link rendering.
+ * Flow tests for concise chain review tags, Agent-supersedes-AI precedence, plain-language tooltips,
+ * and /method#chain-tiers link rendering.
  * Run: npx tsx "src/app/hadith/[id]/components/__tests__/chain-tier-labels.test.ts" (not --test: brackets read as glob)
  */
 import assert from 'node:assert/strict';
@@ -55,38 +55,38 @@ const agentReview: ChainAiMark = {
   prompt_sha256: 'a'.repeat(64),
 };
 
-test('unified Agent Review tiers, Agent-supersedes-AI precedence, and "Verified" reserved for a person', () => {
+test('concise review tier tags, Agent-supersedes-AI precedence, and "Verified" reserved for a person', () => {
   const rows: [string, ChainFixLabel, string, string][] = [
-    ['read by two models', reading, 'read_by_model', 'Read by two models (claude-haiku-5-5), 2026-11-22'],
+    ['read by two models', reading, 'read_by_model', 'Read by two models'],
     [
       'legacy AI review unified under Agent review',
       { ...reading, ai_review: legacyAiReview },
       'read_by_model',
-      'Read by two models (claude-haiku-5-5), 2026-11-22; Agent reviewed (claude-opus-5-5), 2026-11-23',
+      'Agent reviewed',
     ],
     [
       'explicit agent_review supersedes legacy ai_review',
       { ...reading, ai_review: legacyAiReview, agent_review: agentReview },
       'read_by_model',
-      'Read by two models (claude-haiku-5-5), 2026-11-22; Agent reviewed (claude-opus-5-6), 2026-11-25',
+      'Agent reviewed',
     ],
     [
       'explicit agent_review supersedes legacy ai_disputed',
       { ...reading, ai_disputed: { ...legacyAiReview, outcome: 'label_disputed' }, agent_review: agentReview },
       'read_by_model',
-      'Read by two models (claude-haiku-5-5), 2026-11-22; Agent reviewed (claude-opus-5-6), 2026-11-25',
+      'Agent reviewed',
     ],
     [
       'disputed under Agent review',
       { ...reading, ai_disputed: { ...legacyAiReview, outcome: 'label_disputed' } },
       'read_by_model',
-      'Read by two models (claude-haiku-5-5), 2026-11-22; Disputed by Agent review; awaiting second review',
+      'Disputed',
     ],
     [
       'corrected under Agent review',
       { ...reading, ai_corrected: { runs: ['r1', 'r2'], models: ['claude-opus-5-5'], at: '2026-11-23T11:00:00Z' } },
       'read_by_model',
-      'Corrected by Agent review (claude-opus-5-5, 2 runs), 2026-11-23',
+      'Agent reviewed',
     ],
     [
       'agent verified with witness match (agent_review supersedes ai_review)',
@@ -97,7 +97,7 @@ test('unified Agent Review tiers, Agent-supersedes-AI precedence, and "Verified"
         witness_match: { witness: 'the Bulaq edition', locator: 'vol. 1 p. 2', method: 'collation', matched_at: '2026-12-01' },
       },
       'read_by_model',
-      'Agent verified: two readers agree, reviewed by claude-opus-5-6, text matched to the Bulaq edition',
+      'Agent verified',
     ],
     [
       'verified by a person overrides all agent/AI marks',
@@ -108,14 +108,14 @@ test('unified Agent Review tiers, Agent-supersedes-AI precedence, and "Verified"
         human_confirmations: [{ reviewer: 'A. Scholar', reviewed_at: '2026-11-24T10:00:00Z', note: 'read', citation: null }],
       },
       'verified_by_reviewer',
-      'Verified by A. Scholar, 2026-11-24',
+      'Verified by A. Scholar',
     ],
   ];
   for (const [name, fix, status, expected] of rows) assert.equal(chainFixNote(fix, status as never), expected, name);
   for (const [, fix, status] of rows.slice(0, -1)) assert.doesNotMatch(chainFixNote(fix, status as never)!, /\bVerified\b/);
 });
 
-test('original prompt & model provenance are stamped, and missing optional fields degrade gracefully', () => {
+test('original prompt & model provenance are stamped on metadata, and missing optional fields degrade gracefully', () => {
   const legacyMeta = chainFixReviewMeta({ ...reading, ai_review: legacyAiReview }, 'read_by_model')!;
   assert.equal(legacyMeta.tier, 'agent_reviewed');
   assert.equal(legacyMeta.supersededAiReview, true);
@@ -152,19 +152,18 @@ test('original prompt & model provenance are stamped, and missing optional field
   assert.equal(formatPromptStamp(minimalMeta.stamps[1]), 'Not recorded');
 });
 
-test('tooltip indicator renders accessible trigger, prompt/model stamp, superseded note, and /method#chain-tiers link', () => {
+test('tooltip indicator renders concise tag, plain-language summary, and /method#chain-tiers link without internal audit history', () => {
   const meta = chainFixReviewMeta({ ...reading, ai_review: legacyAiReview, agent_review: agentReview }, 'read_by_model')!;
   const html = renderToStaticMarkup(createElement(ChainReviewIndicator, { meta, dataChainFix: reading.fix_id }));
 
   assert.match(html, /<button type="button"[^>]*aria-expanded="false"[^>]*aria-controls="[^"]+"[^>]*aria-describedby="[^"]+"/);
-  assert.match(html, /Agent reviewed \(claude-opus-5-6\), 2026-11-25/);
+  assert.match(html, />Agent reviewed<\/span>/);
   assert.match(html, /data-review-tier="agent_reviewed"/);
-  assert.match(html, /role="region" aria-label="Review provenance and verification details"/);
-  assert.match(html, /claude-opus-5-6/);
-  assert.match(html, /v2\.0\.0 · prompt-agent-v2\.md · sha256:aaaaaaaaaaaa/);
-  assert.match(html, /Historical AI review \(superseded\)/);
-  assert.match(html, /v1\.1\.0 · prompt-reviewer-v1_1\.md · sha256:1136aec2c975/);
-  assert.match(html, /<a[^>]*href="\/method#chain-tiers"[^>]*>Verification process &amp; chain tiers →<\/a>/);
+  assert.match(html, /role="region" aria-label="Chain review details"/);
+  assert.match(html, /2026-11-25/);
+  assert.match(html, /Checked by an automated review against the Arabic text\./);
+  assert.doesNotMatch(html, /Historical AI review|sha256:|claude-opus-5-5|prompt-reviewer/);
+  assert.match(html, /<a[^>]*href="\/method#chain-tiers"[^>]*>How chains are reviewed →<\/a>/);
 });
 
 test('no chain by reading (with Agent/AI review precedence) and saying headings', () => {
@@ -177,7 +176,7 @@ test('no chain by reading (with Agent/AI review precedence) and saying headings'
       decided_at: '2026-11-22T18:00:00Z',
       awaiting_final_review: true,
     }),
-    'No chain is written in this report (read by two models (claude-haiku-5-5), 2026-11-22).',
+    'No chain in text · Read by two models',
   );
   assert.equal(
     noChainNote({
@@ -190,7 +189,7 @@ test('no chain by reading (with Agent/AI review precedence) and saying headings'
       ai_review: legacyAiReview,
       agent_review: agentReview,
     }),
-    'No chain is written in this report (read by two models (claude-haiku-5-5), 2026-11-22; Agent reviewed (claude-opus-5-6), 2026-11-25).',
+    'No chain in text · Agent reviewed',
   );
   const noChainMeta = noChainReviewMeta({
     fix_id: 'f',
