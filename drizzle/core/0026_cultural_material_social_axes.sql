@@ -1,0 +1,6 @@
+ALTER TABLE "external_tradition_parallels" DROP CONSTRAINT "external_tradition_parallels_tradition_source_check";--> statement-breakpoint
+ALTER TABLE "timeline_tracks" DROP CONSTRAINT "timeline_tracks_category_check";--> statement-breakpoint
+ALTER TABLE "place_snapshots" ADD COLUMN "social_norms" jsonb;--> statement-breakpoint
+ALTER TABLE "place_snapshots" ADD COLUMN "material_culture" jsonb;--> statement-breakpoint
+ALTER TABLE "external_tradition_parallels" ADD CONSTRAINT "external_tradition_parallels_tradition_source_check" CHECK ("external_tradition_parallels"."tradition_source" in ('biblical', 'midrash_talmud', 'syriac_christian', 'sasanian_andarz', 'pre_islamic_poetry', 'ancient_near_eastern_myth', 'arabian_folklore', 'greco_roman', 'poetry_adab', 'other'));--> statement-breakpoint
+ALTER TABLE "timeline_tracks" ADD CONSTRAINT "timeline_tracks_category_check" CHECK ("timeline_tracks"."category" in ('political', 'world_event', 'technological', 'intellectual_movement', 'demographic_shift', 'legal_theological', 'trade_pilgrimage', 'social_gender_norms', 'myths_literature_art', 'food_agriculture_ecology', 'economic_tensions'));

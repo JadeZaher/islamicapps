@@ -257,7 +257,9 @@ function placeSnapshotsWithin(audience: TimelineAudience): SQL {
              'year_min', ps.year_min, 'year_max', ps.year_max, 'precision', ps.precision,
              'polity_or_ruler', ps.polity_or_ruler, 'dominant_schools', ps.dominant_schools,
              'religious_communities', ps.religious_communities, 'languages', ps.languages,
-             'ethnographic_notes', ps.ethnographic_notes, 'review_state', ps.review_state,
+             'ethnographic_notes', ps.ethnographic_notes,
+             'social_norms', ps.social_norms, 'material_culture', ps.material_culture,
+             'review_state', ps.review_state,
              'citation', case when c.id is not null then json_build_object(
                'id', c.id, 'work_title', bw.title, 'work_title_ar', bw.title_ar, 'author', bw.author,
                'edition', nullif(concat_ws(', ', ed.editor, ed.publisher, ed.year), ''),
@@ -581,6 +583,14 @@ function toPlaceSnapshot(row: Row): PlaceSnapshotEntry {
         : {},
     languages: Array.isArray(row.languages) ? row.languages.map(String) : [],
     ethnographic_notes: textOrNull(row.ethnographic_notes),
+    social_norms:
+      row.social_norms && typeof row.social_norms === 'object' && !Array.isArray(row.social_norms)
+        ? (row.social_norms as Record<string, unknown>)
+        : null,
+    material_culture:
+      row.material_culture && typeof row.material_culture === 'object' && !Array.isArray(row.material_culture)
+        ? (row.material_culture as Record<string, unknown>)
+        : null,
     review_state: String(row.review_state ?? 'candidate_only'),
     citation: toCitation(row.citation),
   };

@@ -17,13 +17,21 @@ import {
 } from '../load-timelines-grid';
 
 async function runTests(): Promise<void> {
-  // 1. Core timeline tracks
+  // 1. Core timeline tracks (7 Phase 1 + 4 Phase 4 = 11)
   assert.equal(BATCH_SIZE, 500);
-  assert.equal(CORE_TIMELINE_TRACKS.length, 7);
+  assert.equal(CORE_TIMELINE_TRACKS.length, 11);
   const trackIds = new Set(CORE_TIMELINE_TRACKS.map((t) => t.id));
   const trackSlugs = new Set(CORE_TIMELINE_TRACKS.map((t) => t.slug));
-  assert.equal(trackIds.size, 7);
-  assert.equal(trackSlugs.size, 7);
+  assert.equal(trackIds.size, 11);
+  assert.equal(trackSlugs.size, 11);
+  for (const requiredId of [
+    'track:social_gender_norms',
+    'track:myths_literature_art',
+    'track:food_agriculture_ecology',
+    'track:economic_tensions',
+  ]) {
+    assert.ok(trackIds.has(requiredId), `missing Phase 4 track: ${requiredId}`);
+  }
   for (const t of CORE_TIMELINE_TRACKS) {
     assert.ok(VALID_TRACK_CATEGORIES.has(t.category), `invalid category: ${t.category}`);
     assert.ok(VALID_TRACK_SCOPES.has(t.scope), `invalid scope: ${t.scope}`);
@@ -63,12 +71,47 @@ async function runTests(): Promise<void> {
     dominant_schools: ['Kufan ra-y'],
     religious_communities: { muslim: 'majority', christian: 'present' },
     languages: ['Arabic', 'Aramaic'],
+    social_norms: { kinship: 'tribal_quarter_compounds' },
+    material_culture: { coinage: 'arab_sasanian_drachms' },
     citation_id: 'cit:1',
     review_state: 'source_verified',
   });
   assert.ok(validSnapshot);
   assert.equal(validSnapshot.locationId, 'loc:kufa');
   assert.equal(validSnapshot.reviewState, 'source_verified');
+  assert.deepEqual(validSnapshot.socialNorms, { kinship: 'tribal_quarter_compounds' });
+  assert.deepEqual(validSnapshot.materialCulture, { coinage: 'arab_sasanian_drachms' });
+
+  // Pre-Hijri / negative year range support
+  const preHijriSnapshot = parsePlaceSnapshotRow({
+    id: 'ps:mecca:pre',
+    location_id: 'loc:mecca',
+    year_min: -30,
+    year_max: -1,
+    citation_id: 'cit:pre',
+  });
+  assert.ok(preHijriSnapshot);
+  assert.equal(preHijriSnapshot.yearMin, -30);
+  assert.equal(preHijriSnapshot.socialNorms, null);
+  assert.equal(preHijriSnapshot.materialCulture, null);
+  assert.equal(
+    parsePlaceSnapshotRow({
+      id: 'ps:bad-social-norms',
+      location_id: 'loc:kufa',
+      social_norms: ['not-an-object'],
+      citation_id: 'cit:1',
+    }),
+    null,
+  );
+  assert.equal(
+    parsePlaceSnapshotRow({
+      id: 'ps:bad-material-culture',
+      location_id: 'loc:kufa',
+      material_culture: 'not-an-object',
+      citation_id: 'cit:1',
+    }),
+    null,
+  );
   assert.equal(
     parsePlaceSnapshotRow({ id: 'ps:bad', location_id: 'loc:kufa', year_min: 100, year_max: 50, citation_id: 'cit:1' }),
     null,
@@ -134,6 +177,17 @@ async function runTests(): Promise<void> {
     citation_id: 'cit:4',
   });
   assert.ok(validParallel);
+  for (const src of ['ancient_near_eastern_myth', 'arabian_folklore', 'greco_roman', 'poetry_adab']) {
+    const p = parseExternalTraditionParallelRow({
+      id: `etp:${src}`,
+      hadith_id: 'hadith:1',
+      tradition_source: src,
+      relation_type: 'shared_motif',
+      source_work: 'Primary Source',
+      citation_id: 'cit:4',
+    });
+    assert.ok(p, `expected Phase 4 tradition_source ${src} to be accepted`);
+  }
   assert.equal(
     parseExternalTraditionParallelRow({
       id: 'etp:bad',
@@ -161,10 +215,23 @@ async function runTests(): Promise<void> {
   });
   assert.throws(() => parseLoaderArgs(['--database', 'staging']), /development or production/);
 
-  // 5. buildTimelinesLoadPlan with staged JSONL files + missing directory
+  // 5. buildTimelinesLoadPlan with staged JSONL files + missing directory + starter seed
   const missingPlan = await buildTimelinesLoadPlan(join(tmpdir(), 'nonexistent-timelines-dir-xyz'));
-  assert.equal(missingPlan.tracks.length, 7);
+  assert.equal(missingPlan.tracks.length, 11);
   assert.equal(missingPlan.placeSnapshots.length, 0);
+
+  const starterSeedPlan = await buildTimelinesLoadPlan(join(process.cwd(), 'datasets/hadith-data/timelines-grid'));
+  assert.equal(starterSeedPlan.placeSnapshotsSkipped, 0);
+  assert.equal(starterSeedPlan.externalTraditionParallelsSkipped, 0);
+  assert.ok(starterSeedPlan.placeSnapshots.length >= 3);
+  assert.ok(starterSeedPlan.externalTraditionParallels.length >= 4);
+  for (const ps of starterSeedPlan.placeSnapshots) {
+    assert.equal(ps.reviewState, 'candidate_only');
+    assert.ok(ps.socialNorms !== null && ps.materialCulture !== null);
+  }
+  for (const etp of starterSeedPlan.externalTraditionParallels) {
+    assert.equal(etp.reviewState, 'candidate_only');
+  }
 
   const tempDir = mkdtempSync(join(tmpdir(), 'timelines-loader-test-'));
   try {

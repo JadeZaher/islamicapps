@@ -13,4 +13,9 @@
 ## Phase 3 — Queries & Toggleable UI
 - [ ] Extend `src/db/queries/timeline.ts` with track-filtered spatiotemporal overlap queries (narrator residences × place snapshots × tech/world tracks + cited parallels).
 - [ ] Add toggleable **Context Layers** to `NarratorTimeline.tsx` and `ChainTimeline.tsx` (following `C:/Users/atooz/.gemini/UI-UX-guidance.md`), keeping default view clean and rendering every citation as a clickable link via `CitationLink.tsx`.
-- [ ] Add flow tests covering public vs. review gating, layer filtering, and citation links.
+- [x] Add flow tests covering public vs. review gating, layer filtering, and citation links.
+
+## Phase 4 — Deep Pre-Hijri Cultural, Material & Social Axes (`0026`)
+- [ ] Extend `timeline_tracks.category` (additive `0026` check/enum update) with `social_gender_norms`, `myths_literature_art`, `food_agriculture_ecology`, and `economic_tensions`, plus optional `social_norms` / `material_culture` (`jsonb`) on `place_snapshots`.
+- [ ] Extend `external_tradition_parallels.tradition_source` for `ancient_near_eastern_myth`, `arabian_folklore`, `greco_roman`, and `poetry_adab`.
+- [ ] Seed the 4 new tracks + initial cited pre-Hijri/classical milestones and add matching toggleable Context Layers to `ContextLayers.tsx`.

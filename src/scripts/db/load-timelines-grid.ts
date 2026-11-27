@@ -47,6 +47,10 @@ export const VALID_TRACK_CATEGORIES = new Set([
   'demographic_shift',
   'legal_theological',
   'trade_pilgrimage',
+  'social_gender_norms',
+  'myths_literature_art',
+  'food_agriculture_ecology',
+  'economic_tensions',
 ] as const);
 export type TrackCategory = typeof VALID_TRACK_CATEGORIES extends Set<infer T> ? T : never;
 
@@ -81,6 +85,10 @@ export const VALID_TRADITION_SOURCES = new Set([
   'syriac_christian',
   'sasanian_andarz',
   'pre_islamic_poetry',
+  'ancient_near_eastern_myth',
+  'arabian_folklore',
+  'greco_roman',
+  'poetry_adab',
   'other',
 ] as const);
 export type TraditionSource = typeof VALID_TRADITION_SOURCES extends Set<infer T> ? T : never;
@@ -168,6 +176,38 @@ export const CORE_TIMELINE_TRACKS: readonly CoreTimelineTrack[] = [
     scope: 'regional',
     description: 'Hajj routes, rihla travel corridors, overland caravans, and maritime trade networks.',
   },
+  {
+    id: 'track:social_gender_norms',
+    slug: 'social-gender-norms',
+    title: 'Social, Gender & Marriage Norms',
+    category: 'social_gender_norms',
+    scope: 'regional',
+    description: 'Cited historical and ethnographic norms of gender relations, marriage, kinship, and family structures.',
+  },
+  {
+    id: 'track:myths_literature_art',
+    slug: 'myths-literature-art',
+    title: 'Myths, Poetry, Fiction & Art',
+    category: 'myths_literature_art',
+    scope: 'global',
+    description: 'Ancient Near Eastern, Arabian, Persian, and Greco-Roman mythologies, poetry, adab, and material art.',
+  },
+  {
+    id: 'track:food_agriculture_ecology',
+    slug: 'food-agriculture-ecology',
+    title: 'Food Culture, Agriculture & Ecology',
+    category: 'food_agriculture_ecology',
+    scope: 'regional',
+    description: 'Irrigation, crop diffusion, culinary traditions, famines, droughts, and ecological shifts.',
+  },
+  {
+    id: 'track:economic_tensions',
+    slug: 'economic-tensions',
+    title: 'Economic Tensions & Material Life',
+    category: 'economic_tensions',
+    scope: 'regional',
+    description: 'Taxation (kharaj, jizya, ushr), land tenure, coinage reforms, and urban-nomadic or mawali fiscal friction.',
+  },
 ] as const;
 
 export interface StagedPlaceSnapshot {
@@ -181,6 +221,8 @@ export interface StagedPlaceSnapshot {
   religiousCommunities: Record<string, unknown>;
   languages: string[];
   ethnographicNotes: string | null;
+  socialNorms: Record<string, unknown> | null;
+  materialCulture: Record<string, unknown> | null;
   citationId: string;
   reviewState: EvidenceReviewState;
 }
@@ -342,6 +384,20 @@ export function parsePlaceSnapshotRow(row: Record<string, unknown>): StagedPlace
     : normalizePlainObject(rawCommunities);
   if (!religiousCommunities) return null;
 
+  const rawSocialNorms = row.social_norms ?? row.socialNorms;
+  const socialNorms =
+    rawSocialNorms === undefined || rawSocialNorms === null
+      ? null
+      : normalizePlainObject(rawSocialNorms);
+  if (rawSocialNorms !== undefined && rawSocialNorms !== null && !socialNorms) return null;
+
+  const rawMaterialCulture = row.material_culture ?? row.materialCulture;
+  const materialCulture =
+    rawMaterialCulture === undefined || rawMaterialCulture === null
+      ? null
+      : normalizePlainObject(rawMaterialCulture);
+  if (rawMaterialCulture !== undefined && rawMaterialCulture !== null && !materialCulture) return null;
+
   return {
     id,
     locationId,
@@ -353,6 +409,8 @@ export function parsePlaceSnapshotRow(row: Record<string, unknown>): StagedPlace
     religiousCommunities,
     languages: normalizeStringArray(row.languages),
     ethnographicNotes: normalizeNonEmpty(row.ethnographic_notes ?? row.ethnographicNotes),
+    socialNorms,
+    materialCulture,
     citationId,
     reviewState: normalizeReviewState(row.review_state ?? row.reviewState),
   };
@@ -741,6 +799,8 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
             religiousCommunities: r.religiousCommunities,
             languages: r.languages,
             ethnographicNotes: r.ethnographicNotes,
+            socialNorms: r.socialNorms,
+            materialCulture: r.materialCulture,
             citationId: r.citationId,
             reviewState: r.reviewState,
             firstSeenDatasetVersionId: datasetVersionId,
@@ -760,6 +820,8 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
             religiousCommunities: sql`excluded.religious_communities`,
             languages: sql`excluded.languages`,
             ethnographicNotes: sql`excluded.ethnographic_notes`,
+            socialNorms: sql`excluded.social_norms`,
+            materialCulture: sql`excluded.material_culture`,
             citationId: sql`excluded.citation_id`,
             reviewState: sql`excluded.review_state`,
             changedInDatasetVersionId: sql`excluded.changed_in_dataset_version_id`,

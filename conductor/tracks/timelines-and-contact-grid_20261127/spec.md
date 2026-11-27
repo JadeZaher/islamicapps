@@ -8,9 +8,10 @@ Model hadith transmission (*isnad* + *matn*) as a **spatiotemporal and sociocult
 - Cited scholarly observations on *Isra'iliyyat*, cross-cultural parallels, and regional milieu — strictly attributed and review-gated.
 
 ## Epistemic Rules
-1. **No machine-asserted influence**: Contextual overlap (a narrator living in a city during an event) is always visually separated from directly attested links (`narrator_events`, `narrator_residences`).
-2. **Citations as links**: Every timeline entry, place snapshot, residence, and parallel carries a `citation_id` (linking to `bibliographic_works` / `editions` / external URLs where available).
-3. **Public vs. review gate**: `candidate_only` rows stay hidden from public views until promoted by human review.
+1. **Academically certified & primary-source backed only**: Include only accounts, norms, myths, and historical claims attested in primary sources or peer-reviewed academic scholarship. Always save primary-source texts/excerpts locally (e.g., `datasets/sources/external/`) and link them via `bibliographic_works`, `editions`, and `citations` (open-commons / public-domain / CC-licensed repositories such as OpenITI, Perseus, Sefaria, ETCSL, Internet Archive, and Wikisource are preferred).
+2. **No machine-asserted influence**: Contextual overlap (a narrator living in a city during an event) is always visually separated from directly attested links (`narrator_events`, `narrator_residences`).
+3. **Citations as links**: Every timeline entry, place snapshot, residence, and parallel carries a `citation_id` (linking to `bibliographic_works` / `editions` / external URLs where available).
+4. **Public vs. review gate**: `candidate_only` rows stay hidden from public views until promoted by human review.
 
 ## Proposed Additive Schema (`0025_timelines_and_contact_grid`)
 1. `timeline_tracks`: `id`, `slug`, `category` (`political`, `world_event`, `technological`, `intellectual_movement`, `demographic_shift`, `legal_theological`, `trade_pilgrimage`), `scope` (`global`, `regional`, `city`), `description`.
@@ -22,4 +23,11 @@ Model hadith transmission (*isnad* + *matn*) as a **spatiotemporal and sociocult
 
 ## UI Requirements
 - Default narrator and isnad timelines remain clean and scannable.
-- Add toggleable **Context Layers** (`Political`, `Places & Demographics`, `Tech & Writing`, `Parallels & Isra'iliyyat`) with clear badges distinguishing attested vs. contextual items and clickable source links.
+- Add toggleable **Context Layers** (`Political`, `Places & Demographics`, `Tech & Writing`, `Parallels & Isra'iliyyat`, `Social & Gender Norms`, `Myths & Story Traditions`) with clear badges distinguishing attested vs. contextual items and clickable source links.
+
+## Phase 4 Expansion (Deep Pre-Hijri Cultural, Material & Social Axes)
+Extend the timeline further back (negative Hijri / BCE intervals) and add dedicated, toggleable cultural/material tracks + `place_snapshots` dimensions:
+- **Social, Gender, Marriage & Coupling Norms (`social_gender_norms`)**: cited historical/ethnographic snapshots of gender relations, sexual norms, marriage/coupling norms (*nikah*, *mut'ah*, concubinage, *mahr*, seclusion/public participation, tribal vs. urban family structures) per place and era.
+- **Myths, Poetry, Fiction & Art (`myths_literature_art`)**: Ancient Near Eastern, Mesopotamian, Levantine, Arabian, Persian, and Greco-Roman mythologies, *jahiliyyah* & Umayyad/Abbasid poetry, *adab*/fiction/story cycles, and visual/material art, linked via `external_tradition_parallels` with clickable source citations.
+- **Food Culture, Agriculture & Ecology (`food_agriculture_ecology`)**: famines, droughts, plagues, irrigation/*qanat* innovations, crop diffusion (citrus, sugar, rice, cotton), and regional culinary/dietary culture.
+- **Economic Tensions & Material Life (`economic_tensions`)**: taxation (*kharaj*, *jizya*, *'ushr*), land tenure, coinage reforms (e.g. 'Abd al-Malik's dinar), trade-route shifts, and urban/nomadic or *mawali* economic friction.

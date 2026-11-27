@@ -10,7 +10,7 @@ import type {
   TimelineAudience,
   TimelineContextLayer,
 } from '@/db/queries/timeline-contracts';
-import { formatInterval, formatRange } from '@/db/queries/timeline-rules';
+import { formatRange } from '@/db/queries/timeline-rules';
 import { CitationLink } from './CitationLink';
 import styles from './timeline.module.css';
 
@@ -29,10 +29,21 @@ export const CONTEXT_LAYERS: Array<{ id: TimelineContextLayer; label: string }> 
   { id: 'places', label: 'Places & Demographics' },
   { id: 'tech', label: 'Tech & Writing' },
   { id: 'parallels', label: "Parallels & Isra'iliyyat" },
+  { id: 'social_gender_norms', label: 'Social & Gender Norms' },
+  { id: 'myths_literature_art', label: 'Myths, Poetry & Art' },
+  { id: 'food_agriculture_ecology', label: 'Food & Agriculture' },
+  { id: 'economic_tensions', label: 'Economic Tensions' },
 ];
 
 const POLITICAL_TRACK_CATEGORIES = new Set(['political', 'world_event', 'legal_theological', 'intellectual_movement']);
 const DEMOGRAPHIC_TRACK_CATEGORIES = new Set(['demographic_shift', 'trade_pilgrimage']);
+const MYTHS_PARALLELS_SOURCES = new Set([
+  'ancient_near_eastern_myth',
+  'arabian_folklore',
+  'greco_roman',
+  'poetry_adab',
+  'pre_islamic_poetry',
+]);
 
 export function filterPoliticalEvents(events: EventEntry[]): EventEntry[] {
   return events.filter((event) => {
@@ -54,21 +65,93 @@ export function filterDemographicEvents(events: EventEntry[]): EventEntry[] {
   return events.filter((event) => Boolean(event.track_category && DEMOGRAPHIC_TRACK_CATEGORIES.has(event.track_category)));
 }
 
-function formatYearSpan(min: number | null, max: number | null): string {
-  if (min !== null && max !== null) return formatRange({ min, max });
-  if (min !== null) return formatRange({ min, max: min });
-  if (max !== null) return formatRange({ min: max, max });
+export function filterSocialGenderEvents(events: EventEntry[]): EventEntry[] {
+  return events.filter((event) => event.track_category === 'social_gender_norms');
+}
+
+export function filterMythsLiteratureArtEvents(events: EventEntry[]): EventEntry[] {
+  return events.filter((event) => event.track_category === 'myths_literature_art');
+}
+
+export function filterFoodAgricultureEvents(events: EventEntry[]): EventEntry[] {
+  return events.filter((event) => event.track_category === 'food_agriculture_ecology');
+}
+
+export function filterEconomicTensionsEvents(events: EventEntry[]): EventEntry[] {
+  return events.filter((event) => event.track_category === 'economic_tensions');
+}
+
+/** Formats Hijri years cleanly, adding approximate CE/BCE context for negative (pre-Hijri) years. */
+export function formatContextYear(year: number): string {
+  if (year === 0) return '0 (not a Hijri year)';
+  if (year > 0) return `${year} AH`;
+  const approxGregorian = Math.round(622 + year * 0.970224);
+  const gregorianLabel = approxGregorian <= 0 ? `c. ${1 - approxGregorian} BCE` : `c. ${approxGregorian} CE`;
+  return `${-year} BH (${gregorianLabel})`;
+}
+
+export function formatContextYearSpan(min: number | null, max: number | null): string {
+  if (min !== null && max !== null) {
+    if (min === max) return formatContextYear(min);
+    if (min < 0 || max < 0) return `${formatContextYear(min)} – ${formatContextYear(max)}`;
+    return formatRange({ min, max });
+  }
+  if (min !== null) return formatContextYear(min);
+  if (max !== null) return formatContextYear(max);
   return 'Date unrecorded';
+}
+
+export function formatContextInterval(interval: Pick<EventEntry, 'start' | 'end'>): string {
+  if (interval.end === null) return `from ${formatContextYear(interval.start)}`;
+  return formatContextYearSpan(interval.start, interval.end);
 }
 
 function formatRole(value: string): string {
   return value.replace(/_/g, ' ');
 }
 
-function formatCommunities(communities: Record<string, unknown>): string | null {
-  const entries = Object.entries(communities).filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '');
+function formatValue(value: unknown): string {
+  if (Array.isArray(value)) return value.map((item) => String(item)).filter(Boolean).join(', ');
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${formatValue(v)}`)
+      .join(', ');
+  }
+  return String(value);
+}
+
+function formatStructuredRecord(record: Record<string, unknown> | null | undefined): string | null {
+  if (!record || typeof record !== 'object') return null;
+  const entries = Object.entries(record).filter(([, v]) => {
+    if (v === null || v === undefined) return false;
+    if (Array.isArray(v)) return v.length > 0;
+    return String(v).trim() !== '';
+  });
   if (entries.length === 0) return null;
-  return entries.map(([k, v]) => `${k.replace(/_/g, ' ')}: ${String(v)}`).join('; ');
+  return entries.map(([k, v]) => `${k.replace(/_/g, ' ')}: ${formatValue(v)}`).join('; ');
+}
+
+function EventList({ events }: { events: EventEntry[] }) {
+  return (
+    <ul className={styles.list}>
+      {events.map((event) => (
+        <li key={event.id} className={styles.listItem}>
+          <span className={styles.listYear}>{formatContextInterval(event)}</span>
+          <div>
+            <span>{event.name}</span>
+            {event.location_name && <span className={styles.basis}> · {event.location_name}</span>}
+            {event.citation && (
+              <>
+                {' · '}
+                <CitationLink citation={event.citation} />
+              </>
+            )}
+            {event.description && <p className={styles.itemDetail}>{event.description}</p>}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export function ContextLayers({
@@ -85,12 +168,24 @@ export function ContextLayers({
   const politicalEvents = filterPoliticalEvents(events);
   const techEvents = filterTechEvents(events);
   const demographicEvents = filterDemographicEvents(events);
+  const socialGenderEvents = filterSocialGenderEvents(events);
+  const mythsEvents = filterMythsLiteratureArtEvents(events);
+  const foodEvents = filterFoodAgricultureEvents(events);
+  const economicEvents = filterEconomicTensionsEvents(events);
+
+  const socialNormSnapshots = placeSnapshots.filter((snap) => formatStructuredRecord(snap.social_norms) !== null);
+  const materialCultureSnapshots = placeSnapshots.filter((snap) => formatStructuredRecord(snap.material_culture) !== null);
+  const mythsParallels = parallels.filter((item) => MYTHS_PARALLELS_SOURCES.has(item.tradition_source));
 
   const counts: Record<TimelineContextLayer, number> = {
     political: politicalEvents.length,
     places: residences.length + affiliations.length + placeSnapshots.length + demographicEvents.length,
     tech: techEvents.length,
     parallels: parallels.length,
+    social_gender_norms: socialGenderEvents.length + socialNormSnapshots.length,
+    myths_literature_art: mythsEvents.length + mythsParallels.length,
+    food_agriculture_ecology: foodEvents.length + materialCultureSnapshots.length,
+    economic_tensions: economicEvents.length,
   };
 
   function toggleLayer(layer: TimelineContextLayer) {
@@ -135,24 +230,7 @@ export function ContextLayers({
           {politicalEvents.length === 0 ? (
             <p className={styles.note}>No political or world events{audience === 'public' ? ' reviewed and cited' : ''} on this span.</p>
           ) : (
-            <ul className={styles.list}>
-              {politicalEvents.map((event) => (
-                <li key={event.id} className={styles.listItem}>
-                  <span className={styles.listYear}>{formatInterval(event)}</span>
-                  <div>
-                    <span>{event.name}</span>
-                    {event.location_name && <span className={styles.basis}> · {event.location_name}</span>}
-                    {event.citation && (
-                      <>
-                        {' · '}
-                        <CitationLink citation={event.citation} />
-                      </>
-                    )}
-                    {event.description && <p className={styles.itemDetail}>{event.description}</p>}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <EventList events={politicalEvents} />
           )}
         </div>
       )}
@@ -172,7 +250,7 @@ export function ContextLayers({
               <ul className={styles.list}>
                 {residences.map((item) => (
                   <li key={item.id} className={styles.listItem}>
-                    <span className={styles.listYear}>{formatYearSpan(item.year_min, item.year_max)}</span>
+                    <span className={styles.listYear}>{formatContextYearSpan(item.year_min, item.year_max)}</span>
                     <div>
                       <span>{item.location_name ?? item.location_id}</span>
                       <span className={styles.basis}> · {formatRole(item.role)}</span>
@@ -227,10 +305,12 @@ export function ContextLayers({
               </div>
               <ul className={styles.list}>
                 {placeSnapshots.map((snap) => {
-                  const communities = formatCommunities(snap.religious_communities);
+                  const communities = formatStructuredRecord(snap.religious_communities);
+                  const socialNorms = formatStructuredRecord(snap.social_norms);
+                  const materialCulture = formatStructuredRecord(snap.material_culture);
                   return (
                     <li key={snap.id} className={styles.listItem}>
-                      <span className={styles.listYear}>{formatYearSpan(snap.year_min, snap.year_max)}</span>
+                      <span className={styles.listYear}>{formatContextYearSpan(snap.year_min, snap.year_max)}</span>
                       <div>
                         <span>{snap.location_name ?? snap.location_id}</span>
                         {snap.polity_or_ruler && <span className={styles.basis}> · {snap.polity_or_ruler}</span>}
@@ -248,6 +328,8 @@ export function ContextLayers({
                           </>
                         )}
                         {communities && <p className={styles.itemDetail}>Communities: {communities}</p>}
+                        {socialNorms && <p className={styles.itemDetail}>Social norms: {socialNorms}</p>}
+                        {materialCulture && <p className={styles.itemDetail}>Material culture: {materialCulture}</p>}
                         {snap.ethnographic_notes && <p className={styles.itemDetail}>{snap.ethnographic_notes}</p>}
                       </div>
                     </li>
@@ -263,24 +345,7 @@ export function ContextLayers({
                 <span className={styles.layerSubheading}>Demographic &amp; trade shifts</span>
                 <span className={styles.layerContextual}>Contextual</span>
               </div>
-              <ul className={styles.list}>
-                {demographicEvents.map((event) => (
-                  <li key={event.id} className={styles.listItem}>
-                    <span className={styles.listYear}>{formatInterval(event)}</span>
-                    <div>
-                      <span>{event.name}</span>
-                      {event.location_name && <span className={styles.basis}> · {event.location_name}</span>}
-                      {event.citation && (
-                        <>
-                          {' · '}
-                          <CitationLink citation={event.citation} />
-                        </>
-                      )}
-                      {event.description && <p className={styles.itemDetail}>{event.description}</p>}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <EventList events={demographicEvents} />
             </div>
           )}
 
@@ -299,24 +364,7 @@ export function ContextLayers({
           {techEvents.length === 0 ? (
             <p className={styles.note}>No writing or technological milestones{audience === 'public' ? ' reviewed and cited' : ''} on this span.</p>
           ) : (
-            <ul className={styles.list}>
-              {techEvents.map((event) => (
-                <li key={event.id} className={styles.listItem}>
-                  <span className={styles.listYear}>{formatInterval(event)}</span>
-                  <div>
-                    <span>{event.name}</span>
-                    {event.location_name && <span className={styles.basis}> · {event.location_name}</span>}
-                    {event.citation && (
-                      <>
-                        {' · '}
-                        <CitationLink citation={event.citation} />
-                      </>
-                    )}
-                    {event.description && <p className={styles.itemDetail}>{event.description}</p>}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <EventList events={techEvents} />
           )}
         </div>
       )}
@@ -350,6 +398,139 @@ export function ContextLayers({
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+      )}
+
+      {active.has('social_gender_norms') && (
+        <div className={styles.layerPanel} data-layer="social_gender_norms">
+          <div className={styles.layerPanelHeader}>
+            <span className={styles.layerPanelTitle}>Social &amp; gender norms</span>
+            <span className={styles.layerContextual}>Contextual</span>
+          </div>
+          {socialGenderEvents.length > 0 && <EventList events={socialGenderEvents} />}
+          {socialNormSnapshots.length > 0 && (
+            <div className={styles.layerSubgroup}>
+              <div className={styles.layerPanelHeader}>
+                <span className={styles.layerSubheading}>Place social norms</span>
+                <span className={styles.layerContextual}>Contextual</span>
+              </div>
+              <ul className={styles.list}>
+                {socialNormSnapshots.map((snap) => (
+                  <li key={snap.id} className={styles.listItem}>
+                    <span className={styles.listYear}>{formatContextYearSpan(snap.year_min, snap.year_max)}</span>
+                    <div>
+                      <span>{snap.location_name ?? snap.location_id}</span>
+                      {snap.review_state === 'candidate_only' && <span className={styles.candidateTag}>candidate</span>}
+                      {snap.citation && (
+                        <>
+                          {' · '}
+                          <CitationLink citation={snap.citation} />
+                        </>
+                      )}
+                      <p className={styles.itemDetail}>{formatStructuredRecord(snap.social_norms)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {counts.social_gender_norms === 0 && (
+            <p className={styles.note}>No social or gender norms entries{audience === 'public' ? ' reviewed and cited' : ''} on this span.</p>
+          )}
+        </div>
+      )}
+
+      {active.has('myths_literature_art') && (
+        <div className={styles.layerPanel} data-layer="myths_literature_art">
+          <div className={styles.layerPanelHeader}>
+            <span className={styles.layerPanelTitle}>Myths, poetry &amp; art</span>
+            <span className={styles.layerContextual}>Contextual</span>
+          </div>
+          {mythsEvents.length > 0 && <EventList events={mythsEvents} />}
+          {mythsParallels.length > 0 && (
+            <div className={styles.layerSubgroup}>
+              <div className={styles.layerPanelHeader}>
+                <span className={styles.layerSubheading}>Literary &amp; mythological parallels</span>
+                <span className={styles.layerContextual}>Contextual</span>
+              </div>
+              <ul className={styles.list}>
+                {mythsParallels.map((item) => (
+                  <li key={item.id} className={styles.listItem}>
+                    <span className={styles.listYear}>{formatRole(item.tradition_source)}</span>
+                    <div>
+                      <span>{item.source_work}</span>
+                      {item.locator && <span className={styles.basis}> · {item.locator}</span>}
+                      <span className={styles.basis}> · {formatRole(item.relation_type)}</span>
+                      {item.review_state === 'candidate_only' && <span className={styles.candidateTag}>candidate</span>}
+                      {item.citation && (
+                        <>
+                          {' · '}
+                          <CitationLink citation={item.citation} />
+                        </>
+                      )}
+                      {item.note && <p className={styles.itemDetail}>{item.note}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {counts.myths_literature_art === 0 && (
+            <p className={styles.note}>No myths, poetry, or art entries{audience === 'public' ? ' reviewed and cited' : ''} on this span.</p>
+          )}
+        </div>
+      )}
+
+      {active.has('food_agriculture_ecology') && (
+        <div className={styles.layerPanel} data-layer="food_agriculture_ecology">
+          <div className={styles.layerPanelHeader}>
+            <span className={styles.layerPanelTitle}>Food, agriculture &amp; ecology</span>
+            <span className={styles.layerContextual}>Contextual</span>
+          </div>
+          {foodEvents.length > 0 && <EventList events={foodEvents} />}
+          {materialCultureSnapshots.length > 0 && (
+            <div className={styles.layerSubgroup}>
+              <div className={styles.layerPanelHeader}>
+                <span className={styles.layerSubheading}>Material culture &amp; diet</span>
+                <span className={styles.layerContextual}>Contextual</span>
+              </div>
+              <ul className={styles.list}>
+                {materialCultureSnapshots.map((snap) => (
+                  <li key={snap.id} className={styles.listItem}>
+                    <span className={styles.listYear}>{formatContextYearSpan(snap.year_min, snap.year_max)}</span>
+                    <div>
+                      <span>{snap.location_name ?? snap.location_id}</span>
+                      {snap.review_state === 'candidate_only' && <span className={styles.candidateTag}>candidate</span>}
+                      {snap.citation && (
+                        <>
+                          {' · '}
+                          <CitationLink citation={snap.citation} />
+                        </>
+                      )}
+                      <p className={styles.itemDetail}>{formatStructuredRecord(snap.material_culture)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {counts.food_agriculture_ecology === 0 && (
+            <p className={styles.note}>No food, agriculture, or ecology entries{audience === 'public' ? ' reviewed and cited' : ''} on this span.</p>
+          )}
+        </div>
+      )}
+
+      {active.has('economic_tensions') && (
+        <div className={styles.layerPanel} data-layer="economic_tensions">
+          <div className={styles.layerPanelHeader}>
+            <span className={styles.layerPanelTitle}>Economic tensions &amp; material life</span>
+            <span className={styles.layerContextual}>Contextual</span>
+          </div>
+          {economicEvents.length === 0 ? (
+            <p className={styles.note}>No economic or material-life entries{audience === 'public' ? ' reviewed and cited' : ''} on this span.</p>
+          ) : (
+            <EventList events={economicEvents} />
           )}
         </div>
       )}

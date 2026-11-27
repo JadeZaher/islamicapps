@@ -1,7 +1,9 @@
 /**
- * Flow tests for Context Layers (timelines-and-contact-grid_20261127):
- * - Toggleable Context Layers (all off by default, clean initial view)
+ * Flow tests for Context Layers (timelines-and-contact-grid_20261127, Phase 4 / 0026):
+ * - All 8 toggleable Context Layers (all off by default, clean initial view)
+ * - Pre-Hijri / BCE year formatting (BH / c. CE / c. BCE)
  * - Attested vs. Contextual separation
+ * - `social_norms` and `material_culture` rendering on place snapshots & thematic layers
  * - Clickable citation links (external HTTP URLs and /sources fallback)
  * - Public vs. review gating in UI and query layer
  *
@@ -45,8 +47,15 @@ const {
   CONTEXT_LAYERS,
   ContextLayers,
   filterDemographicEvents,
+  filterEconomicTensionsEvents,
+  filterFoodAgricultureEvents,
+  filterMythsLiteratureArtEvents,
   filterPoliticalEvents,
+  filterSocialGenderEvents,
   filterTechEvents,
+  formatContextInterval,
+  formatContextYear,
+  formatContextYearSpan,
 } = require('../ContextLayers') as typeof import('../ContextLayers');
 const { CitationLink, formatCitationLabel } = require('../CitationLink') as typeof import('../CitationLink');
 
@@ -155,6 +164,78 @@ const SAMPLE_EVENTS: EventEntry[] = [
     track_category: 'demographic_shift',
     citation: VERIFIED_HTTP_CITATION,
   },
+  {
+    kind: 'event',
+    id: 'evt-social',
+    name: 'Code of Hammurabi family & dowry clauses',
+    name_arabic: null,
+    start: -2450,
+    end: -2440,
+    start_latest: null,
+    end_earliest: null,
+    boundary_note: null,
+    basis: 'reviewed_cited',
+    category: 'social',
+    location_name: 'Babylon',
+    location_id: 'loc-babylon',
+    description: 'Early Near Eastern codification of marriage, inheritance, and household norms.',
+    track_category: 'social_gender_norms',
+    citation: VERIFIED_HTTP_CITATION,
+  },
+  {
+    kind: 'event',
+    id: 'evt-myths',
+    name: 'Muallaqat oral performance at Ukaz',
+    name_arabic: 'المعلقات',
+    start: -50,
+    end: -30,
+    start_latest: null,
+    end_earliest: null,
+    boundary_note: null,
+    basis: 'reviewed_cited',
+    category: 'literature',
+    location_name: 'Ukaz',
+    location_id: 'loc-ukaz',
+    description: 'Pre-Islamic Arabian poetic canon recited at seasonal fairs.',
+    track_category: 'myths_literature_art',
+    citation: FALLBACK_CITATION,
+  },
+  {
+    kind: 'event',
+    id: 'evt-food',
+    name: 'Sawad canal irrigation expansion',
+    name_arabic: null,
+    start: 15,
+    end: 40,
+    start_latest: null,
+    end_earliest: null,
+    boundary_note: null,
+    basis: 'reviewed_cited',
+    category: 'agriculture',
+    location_name: 'Lower Iraq',
+    location_id: 'loc-sawad',
+    description: 'Date-palm and barley cultivation across southern Mesopotamian canals.',
+    track_category: 'food_agriculture_ecology',
+    citation: VERIFIED_HTTP_CITATION,
+  },
+  {
+    kind: 'event',
+    id: 'evt-econ',
+    name: 'Umayyad silver dirham coinage reform',
+    name_arabic: null,
+    start: 77,
+    end: 79,
+    start_latest: null,
+    end_earliest: null,
+    boundary_note: null,
+    basis: 'reviewed_cited',
+    category: 'economic',
+    location_name: 'Damascus',
+    location_id: 'loc-damascus',
+    description: 'Standardization of epigraphic gold dinars and silver dirhams.',
+    track_category: 'economic_tensions',
+    citation: VERIFIED_HTTP_CITATION,
+  },
 ];
 
 const SAMPLE_RESIDENCES: NarratorResidenceEntry[] = [
@@ -199,6 +280,8 @@ const SAMPLE_PLACE_SNAPSHOTS: PlaceSnapshotEntry[] = [
     religious_communities: { muslim: 'majority', christian: 'present' },
     languages: ['Arabic', 'Aramaic'],
     ethnographic_notes: 'Major Iraqi scholarly crossroads.',
+    social_norms: { kinship_structure: 'tribal quarters', women_scholarship: 'attested in domestic circles' },
+    material_culture: { staples: ['barley', 'dates'], writing_medium: 'parchment and early rag paper' },
     review_state: 'human_verified',
     citation: VERIFIED_HTTP_CITATION,
   },
@@ -216,35 +299,69 @@ const SAMPLE_PARALLELS: ExternalTraditionParallelEntry[] = [
     review_state: 'candidate_only',
     citation: CANDIDATE_CITATION,
   },
+  {
+    id: 'par-2',
+    hadith_id: 'had-1',
+    tradition_source: 'ancient_near_eastern_myth',
+    relation_type: 'shared_motif',
+    source_work: 'Epic of Gilgamesh, Tablet XI',
+    locator: 'lines 1-190',
+    note: 'Ancient Near Eastern flood narrative motif.',
+    review_state: 'candidate_only',
+    citation: CANDIDATE_CITATION,
+  },
 ];
 
-check('CONTEXT_LAYERS exposes the 4 required toggleable layers', () => {
+check('CONTEXT_LAYERS exposes all 8 required toggleable layers', () => {
   assert.deepEqual(
     CONTEXT_LAYERS.map((layer) => layer.id),
-    ['political', 'places', 'tech', 'parallels'],
+    [
+      'political',
+      'places',
+      'tech',
+      'parallels',
+      'social_gender_norms',
+      'myths_literature_art',
+      'food_agriculture_ecology',
+      'economic_tensions',
+    ],
   );
   assert.deepEqual(
     CONTEXT_LAYERS.map((layer) => layer.label),
-    ['Political', 'Places & Demographics', 'Tech & Writing', "Parallels & Isra'iliyyat"],
+    [
+      'Political',
+      'Places & Demographics',
+      'Tech & Writing',
+      "Parallels & Isra'iliyyat",
+      'Social & Gender Norms',
+      'Myths, Poetry & Art',
+      'Food & Agriculture',
+      'Economic Tensions',
+    ],
   );
 });
 
-check('event track filters partition political, tech, and demographic events cleanly', () => {
-  assert.deepEqual(
-    filterPoliticalEvents(SAMPLE_EVENTS).map((e) => e.id),
-    ['evt-pol'],
-  );
-  assert.deepEqual(
-    filterTechEvents(SAMPLE_EVENTS).map((e) => e.id),
-    ['evt-tech'],
-  );
-  assert.deepEqual(
-    filterDemographicEvents(SAMPLE_EVENTS).map((e) => e.id),
-    ['evt-demo'],
-  );
+check('event track filters partition all 7 event track categories cleanly', () => {
+  assert.deepEqual(filterPoliticalEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-pol']);
+  assert.deepEqual(filterTechEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-tech']);
+  assert.deepEqual(filterDemographicEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-demo']);
+  assert.deepEqual(filterSocialGenderEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-social']);
+  assert.deepEqual(filterMythsLiteratureArtEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-myths']);
+  assert.deepEqual(filterFoodAgricultureEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-food']);
+  assert.deepEqual(filterEconomicTensionsEvents(SAMPLE_EVENTS).map((e) => e.id), ['evt-econ']);
 });
 
-check('default view keeps all Context Layers toggled off (uncluttered initial render)', () => {
+check('pre-Hijri / BCE year formatting renders BH, c. CE, and c. BCE cleanly', () => {
+  assert.equal(formatContextYear(132), '132 AH');
+  assert.equal(formatContextYear(0), '0 (not a Hijri year)');
+  assert.equal(formatContextYear(-53), '53 BH (c. 571 CE)');
+  assert.equal(formatContextYear(-2500), '2500 BH (c. 1805 BCE)');
+  assert.equal(formatContextYearSpan(-2450, -2440), '2450 BH (c. 1756 BCE) – 2440 BH (c. 1746 BCE)');
+  assert.equal(formatContextYearSpan(null, null), 'Date unrecorded');
+  assert.equal(formatContextInterval({ start: -53, end: null }), 'from 53 BH (c. 571 CE)');
+});
+
+check('default view keeps all 8 Context Layers toggled off (uncluttered initial render)', () => {
   const html = renderToStaticMarkup(
     React.createElement(ContextLayers, {
       audience: 'public',
@@ -260,14 +377,17 @@ check('default view keeps all Context Layers toggled off (uncluttered initial re
   assert.ok(html.includes('Places &amp; Demographics'));
   assert.ok(html.includes('Tech &amp; Writing'));
   assert.ok(html.includes('Parallels &amp; Isra&#x27;iliyyat'));
-  assert.equal((html.match(/aria-pressed="false"/g) ?? []).length, 4);
-  assert.ok(!html.includes('data-layer="political"'));
-  assert.ok(!html.includes('data-layer="places"'));
-  assert.ok(!html.includes('data-layer="tech"'));
-  assert.ok(!html.includes('data-layer="parallels"'));
+  assert.ok(html.includes('Social &amp; Gender Norms'));
+  assert.ok(html.includes('Myths, Poetry &amp; Art'));
+  assert.ok(html.includes('Food &amp; Agriculture'));
+  assert.ok(html.includes('Economic Tensions'));
+  assert.equal((html.match(/aria-pressed="false"/g) ?? []).length, 8);
+  for (const layer of CONTEXT_LAYERS) {
+    assert.ok(!html.includes(`data-layer="${layer.id}"`), `Layer ${layer.id} should be off by default`);
+  }
 });
 
-check('toggling layers on renders attested vs. contextual separation explicitly', () => {
+check('toggling all 8 layers on renders attested vs. contextual separation, social_norms, material_culture, and BH/BCE dates', () => {
   const html = renderToStaticMarkup(
     React.createElement(ContextLayers, {
       audience: 'review',
@@ -276,25 +396,35 @@ check('toggling layers on renders attested vs. contextual separation explicitly'
       affiliations: SAMPLE_AFFILIATIONS,
       placeSnapshots: SAMPLE_PLACE_SNAPSHOTS,
       parallels: SAMPLE_PARALLELS,
-      initialLayers: ['political', 'places', 'tech', 'parallels'],
+      initialLayers: CONTEXT_LAYERS.map((l) => l.id),
     }),
   );
 
-  assert.equal((html.match(/aria-pressed="true"/g) ?? []).length, 4);
-  assert.ok(html.includes('data-layer="political"'));
-  assert.ok(html.includes('data-layer="places"'));
-  assert.ok(html.includes('data-layer="tech"'));
-  assert.ok(html.includes('data-layer="parallels"'));
+  assert.equal((html.match(/aria-pressed="true"/g) ?? []).length, 8);
+  for (const layer of CONTEXT_LAYERS) {
+    assert.ok(html.includes(`data-layer="${layer.id}"`), `Expected panel for layer ${layer.id}`);
+  }
 
   // Attested subgroups: Residences & mobility + Affiliations
   assert.ok(html.includes('Residences &amp; mobility'));
   assert.ok(html.includes('Affiliations'));
   assert.equal((html.match(/>Attested</g) ?? []).length, 2);
 
-  // Contextual subgroups/panels: Political, Place snapshots, Demographic & trade shifts, Tech & writing, Parallels
+  // Contextual panels & subgroups include all 4 new axes
   assert.ok(html.includes('Place snapshots'));
   assert.ok(html.includes('Demographic &amp; trade shifts'));
-  assert.equal((html.match(/>Contextual</g) ?? []).length, 5);
+  assert.ok(html.includes('Place social norms'));
+  assert.ok(html.includes('Literary &amp; mythological parallels'));
+  assert.ok(html.includes('Material culture &amp; diet'));
+  assert.ok(html.includes('Economic tensions &amp; material life'));
+
+  // social_norms & material_culture fields rendered
+  assert.ok(html.includes('Social norms: kinship structure: tribal quarters; women scholarship: attested in domestic circles'));
+  assert.ok(html.includes('Material culture: staples: barley, dates; writing medium: parchment and early rag paper'));
+
+  // Pre-Hijri / BCE event date rendered in social_gender_norms panel
+  assert.ok(html.includes('2450 BH (c. 1756 BCE) – 2440 BH (c. 1746 BCE)'));
+  assert.ok(html.includes('Epic of Gilgamesh, Tablet XI'));
 });
 
 check('every citation renders as a clickable link (external HTTP or /sources fallback)', () => {
@@ -315,21 +445,22 @@ check('every citation renders as a clickable link (external HTTP or /sources fal
   assert.ok(candidateHtml.includes('>candidate<'));
 });
 
-check('public vs. review empty-state messaging and candidate tagging behave as expected', () => {
+check('public vs. review empty-state messaging and candidate tagging behave as expected across all 8 layers', () => {
+  const allLayers = CONTEXT_LAYERS.map((l) => l.id);
   const publicEmpty = renderToStaticMarkup(
     React.createElement(ContextLayers, {
       audience: 'public',
       events: [],
-      initialLayers: ['political', 'places', 'tech', 'parallels'],
+      initialLayers: allLayers,
     }),
   );
-  assert.equal((publicEmpty.match(/reviewed and cited/g) ?? []).length, 4);
+  assert.equal((publicEmpty.match(/reviewed and cited/g) ?? []).length, 8);
 
   const reviewEmpty = renderToStaticMarkup(
     React.createElement(ContextLayers, {
       audience: 'review',
       events: [],
-      initialLayers: ['political', 'places', 'tech', 'parallels'],
+      initialLayers: allLayers,
     }),
   );
   assert.ok(!reviewEmpty.includes('reviewed and cited'));
@@ -339,17 +470,17 @@ check('public vs. review empty-state messaging and candidate tagging behave as e
       audience: 'review',
       events: [],
       parallels: SAMPLE_PARALLELS,
-      initialLayers: ['parallels'],
+      initialLayers: ['parallels', 'myths_literature_art'],
     }),
   );
   assert.ok(reviewWithCandidate.includes('Babylonian Talmud, Sanhedrin'));
+  assert.ok(reviewWithCandidate.includes('Epic of Gilgamesh, Tablet XI'));
   assert.ok(reviewWithCandidate.includes('>candidate<'));
 });
 
-check('timeline.ts strictly gates candidate_only and unreviewed citations to review audience', () => {
+check('timeline.ts strictly gates candidate_only and unreviewed citations to review audience and selects Phase 4 columns', () => {
   const timelineSource = readFileSync(path.resolve(process.cwd(), 'src/db/queries/timeline.ts'), 'utf8');
 
-  // Verify each of the 4 new evidence-bearing tables enforces review_state + reviewed citation for public audience.
   const requiredGuards = [
     'from narrator_residences nr',
     'nr.review_state in ${REVIEWED_CITATION} and c.id is not null',
@@ -359,10 +490,12 @@ check('timeline.ts strictly gates candidate_only and unreviewed citations to rev
     'ps.review_state in ${REVIEWED_CITATION} and c.id is not null',
     'from external_tradition_parallels ep',
     'ep.review_state in ${REVIEWED_CITATION} and c.id is not null',
+    'ps.social_norms',
+    'ps.material_culture',
   ];
 
   for (const guard of requiredGuards) {
-    assert.ok(timelineSource.includes(guard), `Missing public gating guard in src/db/queries/timeline.ts: ${guard}`);
+    assert.ok(timelineSource.includes(guard), `Missing guard/column in src/db/queries/timeline.ts: ${guard}`);
   }
 });
 

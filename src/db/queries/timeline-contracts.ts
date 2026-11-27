@@ -135,9 +135,21 @@ export type TimelineTrackCategory =
   | 'intellectual_movement'
   | 'demographic_shift'
   | 'legal_theological'
-  | 'trade_pilgrimage';
+  | 'trade_pilgrimage'
+  | 'social_gender_norms'
+  | 'myths_literature_art'
+  | 'food_agriculture_ecology'
+  | 'economic_tensions';
 
-export type TimelineContextLayer = 'political' | 'places' | 'tech' | 'parallels';
+export type TimelineContextLayer =
+  | 'political'
+  | 'places'
+  | 'tech'
+  | 'parallels'
+  | 'social_gender_norms'
+  | 'myths_literature_art'
+  | 'food_agriculture_ecology'
+  | 'economic_tensions';
 
 export interface TimelineTrackEntry {
   id: string;
@@ -160,6 +172,8 @@ export interface PlaceSnapshotEntry {
   religious_communities: Record<string, unknown>;
   languages: string[];
   ethnographic_notes: string | null;
+  social_norms?: Record<string, unknown> | null;
+  material_culture?: Record<string, unknown> | null;
   review_state: string;
   citation: TimelineCitation | null;
 }

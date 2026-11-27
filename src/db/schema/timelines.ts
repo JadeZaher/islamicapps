@@ -24,7 +24,7 @@ export const timelineTracks = pgTable(
     unique('timeline_tracks_slug_key').on(table.slug),
     check(
       'timeline_tracks_category_check',
-      sql`${table.category} in ('political', 'world_event', 'technological', 'intellectual_movement', 'demographic_shift', 'legal_theological', 'trade_pilgrimage')`,
+      sql`${table.category} in ('political', 'world_event', 'technological', 'intellectual_movement', 'demographic_shift', 'legal_theological', 'trade_pilgrimage', 'social_gender_norms', 'myths_literature_art', 'food_agriculture_ecology', 'economic_tensions')`,
     ),
     check('timeline_tracks_scope_check', sql`${table.scope} in ('global', 'regional', 'city')`),
     index('timeline_tracks_category_idx').on(table.category),
@@ -46,6 +46,8 @@ export const placeSnapshots = pgTable(
     religiousCommunities: jsonb('religious_communities').notNull().default(sql`'{}'::jsonb`),
     languages: text('languages').array().notNull().default(sql`'{}'::text[]`),
     ethnographicNotes: text('ethnographic_notes'),
+    socialNorms: jsonb('social_norms'),
+    materialCulture: jsonb('material_culture'),
     citationId: text('citation_id').notNull(),
     reviewState: evidenceReviewStateEnum('review_state').notNull().default('candidate_only'),
     ...pipelineBookkeeping(),
@@ -154,7 +156,7 @@ export const externalTraditionParallels = pgTable(
     restrictForeignKey('external_tradition_parallels_citation_id_fk', table.citationId, citations.id),
     check(
       'external_tradition_parallels_tradition_source_check',
-      sql`${table.traditionSource} in ('biblical', 'midrash_talmud', 'syriac_christian', 'sasanian_andarz', 'pre_islamic_poetry', 'other')`,
+      sql`${table.traditionSource} in ('biblical', 'midrash_talmud', 'syriac_christian', 'sasanian_andarz', 'pre_islamic_poetry', 'ancient_near_eastern_myth', 'arabian_folklore', 'greco_roman', 'poetry_adab', 'other')`,
     ),
     check(
       'external_tradition_parallels_relation_type_check',
