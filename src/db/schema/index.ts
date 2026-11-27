@@ -11,6 +11,7 @@ export * from './chain-fixes';
 export * from './isnad';
 export * from './assessments';
 export * from './history';
+export * from './timelines';
 export * from './commentary';
 export * from './comparative';
 export * from './correspondence';

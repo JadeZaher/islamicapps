@@ -17,6 +17,7 @@ import { curationBookkeeping, isLive, linkBookkeeping, restrictForeignKey } from
 import { eventCategoryEnum, eventVerificationEnum, hadithTraditionEnum, locationRelationEnum, recordOriginEnum } from './enums';
 import { citations } from './evidence';
 import { narrators } from './narrators';
+import { timelineTracks } from './timelines';
 
 /** A place, seeded or curated. */
 export const locations = pgTable(
@@ -81,12 +82,15 @@ export const historicalEvents = pgTable(
     /** Stable slug key for history-lane candidate events and cross-lane event references (0024). */
     key: text('key'),
     traditionContext: hadithTraditionEnum('tradition_context'),
+    /** Optional thematic timeline track (0025). Kept outside historicalEventColumns() so published_historical_events stays backward-compatible. */
+    trackId: text('track_id'),
     aiReview: jsonb('ai_review'),
     humanReviews: jsonb('human_reviews').notNull().default(sql`'[]'::jsonb`),
   },
   (table) => [
     restrictForeignKey('historical_events_location_id_fk', table.locationId, locations.id),
     restrictForeignKey('historical_events_citation_id_fk', table.citationId, citations.id),
+    restrictForeignKey('historical_events_track_id_fk', table.trackId, timelineTracks.id),
     check(
       'historical_events_year_order_check',
       sql`${table.startYearHijri} is null or ${table.endYearHijri} is null or ${table.endYearHijri} >= ${table.startYearHijri}`,
@@ -102,6 +106,7 @@ export const historicalEvents = pgTable(
       .where(sql`${table.retiredAt} is null and ${table.key} is not null`),
     index('historical_events_year_range_idx').on(table.startYearHijri, table.endYearHijri),
     index('historical_events_category_idx').on(table.category),
+    index('historical_events_track_id_idx').on(table.trackId),
     index('historical_events_published_start_idx')
       .on(table.startYearHijri)
       .where(sql`${table.publicationReady}`),

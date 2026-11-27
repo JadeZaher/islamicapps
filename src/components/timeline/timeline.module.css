@@ -297,6 +297,111 @@
   color: var(--timeline-faint);
 }
 
+/* Toggleable context layers: hairline controls, off by default. */
+.layerSection {
+  margin-top: var(--timeline-space-5);
+  padding-top: var(--timeline-space-3);
+  border-top: var(--timeline-hairline) solid var(--timeline-rule);
+}
+
+.layerHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--timeline-space-2) var(--timeline-space-3);
+}
+
+.layerTitle {
+  margin: 0;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--timeline-muted);
+}
+
+.layerBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--timeline-space-1);
+}
+
+.layerToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--timeline-space-1);
+  padding: 0.25rem 0.625rem;
+  border: var(--timeline-hairline) solid var(--timeline-rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--timeline-muted);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  cursor: pointer;
+}
+
+.layerToggle:hover {
+  color: var(--timeline-ink);
+  border-color: var(--timeline-muted);
+}
+
+.layerToggleActive {
+  color: var(--timeline-ink);
+  border-color: var(--timeline-ink);
+  background: var(--timeline-band);
+}
+
+.layerCount {
+  color: var(--timeline-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.layerPanel {
+  margin-top: var(--timeline-space-3);
+}
+
+.layerPanelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--timeline-space-2);
+  margin-bottom: var(--timeline-space-1);
+}
+
+.layerPanelTitle {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--timeline-ink);
+}
+
+.layerSubgroup {
+  margin-top: var(--timeline-space-3);
+}
+
+.layerSubheading {
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--timeline-muted);
+}
+
+.layerAttested,
+.layerContextual {
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.layerAttested {
+  color: var(--timeline-ink);
+}
+
+.layerContextual {
+  color: var(--timeline-muted);
+}
+
 @media (max-width: 640px) {
   .row {
     grid-template-columns: 1fr;

@@ -85,6 +85,32 @@ export interface NarratorCompletenessSummary {
   };
 }
 
+export interface ContactGridSummary {
+  timelineTracks: number;
+  historicalEventsWithTrack: number;
+  placeSnapshots: {
+    total: number;
+    distinctLocations: number;
+    byReviewState: Record<string, number>;
+  };
+  narratorResidences: {
+    total: number;
+    distinctNarrators: number;
+    distinctLocations: number;
+    byReviewState: Record<string, number>;
+  };
+  narratorAffiliations: {
+    total: number;
+    distinctNarrators: number;
+    byReviewState: Record<string, number>;
+  };
+  externalTraditionParallels: {
+    total: number;
+    distinctHadiths: number;
+    byReviewState: Record<string, number>;
+  };
+}
+
 export interface TimelineCitationsSummary {
   epochs: {
     total: number;
@@ -116,6 +142,7 @@ export interface TimelineCitationsSummary {
   };
   bibliographicWorks: number;
   editions: number;
+  contactGrid?: ContactGridSummary;
 }
 
 export interface OrphanCheckCounts {
@@ -745,6 +772,99 @@ export async function runCompletenessBenchmark(args: BenchArgs): Promise<Complet
       editions: Number(editionRows[0]?.total ?? 0),
     };
 
+    // Optional 0025 timelines & contact-grid coverage (safe when 0025 is not yet applied)
+    const [gridExistsRow] = await sqlClient`
+      select to_regclass('public.timeline_tracks') is not null as has_grid
+    `;
+    if (gridExistsRow?.has_grid) {
+      const [
+        tracksCountRows,
+        eventsWithTrackRows,
+        psRows,
+        psStateRows,
+        nrRows,
+        nrStateRows,
+        naRows,
+        naStateRows,
+        etpRows,
+        etpStateRows,
+      ] = await Promise.all([
+        sqlClient`select count(*)::int as total from timeline_tracks where retired_at is null`,
+        sqlClient`select count(*)::int as total from historical_events where retired_at is null and track_id is not null`,
+        sqlClient`
+          select count(*)::int as total, count(distinct location_id)::int as distinct_locations
+          from place_snapshots where retired_at is null
+        `,
+        sqlClient`
+          select review_state::text as review_state, count(*)::int as cnt
+          from place_snapshots where retired_at is null
+          group by review_state order by cnt desc, review_state asc
+        `,
+        sqlClient`
+          select
+            count(*)::int as total,
+            count(distinct narrator_id)::int as distinct_narrators,
+            count(distinct location_id)::int as distinct_locations
+          from narrator_residences where retired_at is null
+        `,
+        sqlClient`
+          select review_state::text as review_state, count(*)::int as cnt
+          from narrator_residences where retired_at is null
+          group by review_state order by cnt desc, review_state asc
+        `,
+        sqlClient`
+          select count(*)::int as total, count(distinct narrator_id)::int as distinct_narrators
+          from narrator_affiliations where retired_at is null
+        `,
+        sqlClient`
+          select review_state::text as review_state, count(*)::int as cnt
+          from narrator_affiliations where retired_at is null
+          group by review_state order by cnt desc, review_state asc
+        `,
+        sqlClient`
+          select count(*)::int as total, count(distinct hadith_id)::int as distinct_hadiths
+          from external_tradition_parallels where retired_at is null
+        `,
+        sqlClient`
+          select review_state::text as review_state, count(*)::int as cnt
+          from external_tradition_parallels where retired_at is null
+          group by review_state order by cnt desc, review_state asc
+        `,
+      ]);
+
+      const toStateMap = (rows: readonly Record<string, unknown>[]): Record<string, number> => {
+        const out: Record<string, number> = {};
+        for (const r of rows) out[String(r.review_state)] = Number(r.cnt);
+        return out;
+      };
+
+      timelineAndCitations.contactGrid = {
+        timelineTracks: Number(tracksCountRows[0]?.total ?? 0),
+        historicalEventsWithTrack: Number(eventsWithTrackRows[0]?.total ?? 0),
+        placeSnapshots: {
+          total: Number(psRows[0]?.total ?? 0),
+          distinctLocations: Number(psRows[0]?.distinct_locations ?? 0),
+          byReviewState: toStateMap(psStateRows),
+        },
+        narratorResidences: {
+          total: Number(nrRows[0]?.total ?? 0),
+          distinctNarrators: Number(nrRows[0]?.distinct_narrators ?? 0),
+          distinctLocations: Number(nrRows[0]?.distinct_locations ?? 0),
+          byReviewState: toStateMap(nrStateRows),
+        },
+        narratorAffiliations: {
+          total: Number(naRows[0]?.total ?? 0),
+          distinctNarrators: Number(naRows[0]?.distinct_narrators ?? 0),
+          byReviewState: toStateMap(naStateRows),
+        },
+        externalTraditionParallels: {
+          total: Number(etpRows[0]?.total ?? 0),
+          distinctHadiths: Number(etpRows[0]?.distinct_hadiths ?? 0),
+          byReviewState: toStateMap(etpStateRows),
+        },
+      };
+    }
+
     const orph = orphanRows[0] ?? {};
     const orphans: OrphanCheckCounts = {
       hadithsCollection: Number(orph.hadiths_collection ?? 0),
@@ -864,6 +984,28 @@ export function formatCompletenessReport(report: CompletenessReport): string {
     `citations: total=${tc.citations.total.toLocaleString()} (history=${tc.citations.history.toLocaleString()}, rijal=${tc.citations.rijal.toLocaleString()}, other=${tc.citations.other.toLocaleString()}) [${citStateSummary || 'none'}]`,
   );
   lines.push(`bibliographic_works: ${tc.bibliographicWorks.toLocaleString()} | editions: ${tc.editions.toLocaleString()}`);
+  if (tc.contactGrid) {
+    const cg = tc.contactGrid;
+    const fmtStates = (m: Record<string, number>) =>
+      Object.entries(m)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ') || 'none';
+    lines.push(
+      `timeline_tracks: ${cg.timelineTracks} | historical_events with track_id: ${cg.historicalEventsWithTrack}/${tc.historicalEvents.total}`,
+    );
+    lines.push(
+      `place_snapshots: total=${cg.placeSnapshots.total}, distinct_locations=${cg.placeSnapshots.distinctLocations} [${fmtStates(cg.placeSnapshots.byReviewState)}]`,
+    );
+    lines.push(
+      `narrator_residences: total=${cg.narratorResidences.total}, narrators=${cg.narratorResidences.distinctNarrators}, locations=${cg.narratorResidences.distinctLocations} [${fmtStates(cg.narratorResidences.byReviewState)}]`,
+    );
+    lines.push(
+      `narrator_affiliations: total=${cg.narratorAffiliations.total}, narrators=${cg.narratorAffiliations.distinctNarrators} [${fmtStates(cg.narratorAffiliations.byReviewState)}]`,
+    );
+    lines.push(
+      `external_tradition_parallels: total=${cg.externalTraditionParallels.total}, hadiths=${cg.externalTraditionParallels.distinctHadiths} [${fmtStates(cg.externalTraditionParallels.byReviewState)}]`,
+    );
+  }
   lines.push('');
 
   lines.push('--- 4. MATHEMATICAL INVARIANTS ---');

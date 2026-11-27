@@ -10,6 +10,7 @@ import { GlossaryTerm } from '@/components/GlossaryTerm';
 import { TabaqahTimeline } from '@/components/TabaqahTimeline';
 import { BasisLabel } from './BasisLabel';
 import { CitationLink, TemporalAssertionsList } from './CitationLink';
+import { ContextLayers } from './ContextLayers';
 import { buildScale } from './scale';
 import { AxisRow, EpochLane, EventLane, Legend, LifeMarks } from './TimelineGeometry';
 import { LifespanFacts, PlaceFacts } from './TimelineFacts';
@@ -155,6 +156,14 @@ export function NarratorTimeline({ timeline }: { timeline: NarratorTimelineData 
           <RelatedList items={timeline.events} />
         </>
       )}
+      <ContextLayers
+        audience={timeline.audience}
+        events={timeline.events.map((item) => item.entry)}
+        residences={timeline.residences}
+        affiliations={timeline.affiliations}
+        placeSnapshots={timeline.place_snapshots}
+        parallels={timeline.parallels}
+      />
       {scale && timeline.epochs.length === 0 && timeline.events.length === 0 && timeline.narrator_events.length === 0 && (
         <p className={styles.note}>No era or event{timeline.audience === 'public' ? ' that has been reviewed and cited' : ''} falls within the recorded dates.</p>
       )}

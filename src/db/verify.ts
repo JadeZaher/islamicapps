@@ -25,8 +25,9 @@ import * as schema from './schema';
  * public_chain_mention_candidates_v2 (0011). 0019: the five chain-fix tables, chain_fix_work_settings and
  * public_chain_fix_labels. 0021: public_chain_fix_dispositions, public_chain_fix_mention_kinds. 0023: chain_fix_witness_matches.
  * 0024: temporal_assertions.
+ * 0025: timeline_tracks, place_snapshots, narrator_residences, narrator_affiliations, external_tradition_parallels.
  */
-const EXPECTED_TABLE_COUNT = 56;
+const EXPECTED_TABLE_COUNT = 61;
 const EXPECTED_VIEW_COUNT = 14;
 const EXPECTED_MATERIALIZED_VIEW_COUNT = 1;
 const REQUIRED_EXTENSIONS = ['pg_trgm', 'unaccent'];

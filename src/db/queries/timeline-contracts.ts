@@ -121,8 +121,84 @@ export interface EventEntry extends TimelineInterval {
   location_id: string | null;
   description: string | null;
   significance?: string | null;
+  track_id?: string | null;
+  track_slug?: string | null;
+  track_category?: TimelineTrackCategory | null;
   citation?: TimelineCitation | null;
   temporal_assertions?: TimelineTemporalAssertion[];
+}
+
+export type TimelineTrackCategory =
+  | 'political'
+  | 'world_event'
+  | 'technological'
+  | 'intellectual_movement'
+  | 'demographic_shift'
+  | 'legal_theological'
+  | 'trade_pilgrimage';
+
+export type TimelineContextLayer = 'political' | 'places' | 'tech' | 'parallels';
+
+export interface TimelineTrackEntry {
+  id: string;
+  slug: string;
+  title: string;
+  category: TimelineTrackCategory;
+  scope: 'global' | 'regional' | 'city';
+  description: string | null;
+}
+
+export interface PlaceSnapshotEntry {
+  id: string;
+  location_id: string;
+  location_name: string | null;
+  year_min: number | null;
+  year_max: number | null;
+  precision: string | null;
+  polity_or_ruler: string | null;
+  dominant_schools: string[];
+  religious_communities: Record<string, unknown>;
+  languages: string[];
+  ethnographic_notes: string | null;
+  review_state: string;
+  citation: TimelineCitation | null;
+}
+
+export interface NarratorResidenceEntry {
+  id: string;
+  narrator_id: string;
+  narrator_name?: string | null;
+  location_id: string;
+  location_name: string | null;
+  year_min: number | null;
+  year_max: number | null;
+  precision: string | null;
+  role: string;
+  review_state: string;
+  citation: TimelineCitation | null;
+}
+
+export interface NarratorAffiliationEntry {
+  id: string;
+  narrator_id: string;
+  narrator_name?: string | null;
+  kind: string;
+  label: string;
+  note: string | null;
+  review_state: string;
+  citation: TimelineCitation | null;
+}
+
+export interface ExternalTraditionParallelEntry {
+  id: string;
+  hadith_id: string;
+  tradition_source: string;
+  relation_type: string;
+  source_work: string;
+  locator: string | null;
+  note: string | null;
+  review_state: string;
+  citation: TimelineCitation | null;
 }
 
 export interface NarratorEventEntry {
@@ -152,6 +228,13 @@ export interface NarratorTimeline {
   events: Array<RelatedInterval<EventEntry>>;
   /** Direct narrator-to-event links (`narrator_events`), distinct from contextual lifespan overlap. */
   narrator_events: NarratorEventEntry[];
+  /** Multi-axis timeline tracks and cultural-contact grid (0025). */
+  tracks?: TimelineTrackEntry[];
+  residences?: NarratorResidenceEntry[];
+  affiliations?: NarratorAffiliationEntry[];
+  place_snapshots?: PlaceSnapshotEntry[];
+  parallels?: ExternalTraditionParallelEntry[];
+  timelines_grid_available?: boolean;
   /** False when the epochs table is not yet in this database (pending migration). */
   epochs_available: boolean;
 }
@@ -210,5 +293,12 @@ export interface ChainFamilyTimeline {
   span: YearRange | null;
   epochs: EpochEntry[];
   events: EventEntry[];
+  /** Multi-axis timeline tracks and cultural-contact grid (0025). */
+  tracks?: TimelineTrackEntry[];
+  residences?: NarratorResidenceEntry[];
+  affiliations?: NarratorAffiliationEntry[];
+  place_snapshots?: PlaceSnapshotEntry[];
+  parallels?: ExternalTraditionParallelEntry[];
+  timelines_grid_available?: boolean;
   epochs_available: boolean;
 }

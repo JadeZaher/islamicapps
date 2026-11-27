@@ -12,6 +12,7 @@ import { BilingualTitle, NarratorName } from '@/components/NarratorName';
 import { HADITH_TRADITIONS, TraditionMark, type HadithTradition } from '@/components/marks';
 import { BasisLabel } from './BasisLabel';
 import { CitationLink, TemporalAssertionsList } from './CitationLink';
+import { ContextLayers } from './ContextLayers';
 import { buildScale } from './scale';
 import { AxisRow, EpochLane, EventLane, Legend, LifeMarks } from './TimelineGeometry';
 import { GenerationFacts, LifespanFacts, PlaceFacts, shortLife } from './TimelineFacts';
@@ -233,6 +234,14 @@ export function ChainTimeline({ family, headingId = 'chain-timeline-heading' }: 
           </ul>
         </>
       )}
+      <ContextLayers
+        audience={family.audience}
+        events={family.events}
+        residences={family.residences}
+        affiliations={family.affiliations}
+        placeSnapshots={family.place_snapshots}
+        parallels={family.parallels}
+      />
       {!family.epochs_available && family.audience === 'review' && <p className={styles.note}>Eras are not yet available in this database.</p>}
     </section>
   );

@@ -14,14 +14,20 @@ import type {
   DatumBasis,
   EpochEntry,
   EventEntry,
+  ExternalTraditionParallelEntry,
   GenerationClaim,
   Lifespan,
+  NarratorAffiliationEntry,
   NarratorEventEntry,
+  NarratorResidenceEntry,
   NarratorTimeline,
   PlaceClaim,
+  PlaceSnapshotEntry,
   TimelineAudience,
   TimelineCitation,
   TimelineTemporalAssertion,
+  TimelineTrackCategory,
+  TimelineTrackEntry,
 } from './timeline-contracts';
 import {
   buildLifespan,
@@ -48,6 +54,7 @@ const VERIFIED_RESOLUTIONS = sql`('source_index', 'human_verified', 'derived_rel
 const REVIEWED_CITATION = sql`('human_verified', 'source_verified')`;
 
 let epochTableSeen: { available: boolean; checkedAt: number } | undefined;
+let gridTableSeen: { available: boolean; checkedAt: number } | undefined;
 const EPOCH_RECHECK_MS = 60_000;
 
 /** Whether `epochs` exists here (it ships with a pending migration, src/db/ops/pending/). Cached once present. */
@@ -58,6 +65,16 @@ export async function epochsAvailable(): Promise<boolean> {
   const row = await oneRow<{ available: boolean }>(sql`select to_regclass('epochs') is not null as available`);
   epochTableSeen = { available: row?.available === true, checkedAt: Date.now() };
   return epochTableSeen.available;
+}
+
+/** Whether migration 0025 (`timeline_tracks`, `place_snapshots`, etc.) is present in this database. */
+export async function timelinesGridAvailable(): Promise<boolean> {
+  if (gridTableSeen && (gridTableSeen.available || Date.now() - gridTableSeen.checkedAt < EPOCH_RECHECK_MS)) {
+    return gridTableSeen.available;
+  }
+  const row = await oneRow<{ available: boolean }>(sql`select to_regclass('timeline_tracks') is not null as available`);
+  gridTableSeen = { available: row?.available === true, checkedAt: Date.now() };
+  return gridTableSeen.available;
 }
 
 /**
@@ -134,7 +151,7 @@ function temporalAssertionsSubquery(audience: TimelineAudience, subjectColumn: '
     ), '[]'::json)`;
 }
 
-function eventsWithin(audience: TimelineAudience): SQL {
+function eventsWithin(audience: TimelineAudience, withGrid = false): SQL {
   const review = audience === 'review';
   const source = review
     ? sql`(select e.*, e.start_year_hijri as event_start, coalesce(e.end_year_hijri, e.start_year_hijri) as event_end
@@ -145,6 +162,9 @@ function eventsWithin(audience: TimelineAudience): SQL {
              'id', e.id, 'name', e.title, 'name_arabic', e.title_arabic, 'start', e.event_start, 'end', e.event_end,
              'category', e.category, 'location_name', e.location_name, 'location_id', e.location_id,
              'description', e.description, 'significance', e.significance,
+             'track_id', ${withGrid ? sql`tt.id` : sql`null::text`},
+             'track_slug', ${withGrid ? sql`tt.slug` : sql`null::text`},
+             'track_category', ${withGrid ? sql`tt.category` : sql`null::text`},
              'verification_status', e.verification_status, 'publication_ready', e.publication_ready,
              'citation_source', e.citation_source, 'citation_locator', e.citation_locator, 'citation_url', e.citation_url,
              'citation', case when c.id is not null then json_build_object(
@@ -158,10 +178,134 @@ function eventsWithin(audience: TimelineAudience): SQL {
            ) order by e.event_start, e.id), '[]'::json)
     from ${source} e
     join window_bounds w on w.lo is not null and e.event_end >= w.lo and e.event_start <= w.hi
+    ${withGrid ? sql`left join historical_events he on he.id = e.id and he.retired_at is null
+    left join timeline_tracks tt on tt.id = he.track_id and tt.retired_at is null` : sql``}
     left join citations c on c.id = e.citation_id and c.retired_at is null
       ${review ? sql`` : sql`and c.review_state in ${REVIEWED_CITATION}`}
     left join bibliographic_works bw on bw.id = c.work_id and bw.retired_at is null
     left join editions ed on ed.id = c.edition_id and ed.retired_at is null`;
+}
+
+function timelineTracksQuery(): SQL {
+  return sql`
+    select coalesce(json_agg(json_build_object(
+             'id', t.id, 'slug', t.slug, 'title', t.title, 'category', t.category, 'scope', t.scope,
+             'description', t.description
+           ) order by t.category, t.slug), '[]'::json)
+    from timeline_tracks t
+    where t.retired_at is null`;
+}
+
+function narratorResidencesQuery(audience: TimelineAudience): SQL {
+  const review = audience === 'review';
+  return sql`
+    select coalesce(json_agg(json_build_object(
+             'id', nr.id, 'narrator_id', nr.narrator_id, 'narrator_name', coalesce(n.name_en, n.name),
+             'location_id', nr.location_id, 'location_name', l.name,
+             'year_min', nr.year_min, 'year_max', nr.year_max, 'precision', nr.precision,
+             'role', nr.role, 'review_state', nr.review_state,
+             'citation', case when c.id is not null then json_build_object(
+               'id', c.id, 'work_title', bw.title, 'work_title_ar', bw.title_ar, 'author', bw.author,
+               'edition', nullif(concat_ws(', ', ed.editor, ed.publisher, ed.year), ''),
+               'volume', c.volume, 'page', c.page, 'locator', c.locator,
+               'url', coalesce(nullif(trim(c.url), ''), nullif(trim(ed.url), '')),
+               'review_state', c.review_state
+             ) end
+           ) order by nr.year_min nulls last, nr.id), '[]'::json)
+    from narrator_residences nr
+    join ids on ids.narrator_id = nr.narrator_id
+    join narrators n on n.id = nr.narrator_id and n.retired_at is null
+    join locations l on l.id = nr.location_id and l.retired_at is null
+    left join citations c on c.id = nr.citation_id and c.retired_at is null
+      ${review ? sql`` : sql`and c.review_state in ${REVIEWED_CITATION}`}
+    left join bibliographic_works bw on bw.id = c.work_id and bw.retired_at is null
+    left join editions ed on ed.id = c.edition_id and ed.retired_at is null
+    where nr.retired_at is null
+      ${review ? sql`` : sql`and nr.review_state in ${REVIEWED_CITATION} and c.id is not null`}`;
+}
+
+function narratorAffiliationsQuery(audience: TimelineAudience): SQL {
+  const review = audience === 'review';
+  return sql`
+    select coalesce(json_agg(json_build_object(
+             'id', na.id, 'narrator_id', na.narrator_id, 'narrator_name', coalesce(n.name_en, n.name),
+             'kind', na.kind, 'label', na.label, 'note', na.note, 'review_state', na.review_state,
+             'citation', case when c.id is not null then json_build_object(
+               'id', c.id, 'work_title', bw.title, 'work_title_ar', bw.title_ar, 'author', bw.author,
+               'edition', nullif(concat_ws(', ', ed.editor, ed.publisher, ed.year), ''),
+               'volume', c.volume, 'page', c.page, 'locator', c.locator,
+               'url', coalesce(nullif(trim(c.url), ''), nullif(trim(ed.url), '')),
+               'review_state', c.review_state
+             ) end
+           ) order by na.kind, na.label, na.id), '[]'::json)
+    from narrator_affiliations na
+    join ids on ids.narrator_id = na.narrator_id
+    join narrators n on n.id = na.narrator_id and n.retired_at is null
+    left join citations c on c.id = na.citation_id and c.retired_at is null
+      ${review ? sql`` : sql`and c.review_state in ${REVIEWED_CITATION}`}
+    left join bibliographic_works bw on bw.id = c.work_id and bw.retired_at is null
+    left join editions ed on ed.id = c.edition_id and ed.retired_at is null
+    where na.retired_at is null
+      ${review ? sql`` : sql`and na.review_state in ${REVIEWED_CITATION} and c.id is not null`}`;
+}
+
+function placeSnapshotsWithin(audience: TimelineAudience): SQL {
+  const review = audience === 'review';
+  return sql`
+    select coalesce(json_agg(json_build_object(
+             'id', ps.id, 'location_id', ps.location_id, 'location_name', l.name,
+             'year_min', ps.year_min, 'year_max', ps.year_max, 'precision', ps.precision,
+             'polity_or_ruler', ps.polity_or_ruler, 'dominant_schools', ps.dominant_schools,
+             'religious_communities', ps.religious_communities, 'languages', ps.languages,
+             'ethnographic_notes', ps.ethnographic_notes, 'review_state', ps.review_state,
+             'citation', case when c.id is not null then json_build_object(
+               'id', c.id, 'work_title', bw.title, 'work_title_ar', bw.title_ar, 'author', bw.author,
+               'edition', nullif(concat_ws(', ', ed.editor, ed.publisher, ed.year), ''),
+               'volume', c.volume, 'page', c.page, 'locator', c.locator,
+               'url', coalesce(nullif(trim(c.url), ''), nullif(trim(ed.url), '')),
+               'review_state', c.review_state
+             ) end
+           ) order by ps.year_min nulls last, l.name, ps.id), '[]'::json)
+    from place_snapshots ps
+    join locations l on l.id = ps.location_id and l.retired_at is null
+    join window_bounds w on w.lo is not null
+      and (ps.year_max is null or ps.year_max >= w.lo)
+      and (ps.year_min is null or ps.year_min <= w.hi)
+    left join citations c on c.id = ps.citation_id and c.retired_at is null
+      ${review ? sql`` : sql`and c.review_state in ${REVIEWED_CITATION}`}
+    left join bibliographic_works bw on bw.id = c.work_id and bw.retired_at is null
+    left join editions ed on ed.id = c.edition_id and ed.retired_at is null
+    where ps.retired_at is null
+      ${review ? sql`` : sql`and ps.review_state in ${REVIEWED_CITATION} and c.id is not null`}
+      and (
+        exists (select 1 from narrator_residences nr join ids on ids.narrator_id = nr.narrator_id where nr.location_id = ps.location_id and nr.retired_at is null)
+        or exists (select 1 from narrator_locations nl join ids on ids.narrator_id = nl.narrator_id where nl.location_id = ps.location_id and nl.retired_at is null)
+      )`;
+}
+
+function externalParallelsForHadiths(audience: TimelineAudience): SQL {
+  const review = audience === 'review';
+  return sql`
+    select coalesce(json_agg(json_build_object(
+             'id', ep.id, 'hadith_id', ep.hadith_id, 'tradition_source', ep.tradition_source,
+             'relation_type', ep.relation_type, 'source_work', ep.source_work,
+             'locator', ep.locator, 'note', ep.note, 'review_state', ep.review_state,
+             'citation', case when c.id is not null then json_build_object(
+               'id', c.id, 'work_title', bw.title, 'work_title_ar', bw.title_ar, 'author', bw.author,
+               'edition', nullif(concat_ws(', ', ed.editor, ed.publisher, ed.year), ''),
+               'volume', c.volume, 'page', c.page, 'locator', c.locator,
+               'url', coalesce(nullif(trim(c.url), ''), nullif(trim(ed.url), '')),
+               'review_state', c.review_state
+             ) end
+           ) order by ep.tradition_source, ep.source_work, ep.id), '[]'::json)
+    from external_tradition_parallels ep
+    join requested r on r.hadith_id = ep.hadith_id
+    left join citations c on c.id = ep.citation_id and c.retired_at is null
+      ${review ? sql`` : sql`and c.review_state in ${REVIEWED_CITATION}`}
+    left join bibliographic_works bw on bw.id = c.work_id and bw.retired_at is null
+    left join editions ed on ed.id = c.edition_id and ed.retired_at is null
+    where ep.retired_at is null
+      ${review ? sql`` : sql`and ep.review_state in ${REVIEWED_CITATION} and c.id is not null`}`;
 }
 
 function epochsWithin(audience: TimelineAudience): SQL {
@@ -369,12 +513,90 @@ function toEvent(row: Row): EventEntry {
     location_id: textOrNull(row.location_id),
     description: textOrNull(row.description),
     significance: textOrNull(row.significance),
+    track_id: textOrNull(row.track_id),
+    track_slug: textOrNull(row.track_slug),
+    track_category: (textOrNull(row.track_category) as TimelineTrackCategory | null) ?? null,
     citation: toCitation(row.citation, {
       source: row.citation_source,
       locator: row.citation_locator,
       url: row.citation_url,
     }),
     temporal_assertions: toTemporalAssertions(row.temporal_assertions),
+  };
+}
+
+function toTrack(row: Row): TimelineTrackEntry {
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    title: String(row.title),
+    category: String(row.category) as TimelineTrackCategory,
+    scope: String(row.scope) as TimelineTrackEntry['scope'],
+    description: textOrNull(row.description),
+  };
+}
+
+function toResidence(row: Row): NarratorResidenceEntry {
+  return {
+    id: String(row.id),
+    narrator_id: String(row.narrator_id),
+    narrator_name: textOrNull(row.narrator_name),
+    location_id: String(row.location_id),
+    location_name: textOrNull(row.location_name),
+    year_min: int(row.year_min),
+    year_max: int(row.year_max),
+    precision: textOrNull(row.precision),
+    role: String(row.role),
+    review_state: String(row.review_state ?? 'candidate_only'),
+    citation: toCitation(row.citation),
+  };
+}
+
+function toAffiliation(row: Row): NarratorAffiliationEntry {
+  return {
+    id: String(row.id),
+    narrator_id: String(row.narrator_id),
+    narrator_name: textOrNull(row.narrator_name),
+    kind: String(row.kind),
+    label: String(row.label),
+    note: textOrNull(row.note),
+    review_state: String(row.review_state ?? 'candidate_only'),
+    citation: toCitation(row.citation),
+  };
+}
+
+function toPlaceSnapshot(row: Row): PlaceSnapshotEntry {
+  return {
+    id: String(row.id),
+    location_id: String(row.location_id),
+    location_name: textOrNull(row.location_name),
+    year_min: int(row.year_min),
+    year_max: int(row.year_max),
+    precision: textOrNull(row.precision),
+    polity_or_ruler: textOrNull(row.polity_or_ruler),
+    dominant_schools: Array.isArray(row.dominant_schools) ? row.dominant_schools.map(String) : [],
+    religious_communities:
+      row.religious_communities && typeof row.religious_communities === 'object' && !Array.isArray(row.religious_communities)
+        ? (row.religious_communities as Record<string, unknown>)
+        : {},
+    languages: Array.isArray(row.languages) ? row.languages.map(String) : [],
+    ethnographic_notes: textOrNull(row.ethnographic_notes),
+    review_state: String(row.review_state ?? 'candidate_only'),
+    citation: toCitation(row.citation),
+  };
+}
+
+function toParallel(row: Row): ExternalTraditionParallelEntry {
+  return {
+    id: String(row.id),
+    hadith_id: String(row.hadith_id),
+    tradition_source: String(row.tradition_source),
+    relation_type: String(row.relation_type),
+    source_work: String(row.source_work),
+    locator: textOrNull(row.locator),
+    note: textOrNull(row.note),
+    review_state: String(row.review_state ?? 'candidate_only'),
+    citation: toCitation(row.citation),
   };
 }
 
@@ -418,15 +640,28 @@ function emptyLifespan(): Lifespan {
 /** Lifespan, generation, places, and the eras and events related to the life, for one narrator. */
 export async function getNarratorTimeline(narratorId: string, visibility: ReadVisibility = PUBLIC_VISIBILITY): Promise<NarratorTimeline> {
   const audience = audienceFor(visibility);
-  const withEpochs = await epochsAvailable();
-  const row = await oneRow<{ facts: Row | null; events: Row[]; epochs: Row[] | null; narrator_events: Row[] }>(sql`
+  const [withEpochs, withGrid] = await Promise.all([epochsAvailable(), timelinesGridAvailable()]);
+  const row = await oneRow<{
+    facts: Row | null;
+    events: Row[];
+    epochs: Row[] | null;
+    narrator_events: Row[];
+    tracks: Row[] | null;
+    residences: Row[] | null;
+    affiliations: Row[] | null;
+    place_snapshots: Row[] | null;
+  }>(sql`
     with ids as (select ${narratorId}::text as narrator_id),
          facts as (${narratorFacts(audience)}),
          window_bounds as (${WINDOW})
     select (select to_jsonb(f) from facts f) as facts,
-           (${eventsWithin(audience)}) as events,
+           (${eventsWithin(audience, withGrid)}) as events,
            ${withEpochs ? sql`(${epochsWithin(audience)})` : sql`null::json`} as epochs,
-           (${narratorEventsFor(narratorId, audience)}) as narrator_events
+           (${narratorEventsFor(narratorId, audience)}) as narrator_events,
+           ${withGrid ? sql`(${timelineTracksQuery()})` : sql`null::json`} as tracks,
+           ${withGrid ? sql`(${narratorResidencesQuery(audience)})` : sql`null::json`} as residences,
+           ${withGrid ? sql`(${narratorAffiliationsQuery(audience)})` : sql`null::json`} as affiliations,
+           ${withGrid ? sql`(${placeSnapshotsWithin(audience)})` : sql`null::json`} as place_snapshots
   `);
   const facts = row?.facts ? toFacts(row.facts) : null;
   const lifespan = facts?.lifespan ?? emptyLifespan();
@@ -443,6 +678,12 @@ export async function getNarratorTimeline(narratorId: string, visibility: ReadVi
     epochs: relate((row?.epochs ?? []).map(toEpoch)),
     events: relate((row?.events ?? []).map(toEvent)),
     narrator_events: (row?.narrator_events ?? []).map(toNarratorEvent),
+    tracks: (row?.tracks ?? []).map(toTrack),
+    residences: (row?.residences ?? []).map(toResidence),
+    affiliations: (row?.affiliations ?? []).map(toAffiliation),
+    place_snapshots: (row?.place_snapshots ?? []).map(toPlaceSnapshot),
+    parallels: [],
+    timelines_grid_available: withGrid,
     epochs_available: withEpochs,
   };
 }
@@ -503,9 +744,21 @@ function identify(mention: Row, candidates: Row[]): { identity: ChainIdentity; n
 export async function getChainFamilyTimeline(hadithIds: string[], visibility: ReadVisibility = PUBLIC_VISIBILITY): Promise<ChainFamilyTimeline> {
   const audience = audienceFor(visibility);
   const ids = [...new Set(hadithIds.map((id) => id.trim()).filter(Boolean))].slice(0, MAX_FAMILY_REPORTS);
-  const withEpochs = await epochsAvailable();
+  const [withEpochs, withGrid] = await Promise.all([epochsAvailable(), timelinesGridAvailable()]);
   const sources = familySources(visibility);
-  const row = await oneRow<{ hadiths: Row[]; mentions: Row[]; candidates: Row[]; facts: Row[]; events: Row[]; epochs: Row[] | null }>(sql`
+  const row = await oneRow<{
+    hadiths: Row[];
+    mentions: Row[];
+    candidates: Row[];
+    facts: Row[];
+    events: Row[];
+    epochs: Row[] | null;
+    tracks: Row[] | null;
+    residences: Row[] | null;
+    affiliations: Row[] | null;
+    place_snapshots: Row[] | null;
+    parallels: Row[] | null;
+  }>(sql`
     with requested as (select jsonb_array_elements_text(${JSON.stringify(ids)}::jsonb) as hadith_id),
          mentions as (${sources.mentions}),
          candidates as (${sources.candidates}),
@@ -517,8 +770,13 @@ export async function getChainFamilyTimeline(hadithIds: string[], visibility: Re
            (select coalesce(json_agg(to_jsonb(m) order by m.hadith_id, m.branch, m.position), '[]'::json) from mentions m) as mentions,
            (select coalesce(json_agg(to_jsonb(c)), '[]'::json) from candidates c) as candidates,
            (select coalesce(json_agg(to_jsonb(f)), '[]'::json) from facts f) as facts,
-           (${eventsWithin(audience)}) as events,
-           ${withEpochs ? sql`(${epochsWithin(audience)})` : sql`null::json`} as epochs
+           (${eventsWithin(audience, withGrid)}) as events,
+           ${withEpochs ? sql`(${epochsWithin(audience)})` : sql`null::json`} as epochs,
+           ${withGrid ? sql`(${timelineTracksQuery()})` : sql`null::json`} as tracks,
+           ${withGrid ? sql`(${narratorResidencesQuery(audience)})` : sql`null::json`} as residences,
+           ${withGrid ? sql`(${narratorAffiliationsQuery(audience)})` : sql`null::json`} as affiliations,
+           ${withGrid ? sql`(${placeSnapshotsWithin(audience)})` : sql`null::json`} as place_snapshots,
+           ${withGrid ? sql`(${externalParallelsForHadiths(audience)})` : sql`null::json`} as parallels
   `);
 
   const factsById = new Map((row?.facts ?? []).map((facts) => [String(facts.narrator_id), toFacts(facts)]));
@@ -584,6 +842,12 @@ export async function getChainFamilyTimeline(hadithIds: string[], visibility: Re
     span: spanOfLifespans(chains.flatMap((chain) => chain.transmitters.map((transmitter) => transmitter.lifespan))),
     epochs: (row?.epochs ?? []).map(toEpoch),
     events: (row?.events ?? []).map(toEvent),
+    tracks: (row?.tracks ?? []).map(toTrack),
+    residences: (row?.residences ?? []).map(toResidence),
+    affiliations: (row?.affiliations ?? []).map(toAffiliation),
+    place_snapshots: (row?.place_snapshots ?? []).map(toPlaceSnapshot),
+    parallels: (row?.parallels ?? []).map(toParallel),
+    timelines_grid_available: withGrid,
     epochs_available: withEpochs,
   };
 }
