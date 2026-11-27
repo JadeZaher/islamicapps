@@ -45,6 +45,7 @@ build and should start now.
 | [x] | [`translation-recovery`](./tracks/translation-recovery_20261121/spec.md) | diagnostics (99,352 / 99,447 live in prod) | Q2, Q3, Q5 |
 | [x] | [`grading-coverage`](./tracks/grading-coverage_20261121/spec.md) | diagnostics, loader (18,486 hadith + 20,968 narrator loaded) | Q2, Q9 |
 | [x] | [`evidence-and-biography-curation`](./tracks/evidence-and-biography-curation_20261121/spec.md) | diagnostics, curation-export, query-port (26,695 citations + 182 temporal assertions loaded) | Q4, Q9, Q10, Q12 |
+| [ ] | [`timelines-and-contact-grid`](./tracks/timelines-and-contact-grid_20261127/spec.md) | evidence-and-biography-curation (multi-axis timelines, place demographics, residences, cited parallels) | none |
 
 ## Running in parallel now
 

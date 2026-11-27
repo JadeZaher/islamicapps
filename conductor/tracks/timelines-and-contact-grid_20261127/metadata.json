@@ -1,0 +1,29 @@
+{
+  "id": "timelines-and-contact-grid_20261127",
+  "title": "Multi-axis timelines and cultural-contact grid",
+  "status": "planned",
+  "priority": "P1",
+  "created": "2026-11-27",
+  "design_steps": "post-0024 schema, loaders, and toggleable timeline UI",
+  "design_doc": "conductor/tracks/timelines-and-contact-grid_20261127/spec.md",
+  "depends_on": [
+    "evidence-and-biography-curation_20261121"
+  ],
+  "blocks": [],
+  "partitions": {
+    "confidence": "verified",
+    "computed_at_commit": "8bd90530",
+    "computed_at": "2026-11-27",
+    "owns": [
+      "conductor/tracks/timelines-and-contact-grid_20261127/**",
+      "src/db/schema/timelines.ts",
+      "drizzle/core/0025_*",
+      "src/db/queries/timeline*",
+      "src/components/timeline/**"
+    ],
+    "tripwires": [
+      "Never assert machine-inferred Isra'iliyyat or cultural bleed as fact; every claim must be cited, attributed, and review-gated.",
+      "Additive migrations only; never edit 0000..0024."
+    ]
+  }
+}
