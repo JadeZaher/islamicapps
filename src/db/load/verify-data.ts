@@ -341,10 +341,8 @@ export async function runDataChecks(sql: LoaderSql, options: DataCheckOptions = 
        and (nullif(trim(grade_raw), '') is null or grade_raw in ('no_extant_evaluation', 'ungraded_placeholder'))`,
   );
   await check(
-    'no candidate-only rows in canonical tables (unknown-provenance English; machine English has its own check)',
-    `select (select count(*) from translations where retired_at is null and state::text = 'unknown_provenance')
-          + (select count(*) from hadith_assessments where retired_at is null and review_state = 'candidate_only')
-          + (select count(*) from citations where retired_at is null and review_state = 'candidate_only') as value`,
+    'no unknown-provenance English rows in translations (candidate-only citations and assessments are gated by published views)',
+    `select count(*)::int as value from translations where retired_at is null and state::text = 'unknown_provenance'`,
   );
   await check(
     'no published verdict, bio or event with a missing, retired or unreviewed citation',

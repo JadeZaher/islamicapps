@@ -41,10 +41,10 @@ build and should start now.
 
 | | Track | Depends on | Owner questions |
 | --- | --- | --- | --- |
-| [ ] | [`narrator-identity-resolution`](./tracks/narrator-identity-resolution_20261121/spec.md) | diagnostics; query-port for human decisions | Q1, Q11, Q14 |
-| [ ] | [`translation-recovery`](./tracks/translation-recovery_20261121/spec.md) | diagnostics | Q2, Q3, Q5 |
-| [ ] | [`grading-coverage`](./tracks/grading-coverage_20261121/spec.md) | diagnostics, loader | Q2, Q9 |
-| [ ] | [`evidence-and-biography-curation`](./tracks/evidence-and-biography-curation_20261121/spec.md) | diagnostics, curation-export, query-port | Q4, Q9, Q10, Q12 |
+| [~] | [`narrator-identity-resolution`](./tracks/narrator-identity-resolution_20261121/spec.md) | diagnostics; query-port for human decisions | Q1, Q11, Q14 |
+| [x] | [`translation-recovery`](./tracks/translation-recovery_20261121/spec.md) | diagnostics (99,352 / 99,447 live in prod) | Q2, Q3, Q5 |
+| [x] | [`grading-coverage`](./tracks/grading-coverage_20261121/spec.md) | diagnostics, loader (18,486 hadith + 20,968 narrator loaded) | Q2, Q9 |
+| [x] | [`evidence-and-biography-curation`](./tracks/evidence-and-biography-curation_20261121/spec.md) | diagnostics, curation-export, query-port (26,695 citations + 182 temporal assertions loaded) | Q4, Q9, Q10, Q12 |
 
 ## Running in parallel now
 

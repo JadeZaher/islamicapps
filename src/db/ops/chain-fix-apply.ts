@@ -378,13 +378,25 @@ async function main(): Promise<number> {
       }
     } else {
       const overrides = readOverrides(args.get('overrides') ?? DEFAULT_OVERRIDES);
-      // Batch the latest application action per fix once before the loop (avoids N+1 queries over the proxy).
+      // Batch the latest application action and live chain structure_status per fix once before the loop.
       const lastActions = new Map(
         (await sql<{ fix_id: string; action: string }[]>`
           select distinct on (fix_id) fix_id, action from chain_fix_applications order by fix_id, id desc`
         ).map((row) => [row.fix_id, row.action]),
       );
+      const liveStatusByFix = new Map<string, Set<string>>();
+      for (const row of await sql<{ chain_fix_id: string; structure_status: string }[]>`
+        select distinct chain_fix_id, structure_status from chains where chain_fix_id is not null and retired_at is null`) {
+        const set = liveStatusByFix.get(row.chain_fix_id) ?? new Set<string>();
+        set.add(row.structure_status);
+        liveStatusByFix.set(row.chain_fix_id, set);
+      }
       for (const override of overrides) {
+        if (!dryRun && !args.has('no-mirror') && lastActions.get(override.fix_id) === 'applied') {
+          const statuses = liveStatusByFix.get(override.fix_id);
+          const statusMatches = !override.structure_status || (statuses !== undefined && statuses.size === 1 && statuses.has(override.structure_status));
+          if (statusMatches && (statuses !== undefined || Boolean(override.disposition))) continue;
+        }
         const tally = emptyTally();
         await sql.begin(async (tx) => {
           // A rehearsal mirrors nothing: the fix row the chain rows point at lives only inside this rolled-back transaction.
