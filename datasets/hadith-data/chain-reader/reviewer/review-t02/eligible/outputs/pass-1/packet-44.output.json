@@ -1,0 +1,240 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t02-eligible-p1-44",
+  "reviews": [
+    {
+      "id": "cr1-28b9b1",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The singular verb «قال» before «حدثنا ابن علية» attaches «ابن علية» to the second branch («يعقوب بن إبراهيم») rather than to both branches.",
+          "source": "text",
+          "quote": "ح وحدثنا يعقوب بن إبراهيم، - المعنى - قال حدثنا ابن علية، عن عبد العزيز بن صهيب، عن أنس،"
+        },
+        {
+          "claim": "The first branch («داود بن معاذ» from «عبد الوارث») meets the second branch at «عن عبد العزيز بن صهيب، عن أنس», which is the shared tail.",
+          "source": "text",
+          "quote": "حدثنا داود بن معاذ، حدثنا عبد الوارث، ح"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-28b9b1",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "داود بن معاذ",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الوارث",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "يعقوب بن إبراهيم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن علية",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عبد العزيز بن صهيب",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أنس",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«قال حدثنا ابن علية» has a singular verb for يعقوب بن إبراهيم, so ابن علية belongs only to the second branch and both branches meet at عبد العزيز بن صهيب، عن أنس.",
+          "«- المعنى -» is an editor gloss and is left out."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-2925d8",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from حفص بن عمر through شعبة, العلاء بن عبد الرحمن, and his bare relation أبيه to أبا سعيد الخدري, who is asked and relays the Prophet's words.",
+          "source": "text",
+          "quote": "حدثنا حفص بن عمر، حدثنا شعبة، عن العلاء بن عبد الرحمن، عن أبيه، قال سألت أبا سعيد الخدري"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3430c2",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters (معتمر بن سليمان, يزيد بن هارون, هشيم) share the single written chain through سليمان التيمي, أمية, أبي مجلز, and ابن عمر.",
+          "source": "text",
+          "quote": "حدثنا محمد بن عيسى، حدثنا معتمر بن سليمان، ويزيد بن هارون، وهشيم، عن سليمان التيمي، عن أمية، عن أبي مجلز، عن ابن عمر،"
+        },
+        {
+          "claim": "Ibn Isa's closing remark about أمية is a version remark after the matn and adds no separate written route.",
+          "source": "text",
+          "quote": "قال ابن عيسى لم يذكر أمية أحد إلا معتمر ‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "medium",
+      "uncertainty_note": "Ibn Isa's closing remark states that only Mu'tamir mentioned Umayya, though the text writes one shared chain for all three co-transmitters."
+    },
+    {
+      "id": "cr1-bf3bc9",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through علي بن حجر, إسماعيل, محمد بن أبي حرملة, and أبي سلمة to عائشة, who is asked and answers about the Prophet's practice.",
+          "source": "text",
+          "quote": "أخبرنا علي بن حجر، قال حدثنا إسماعيل، قال حدثنا محمد بن أبي حرملة، عن أبي سلمة، أنه سأل عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a24aec",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through محمد بن المثنى, يحيى بن سعيد, جعفر بن محمد, and his bare relation أبي to جابرا, who is asked and narrates from the Prophet.",
+          "source": "text",
+          "quote": "أخبرنا محمد بن المثنى، قال حدثنا يحيى بن سعيد، عن جعفر بن محمد، قال حدثني أبي قال، أتينا جابرا فسألناه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-fc540a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs cleanly through محمد بن بشار, محمد, شعبة, عبد الله بن مختار, موسى بن أنس, and أنس.",
+          "source": "text",
+          "quote": "أخبرنا محمد بن بشار، قال حدثنا محمد، قال حدثنا شعبة، قال سمعت عبد الله بن مختار، يحدث عن موسى بن أنس، عن أنس،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-d6bc67",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through all seven named links from أبو بكر محمد بن عمر الجعابي to أبي عبد الله جعفر بن محمد, omitting the place phrase «في درب الحب» and the blessing «عليهما السلام».",
+          "source": "text",
+          "quote": "حدثني سليم الخادم في درب الحب، عن إبراهيم بن عقبة بن جعفر، عن محمد بن نضر بن قرواش النهدي الجمال الكوفي، عن أبي عبد الله جعفر بن محمد عليهما السلام"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-ea258b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through أبو كامل الجحدري, عبد الواحد (omitting the editor gloss «- يعني ابن زياد -»), معمر, and الزهري, ending in the back reference «بإسناد يونس» with no previous report in context.",
+          "source": "text",
+          "quote": "وحدثناه أبو كامل الجحدري، حدثنا عبد الواحد، - يعني ابن زياد - حدثنا  معمر، عن الزهري، بإسناد يونس نحو حديثه ‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0a176a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two co-transmitters (الوليد بن مسلم and عبد الله بن عبد الرحمن بن يزيد بن جابر) follow علي بن حجر and share the rest of the chain through عبد الرحمن بن يزيد بن جابر, يحيى بن جابر الطائي, عبد الرحمن بن جبير, جبير بن نفير, and النواس بن سمعان الكلابي.",
+          "source": "text",
+          "quote": "حدثنا علي بن حجر، أخبرنا الوليد بن مسلم، وعبد الله بن عبد الرحمن بن يزيد بن جابر، دخل حديث أحدهما في حديث الآخر عن عبد الرحمن بن يزيد بن جابر عن يحيى بن جابر الطائي عن عبد الرحمن بن جبير عن أبيه جبير بن نفير عن النواس بن سمعان الكلابي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-cea217",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two co-transmitters (عبدة بن أبي لبابة and عبد الملك بن عمير) follow ابن أبي عمر المكي and سفيان and hear from ورادا.",
+          "source": "text",
+          "quote": "وحدثنا ابن أبي عمر المكي، حدثنا سفيان، حدثنا عبدة بن أبي لبابة، وعبد الملك بن عمير، سمعا ورادا،"
+        },
+        {
+          "claim": "المغيرة is the last link because he writes back the Prophet's words («سمعت رسول الله صلى الله عليه وسلم يقول»), while معاوية is only in the frame of the letter.",
+          "source": "text",
+          "quote": "كتب معاوية إلى المغيرة اكتب إلى بشىء سمعته من رسول الله صلى الله عليه وسلم ‏.‏ قال فكتب إليه سمعت رسول الله صلى الله عليه وسلم يقول"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

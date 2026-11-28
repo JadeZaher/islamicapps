@@ -1,0 +1,252 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t09-eligible-p1-01",
+  "reviews": [
+    {
+      "id": "cr1-e7c4a3",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from the kunya-and-name shaykh through Ma'n, Malik, Hisham, and his father to Aisha, excluding the gloss on Ma'n and the chapter remark at the end.",
+          "source": "text",
+          "quote": "حدثنا أبو موسى، إسحاق بن موسى الأنصاري حدثنا معن، هو ابن عيسى حدثنا مالك بن أنس، عن هشام بن عروة، عن أبيه، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f6d59a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Ja'far b. Muhammad b. Masrur through Sa'd b. Tarif to al-Asbagh b. Nubata.",
+          "source": "text",
+          "quote": "عن سعد بن طريف، عنالاصبغ بن نباتة"
+        },
+        {
+          "claim": "Amir al-Mu'minin speaks inside al-Asbagh's narrated encounter, making him the last link as written.",
+          "source": "text",
+          "quote": "نظر إليهم أمير المؤمنين عليه السلام فقال: يا أيها الناس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-fd2e3b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two branches separated by «ح» meet at the shared tail beginning with Ata b. al-Sa'ib and Abu Zabyan.",
+          "source": "text",
+          "quote": "حدثنا هناد، عن أبي الأحوص، ح وحدثنا عثمان بن أبي شيبة، حدثنا جرير، - المعنى - عن عطاء بن السائب، عن أبي ظبيان"
+        },
+        {
+          "claim": "Inside Abu Zabyan's narrated encounter, Ali speaks and relays the Prophet's saying, so Ali is the last link after Abu Zabyan under rulings 2 and 9.",
+          "source": "text",
+          "quote": "فجاء علي رضى الله عنه فقال يا أمير المؤمنين لقد علمت أن رسول الله صلى الله عليه وسلم قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-fd2e3b",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "هناد",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "أبي الأحوص",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عثمان بن أبي شيبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "جرير",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عطاء بن السائب",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي ظبيان",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "علي",
+              "kind": "narrator",
+              "occurrence": 2
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Ali speaks inside Abu Zabyan's narrated encounter and quotes the Prophet, so Ali is added as the last link under rulings 2 and 9."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Both readers stopped at Abu Zabyan, though ruling 9 makes the speaker inside a narrated encounter the last link."
+    },
+    {
+      "id": "cr1-feb359",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Uthman b. Abi Shayba through Hammad b. Salama and the separate link Hammad to Aisha.",
+          "source": "text",
+          "quote": "حدثنا عثمان بن أبي شيبة، حدثنا يزيد بن هارون، أخبرنا حماد بن سلمة، عن حماد، عن إبراهيم، عن الأسود، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c04eed",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Surayj b. Yunus and Harun b. Abd Allah are co-transmitters who jointly report from Hajjaj b. Muhammad, continuing through Ibn Jurayj to Abu Hurayra.",
+          "source": "text",
+          "quote": "حدثني سريج بن يونس، وهارون بن عبد الله، قالا حدثنا حجاج بن محمد، قال قال ابن جريج أخبرني إسماعيل بن أمية، عن أيوب بن خالد، عن عبد الله بن رافع، مولى أم سلمة عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-bd3e4d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abu al-Tahir and Harmala b. Yahya are co-transmitters meeting at Ibn Wahb, continuing through Ubayd Allah b. Abd Allah b. Utba to his father's letter to Umar b. Abd Allah.",
+          "source": "text",
+          "quote": "وحدثني أبو الطاهر، وحرملة بن يحيى، - وتقاربا في اللفظ - قال حرملة حدثنا وقال أبو الطاهر، أخبرنا ابن وهب، - حدثني يونس بن يزيد، عن ابن شهاب، حدثني عبيد الله بن عبد الله بن عتبة بن مسعود، أن أباه، كتب إلى عمر بن عبد الله بن الأرقم الزهري"
+        },
+        {
+          "claim": "Umar's reply relays Subay'a's report as the last link, while Ibn Shihab's closing remark is commentary and not a link.",
+          "source": "text",
+          "quote": "فكتب عمر بن عبد الله إلى عبد الله بن عتبة يخبره أن سبيعة أخبرته"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-907095",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Abu Ammar al-Husayn b. Hurayth to al-Bara' b. Azib, excluding the unnamed questioner in the scene and the compiler's grading.",
+          "source": "text",
+          "quote": "حدثنا أبو عمار الحسين بن حريث، حدثنا الفضل بن موسى، عن الحسين بن واقد، عن أبي إسحاق، عن البراء بن عازب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f93305",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The compiler's father and an unnamed group of his shaykhs are co-transmitters at the first level, meeting at Sa'd b. Abd Allah.",
+          "source": "text",
+          "quote": "حَدَّثَنِي أَبِي (رحمه الله) وَ جَمَاعَةُ مَشَايِخِي عَنْ سَعْدِ بْنِ عَبْدِ اللَّهِ"
+        },
+        {
+          "claim": "Abu Abd Allah is named as the speaker after the chain and is therefore the last link.",
+          "source": "text",
+          "quote": "قَالَ سَمِعْتُ أَبَا عَبْدِ اللَّهِ (ع) وَ هُوَ يَقُولُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0bf60c",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Sa'id b. Mansur and Uthman b. Abi Shayba are co-transmitters who jointly report from Abu Mu'awiya, continuing through Abu Marzuq and Hanash to Ruwayfi' b. Thabit.",
+          "source": "text",
+          "quote": "حدثنا سعيد بن منصور، وعثمان بن أبي شيبة، - المعنى - قال أبو داود وأنا لحديثه، أتقن - قالا حدثنا أبو معاوية، عن محمد بن إسحاق، عن يزيد بن أبي حبيب، عن أبي مرزوق، مولى تجيب عن حنش الصنعاني، عن رويفع بن ثابت الأنصاري"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0722fa",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Yahya b. Bishr al-Hariri through Mu'awiya (excluding the gloss) and Yahya b. Abi Kathir to Ibn Abbas.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن بشر الحريري، حدثنا معاوية، - يعني ابن سلام - عن يحيى، بن أبي كثير أن يعلى بن حكيم، أخبره أن سعيد بن جبير أخبره أنه، سمع ابن عباس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

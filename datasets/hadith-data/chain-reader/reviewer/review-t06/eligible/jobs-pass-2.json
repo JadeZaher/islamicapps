@@ -1,0 +1,70 @@
+{
+ "format": "shura-chain-review-jobs/1",
+ "batch": "review-t06-eligible",
+ "pass": "2",
+ "what": "pass 2 of review-t06-eligible: 13 reports whose first valid review was a correction and who have no second review yet",
+ "prompt": {
+  "path": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md",
+  "version": "1.1.0",
+  "sha256": "1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6"
+ },
+ "model": "claude-opus-5-5 for every job; one fresh worker per packet, nothing shared between workers (reviews/ai/README.md §Isolation)",
+ "run_line_format": "run_id={RUNID} | packet={NN} | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews>",
+ "output_file_format": "one JSON object per packet (shura-chain-review-output/1, prompt_version 1.1.0), exactly as the prompt describes, at output_file",
+ "after": "record per item: python -B -X utf8 reviewer/record_reviews_v1_1.py --batch review-t06-eligible; then --second-pass for corrections and --requeue for invalid items (reviewer/RUN.md)",
+ "decision_rule": "reviewer/review_rules_v1_1.py outcome()",
+ "expected": {
+  "jobs": 2,
+  "items": 13,
+  "run_txt_lines": 2,
+  "packet_characters": 130443,
+  "input_characters": 160485
+ },
+ "jobs": [
+  {
+   "job_id": "review-t06-eligible-review-p2-01",
+   "pass": "2",
+   "packet": "01",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\packets-pass-2\\packet-01.json",
+   "packet_sha256": "ab289372deec56403c9e6289685257a47bec314805f74c707444984ae21faf27",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\packet-01.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\RUN.txt",
+   "run_id": "review-t06-eligible-review-p2-01",
+   "items": 10,
+   "expected_items": [
+    "cr1-e3dd9c",
+    "cr1-62cede",
+    "cr1-b482f3",
+    "cr1-ea0c9f",
+    "cr1-8831a6",
+    "cr1-64a09b",
+    "cr1-58f8bd",
+    "cr1-d36195",
+    "cr1-865b53",
+    "cr1-faa0de"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 113593,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\packets-pass-2\\packet-01.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\packet-01.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-t06-eligible-review-p2-01 | packet=01 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  },
+  {
+   "job_id": "review-t06-eligible-review-p2-02",
+   "pass": "2",
+   "packet": "02",
+   "packet_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\packets-pass-2\\packet-02.json",
+   "packet_sha256": "121f6e87092735c6e551d125eb55141ad7a56f9f5abe4b50d52ae1853f6d3ab6",
+   "output_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\packet-02.output.json",
+   "run_file": "C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\RUN.txt",
+   "run_id": "review-t06-eligible-review-p2-02",
+   "items": 3,
+   "expected_items": [
+    "cr1-180eff",
+    "cr1-1f0e33",
+    "cr1-589147"
+   ],
+   "not_clearable_items": [],
+   "input_chars": 46892,
+   "instruction": "You are the chain reviewer. Your instructions are the file\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\prompt-reviewer-v1_1.md\n(version 1.1.0, sha256 1136aec2c975aebd0f4b8f17cf14d6ad1410229c33b97e7d8382b8258cb735f6). Read all of it before you start.\n\nYour input is ONE packet file:\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\packets-pass-2\\packet-02.json\nRead only this file and your instructions: no other packet, no output of another review, nothing under the batch's private folder, no database, no web, no memory of other work.\n\nWrite exactly the JSON object your instructions define (no fence, no commentary) to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\packet-02.output.json\nReview every item of the packet yourself; do not write a program that produces the reviews.\n\nThen append ONE line to\n  C:\\Users\\atooz\\Programming\\experiments\\islamicapps\\datasets\\hadith-data\\chain-reader\\reviewer\\review-t06\\eligible\\outputs\\pass-2\\RUN.txt\nexactly in this form (UTC times like 2026-11-23T09:00:00Z; the model id is the exact id your runtime reports; take the start time before you read the packet):\n  run_id=review-t06-eligible-review-p2-02 | packet=02 | model=<model id> | start=<UTC start> | end=<UTC end> | items=<number of reviews you wrote>\nThen answer with the number of reviews only."
+  }
+ ]
+}

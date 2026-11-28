@@ -1,0 +1,346 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t02-eligible-p1-57",
+  "reviews": [
+    {
+      "id": "cr1-b3835f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad runs linearly from Qutayba through Malik and Ibn Shihab to Abu Umama b. Sahl b. Hunayf, with 'في حديثه' qualifying Qutayba's narration and the Prophet ending the report without being a link.",
+          "source": "text",
+          "quote": "أخبرنا قتيبة، في حديثه عن مالك، عن ابن شهاب، عن أبي أمامة بن سهل بن حنيف، أنه أخبره"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-164cd8",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Harun b. Sa'id al-Ayli and Abu al-Tahir are co-transmitters from Ibn Wahb differing only in their transmission verb, followed linearly by Malik, Ibn Shihab, Urwa, and Aisha as the last link.",
+          "source": "text",
+          "quote": "وحدثني هارون بن سعيد الأيلي، وأبو الطاهر، قال أبو الطاهر أخبرنا وقال، هارون حدثنا ابن وهب، حدثني مالك، عن ابن شهاب، عن عروة، أن عائشة، أخبرته"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-aa512b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first isnad runs from Abd Allah b. Abi Shayba through Yahya, Sufyan, and Abu Ishaq to al-Bara'.",
+          "source": "text",
+          "quote": "حدثني عبد الله بن أبي شيبة، حدثنا يحيى، عن سفيان، عن أبي إسحاق، عن البراء،"
+        },
+        {
+          "claim": "The second isnad opens independently with 'وحدثنا' and runs from Muhammad b. Kathir through Sufyan and Abu Ishaq to al-Bara' for the same saying.",
+          "source": "text",
+          "quote": "وحدثنا محمد بن كثير، أخبرنا سفيان، عن أبي إسحاق، عن البراء"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a212e9",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through nine links down to al-Hasan al-Basri, with 'عن أبيه، سعيد بن علاقة' as one link and the blessing and mosque location omitted.",
+          "source": "text",
+          "quote": "حدثنا علي بن عيسى المجاور- رضي الله عنه - في مسجد الكوفة قال: حدثنا علي بن محمد بن بندار، عن أبيه، عن محمد بن علي المقري، عن محمد بن سنان، عن مالك ابن عطية، عن ثوير بن سعيد، عن أبيه، سعيد بن علاقة، عن الحسن البصري،"
+        },
+        {
+          "claim": "Under ruling 9 (narrated encounter), Amir al-Mu'minin speaks inside the scene narrated by al-Hasan al-Basri and is therefore the last link (imam_in_text), which both readers omitted.",
+          "source": "text",
+          "quote": "قال: صعد أمير المؤمنين عليه السلام منبر البصرة فقال:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-a212e9",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن عيسى المجاور",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "علي بن محمد بن بندار",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبيه",
+                  "kind": "relation",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "محمد بن علي المقري",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد بن سنان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك ابن عطية",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ثوير بن سعيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سعيد بن علاقة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الحسن البصري",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أمير المؤمنين",
+                  "kind": "imam_in_text"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added أمير المؤمنين as imam_in_text under ruling 9 because al-Hasan al-Basri narrates an encounter in which the Imam speaks."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f8a685",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Amr al-Naqid through Sufyan b. Uyayna, Abd Allah b. Abi Labid, and Abu Salama to Aisha, who answers Abu Salama's question.",
+          "source": "text",
+          "quote": "وحدثنا عمرو الناقد، حدثنا سفيان بن عيينة، عن عبد الله بن أبي لبيد، سمع أبا سلمة، قال أتيت عائشة فقلت أى أمه أخبريني عن صلاة رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-33dc55",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Ishaq b. Ibrahim through Baqiyya, al-Zubayri, Makhul, and Masruq b. al-Ajda' to Aisha, with the Prophet as the end and not a link.",
+          "source": "text",
+          "quote": "أخبرنا إسحاق بن إبراهيم، قال أنبأنا بقية، قال حدثنا الزبيري، أن مكحولا، حدثه أن مسروق بن الأجدع حدثه عن عائشة، قالت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b3c138",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Harun b. Sa'id al-Ayli and Harmala b. Yahya are co-transmitters from Ibn Wahb, followed linearly by Umar b. Muhammad b. Zayd b. Abd Allah b. Umar b. al-Khattab, his unnamed father ('أباه'), and Abd Allah b. Umar.",
+          "source": "text",
+          "quote": "حدثني هارون بن سعيد الأيلي، وحرملة بن يحيى، قالا حدثنا ابن وهب، حدثني  عمر بن محمد بن زيد بن عبد الله بن عمر بن الخطاب، أن أباه، حدثه عن عبد الله بن، عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3ae869",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Muhammad b. Bashshar through Ghundar, Shu'ba, and al-Awwam to Mujahid (who is asked and answers) and then to Ibn Abbas (whose answer Mujahid relays).",
+          "source": "text",
+          "quote": "حدثنا محمد بن بشار، حدثنا غندر، حدثنا شعبة، عن العوام، قال سألت مجاهدا عن السجدة، في ص قال سئل ابن عباس فقال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-61bb4b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The opening isnad runs from Ahmad b. Ishaq through Uthman b. Umar, Shu'ba, and Qatada to Anas b. Malik for the first saying.",
+          "source": "text",
+          "quote": "حدثني أحمد بن إسحاق، حدثنا عثمان بن عمر، أخبرنا شعبة، عن قتادة، عن أنس بن مالك"
+        },
+        {
+          "claim": "At the end of the report Qatada clarifies that the second saying ('هنيئا مريئا') is transmitted from Ikrima rather than Anas, giving a second route under ruling 10.",
+          "source": "text",
+          "quote": "فعن أنس، وأما هنيئا مريئا فعن عكرمة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-61bb4b",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "إنا فتحنا لك فتحا مبينا",
+            "levels": [
+              [
+                {
+                  "surface": "أحمد بن إسحاق",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عثمان بن عمر",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "شعبة",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "قتادة",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "أنس بن مالك",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "قال أصحابه هنيئا مريئا فما لنا",
+            "levels": [
+              [
+                {
+                  "surface": "أحمد بن إسحاق",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عثمان بن عمر",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "شعبة",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "قتادة",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "عكرمة",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Split into two sayings under ruling 10 based on Qatada's explicit attribution of the second part to Ikrima."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Qatada splits the report's attribution at the end between Anas and Ikrima, which fits ruling 10 as two sayings with separate routes, though one could alternatively treat the closing remark as commentary on the single opening isnad."
+    },
+    {
+      "id": "cr1-98a1ce",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Uthman b. Abi Shayba through Abda, Hisham, and his unnamed father ('أبيه') to Aisha as the last link.",
+          "source": "text",
+          "quote": "حدثنا عثمان بن أبي شيبة، حدثنا عبدة، عن هشام، عن أبيه، قال أخبرتني عائشة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

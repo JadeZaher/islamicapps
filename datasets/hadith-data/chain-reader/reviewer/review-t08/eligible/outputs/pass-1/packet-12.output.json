@@ -1,0 +1,359 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t08-eligible-p1-12",
+  "reviews": [
+    {
+      "id": "cr1-fc798b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The text gives two alternative transmitters at the fifth level and marks the doubt as a note rather than a link.",
+          "source": "text",
+          "quote": "عَنْ عُبَيْدِ بْنِ زُرَارَةَ أَوْ عَنْ بُرَيْدٍ اَلْعِجْلِيِّ اَلشَّكُّ مِنْ مُحَمَّدٍ"
+        },
+        {
+          "claim": "The Imam is named in the question after the chain and is therefore the last link.",
+          "source": "text",
+          "quote": "قُلْتُ لِأَبِي عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-bf8f8c",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Muhammad and Ali are co-transmitters at one level, while the following phrase identifies their father rather than adding a link.",
+          "source": "text",
+          "quote": "حدثني محمد، وعلي، ابنا الحسن بن أبي الحسن البراد"
+        },
+        {
+          "claim": "The father is named as al-Mundhir and Abu Usayd is written twice in succession as one link.",
+          "source": "text",
+          "quote": "أن أباه المنذر حدثه عن أبي أسيد، أن أبا أسيد، حدثه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c9c659",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both readers leave the first isnad ending at Muhammad b. Khalid al-Barqi without reaching the saying, whereas the text introduces a second isnad before the shared tail.",
+          "source": "text",
+          "quote": "عَنْ مُحَمَّدِ بْنِ خَالِدٍ الْبَرْقِيِّ وَ حَدَّثَنِي مُحَمَّدُ بْنُ عَبْدِ اللَّهِ"
+        },
+        {
+          "claim": "Ja'far b. Najiyah and Abu Abd Allah are written once at the end for both routes and belong in the shared tail.",
+          "source": "text",
+          "quote": "عَنْ جَعْفَرِ بْنِ نَاجِيَةَ عَنْ أَبِي عَبْدِ اللَّهِ (ع)"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-c9c659",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبي",
+                  "kind": "relation",
+                  "occurrence": 1
+                },
+                {
+                  "surface": "جماعة مشايخي",
+                  "kind": "unnamed"
+                }
+              ],
+              [
+                {
+                  "surface": "سعد بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أحمد بن محمد بن عيسى",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد بن خالد البرقي",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الله بن جعفر الحميري",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي عبد الله البرقي",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "جعفر بن ناجية",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي عبد الله",
+              "kind": "narrator",
+              "occurrence": 2
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Both routes share the tail from Ja'far b. Najiyah to Abu Abd Allah."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c05da8",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first two tahwil branches meet at Shu'bah as stated by the dual marker.",
+          "source": "text",
+          "quote": "كلاهما عن شعبة"
+        },
+        {
+          "claim": "All three branches then meet at Sulayman and share the tail to Abd Allah.",
+          "source": "text",
+          "quote": "جميعا عن سليمان، عن أبي وائل، عن عبد الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-44a24e",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Four co-transmitters meet at al-Hasan b. Mahbub, and Ya'qub al-Sarraj addresses Abu Abd Allah, making the Imam the last link.",
+          "source": "text",
+          "quote": "قالوا جميعاً: حدثنا الحسن بن محبوب، عن يعقوب السراج، قال: قلت لأبي عبد الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9c6a7b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both shaykhs meet at Ibn Numayr, whose repetition in succession is one link, followed by Hisham, his father, and Aisha.",
+          "source": "text",
+          "quote": "كلاهما عن ابن نمير، قال ابن العلاء حدثنا ابن نمير، حدثنا هشام، عن أبيه، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3efe15",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first branch runs from Harun b. Abd Allah through Ma'n to Malik, not through Ibn al-Qasim.",
+          "source": "text",
+          "quote": "أخبرني هارون بن عبد الله، قال حدثنا معن، قال حدثنا مالك،"
+        },
+        {
+          "claim": "Al-Harith b. Miskin is the compiler's own shaykh in a second branch («وأنا أسمع») through Ibn al-Qasim to Malik, not a co-transmitter with Malik under Ma'n.",
+          "source": "text",
+          "quote": "والحارث بن مسكين، قراءة عليه وأنا أسمع، - واللفظ له - عن ابن القاسم، قال حدثنا مالك،"
+        },
+        {
+          "claim": "Both branches share the tail from Ibn Shihab through the co-transmitters Hamzah and Salim to Abd Allah b. Umar.",
+          "source": "text",
+          "quote": "عن ابن شهاب، عن حمزة، وسالم، ابنى عبد الله بن عمر عن عبد الله بن عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-3efe15",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "هارون بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "معن",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "الحارث بن مسكين",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن القاسم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "ابن شهاب",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "حمزة",
+              "kind": "narrator"
+            },
+            {
+              "surface": "سالم",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عبد الله بن عمر",
+              "kind": "narrator",
+              "occurrence": 2
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Al-Harith b. Miskin is the compiler's shaykh in a second branch meeting the first at Malik; both share the tail from Ibn Shihab."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-90e3dc",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs through al-Nadr b. Muhammad (omitting the gloss «هو الجرشي اليمامي») to Iyas b. Salamah and his father.",
+          "source": "text",
+          "quote": "حدثنا النضر بن محمد، هو الجرشي اليمامي حدثنا عكرمة بن عمار، عن إياس بن سلمة، عن أبيه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-4d4d18",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Qutaybah through Layth and Nafi' to Ibn Umar, whose saying is relayed.",
+          "source": "text",
+          "quote": "حدثنا قتيبة، حدثنا ليث، عن نافع، أن ابن عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-8c0e50",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two tahwil branches meet at Suhayl and share the tail through his father to Abu Hurayrah.",
+          "source": "text",
+          "quote": "حدثنا موسى بن إسماعيل، حدثنا وهيب، ح وحدثنا وهب بن بقية، عن خالد، نحوه عن سهيل، عن أبيه، عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

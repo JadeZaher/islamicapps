@@ -1,0 +1,2836 @@
+{
+ "format": "shura-chain-review-packet/1",
+ "packet_id": "review-t08-eligible-p1-22",
+ "batch": "review-t08-eligible",
+ "pass": "1",
+ "items": [
+  {
+   "id": "cr1-e33d25",
+   "text": "حدثناه محمد بن المثنى، حدثنا مكي، قال يزيد أخبرنا قال كان سلمة يتحرى الصلاة عند الأسطوانة التي عند المصحف فقلت له يا أبا مسلم أراك تتحرى الصلاة عند هذه الأسطوانة ‏.‏ قال رأيت النبي صلى الله عليه وسلم يتحرى الصلاة عندها ‏.‏",
+   "context": {
+    "work": {
+     "key": "sunni:muslim",
+     "name": "Sahih Muslim",
+     "tradition": "sunni",
+     "source": "SUN",
+     "compiler": {
+      "ar": "مسلم",
+      "en": "Muslim b. al-Hajjaj",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "The Book of Prayers - كتاب الصلاة",
+     "chapter": "The Book of Prayers - كتاب الصلاة",
+     "report_number": "509",
+     "convention": "Chains open «حدثنا / وحدثنيه»; «ح» and «قالا حدثنا» join routes; «بهذا الإسناد» reuses the previous chain."
+    },
+    "sources_agree": {
+     "agree": false,
+     "differences": [
+      "K6I and HKG differ: K6I only: يزيد بن هارون; HKG only: محمد بن المثني بن عبيد بن قيس بن دينار، مكي بن ابراهيم بن…",
+      "K6I and RWY differ: K6I only: -; RWY only: محمد بن المثني، مكي، سلمه"
+     ]
+    },
+    "source_claims": [
+     {
+      "source": "K6I",
+      "what": "the K6 dataset's own narrator index, in source order (names are the lexicon's names for those ids; routes are not separated)",
+      "sequence": [
+       "يزيد بن هارون"
+      ]
+     },
+     {
+      "source": "HKG",
+      "what": "hadith-kg's narrator list per sanad, nearest the compiler first (the compiler is dropped)",
+      "routes": [
+       [
+        "محمد بن المثنى بن عبيد بن قيس بن دينار",
+        "مكي بن إبراهيم بن بشير بن فرقد",
+        "يزيد بن أبي عبيد",
+        "سلمة بن عمرو بن سنان بن عبد الله بن قشير بن خزيمة بن مالك بن سلامان بن أسلم"
+       ]
+      ]
+     },
+     {
+      "source": "RWY",
+      "what": "the Riwayat corpus's chain mentions as it read them in its copy of the text (a machine reading; surfaces as in its text)",
+      "routes": [
+       [
+        "محمد بن المثنى",
+        "مكي",
+        "يزيد",
+        "سلمة"
+       ]
+      ]
+     }
+    ],
+    "name_facts": [
+     {
+      "name": "يزيد بن هارون",
+      "src": "MSD",
+      "died_ah": 206,
+      "generation": "Succ. (Taba' Tabi') [9th generation]"
+     },
+     {
+      "name": "محمد بن المثنى بن عبيد بن قيس بن دينار",
+      "src": "HKG",
+      "died_ah": "252",
+      "generation": "tabaka 10 (1-38 scale)",
+      "place": "البصرة"
+     },
+     {
+      "name": "مكي بن إبراهيم بن بشير بن فرقد",
+      "src": "HKG",
+      "died_ah": "214",
+      "generation": "tabaka 9 (1-38 scale)",
+      "place": "بلخ"
+     },
+     {
+      "name": "يزيد بن أبي عبيد",
+      "src": "HKG",
+      "died_ah": "146",
+      "generation": "tabaka 4 (1-38 scale)",
+      "place": "المدينة"
+     },
+     {
+      "name": "سلمة بن عمرو بن سنان بن عبد الله بن قشير بن خزيمة بن مالك بن سلامان بن أسلم",
+      "src": "HKG",
+      "died_ah": "74",
+      "generation": "tabaka 1 (1-38 scale)",
+      "place": "المدينة"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: a stored name contains words that are not a name; the text names a further transmitter after the last stored name"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن المثنى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "مكي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يزيد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "سلمة",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«يا أبا مسلم» is a vocative in the question, not a link; سلمة is the last link because his words follow («قال رأيت النبي»)"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "مسلم",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن المثنى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مكي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يزيد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سلمة",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن المثنى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "مكي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يزيد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "سلمة",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«فقلت له يا أبا مسلم» is the narrator addressing Salama; the kunya in address is not a link.",
+      "«قال رأيت النبي» is Salama's own words, so he is the last link."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "مسلم",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن المثنى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مكي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يزيد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سلمة",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "حدثناه محمد بن المثنى",
+      "مكي"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-2660a2",
+   "text": "حدثنا أحمد بن الحسن القطان، قال: حدثنا أبو سعيد الحسن بن علي بن الحسين السكري، قال: أخبرنا أبو عبد الله محمد بن زكريا الغلابي قال: حدثنا محدوج ابن عمير الحنفي ، قال حدثنا بشر بن إبراهيم الأنصاري عن الأوزاعي، عن يحيى بن أبي كثير عن أبيه، عن أبي هريرة، قال: إنما سميت فاطمة، فاطمة لان الله عز وجل فطم من أحبها من النار. 14. We were told by Ahmad bin Hasan al-Qattan, that he said: We were told by Abu Sa’eed, Hasan bin Ali bin Hasan al-Sukkari, that he said: We were informed by Abu Abdillah, Muhammed bin Zakariya al-Ghulabi, that he said: We were told by Mahdouj ibn Umayr al-Hanafi, that he said: We were told by Bishr bin Ibrahim al-Ansari, from Awza’i, from Yahya bin Abi Kathir, from his father, from Abu Huraira, that he said: Fatima was only named Fatima because Allah, Exalted and Glorious is He, separated those who love her, from the Fire.",
+   "context": {
+    "work": {
+     "key": "imami:maani-al-akhbar",
+     "name": "Ma'ani al-Akhbar",
+     "tradition": "imami",
+     "source": "THQ",
+     "compiler": {
+      "ar": "الصدوق",
+      "en": "al-Saduq",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "Maʿānī al-ʾAkhbār",
+     "chapter": "The meaning of the names of Muhammed, Ali, Fatima, Hasan, Hussain and the Imams, peace be upon them",
+     "report_number": "28",
+     "convention": "Full «حدثنا» chains of the Saduq."
+    },
+    "sources_absent": [
+     "RWY: no unique matching report in Riwayat"
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: the text names more between two stored names than the chain holds"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "أحمد بن الحسن القطان",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبو سعيد الحسن بن علي بن الحسين السكري",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبو عبد الله محمد بن زكريا الغلابي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "محدوج ابن عمير الحنفي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "بشر بن إبراهيم الأنصاري",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "الأوزاعي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى بن أبي كثير",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبيه",
+          "kind": "relation"
+         }
+        ],
+        [
+         {
+          "surface": "أبي هريرة",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "The Arabic chain is read; the appended English («14. We were told by…») repeats the same chain and is not read as a second report",
+      "«عن أبيه» is a relation link (rule 7)",
+      "Abu Hurayra speaks the saying («قال: إنما سميت فاطمة») in his own words, so he is the last link"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "أحمد بن الحسن القطان",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبو سعيد الحسن بن علي بن الحسين السكري",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبو عبد الله محمد بن زكريا الغلابي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محدوج ابن عمير الحنفي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بشر بن إبراهيم الأنصاري",
+         "kind": "narrator"
+        },
+        {
+         "surface": "الأوزاعي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى بن أبي كثير",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبيه",
+         "kind": "relation"
+        },
+        {
+         "surface": "أبي هريرة",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "أحمد بن الحسن القطان",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبو سعيد الحسن بن علي بن الحسين السكري",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبو عبد الله محمد بن زكريا الغلابي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "محدوج ابن عمير الحنفي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "بشر بن إبراهيم الأنصاري",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "الأوزاعي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى بن أبي كثير",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبيه",
+          "kind": "relation"
+         }
+        ],
+        [
+         {
+          "surface": "أبي هريرة",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "the English translation appended after the Arabic (14. We were told by ...) is not read: only the Arabic chain is a reading",
+      "«عن أبيه» (Yahya's father) is a bare relation (rule 7)",
+      "Abu Huraira is the last link: the saying is his"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "أحمد بن الحسن القطان",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبو سعيد الحسن بن علي بن الحسين السكري",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبو عبد الله محمد بن زكريا الغلابي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محدوج ابن عمير الحنفي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بشر بن إبراهيم الأنصاري",
+         "kind": "narrator"
+        },
+        {
+         "surface": "الأوزاعي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى بن أبي كثير",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبيه",
+         "kind": "relation"
+        },
+        {
+         "surface": "أبي هريرة",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "أحمد بن الحسن القطان",
+      "أبو سعيد الحسن بن علي بن الحسين السكري",
+      "أبو عبد الله محمد بن زكريا الغلابي",
+      "بشر بن إبراهيم الأنصاري",
+      "الأوزاعي",
+      "يحيى بن أبي كثير",
+      "أبيه",
+      "أبي هريرة"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-a82637",
+   "text": "حدثنا قتيبة، عن مالك، عن نافع، أن عبد الله بن عمر  رضى الله عنهما  خرج معتمرا في الفتنة فقال إن صددت عن البيت، صنعنا كما صنعنا مع رسول الله صلى الله عليه وسلم‏.‏ فأهل بعمرة من أجل أن رسول الله صلى الله عليه وسلم كان أهل بعمرة عام الحديبية‏.‏",
+   "context": {
+    "work": {
+     "key": "sunni:bukhari",
+     "name": "Sahih Bukhari",
+     "tradition": "sunni",
+     "source": "SUN",
+     "compiler": {
+      "ar": "البخاري",
+      "en": "al-Bukhari",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "Military Expeditions led by the Prophet (pbuh) (Al-Maghaazi) - كتاب المغازى",
+     "chapter": "Military Expeditions led by the Prophet (pbuh) (Al-Maghaazi) - كتاب المغازى",
+     "report_number": "4232",
+     "convention": "Chains open «حدثنا / أخبرنا»; taḥwīl «ح» marks routes that meet. Often ends at a Companion; the Prophet is the end, not a link."
+    },
+    "sources_agree": {
+     "agree": false,
+     "differences": [
+      "K6I and HKG differ: K6I only: عبد الله بن عمر بن الخطاب رضي الله عنه; HKG only: عبد الله بن عمر بن الخطاب بن نفيل"
+     ]
+    },
+    "source_claims": [
+     {
+      "source": "K6I",
+      "what": "the K6 dataset's own narrator index, in source order (names are the lexicon's names for those ids; routes are not separated)",
+      "sequence": [
+       "قتيبة بن سعيد بن جميل",
+       "مالك بن أنس بن مالك بن أبي عامر",
+       "نافع مولى ابن عمر",
+       "عبد الله بن عمر بن الخطاب  رضي الله عنه"
+      ]
+     },
+     {
+      "source": "HKG",
+      "what": "hadith-kg's narrator list per sanad, nearest the compiler first (the compiler is dropped)",
+      "routes": [
+       [
+        "قتيبة بن سعيد بن جميل بن طريف بن عبد الله",
+        "مالك بن أنس بن مالك بن أبي عامر بن عمرو",
+        "نافع",
+        "عبد الله بن عمر بن الخطاب بن نفيل"
+       ]
+      ]
+     },
+     {
+      "source": "RWY",
+      "what": "the Riwayat corpus's chain mentions as it read them in its copy of the text (a machine reading; surfaces as in its text)",
+      "routes": [
+       [
+        "قتيبة",
+        "مالك",
+        "نافع",
+        "عبد الله بن عمر"
+       ]
+      ]
+     }
+    ],
+    "name_facts": [
+     {
+      "name": "قتيبة بن سعيد بن جميل",
+      "src": "MSD",
+      "died_ah": 240,
+      "generation": "3rd Century AH [10th generation]"
+     },
+     {
+      "name": "مالك بن أنس بن مالك بن أبي عامر",
+      "src": "MSD",
+      "died_ah": 179,
+      "generation": "Succ. (Taba' Tabi') [7th generation] [Maliki]",
+      "place": "Medina"
+     },
+     {
+      "name": "نافع مولى ابن عمر",
+      "src": "MSD",
+      "died_ah": 119,
+      "generation": "Follower(Tabi') [3rd Generation]",
+      "place": "Medinah"
+     },
+     {
+      "name": "عبد الله بن عمر بن الخطاب",
+      "src": "MSD",
+      "died_ah": 74,
+      "generation": "Comp.(RA) [1st Generation]",
+      "place": "Makkah"
+     },
+     {
+      "name": "قتيبة بن سعيد بن جميل بن طريف بن عبد الله",
+      "src": "HKG",
+      "died_ah": "240",
+      "generation": "tabaka 10 (1-38 scale)",
+      "place": "بغلان"
+     },
+     {
+      "name": "مالك بن أنس بن مالك بن أبي عامر بن عمرو",
+      "src": "HKG",
+      "died_ah": "179",
+      "generation": "tabaka 7 (1-38 scale)",
+      "place": "المدينة"
+     }
+    ],
+    "correspondences": [
+     {
+      "ref": "corr1",
+      "source": "SUN",
+      "found_by": "SWI",
+      "work": "Sahih Bukhari",
+      "tradition": "sunni",
+      "number": "1835",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "حدثنا عبد الله بن يوسف، أخبرنا مالك، عن نافع،"
+     },
+     {
+      "ref": "corr2",
+      "source": "NMC",
+      "found_by": "SWI",
+      "work": "Musnad Ahmad",
+      "tradition": "sunni",
+      "number": "1792",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "قرأت على عبد الرحمن مالك, نافع"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: the text names a further transmitter after the last stored name"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "قتيبة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "مالك",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "نافع",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "عبد الله بن عمر",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "Single route; the saying is Ibn Umar's own account, so he is the last link."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "البخاري",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "قتيبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مالك",
+         "kind": "narrator"
+        },
+        {
+         "surface": "نافع",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد الله بن عمر",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "قتيبة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "مالك",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "نافع",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "عبد الله بن عمر",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«أن عبد الله بن عمر ... خرج معتمرا» : rule 5 makes him the link; his own words («إن صددت») make him the last link"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "البخاري",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "قتيبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مالك",
+         "kind": "narrator"
+        },
+        {
+         "surface": "نافع",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد الله بن عمر",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "قتيبة",
+      "مالك",
+      "نافع"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-d6e224",
+   "text": "319 - وَبِهذَا الإسناد قالَ: قالَ رَسُولَ اللَّهِ صَلَّى اللهُعَلَيْهِ وَآلِهِ: من أرْضِى سلطاناً بِما يسخط اللَّه خَرَجَ عَنْ دين اللَّه عَزَّ وَجَلَّ.",
+   "context": {
+    "work": {
+     "key": "imami:uyun-akhbar-al-rida",
+     "name": "'Uyun Akhbar al-Rida",
+     "tradition": "imami",
+     "source": "THQ",
+     "compiler": {
+      "ar": "الصدوق",
+      "en": "al-Saduq",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "ʿUyūn akhbār al-Riḍā",
+     "chapter": "Traditions about Ar-Ridha (a.s.)",
+     "report_number": "1",
+     "convention": "Long narratives with a full opening chain; the Imam is al-Rida."
+    },
+    "previous_reports": [
+     {
+      "ref": "prev1",
+      "number": "318",
+      "source": "THQ",
+      "has_written_chain": true,
+      "supplies": "chain",
+      "chain_text": "318 - حَدَّثَنا أَبُو بَكْرٍ مُحَمَّدِ بْنِ أَحْمَدِ بْنِ الحُسَيْنِبْنِ يُوسُف بْنِ زُرَيقٍ البَغدْادي قالَ: حَدَّثَني عَلِىُّ بْنُ مُحَمَّدِ بْنِ عنبسة مَوْلى‏ الرَّشِيد قالَ حَدَّثَني دارِم بْنِ قبيصة بْنِ نهشل بْنِ مجمع النهشلي السائح - بسرمن رَأى‏ - قالَ: حَدَّثَنا عَلِىِّ بْنِ مُوسَى الرِّضا عَلَيْهِ السَّلامُ عَنْ أَبيهِ عَنْ جَدِّهِ عَنْ‏عَلِيِ‏عَنْ جده عَنْ عَلِيِ‏",
+      "text_head": "318 - حَدَّثَنا أَبُو بَكْرٍ مُحَمَّدِ بْنِ أَحْمَدِ بْنِ الحُسَيْنِبْنِ يُوسُف بْنِ زُرَيقٍ البَغدْادي قالَ: حَدَّثَني عَلِىُّ بْنُ مُحَمَّدِ بْنِ عنبسة مَوْلى‏ الرَّشِيد قالَ حَدَّثَني دارِم بْنِ قبيصة بْنِ نهشل بْنِ مجمع النهشلي السائح - بسرمن رَأى‏ - قالَ: حَدَّثَنا عَلِىِّ بْنِ مُوسَى الرِّضا…"
+     }
+    ],
+    "source_claims": [
+     {
+      "source": "THQ",
+      "what": "Thaqalayn's English sanad as provided",
+      "english_sanad": "31-319 According to the same documentation, God’s Prophet (S) said,"
+     }
+    ],
+    "sources_absent": [
+     "RWY: no unique matching report in Riwayat"
+    ],
+    "correspondences": [
+     {
+      "ref": "corr1",
+      "source": "THQ",
+      "found_by": "SWI",
+      "work": "'Uyun Akhbar al-Rida",
+      "tradition": "imami",
+      "number": "1",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "70 - وَبِهذَا الإِسنادِ"
+     },
+     {
+      "ref": "corr2",
+      "source": "THQ",
+      "found_by": "SWI",
+      "work": "Al-Kafi",
+      "tradition": "imami",
+      "number": "31",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "2- عَلِيُّ بْنُ إِبْرَاهِيمَ عَنْ أَبِيهِ عَنِ النَّوْفَلِيِّ عَنِ السَّكُونِيِّ عَنْ أَبِي عَبْدِ اللهِ"
+     },
+     {
+      "ref": "corr3",
+      "source": "THQ",
+      "found_by": "SWI",
+      "work": "'Uyun Akhbar al-Rida",
+      "tradition": "imami",
+      "number": "1",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "22 - وَبِهذَا الإِسنادِ"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: the text names more between two stored names than the chain holds"
+     },
+     {
+      "source": "SWI",
+      "flag": "the report relies on the previous report's chain"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "أبو بكر محمد بن أحمد بن الحسينبن يوسف بن زريق البغدادي",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "علي بن محمد بن عنبسة مولى الرشيد",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "دارم بن قبيصة بن نهشل بن مجمع النهشلي السائح",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "علي بن موسى الرضا",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "أبيه",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "جده",
+          "kind": "inherited",
+          "from": "prev1",
+          "occurrence": 1
+         }
+        ],
+        [
+         {
+          "surface": "علي",
+          "kind": "inherited",
+          "from": "prev1",
+          "occurrence": 1
+         }
+        ],
+        [
+         {
+          "surface": "جده",
+          "kind": "inherited",
+          "from": "prev1",
+          "occurrence": 2
+         }
+        ],
+        [
+         {
+          "surface": "علي",
+          "kind": "inherited",
+          "from": "prev1",
+          "occurrence": 2
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«وَبِهذَا الإسناد» takes over the whole written chain of 318 (prev1, has_written_chain true), so it is written as inherited items and no back_reference is kept. The Prophet ends the chain (rule 12). The place gloss «- بسرمن رأى -» in 318 is left out. The archive's flag that the text names more than the chain holds is not borne out here: the text writes no names of its own."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "أبو بكر محمد بن أحمد بن الحسينبن يوسف بن زريق البغدادي",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي بن محمد بن عنبسة مولى الرشيد",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "دارم بن قبيصة بن نهشل بن مجمع النهشلي السائح",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي بن موسى الرضا",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "أبيه",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "جده",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "جده",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي",
+         "kind": "inherited",
+         "from": "prev1"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "أبو بكر محمد بن أحمد بن الحسينبن يوسف بن زريق البغدادي",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "علي بن محمد بن عنبسة مولى الرشيد",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "دارم بن قبيصة بن نهشل بن مجمع النهشلي السائح",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "علي بن موسى الرضا",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "أبيه",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "جده",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "علي",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "جده",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ],
+        [
+         {
+          "surface": "علي",
+          "kind": "inherited",
+          "from": "prev1"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«وَبِهذَا الإسناد» opens the report: prev1 (318) writes its chain and supplies it, so its whole single route is taken over as inherited items (the back_reference is not written again).",
+      "The gloss «- بسرمن رأى -» in prev1 is a place, left out of the inherited names.",
+      "The saying is the Prophet's («قالَ رَسُولَ اللَّهِ»): the Prophet is not a link (rule 12); the last inherited name relays it."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "أبو بكر محمد بن أحمد بن الحسينبن يوسف بن زريق البغدادي",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي بن محمد بن عنبسة مولى الرشيد",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "دارم بن قبيصة بن نهشل بن مجمع النهشلي السائح",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي بن موسى الرضا",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "أبيه",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "جده",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "جده",
+         "kind": "inherited",
+         "from": "prev1"
+        },
+        {
+         "surface": "علي",
+         "kind": "inherited",
+         "from": "prev1"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "وبهذا الإسناد",
+      "دين الله عز"
+     ]
+    },
+    {
+     "branch": 1,
+     "surfaces": [
+      "وبهذا الإسناد",
+      "جل"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-a254f2",
+   "text": "أخبرنا محمد بن المثنى، قال حدثنا يحيى بن سعيد، عن جعفر بن محمد، قال حدثنا أبي قال، أتينا جابر بن عبد الله فسألناه عن حجة النبي، صلى الله عليه وسلم فحدثنا أن عليا قدم من اليمن بهدى وساق رسول الله صلى الله عليه وسلم من المدينة هديا قال لعلي ‏\"‏ بما أهللت ‏\"‏ ‏.‏ قال قلت اللهم إني أهل بما أهل به رسول الله صلى الله عليه وسلم ومعي الهدى ‏.‏ قال ‏\"‏ فلا تحل ‏\"‏ ‏.‏",
+   "context": {
+    "work": {
+     "key": "sunni:nasai",
+     "name": "Sunan an-Nasa'i",
+     "tradition": "sunni",
+     "source": "SUN",
+     "compiler": {
+      "ar": "النسائي",
+      "en": "al-Nasa'i",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "The Book of Hajj - كتاب مناسك الحج",
+     "chapter": "The Book of Hajj - كتاب مناسك الحج",
+     "report_number": "2743",
+     "convention": "Chains open «أخبرنا / أنبأنا»; many reports repeat the previous chain with «بهذا الإسناد»."
+    },
+    "sources_agree": {
+     "agree": false,
+     "differences": [
+      "K6I and HKG differ: K6I only: محمد بن المثني ابو موسي الزمن، جعفر بن محمد بن علي الصادق،…; HKG only: محمد بن المثني بن عبيد بن قيس بن دينار، جعفر بن محمد بن علي…",
+      "K6I and RWY differ: K6I only: محمد بن علي بن الحسين بن علي الباقر; RWY only: ابي، جابر بن عبد الله"
+     ]
+    },
+    "source_claims": [
+     {
+      "source": "K6I",
+      "what": "the K6 dataset's own narrator index, in source order (names are the lexicon's names for those ids; routes are not separated)",
+      "sequence": [
+       "محمد بن المثنى أبو موسى  الزمن",
+       "يحيى بن سعيد بن فروخ القطان",
+       "جعفر بن محمد بن علي  الصادق",
+       "محمد بن علي بن الحسين بن علي الباقر"
+      ]
+     },
+     {
+      "source": "HKG",
+      "what": "hadith-kg's narrator list per sanad, nearest the compiler first (the compiler is dropped)",
+      "routes": [
+       [
+        "محمد بن المثنى بن عبيد بن قيس بن دينار",
+        "يحيى بن سعيد بن فروخ",
+        "جعفر بن محمد بن علي بن الحسين بن علي بن أبي طالب",
+        "محمد بن علي بن الحسين بن علي بن أبي طالب",
+        "جابر بن عبد الله بن عمرو بن حرام بن ثعلبة بن كعب"
+       ]
+      ]
+     },
+     {
+      "source": "RWY",
+      "what": "the Riwayat corpus's chain mentions as it read them in its copy of the text (a machine reading; surfaces as in its text)",
+      "routes": [
+       [
+        "محمد بن المثنى",
+        "يحيى بن سعيد",
+        "جعفر بن محمد",
+        "أبي",
+        "جابر بن عبد الله"
+       ]
+      ]
+     }
+    ],
+    "name_facts": [
+     {
+      "name": "محمد بن المثنى أبو موسى  الزمن",
+      "src": "MSD",
+      "died_ah": 252,
+      "generation": "3rd Century AH [10th generation]"
+     },
+     {
+      "name": "يحيى بن سعيد بن فروخ القطان",
+      "src": "MSD",
+      "died_ah": 198,
+      "generation": "Succ. (Taba' Tabi') [9th generation]"
+     },
+     {
+      "name": "جعفر بن محمد بن علي  الصادق",
+      "src": "MSD",
+      "died_ah": 148,
+      "generation": "Follower(Tabi') [6th generation]"
+     },
+     {
+      "name": "محمد بن علي بن الحسين بن علي الباقر",
+      "src": "MSD",
+      "died_ah": 110,
+      "generation": "Follower(Tabi') [4th generation]"
+     },
+     {
+      "name": "محمد بن المثنى بن عبيد بن قيس بن دينار",
+      "src": "HKG",
+      "died_ah": "252",
+      "generation": "tabaka 10 (1-38 scale)",
+      "place": "البصرة"
+     },
+     {
+      "name": "يحيى بن سعيد بن فروخ",
+      "src": "HKG",
+      "died_ah": "198",
+      "generation": "tabaka 9 (1-38 scale)",
+      "place": "البصرة"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: the text names a further transmitter after the last stored name"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن المثنى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى بن سعيد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "جعفر بن محمد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبي",
+          "kind": "relation"
+         }
+        ],
+        [
+         {
+          "surface": "جابر بن عبد الله",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«قال حدثنا أبي» is a bare relation with no name in the text; not identified",
+      "«أتينا جابر بن عبد الله فسألناه» makes Jabir the last link: his account is the saying"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "النسائي",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن المثنى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى بن سعيد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "جعفر بن محمد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبي",
+         "kind": "relation"
+        },
+        {
+         "surface": "جابر بن عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن المثنى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى بن سعيد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "جعفر بن محمد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبي",
+          "kind": "relation"
+         }
+        ],
+        [
+         {
+          "surface": "جابر بن عبد الله",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«حدثنا أبي» gives a bare father, a relation. «أتينا جابر بن عبد الله فسألناه» makes the asked Companion the last link, since he answers («فحدثنا»), per rule 6. The Prophet's words to Ali are not a link."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "النسائي",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن المثنى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى بن سعيد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "جعفر بن محمد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبي",
+         "kind": "relation"
+        },
+        {
+         "surface": "جابر بن عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "محمد بن المثنى",
+      "يحيى بن سعيد",
+      "جعفر بن محمد",
+      "أبي"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-9021ce",
+   "text": "حدثنا محمد بن بشار، حدثنا غندر، حدثنا شعبة، سمعت قتادة، عن أنس  رضى الله عنه  ‏{‏إنا فتحنا لك فتحا مبينا‏}‏ قال الحديبية‏.‏",
+   "context": {
+    "work": {
+     "key": "sunni:bukhari",
+     "name": "Sahih Bukhari",
+     "tradition": "sunni",
+     "source": "SUN",
+     "compiler": {
+      "ar": "البخاري",
+      "en": "al-Bukhari",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "Prophetic Commentary on the Qur'an (Tafseer of the Prophet (pbuh)) - كتاب التفسير",
+     "chapter": "Prophetic Commentary on the Qur'an (Tafseer of the Prophet (pbuh)) - كتاب التفسير",
+     "report_number": "4883",
+     "convention": "Chains open «حدثنا / أخبرنا»; taḥwīl «ح» marks routes that meet. Often ends at a Companion; the Prophet is the end, not a link."
+    },
+    "sources_agree": {
+     "agree": true
+    },
+    "source_claims": [
+     {
+      "source": "K6I",
+      "what": "the K6 dataset's own narrator index, in source order (names are the lexicon's names for those ids; routes are not separated)",
+      "sequence": [
+       "محمد بن بشار بندار",
+       "محمد بن جعفر غندر صاحب الكرابيس",
+       "شعبة بن الحجاج",
+       "قتادة",
+       "أنس بن مالك بن النضر  رضي الله عنه"
+      ]
+     },
+     {
+      "source": "RWY",
+      "what": "the Riwayat corpus's chain mentions as it read them in its copy of the text (a machine reading; surfaces as in its text)",
+      "routes": [
+       [
+        "محمد بن بشار",
+        "غندر",
+        "شعبة",
+        "قتادة",
+        "أنس"
+       ]
+      ]
+     }
+    ],
+    "name_facts": [
+     {
+      "name": "محمد بن بشار بندار",
+      "src": "MSD",
+      "died_ah": 252,
+      "generation": "3rd Century AH [10th generation]"
+     },
+     {
+      "name": "محمد بن جعفر غندر صاحب الكرابيس",
+      "src": "MSD",
+      "died_ah": 194,
+      "generation": "Succ. (Taba' Tabi') [9th generation]",
+      "same_name_in_lexicon": [
+       {
+        "died_ah": 115,
+        "place": null
+       },
+       {
+        "died_ah": 36,
+        "place": "Madinah"
+       },
+       {
+        "died_ah": 206,
+        "place": null
+       }
+      ]
+     },
+     {
+      "name": "شعبة بن الحجاج",
+      "src": "MSD",
+      "died_ah": 160,
+      "generation": "Succ. (Taba' Tabi') [7th generation]",
+      "place": "Basra"
+     },
+     {
+      "name": "قتادة",
+      "src": "MSD",
+      "died_ah": 117,
+      "generation": "Follower(Tabi') [4th generation]",
+      "place": "Basra"
+     },
+     {
+      "name": "أنس بن مالك بن النضر",
+      "src": "MSD",
+      "died_ah": 93,
+      "generation": "Comp.(RA) [1st Generation]",
+      "place": "Basrah"
+     },
+     {
+      "name": "محمد بن بشار بن عثمان بن داود بن كيسان",
+      "src": "RWY",
+      "died_ah": 252,
+      "generation": "tabaqa 10",
+      "assertion": "annotation"
+     },
+     {
+      "name": "محمد بن جعفر",
+      "src": "RWY",
+      "died_ah": 193,
+      "generation": "tabaqa 9",
+      "assertion": "annotation"
+     },
+     {
+      "name": "شعبة بن الحجاج بن الورد",
+      "src": "RWY",
+      "died_ah": 160,
+      "generation": "tabaqa 7",
+      "place": "البصرة",
+      "assertion": "annotation"
+     },
+     {
+      "name": "قتادة بن دعامة بن قتادة بن عزيز بن عمرو بن ربيعة",
+      "src": "RWY",
+      "died_ah": 117,
+      "generation": "tabaqa 4",
+      "place": "واسط",
+      "assertion": "annotation"
+     },
+     {
+      "name": "أنس بن مالك بن النضر بن ضمضم بن زيد بن حرام",
+      "src": "RWY",
+      "died_ah": 90,
+      "generation": "tabaqa 1",
+      "place": "البصرة",
+      "assertion": "annotation"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: a stored name contains words that are not a name"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن بشار",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "غندر",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "شعبة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "قتادة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أنس",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "Single route. «سمعت قتادة» makes Qatada a link; Anas is the last link and the gloss «قال الحديبية» is his."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "البخاري",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن بشار",
+         "kind": "narrator"
+        },
+        {
+         "surface": "غندر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "شعبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "قتادة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أنس",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن بشار",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "غندر",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "شعبة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "قتادة",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أنس",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "the Qur'an verse is quoted, not a transmitter; «قال الحديبية» is Anas's own explanation, so Anas is the last link"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "البخاري",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن بشار",
+         "kind": "narrator"
+        },
+        {
+         "surface": "غندر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "شعبة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "قتادة",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أنس",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "محمد بن بشار",
+      "غندر",
+      "شعبة",
+      "قتادة",
+      "أنس إنا فتحنا لك فتحا مبينا"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-ba3ec0",
+   "text": "حدثنا الحسن بن محمد الزعفراني، حدثنا يحيى بن عباد أبو عباد، حدثنا فليح بن سليمان، عن عبد الوهاب بن يحيى، من ولد عباد بن عبد الله بن الزبير عن عبد الله بن الزبير، عن عائشة، قالت ما كان الذراع أحب اللحم إلى رسول الله صلى الله عليه وسلم ولكن كان لا يجد اللحم إلا غبا فكان يعجل إليه لأنه أعجلها نضجا ‏.‏ قال أبو عيسى هذا حديث غريب لا نعرفه إلا من هذا الوجه ‏.‏",
+   "context": {
+    "work": {
+     "key": "sunni:tirmidhi",
+     "name": "Jami' al-Tirmidhi",
+     "tradition": "sunni",
+     "source": "SUN",
+     "compiler": {
+      "ar": "الترمذي",
+      "en": "al-Tirmidhi",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "The Book on Food - كتاب الأطعمة عن رسول الله صلى الله عليه وسلم",
+     "chapter": "The Book on Food - كتاب الأطعمة عن رسول الله صلى الله عليه وسلم",
+     "report_number": "1838",
+     "convention": "Chains open «حدثنا / أخبرنا»; some reports give a second, shorter chain after the matn."
+    },
+    "sources_agree": {
+     "agree": false,
+     "differences": [
+      "K6I and HKG differ: K6I only: الحسن بن محمد الصباح الزعفراني، فليح بن سليمان، عبد الله بن…; HKG only: حسن بن محمد بن الصباح، عبد الملك بن سليمان بن رافع، عبد…",
+      "K6I and RWY differ: K6I only: يحيي بن عباد بن شيبان; RWY only: يحيي بن عباد ابو عباد، عبد الوهاب بن يحيي، عباد بن عبد الله…",
+      "HKG and RWY differ: HKG only: حسن بن محمد بن الصباح، عبد الملك بن سليمان بن رافع، موضع…; RWY only: الحسن بن محمد الزعفراني، فليح بن سليمان"
+     ]
+    },
+    "source_claims": [
+     {
+      "source": "K6I",
+      "what": "the K6 dataset's own narrator index, in source order (names are the lexicon's names for those ids; routes are not separated)",
+      "sequence": [
+       "الحسن بن محمد الصباح الزعفراني",
+       "يحيى بن عباد بن شيبان",
+       "فليح بن سليمان",
+       "عبد الله بن الزبير بن العوام  رضي الله عنه",
+       "أمّ المؤمنين عائشة بنت أبي بكر الصديق  رضي الله عنها"
+      ]
+     },
+     {
+      "source": "HKG",
+      "what": "hadith-kg's narrator list per sanad, nearest the compiler first (the compiler is dropped)",
+      "routes": [
+       [
+        "حسن بن محمد بن الصباح",
+        "يحيى بن عباد",
+        "عبد الملك بن سليمان بن رافع",
+        "عبد الوهاب بن يحيى بن عباد بن عبد الله بن الزبير",
+        "موضع انقطاع",
+        "عبد الله بن الزبير بن العوام بن خويلد بن أسد بن عبد العزى بن قصي بن كلاب بن مرة بن كعب بن لؤي بن غالب",
+        "عائشة بنت عبد الله بن عثمان بن عامر بن عمرو بن كعب بن سعد بن تيم بن مرة"
+       ]
+      ]
+     },
+     {
+      "source": "RWY",
+      "what": "the Riwayat corpus's chain mentions as it read them in its copy of the text (a machine reading; surfaces as in its text)",
+      "routes": [
+       [
+        "الحسن بن محمد الزعفراني",
+        "يحيى بن عباد أبو عباد",
+        "فليح بن سليمان",
+        "عبد الوهاب بن يحيى",
+        "عباد بن عبد الله بن الزبير",
+        "عبد الله بن الزبير",
+        "عائشة"
+       ]
+      ]
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: the text names more between two stored names than the chain holds"
+     }
+    ],
+    "omitted_for_size": [
+     "name_facts"
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "الحسن بن محمد الزعفراني",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى بن عباد أبو عباد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "فليح بن سليمان",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "عبد الوهاب بن يحيى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "عبد الله بن الزبير",
+          "kind": "narrator",
+          "occurrence": 2
+         }
+        ],
+        [
+         {
+          "surface": "عائشة",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«من ولد عباد بن عبد الله بن الزبير» describes عبد الوهاب's family; it is not written as a transmitter, so it is not a link",
+      "the second «عبد الله بن الزبير» (after «عن») is the link; the first is inside the descriptor",
+      "the «قال أبو عيسى» remark after the matn is the compiler's comment, not a chain"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الترمذي",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "الحسن بن محمد الزعفراني",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى بن عباد أبو عباد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "فليح بن سليمان",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد الوهاب بن يحيى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد الله بن الزبير",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عائشة",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "الحسن بن محمد الزعفراني",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "يحيى بن عباد أبو عباد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "فليح بن سليمان",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "عبد الوهاب بن يحيى",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "عبد الله بن الزبير",
+          "kind": "narrator",
+          "occurrence": 2
+         }
+        ],
+        [
+         {
+          "surface": "عائشة",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«من ولد عباد بن عبد الله بن الزبير» describes the lineage of Abd al-Wahhab and is not a link",
+      "«عن عبد الله بن الزبير» is the second occurrence of those words; the first sits inside the lineage phrase"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الترمذي",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "الحسن بن محمد الزعفراني",
+         "kind": "narrator"
+        },
+        {
+         "surface": "يحيى بن عباد أبو عباد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "فليح بن سليمان",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد الوهاب بن يحيى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد الله بن الزبير",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عائشة",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "الحسن بن محمد الزعفراني",
+      "يحيى بن عباد أبو عباد",
+      "فليح بن سليمان",
+      "عبد الوهاب بن يحيى من",
+      "عبد الله بن الزبير",
+      "عائشة"
+     ]
+    },
+    {
+     "branch": 1,
+     "surfaces": [
+      "الحسن بن محمد الزعفراني",
+      "يحيى بن عباد أبو عباد",
+      "فليح بن سليمان",
+      "لد عباد بن عبد الله بن الزبير",
+      "عبد الله بن الزبير",
+      "عائشة"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-4c3f2c",
+   "text": "18 - حدثنا محمد بن الحسن بن أحمد بن الوليد رحمه الله، قال: حدثنا سعد ابن عبد الله، عن أحمد بن محمد بن عيسى، ومحمد بن عبد الحميد، ومحمد بن الحسين بن أبي الخطاب، عن أحمد بن محمد بن أبي نصر، عن بعض أصحابنا، عن أبي عبد الله عليه السلام قال: لا يكون العبد فاعلا ولا متحركا إلا والاستطاعة معه من الله عز وجل وإنما وقع التكليف من الله بعد الاستطاعة، فلا يكون مكلفا للفعل إلا مستطيعا.",
+   "context": {
+    "work": {
+     "key": "imami:al-tawhid-saduq",
+     "name": "Al-Tawhid (Saduq)",
+     "tradition": "imami",
+     "source": "THQ",
+     "compiler": {
+      "ar": "الصدوق",
+      "en": "al-Saduq",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "Al-Tawḥīd",
+     "chapter": "Capability",
+     "report_number": "56",
+     "convention": "Full «حدثنا» chains of the Saduq."
+    },
+    "source_claims": [
+     {
+      "source": "THQ",
+      "what": "Thaqalayn's English sanad as provided",
+      "english_sanad": "18. Muhammad ibn al-Hasan ibn Ahmad ibn al-Walid (RA) said: Sa`d ibn `Abd Allah said, on the authority of all three Ahmad ibn Muhammad ibn `Isa; Muhammad ibn `Abd al-Hamid and Muhammad ibn al-Husayn ibn Abu al-Khattab, on the authority of Ahmad ibn Muhammad ibn Abu Nasr, on the authority of some of our scholars that Abu `Abd Allah al-Sadiq (AS) said:"
+     }
+    ],
+    "sources_absent": [
+     "RWY: no unique matching report in Riwayat"
+    ],
+    "correspondences": [
+     {
+      "ref": "corr1",
+      "source": "THQ",
+      "found_by": "SWI",
+      "work": "Al-Tawhid (Saduq)",
+      "tradition": "imami",
+      "number": "56",
+      "relation": "same_wording",
+      "confirmed": false,
+      "chain_text": "2 - حدثنا عبد الله بن محمد بن عبد الوهاب بنيسابور، قال: حدثنا أحمد بن الفضل بن المغيرة، قال: حدثنا أبو نصر منصور بن عبد الله بن إبراهيم الإصفهاني، قال: حدثنا علي بن عبد الله، عن محمد بن الحسين بن أبي الخطاب، عن محمد بن أبي الحسين القريظي عن سهل بن أبي محمد المصيصي عن أبي عبد الله جعفر بن محمد"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: the text names more between two stored names than the chain holds"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن الحسن بن أحمد بن الوليد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "سعد ابن عبد الله",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أحمد بن محمد بن عيسى",
+          "kind": "narrator"
+         },
+         {
+          "surface": "محمد بن عبد الحميد",
+          "kind": "narrator"
+         },
+         {
+          "surface": "محمد بن الحسين بن أبي الخطاب",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أحمد بن محمد بن أبي نصر",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "بعض أصحابنا",
+          "kind": "unnamed"
+         }
+        ],
+        [
+         {
+          "surface": "أبي عبد الله",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "The Imam is written inside the chain after «عن», so he is a narrator (owner ruling 2), not imam_in_text.",
+      "«بعض أصحابنا» is an unnamed gap and is kept in its place."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن الحسن بن أحمد بن الوليد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سعد ابن عبد الله",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن عيسى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن أبي نصر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بعض أصحابنا",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      },
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن الحسن بن أحمد بن الوليد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سعد ابن عبد الله",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن عبد الحميد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن أبي نصر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بعض أصحابنا",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      },
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن الحسن بن أحمد بن الوليد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سعد ابن عبد الله",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن الحسين بن أبي الخطاب",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن أبي نصر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بعض أصحابنا",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن الحسن بن أحمد بن الوليد",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "سعد ابن عبد الله",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أحمد بن محمد بن عيسى",
+          "kind": "narrator"
+         },
+         {
+          "surface": "محمد بن عبد الحميد",
+          "kind": "narrator"
+         },
+         {
+          "surface": "محمد بن الحسين بن أبي الخطاب",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أحمد بن محمد بن أبي نصر",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "بعض أصحابنا",
+          "kind": "unnamed"
+         }
+        ],
+        [
+         {
+          "surface": "أبي عبد الله",
+          "kind": "narrator"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«18 -» number stripped; «رحمه الله» left out",
+      "«عن بعض أصحابنا» is an unnamed link (rule 8), not filled",
+      "the Imam is written after «عن», so narrator (owner ruling 2); his words follow «قال»"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن الحسن بن أحمد بن الوليد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سعد ابن عبد الله",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن عيسى",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن أبي نصر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بعض أصحابنا",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      },
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن الحسن بن أحمد بن الوليد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سعد ابن عبد الله",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن عبد الحميد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن أبي نصر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بعض أصحابنا",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      },
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن الحسن بن أحمد بن الوليد",
+         "kind": "narrator"
+        },
+        {
+         "surface": "سعد ابن عبد الله",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن الحسين بن أبي الخطاب",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن محمد بن أبي نصر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "بعض أصحابنا",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "محمد بن الحسن بن أحمد بن الوليد",
+      "سعد ابن عبد الله",
+      "أحمد بن محمد بن أبي نصر",
+      "بعض أصحابنا",
+      "أبي عبد الله"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-0c508c",
+   "text": "2072 - وَ سَأَلَ عَلِيُّ بْنُ جَعْفَرٍ أَخَاهُ مُوسَى بْنَ جَعْفَرٍ عَلَيْهِمَا اَلسَّلاَمُ : عَنِ اَلْمُكَاتَبِ هَلْ عَلَيْهِ فِطْرَةُ شَهْرِ رَمَضَانَ أَوْ عَلَى مَنْ كَاتَبَهُ وَ تَجُوزُ شَهَادَتُهُ قَالَ «اَلْفِطْرَةُ عَلَيْهِ وَ لاَ تَجُوزُ شَهَادَتُهُ.",
+   "context": {
+    "work": {
+     "key": "imami:man-la-yahduruhu-al-faqih",
+     "name": "Man La Yahduruhu al-Faqih",
+     "tradition": "imami",
+     "source": "THQ",
+     "compiler": {
+      "ar": "الصدوق",
+      "en": "al-Saduq",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "Man Lā Yaḥḍuruh al-Faqīh",
+     "chapter": "Chapter on Zakat Al-Fitrah",
+     "report_number": "37",
+     "convention": "Many reports open «و روى X عن Y» or «و قال الصادق (ع)» with no «حدثنا»; a report may be advice with no chain."
+    },
+    "source_claims": [
+     {
+      "source": "THQ",
+      "what": "Thaqalayn's English sanad as provided",
+      "english_sanad": "Hadith.2072 - Ali ibn Ja'far asked his brother Imam Musa ibn Jafar Al-Kadhim (as) about a mukatab (a slave who has a contract to earn their freedom):\n\"Is Zakat al-Fitr obligatory upon the mukatab or upon the one who wrote the contract of emancipation for him? And is his testimony valid?\"\nImam (as) replied:"
+     }
+    ],
+    "sources_absent": [
+     "RWY: no unique matching report in Riwayat"
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: a stored name contains words that are not a name"
+     },
+     {
+      "source": "SWI",
+      "flag": "the report says its route is given elsewhere"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "علي بن جعفر",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "موسى بن جعفر",
+          "kind": "imam_in_text"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«سأل علي بن جعفر أخاه موسى بن جعفر» : the report opens with the asker, who is the first link; the Imam he asks is the last link (rule 5, owner ruling 2)",
+      "«أخاه» before a name is one link: the surface is the name alone (rule 7)",
+      "«2072 -» is the report number: not part of the text read"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "عَلِيُّ بْنُ جَعْفَرٍ",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مُوسَى بْنَ جَعْفَرٍ",
+         "kind": "imam_in_text"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "علي بن جعفر",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "موسى بن جعفر",
+          "kind": "imam_in_text"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "The report opens «سأل علي بن جعفر أخاه موسى بن جعفر»: the asker is a link, then the Imam he asks (rule 5, owner ruling 2); «أخاه» with a name is the name alone (rule 7). The Imam's name is copied as written."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "عَلِيُّ بْنُ جَعْفَرٍ",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مُوسَى بْنَ جَعْفَرٍ",
+         "kind": "imam_in_text"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "علي بن جعفر أخاه موسى بن جعفر",
+      "المكاتب هل عليه فطرة شهر رمضان"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cr1-710e56",
+   "text": "5-5 حدثنا محمد بن موسى بن المتوكل رضي الله عنه قال: حدثنا علي بن الحسين السعد آبادي، عن أحمد بن أبي عبد الله البرقي، عن أبيه بإسناده يرفعه إلى أبي عبد الله عليه السلام أنه قال:خمس من خمسة محال: النصيحة من الحاسد محال، والشفقة من العدو محال، والحرمة من الفاسق محال، والوفاء من المرأة محال، والهيبة من الفقير محال",
+   "context": {
+    "work": {
+     "key": "imami:al-khisal",
+     "name": "Al-Khisal",
+     "tradition": "imami",
+     "source": "THQ",
+     "compiler": {
+      "ar": "الصدوق",
+      "en": "al-Saduq",
+      "head_of_every_chain": true,
+      "added_by_tool": true
+     },
+     "book": "Al-Khiṣāl",
+     "chapter": "Five things are impossible from five",
+     "report_number": "5",
+     "convention": "Full «حدثنا» chains; English often gives only the first link."
+    },
+    "source_claims": [
+     {
+      "source": "THQ",
+      "what": "Thaqalayn's English sanad as provided",
+      "english_sanad": "5-5 Muhammad ibn Musa ibn al-Mutevakil - may God be pleased with him - narrated that Ali ibn al-Hussein al-Sa’ed Abady, on the authority of Ahmad ibn Aba Abdullah al-Barqy, on the authority of his father who linked it up through a chain of narrators to Aba Abdullah as-Sadiq (MGB),"
+     }
+    ],
+    "sources_absent": [
+     "RWY: no unique matching report in Riwayat"
+    ],
+    "correspondences": [
+     {
+      "ref": "corr1",
+      "source": "THQ",
+      "found_by": "SWI",
+      "work": "Man La Yahduruhu al-Faqih",
+      "tradition": "imami",
+      "number": "11",
+      "relation": "same_report_variant_wording",
+      "confirmed": false,
+      "chain_text": "5092 - وَ قَالَ اَلصَّادِقُ عَلَيْهِ اَلسَّلاَمُ : \"خَمْسَةٌ مِنْ خَمْسَةٍ مُحَالٌ اَلْحُرْمَةُ مِنَ اَلْفَاسِقِ مُحَالٌ وَ اَلشَّفَقَةُ مِنَ اَلْعَدُوِّ مُحَالٌ وَ اَلنَّصِيحَةُ مِنَ اَلْحَاسِدِ مُحَالٌ وَ اَلْوَفَاءُ مِنَ اَلْمَرْأَةِ مُحَالٌ وَ…"
+     }
+    ],
+    "archive_flags": [
+     {
+      "source": "SWI",
+      "flag": "rule-based reading flagged uncertain: a stored name contains words that are not a name"
+     }
+    ]
+   },
+   "status": "pending",
+   "holds": [],
+   "readers": {
+    "A": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن موسى بن المتوكل",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "علي بن الحسين السعد آبادي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أحمد بن أبي عبد الله البرقي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبيه",
+          "kind": "relation"
+         }
+        ],
+        [
+         {
+          "surface": "بإسناده يرفعه إلى",
+          "kind": "unnamed"
+         }
+        ],
+        [
+         {
+          "surface": "أبي عبد الله",
+          "kind": "narrator",
+          "occurrence": 2
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«بإسناده يرفعه إلى» is a gap (rule 8): unnamed in its place.",
+      "The Imam follows «إلى» inside the chain, so he stays narrator, as after «عن»; the first «أبي عبد الله» is inside Ahmad's own name (occurrence 1)."
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن موسى بن المتوكل",
+         "kind": "narrator"
+        },
+        {
+         "surface": "علي بن الحسين السعد آبادي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن أبي عبد الله البرقي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبيه",
+         "kind": "relation"
+        },
+        {
+         "surface": "بإسناده يرفعه إلى",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    },
+    "B": {
+     "valid": true,
+     "groups": [
+      {
+       "levels": [
+        [
+         {
+          "surface": "محمد بن موسى بن المتوكل",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "علي بن الحسين السعد آبادي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أحمد بن أبي عبد الله البرقي",
+          "kind": "narrator"
+         }
+        ],
+        [
+         {
+          "surface": "أبيه",
+          "kind": "relation"
+         }
+        ],
+        [
+         {
+          "surface": "بإسناده يرفعه إلى",
+          "kind": "unnamed"
+         }
+        ],
+        [
+         {
+          "surface": "أبي عبد الله",
+          "kind": "imam_in_text"
+         }
+        ]
+       ]
+      }
+     ],
+     "notes": [
+      "«بإسناده يرفعه إلى» is a gap in the text: unnamed, kept in its place; nothing is filled from memory",
+      "the Imam follows «يرفعه إلى», not «عن», and is the speaker («أنه قال»), so he is the last link as imam_in_text (owner ruling 2)",
+      "«5-5» is the report number and «رضي الله عنه» is left out"
+     ],
+     "needs_ruling": false,
+     "routes": [
+      {
+       "links": [
+        {
+         "surface": "الصدوق",
+         "kind": "compiler_head"
+        },
+        {
+         "surface": "محمد بن موسى بن المتوكل",
+         "kind": "narrator"
+        },
+        {
+         "surface": "علي بن الحسين السعد آبادي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أحمد بن أبي عبد الله البرقي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "أبيه",
+         "kind": "relation"
+        },
+        {
+         "surface": "بإسناده يرفعه إلى",
+         "kind": "unnamed"
+        },
+        {
+         "surface": "أبي عبد الله",
+         "kind": "imam_in_text"
+        }
+       ]
+      }
+     ],
+     "variant_groups": []
+    }
+   },
+   "readers_agree": true,
+   "stored_chain": [
+    {
+     "branch": 0,
+     "surfaces": [
+      "محمد بن موسى بن المتوكل",
+      "علي بن الحسين السعد آبادي",
+      "أحمد بن أبي عبد الله البرقي",
+      "أبيه بإسناده يرفعه إلى أبي عبد الله"
+     ]
+    }
+   ]
+  }
+ ]
+}

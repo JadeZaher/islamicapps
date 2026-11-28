@@ -1,0 +1,105 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t07-eligible-p2-02",
+  "reviews": [
+    {
+      "id": "cr1-141542",
+      "decision": "refer_to_human",
+      "question": "Where the first branch (أبو بكر بن أبي شيبة -> يزيد بن هارون) rejoins the second branch after «ح»: at «عبد الرحمن بن مهدي» (as both readers have it) or at «حماد بن سلمة», since «قالا حدثنا عبد الرحمن بن مهدي» is dual for «محمد بن خالد بن خداش، ومحمد بن يحيى» and there is no explicit convergence marker before «حماد بن سلمة».",
+      "reasons": [
+        {
+          "claim": "The text does not explicitly mark whether the first branch after «ح» rejoins at «عبد الرحمن بن مهدي» or at «حماد بن سلمة», because «قالا» is dual for «محمد بن خالد بن خداش، ومحمد بن يحيى» and «حدثنا حماد بن سلمة» has no explicit convergence marker.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، حدثنا يزيد بن هارون، ح وحدثنا محمد بن خالد بن خداش، ومحمد بن يحيى، قالا حدثنا عبد الرحمن بن مهدي، حدثنا حماد بن سلمة"
+        },
+        {
+          "claim": "The closing remark from «أبو بكر» only notes a wording addition to the matn and is not a separate route.",
+          "source": "text",
+          "quote": "قال أبو بكر في حديثه ‏\"‏ وعن المبتلى حتى يبرأ ‏\"‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "high",
+      "uncertainty_note": "The Arabic wording alone does not settle whether «يزيد بن هارون» meets the second branch at «عبد الرحمن بن مهدي» or at «حماد بن سلمة»."
+    },
+    {
+      "id": "cr1-7da169",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both readers placed «آخر قبله» sequentially after «حيوة بن شريح», whereas «وذكر، آخر قبله» conjoins an unnamed co-transmitter alongside «حيوة بن شريح», both narrating from «عياش بن عباس القتباني».",
+          "source": "text",
+          "quote": "عن حيوة بن شريح، وذكر، آخر قبله عن عياش بن عباس القتباني"
+        },
+        {
+          "claim": "The chain continues through «شييم بن بيتان» to «رويفع بن ثابت», who relays the Prophet's words.",
+          "source": "text",
+          "quote": "أن شييم بن بيتان، حدثه أنه، سمع رويفع بن ثابت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-7da169",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن سلمة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن وهب",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حيوة بن شريح",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "آخر قبله",
+                  "kind": "unnamed"
+                }
+              ],
+              [
+                {
+                  "surface": "عياش بن عباس القتباني",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "شييم بن بيتان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "رويفع بن ثابت",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«عن حيوة بن شريح، وذكر، آخر قبله عن عياش بن عباس القتباني» places «آخر قبله» as an unnamed co-transmitter alongside «حيوة بن شريح», both from «عياش بن عباس القتباني»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

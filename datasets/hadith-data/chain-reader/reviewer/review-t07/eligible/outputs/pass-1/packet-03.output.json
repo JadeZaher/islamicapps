@@ -1,0 +1,272 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t07-eligible-p1-03",
+  "reviews": [
+    {
+      "id": "cr1-47fce6",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters share the first level and all report from جرير.",
+          "source": "text",
+          "quote": "قتيبة بن سعيد، وعثمان بن أبي شيبة، وإسحاق بن إبراهيم، قال إسحاق أخبرنا وقال الآخران، حدثنا جرير"
+        },
+        {
+          "claim": "The chain continues through الأعمش and أبي سفيان to جابر as the last link, with the Prophet ending the chain.",
+          "source": "text",
+          "quote": "عن الأعمش، عن أبي سفيان، عن جابر، قال سمعت النبي صلى الله عليه وسلم يقول"
+        },
+        {
+          "claim": "The closing remark by سليمان is an explanation of a place name with no separate isnad, not a second route.",
+          "source": "text",
+          "quote": "قال سليمان فسألته عن الروحاء ‏.‏ فقال هي من المدينة ستة وثلاثون ميلا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-7eb12e",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from قتيبة through حماد and أيوب to عبد الله بن شقيق.",
+          "source": "text",
+          "quote": "أخبرنا قتيبة، قال حدثنا حماد، عن أيوب، عن عبد الله بن شقيق"
+        },
+        {
+          "claim": "عائشة is asked and answers about the Prophet, making her the last link under rulings 2 and 3.",
+          "source": "text",
+          "quote": "قال سألت عائشة عن صيام النبي، صلى الله عليه وسلم قالت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9f92fe",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report opens with a back reference to an unnamed speaker, inheriting the speaker from the previous report under ruling 7.",
+          "source": "text",
+          "quote": "وَقَالَ عَلَيْهِ اَلسَّلاَمُ"
+        },
+        {
+          "claim": "The previous report names الصادق as the speaker, supplying the inherited last link.",
+          "source": "prev1",
+          "quote": "قال الصادق عليه السلام"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-41dcce",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly through five transmitters to أنس.",
+          "source": "text",
+          "quote": "حدثني يوسف بن حماد المعني، حدثنا عبد الأعلى، عن سعيد، عن قتادة، عن أنس"
+        },
+        {
+          "claim": "أنس reports an act of the Prophet, who ends the chain under ruling 5.",
+          "source": "text",
+          "quote": "أن نبي الله صلى الله عليه وسلم كتب إلى كسرى"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-909cc3",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The explicit isnad runs through الفضل بن سهل and عفان بن مسلم to همام.",
+          "source": "text",
+          "quote": "حدثني الفضل بن سهل، قال حدثنا عفان بن مسلم، حدثنا همام"
+        },
+        {
+          "claim": "همام narrates an encounter in which they consulted قتادة and قتادة spoke the judgment that forms the report, making قتادة the last link under ruling 9.",
+          "source": "text",
+          "quote": "فذكرنا ذلك لقتادة فقال كذب ما سمع منهم"
+        },
+        {
+          "claim": "أبو داود الأعمى and the names he claimed to narrate from are the subject being refuted in the anecdote, not links of the chain.",
+          "source": "text",
+          "quote": "قدم علينا أبو داود الأعمى فجعل يقول حدثنا البراء، قال وحدثنا زيد بن أرقم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-909cc3",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "الفضل بن سهل",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عفان بن مسلم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "همام",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "قتادة",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Hammam narrates an encounter in which Qatada speaks («فذكرنا ذلك لقتادة فقال كذب ما سمع منهم»); under ruling 9, Qatada is the last link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Ruling 9 makes Qatada the last link as the source who speaks in the narrated encounter, though stopping at Hammam as the narrator of the anecdote is a plausible alternative."
+    },
+    {
+      "id": "cr1-34ea13",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through مسدد بن مسرهد, سفيان, الزهري, and نبهان, with «مكاتب أم سلمة» being a description of نبهان rather than a link.",
+          "source": "text",
+          "quote": "حدثنا مسدد بن مسرهد، حدثنا سفيان، عن الزهري، عن نبهان، مكاتب أم سلمة"
+        },
+        {
+          "claim": "أم سلمة is the last link relaying the Prophet's words, and the Prophet ends the chain under ruling 5.",
+          "source": "text",
+          "quote": "قال سمعت أم سلمة، تقول قال لنا رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-227a91",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters share the first level and report from إسماعيل, with the dashed phrases being glosses.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن أيوب، وقتيبة، وابن، حجر - واللفظ لابن أيوب - قالوا حدثنا إسماعيل، - وهو ابن جعفر -"
+        },
+        {
+          "claim": "The chain continues through عبد الله بن دينار to عبد الله بن عمر as the last link.",
+          "source": "text",
+          "quote": "أخبرني عبد الله بن دينار، أنه سمع عبد الله بن عمر، يقول"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6c238f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The «ح» splits two branches from the compiler to شعبة and حماد.",
+          "source": "text",
+          "quote": "حدثنا علي بن الجعد، حدثنا شعبة، ح وحدثنا موسى بن إسماعيل، حدثنا حماد"
+        },
+        {
+          "claim": "The tail written once after the second branch is shared by both routes and ends at سمرة.",
+          "source": "text",
+          "quote": "عن قتادة، عن الحسن، عن سمرة، أن النبي صلى الله عليه وسلم قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1e1d2e",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through إبراهيم بن الحسن المصيصي, حجاج (with the dashed gloss excluded), الليث بن سعد, and معاوية بن صالح.",
+          "source": "text",
+          "quote": "حدثنا إبراهيم بن الحسن المصيصي، حدثنا حجاج، - يعني ابن محمد - حدثنا الليث بن سعد، قال حدثني معاوية بن صالح"
+        },
+        {
+          "claim": "The chain continues through عبد الرحمن بن جبير and the bare relation «أبيه» to المقداد بن الأسود as the last link.",
+          "source": "text",
+          "quote": "أن عبد الرحمن بن جبير، حدثه عن أبيه، عن المقداد بن الأسود، قال ايم الله لقد سمعت رسول الله صلى الله عليه وسلم يقول"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-168ae8",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first branch has three co-transmitters at the first level leading through محمد بن جعفر, شعبة, عطاء بن أبي ميمونة, and أبا رافع to أبي، هريرة.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، ومحمد بن المثنى، ومحمد بن بشار، قالوا حدثنا  محمد بن جعفر، حدثنا شعبة، عن عطاء بن أبي ميمونة، سمعت أبا رافع، يحدث عن أبي، هريرة"
+        },
+        {
+          "claim": "The second branch after «ح» states its own full chain through عبيد الله بن معاذ and his father («أبي») to أبي هريرة.",
+          "source": "text",
+          "quote": "ح  وحدثنا عبيد الله بن معاذ، حدثنا أبي، حدثنا شعبة، عن عطاء بن أبي ميمونة، عن أبي رافع، عن أبي هريرة"
+        },
+        {
+          "claim": "The closing note records a verb difference on Ibn Abi Shayba's already-stated route rather than a separate route.",
+          "source": "text",
+          "quote": "وقال ابن أبي شيبة حدثنا محمد بن جعفر عن شعبة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

@@ -1,0 +1,296 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t04-eligible-p1-12",
+  "reviews": [
+    {
+      "id": "cr1-18cd1b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from شيبان بن فروخ through جرير بن حازم and نافع, while ابن عمر is only described in Nafi's narrative and is not a link.",
+          "source": "text",
+          "quote": "وحدثنا شيبان بن فروخ، حدثنا جرير بن حازم، حدثنا نافع، قال كان ابن عمر يقتل الحيات كلهن"
+        },
+        {
+          "claim": "Nafi continues the transmission to أبو لبابة بن عبد المنذر البدري, who relays the Prophet's prohibition, making him the last link.",
+          "source": "text",
+          "quote": "حتى حدثنا أبو لبابة بن عبد المنذر البدري، أن رسول الله صلى الله عليه وسلم نهى عن قتل جنان البيوت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9f7a65",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report opens with a back reference to an unnamed Imam, so it inherits its speaker from the immediately preceding report.",
+          "source": "text",
+          "quote": "56 - وَقَالَ عَلَيْهِ اَلسَّلاَمُ:"
+        },
+        {
+          "claim": "Both readers skipped prev1 and inherited الصادق from prev2, but prev1 is report 55 and explicitly names its speaker as أَبُو جَعْفَرٍ.",
+          "source": "prev1",
+          "quote": "55 - وَقَالَ أَبُو جَعْفَرٍ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-9f7a65",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أَبُو جَعْفَرٍ",
+                  "kind": "inherited",
+                  "from": "prev1"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«56 - وَقَالَ عَلَيْهِ اَلسَّلاَمُ» inherits its speaker from the immediately preceding report (prev1, report 55), which names «أَبُو جَعْفَرٍ»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-86ed40",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters at the first level all transmit from إسماعيل بن جعفر, and the parenthetical restatement by ابن أيوب does not create a second link.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن أيوب، وقتيبة بن سعيد، وعلي بن حجر، جميعا عن إسماعيل بن جعفر، - قال ابن أيوب حدثنا إسماعيل بن جعفر، -"
+        },
+        {
+          "claim": "The chain continues through العلاء (leaving out the identifying gloss), معبد بن كعب السلمي, عبد الله بن كعب (merging أخيه with his name), and ends at أبي أمامة before the Prophet.",
+          "source": "text",
+          "quote": "قال أخبرنا العلاء، - وهو ابن عبد الرحمن مولى الحرقة - عن معبد بن كعب السلمي، عن أخيه عبد الله بن كعب، عن أبي أمامة، أن رسول الله صلى الله عليه وسلم قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-714d72",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two ح-branches (القعنبي from ابن المبارك, and مسدد from هشيم) meet at the shared tail beginning with مجالد and ending at أبي سعيد.",
+          "source": "text",
+          "quote": "حدثنا القعنبي، حدثنا ابن المبارك، ح وحدثنا مسدد، حدثنا هشيم، عن مجالد، عن أبي الوداك، عن أبي سعيد،"
+        },
+        {
+          "claim": "The clause introduced by وقال مسدد is a fuller wording from the same transmitter rather than a separate isnad.",
+          "source": "text",
+          "quote": "وقال مسدد قلنا يا رسول الله ننحر الناقة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-13d918",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from محمد بن عبد الأعلى through عمران بن عيينة (leaving out the gloss هو أخو سفيان بن عيينة), حصين, and سالم بن أبي الجعد.",
+          "source": "text",
+          "quote": "حدثنا محمد بن عبد الأعلى حدثنا عمران بن عيينة هو أخو سفيان بن عيينة عن حصين عن سالم بن أبي الجعد"
+        },
+        {
+          "claim": "At the last level, أبي أمامة and the unnamed co-transmitter غيره من أصحاب النبي both transmit from the Prophet, and al-Tirmidhi's commentary after the matn is not part of the chain.",
+          "source": "text",
+          "quote": "عن أبي أمامة وغيره من أصحاب النبي صلى الله عليه وسلم  عن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-57f2d9",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters at the first level (treating أبو كريب، محمد بن العلاء as one man) converge at خالد بن مخلد and continue through سليمان بن بلال, عمارة بن غزية الأنصاري, and نعيم بن عبد الله المجمر.",
+          "source": "text",
+          "quote": "حدثني أبو كريب، محمد بن العلاء والقاسم بن زكرياء بن دينار وعبد بن حميد قالوا حدثنا خالد بن مخلد، عن سليمان بن بلال، حدثني عمارة بن غزية الأنصاري، عن نعيم بن عبد الله المجمر،"
+        },
+        {
+          "claim": "Under the narrated-encounter ruling, أبا هريرة is the last link because he speaks inside the encounter and relays the Prophet's practice and saying.",
+          "source": "text",
+          "quote": "قال رأيت أبا هريرة يتوضأ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1731a2",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from علي بن الحسين through the back reference بإسناده (with no previous report supplied in context) to أحمد بن محمد بن أبي نصر, عاصم ابن حميد الحناط, and أبي بصير.",
+          "source": "text",
+          "quote": "وأخبرنا علي بن الحسين بإسناده عن أحمد بن محمد بن أبي نصر، عن عاصم ابن حميد الحناط، عن أبي بصير"
+        },
+        {
+          "claim": "The Imam named after the chain in the text, أبو جعفر, is the last link as imam_in_text.",
+          "source": "text",
+          "quote": "قال: قال أبو جعفر:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-33a933",
+      "decision": "confirm_reading",
+      "question": "a source known only by a title",
+      "reasons": [
+        {
+          "claim": "The chain has two written links, إِسْحَاقُ بْنُ عَمَّارٍ and اَلْعَبْدِ اَلصَّالِحِ (leaving out the blessing), and the structure is the same regardless of how the owner rules on a source known only by a title.",
+          "source": "text",
+          "quote": "وَ رَوَى إِسْحَاقُ بْنُ عَمَّارٍ عَنِ اَلْعَبْدِ اَلصَّالِحِ عَلَيْهِ اَلسَّلاَمُ قَالَ :"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3e90dd",
+      "decision": "no_chain",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The text is the compiler's own theological argument with no transmitter or isnad.",
+          "source": "text",
+          "quote": "وأما من قال بإمامة الحسن عليه السلام وقالوا: انقطعت الإمامة كما انقطعت النبوة، فقولهم باطل بما دللنا عليه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-994327",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The dual verb قالا links the two shaykhs موسى بن مروان الرقي and كثير بن عبيد المذحجي specifically to محمد بن حرب, placing محمد بن حرب in the second ح-branch rather than the shared tail.",
+          "source": "text",
+          "quote": "ح وحدثنا موسى بن مروان الرقي، وكثير بن عبيد المذحجي، قالا حدثنا محمد بن حرب،"
+        },
+        {
+          "claim": "The marker - المعنى - sits immediately before عن محمد بن زياد, indicating that the first branch (عبد الوهاب بن نجدة from بقية) and the second branch meet at the shared tail starting with محمد بن زياد through عبد الله بن أبي قيس to عائشة.",
+          "source": "text",
+          "quote": "- المعنى - عن محمد بن زياد، عن عبد الله بن أبي قيس، عن عائشة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-994327",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبد الوهاب بن نجدة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "بقية",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "موسى بن مروان الرقي",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "كثير بن عبيد المذحجي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد بن حرب",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "محمد بن زياد",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عبد الله بن أبي قيس",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عائشة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«قالا حدثنا محمد بن حرب» belongs to the two co-transmitters موسى بن مروان الرقي and كثير بن عبيد المذحجي; the two ح-branches meet at «عن محمد بن زياد» after «- المعنى -»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "The dual verb «قالا» and the «- المعنى -» marker before «عن محمد بن زياد» indicate that the two ح-branches meet at محمد بن زياد rather than محمد بن حرب, though the text does not repeat a verb after بقية."
+    }
+  ]
+}

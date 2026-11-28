@@ -1,0 +1,200 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t01-eligible-p1-21",
+  "reviews": [
+    {
+      "id": "cr1-8dd1fb",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Ali b. Abd Allah through Sufyan, al-Zuhri, Ubayd Allah, and Ibn Abbas to the Companion Abu Talha, with al-Zuhri linked by Sufyan's statement of memorizing it from him and the Prophet as the end.",
+          "source": "text",
+          "quote": "حدثنا علي بن عبد الله، حدثنا سفيان، قال حفظته من الزهري كما أنك ها هنا أخبرني عبيد الله عن ابن عباس عن أبي طلحة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-08895d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Ahmad b. Ibrahim b. Harun al-Fami through Muhammad b. Abd Allah b. Ja'far al-Himyari, his father (a bare relation), Ibrahim b. Hashim, Ali b. Ma'bad, and al-Husayn b. Khalid to Imam al-Rida, excluding the place phrase.",
+          "source": "text",
+          "quote": "حَدَّثَنا أَحْمَدِ بْنِ إِبْراهيمِ بْنِ هارُون الفامي فِي مَسْجِد الكُوفَة قالَ: حَدَّثَنا مُحَمَّدِ بْنِ عَبْدِ اللَّه بْنِ جَعْفَر الحِمْيَريُّ، عَن أَبيهِ قالَ: حَدَّثَنا إِبْراهيمِ بْنِ هاشِم، عَن عَلِىِّ بْنِ معبد، عَن الحُسَيْنِ بْنِ خالِد، عَن أَبي الحَسَن عَلِىِّ بْنِ مُوسَى الرِّضا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a0e29d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three tahwil-separated branches converge at al-Zuhri with a back reference shared by all three routes.",
+          "source": "text",
+          "quote": "كلهم عن الزهري، بهذا الإسناد هذا الحديث"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c35c56",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Abd al-Rahman b. Khalid al-Raqqi through Harith b. Atiyya, Hisham, Hammad, Ibrahim, and Alqama to Ibn Mas'ud, excluding the parenthetical praise of Harith.",
+          "source": "text",
+          "quote": "أخبرني عبد الرحمن بن خالد الرقي، قال حدثنا حارث بن عطية، - وكان من زهاد الناس - عن هشام، عن حماد، عن إبراهيم، عن علقمة، عن ابن مسعود"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-669653",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report opens with a passive back reference naming neither asker nor Imam, while the phrase 'about a man' is the legal question rather than a narrator.",
+          "source": "text",
+          "quote": "2805 - وَ سُئِلَ : عَنْ رَجُلٍ لاَ يَدْرِي ثَلاَثَةً طَافَ أَوْ أَرْبَعَةً"
+        },
+        {
+          "claim": "Reader B erroneously inherited al-Hasan b. Atiyya from prev2, whereas the Imam who was asked and answered in prev2 is Abu Abd Allah.",
+          "source": "reader_b",
+          "quote": "الحسن بن عطية"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-669653",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أَبُو عَبْدِ اَللَّهِ",
+                  "kind": "inherited",
+                  "from": "prev2"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«وَ سُئِلَ» is a passive back reference with no named asker; the Imam asked is inherited from prev2 («أَبُو عَبْدِ اَللَّهِ»), not the narrator al-Hasan b. Atiyya."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-975518",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first group has co-transmitters Amr al-Naqid and Surayj b. Yunus leading through Hushaym, Humayd, and Thabit to Anas, with Humayd's remark about possibly hearing it directly from Anas not adding a new link.",
+          "source": "text",
+          "quote": "وحدثني عمرو الناقد، وسريج بن يونس، قالا حدثنا هشيم، أخبرنا حميد، عن ثابت، عن أنس، قال وأظنني قد سمعته من، أنس"
+        },
+        {
+          "claim": "After the tahwil, the second group writes its own full chain from Yahya b. Yahya through Hushaym, Humayd, and Thabit al-Bunani to Anas, excluding the wording gloss.",
+          "source": "text",
+          "quote": "وحدثنا يحيى بن يحيى، - واللفظ له - أخبرنا هشيم، عن حميد، عن ثابت البناني، عن أنس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a8022f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Ibrahim b. al-Hasan through Hajjaj, Ibn Jurayj, and Abu al-Zubayr to Jabir, with the Prophet as the end.",
+          "source": "text",
+          "quote": "أخبرنا إبراهيم بن الحسن، قال حدثنا حجاج، قال قال ابن جريج أخبرني أبو الزبير، أنه سمع جابرا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-af07ad",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Muhammad b. Bashshar through Muhammad, Shu'ba, Muhammad b. Abd al-Rahman, Kurayb, and Ibn Abbas to Juwayriya bint al-Harith, excluding the epithet 'mawla Al Talha'.",
+          "source": "text",
+          "quote": "أخبرنا محمد بن بشار، قال حدثنا محمد، قال حدثنا شعبة، عن محمد بن عبد الرحمن، مولى آل طلحة قال سمعت كريبا، عن ابن عباس، عن جويرية بنت الحارث"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-503639",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two tahwil-separated branches (Ahmad b. Uthman al-Nawfali -> Abu Asim, and Muhammad b. Hatim -> Rawh) converge at Zakariyya b. Ishaq via 'qala' and share the tail through Amr b. Dinar to Jabir b. Abd Allah.",
+          "source": "text",
+          "quote": "حدثنا أحمد بن عثمان النوفلي، حدثنا أبو عاصم، ح وحدثني محمد بن حاتم، - واللفظ له - حدثنا روح، قالا حدثنا زكرياء بن إسحاق، حدثنا عمرو بن دينار، أنه سمع جابر بن عبد الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f12f76",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Yahya b. Yahya through Malik, Qatan b. Wahb b. Uwaymir b. al-Ajda', and Yuhannis to Abd Allah b. Umar, who speaks the prophetic report in the narrated encounter while the freedwoman is not a link.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن يحيى، قال قرأت على مالك عن قطن بن وهب بن عويمر بن، الأجدع عن يحنس، مولى الزبير أخبره أنه، كان جالسا عند عبد الله بن عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

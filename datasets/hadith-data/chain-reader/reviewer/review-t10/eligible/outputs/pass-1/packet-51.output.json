@@ -1,0 +1,245 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t10-eligible-p1-51",
+  "reviews": [
+    {
+      "id": "cr1-5fb9c6",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Yahya b. Durust through Abu Isma'il, Yahya, and Abu Salama to Abu Sa'id before the Prophet.",
+          "source": "text",
+          "quote": "أخبرنا يحيى بن درست، قال حدثنا أبو إسماعيل، عن يحيى، أن أبا سلمة، حدثه عن أبي سعيد، أن رسول الله صلى الله عليه وسلم قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-793c30",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly through Muhammad b. al-Muthanna al-Anazi, Yahya b. Sa'id, Sufyan, his bare father relation, Abaya b. Rifa'a b. Rafi' b. Khadij, and Rafi' b. Khadij.",
+          "source": "text",
+          "quote": "حدثنا محمد بن المثنى العنزي، حدثنا يحيى بن سعيد، عن سفيان، حدثني أبي، عن عباية بن رفاعة بن رافع بن خديج، عن رافع بن خديج،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-aacf0e",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Abd Allah b. Muskan through al-Halabi to Abu Abd Allah as the final link.",
+          "source": "text",
+          "quote": "وَ رَوَى عَبْدُ اَللَّهِ بْنُ مُسْكَانَ عَنِ اَلْحَلَبِيِّ عَنْ أَبِي عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ أَنَّهُ قَالَ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0be011",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The opening chain reaches Ibn Jurayj, who states the report and then continues his own isnad to Ibn Abbas rather than introducing a second independent route from the compiler.",
+          "source": "text",
+          "quote": "حدثنا محمد بن يحيى النيسابوري، حدثنا الحجاج بن محمد، حدثنا ابن جريج،"
+        },
+        {
+          "claim": "The post-matn clause continues Ibn Jurayj's chain through Ya'la b. Muslim and Sa'id b. Jubayr to Ibn Abbas.",
+          "source": "text",
+          "quote": "أخبرنيه يعلى بن مسلم عن سعيد بن جبير عن ابن عباس"
+        },
+        {
+          "claim": "The compiler's closing remark confirms that the report is known only through Ibn Jurayj, not via a separate route directly from Ya'la b. Muslim.",
+          "source": "text",
+          "quote": "لا نعرفه إلا من حديث ابن جريج"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-0be011",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن يحيى النيسابوري",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الحجاج بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن جريج",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "يعلى بن مسلم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سعيد بن جبير",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن عباس",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«أخبرنيه يعلى بن مسلم عن سعيد بن جبير عن ابن عباس» is Ibn Jurayj's continuation of his own chain after the matn, forming one single route rather than a second group from the compiler."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-dcda3f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly through Qutayba, Abd al-Aziz (omitting the gloss), Amr b. Yahya, Muhammad b. Yahya b. Hibban, and Wasi' b. Hibban (named alongside his relation).",
+          "source": "text",
+          "quote": "أخبرنا قتيبة، قال حدثنا عبد العزيز، - يعني الدراوردي - عن عمرو بن يحيى، عن محمد بن يحيى بن حبان، عن عمه، واسع بن حبان،"
+        },
+        {
+          "claim": "Ibn Umar is asked and answers, making him the final link.",
+          "source": "text",
+          "quote": "قال قلت لابن عمر أخبرني عن صلاة، رسول الله صلى الله عليه وسلم كيف كانت قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-5fe4c0",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly through Muhammad b. Wahb, Muhammad b. Salama, Abu Abd al-Rahim, Zayd (omitting the gloss), Amr b. Murra, Awn b. Abd Allah, and Abd Allah b. Umar.",
+          "source": "text",
+          "quote": "أخبرني محمد بن وهب، قال حدثنا محمد بن سلمة، عن أبي عبد الرحيم، قال حدثني زيد، - هو ابن أبي أنيسة - عن عمرو بن مرة، عن عون بن عبد الله، عن عبد الله بن عمر،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a0d71b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from al-Ala' through Muhammad b. Muslim to an unnamed Imam phrased as one of the two.",
+          "source": "text",
+          "quote": "وَ رَوَى اَلْعَلاَءُ عَنْ مُحَمَّدِ بْنِ مُسْلِمٍ عَنْ أَحَدِهِمَا عَلَيْهِمَا اَلسَّلاَمُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-eb409f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly through Umar b. Uthman, Marwan (omitting the gloss), Bahz, Zurara b. Awfa, and A'isha Umm al-Mu'minin.",
+          "source": "text",
+          "quote": "حدثنا عمر بن عثمان، حدثنا مروان، - يعني ابن معاوية - عن بهز، حدثنا زرارة بن أوفى، عن عائشة أم المؤمنين،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-59389d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two branches split by «ح» meet at «كلاهما» and share the tail Ma'mar, Zayd b. Aslam, and the back reference.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وأبو غسان المسمعي وعاصم بن النضر التيمي قالوا حدثنا معتمر بن سليمان، ح وحدثنا إسحاق بن إبراهيم، أخبرنا عبد الرزاق، كلاهما عن معمر، عن زيد بن أسلم، في هذا الإسناد"
+        },
+        {
+          "claim": "The closing comparison to Hafs b. Maysara is a variant remark and not a route.",
+          "source": "text",
+          "quote": "بمثل معنى حديث حفص بن ميسرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-61aab4",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly through Muhammad b. Bashshar, Muhammad, Shu'ba, al-Nu'man b. Salim, and Aws before the Prophet.",
+          "source": "text",
+          "quote": "أخبرنا محمد بن بشار، قال حدثنا محمد، قال حدثنا شعبة، عن النعمان بن سالم، قال سمعت أوسا، يقول"
+        },
+        {
+          "claim": "Muhammad's closing question to Shu'ba about the wording is a remark, not a new route.",
+          "source": "text",
+          "quote": "قال محمد فقلت لشعبة أليس في الحديث"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

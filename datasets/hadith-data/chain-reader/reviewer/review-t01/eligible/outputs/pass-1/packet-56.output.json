@@ -1,0 +1,243 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t01-eligible-p1-56",
+  "reviews": [
+    {
+      "id": "cr1-346a7a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report states a single chain from Qutayba b. Sa'id through Malik b. Anas, Hisham b. Urwa, and his father to Aisha, with «فيما قرئ عليه» as a reading formula rather than a narrator and the Prophet ending the chain.",
+          "source": "text",
+          "quote": "وحدثنا قتيبة بن سعيد، عن مالك بن أنس، فيما قرئ عليه عن هشام بن عروة، عن أبيه، عن عائشة، أن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b35a0d",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The taḥwīl «ح» after «عن الزهري» joins the first route to the second route, so «عروة» and «عائشة» written once after «قال محمد» are shared by both branches rather than leaving the first branch ending at al-Zuhri.",
+          "source": "text",
+          "quote": "عن الزهري، ح وقال الليث حدثني عقيل، قال محمد أخبرني عروة، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-b35a0d",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبد الله بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الرزاق",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "معمر",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الزهري",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "الليث",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عقيل",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عروة",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عائشة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Two taḥwīl branches keeping «الزهري» and «محمد» (occurrence 2) unmerged as written, sharing «عروة» and «عائشة» as shared_tail."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Attaching «عروة» and «عائشة» as the shared tail of both taḥwīl branches follows the taḥwīl convention without merging «الزهري» and «محمد», though the text writes «قال محمد» before «أخبرني عروة»."
+    },
+    {
+      "id": "cr1-564391",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad branches across Musaddad and Sahl b. Bakkar from Abu Awana, and after «ح» Uthman b. Abi Shayba from Jarir, all sharing the tail from al-A'mash through Mujahid to Ibn Umar, while «- المعنى -» and the wording attributions in the matn are not routes.",
+          "source": "text",
+          "quote": "حدثنا مسدد، وسهل بن بكار، قالا حدثنا أبو عوانة، ح وحدثنا عثمان بن أبي شيبة، حدثنا جرير، - المعنى - عن الأعمش، عن مجاهد، عن ابن عمر،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-e7ca16",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Ya'qub b. Ibrahim through Yahya b. Sa'id, Ja'far b. Muhammad, and his father to Jabir b. Abd Allah, who is explicitly asked and narrates the report.",
+          "source": "text",
+          "quote": "أخبرنا يعقوب بن إبراهيم، قال حدثنا يحيى بن سعيد، قال حدثنا جعفر بن محمد، قال حدثني أبي قال، أتينا جابر بن عبد الله فسألناه عن حجة النبي، صلى الله عليه وسلم فحدثنا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-7d8e31",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Muhammad b. Bashshar through Ma'di b. Sulayman, Ibn Ajlan, and his father to Abu Hurayra, excluding the identifying gloss «هو البصري» and the compiler's closing remarks.",
+          "source": "text",
+          "quote": "حدثنا محمد بن بشار، حدثنا معدي بن سليمان، هو البصري عن ابن عجلان، عن أبيه، عن أبي هريرة، عن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9af805",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Yahya b. Yahya al-Tamimi through Malik (by reading-in-presence), Nafi', and Ibn Umar, with the Prophet ending the chain.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن يحيى التميمي، قال قرأت على مالك عن نافع، عن ابن عمر، أن رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3c28e4",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Ubayd Allah b. Sa'id through Yahya, Ubayd Allah, Nafi', and Ibn Umar, with the Prophet ending the chain.",
+          "source": "text",
+          "quote": "أخبرنا عبيد الله بن سعيد، قال حدثنا يحيى، عن عبيد الله، قال أخبرني نافع، عن ابن عمر،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9eed8b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "No asker or intermediate transmitter is named, so al-Sadiq is the single link after the compiler.",
+          "source": "text",
+          "quote": "وَ سُئِلَ اَلصَّادِقُ عَلَيْهِ اَلسَّلاَمُ: عَنْ عِلَّةِ اَلْجَرِيدَةِ فَقَالَ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-8705dc",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Abu Nu'aym through Sayf b. Abi Sulayman, Mujahid, and Abd al-Rahman b. Abi Layla to Hudhayfa, who speaks in the narrated encounter and quotes the Prophet.",
+          "source": "text",
+          "quote": "حدثنا أبو نعيم، حدثنا سيف بن أبي سليمان، قال سمعت مجاهدا، يقول حدثني عبد الرحمن بن أبي ليلى، أنهم كانوا عند حذيفة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-df3843",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Muhammad b. Ubayd through Ali b. Hashim, Hisham b. Urwa (written inline in braces), Abd Allah b. Abi Bakr, his father, and Amra to Aisha, with the Prophet ending the chain.",
+          "source": "text",
+          "quote": "أخبرنا محمد بن عبيد، قال حدثنا علي بن هاشم، ‏{‏ عن هشام بن عروة، ‏}‏ عن عبد الله بن أبي بكر، عن أبيه، عن عمرة، قالت سمعت عائشة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

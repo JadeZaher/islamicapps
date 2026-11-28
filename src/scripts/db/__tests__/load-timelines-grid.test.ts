@@ -213,14 +213,33 @@ async function runTests(): Promise<void> {
     dataDir: null,
     reclassifyEvents: true,
   });
+  assert.deepEqual(parseLoaderArgs(['--dir', 'datasets/hadith-data/timelines-grid']), {
+    dryRun: false,
+    database: 'development',
+    dataDir: 'datasets/hadith-data/timelines-grid',
+    reclassifyEvents: false,
+  });
+  assert.deepEqual(parseLoaderArgs(['--dir=custom/batch']), {
+    dryRun: false,
+    database: 'development',
+    dataDir: 'custom/batch',
+    reclassifyEvents: false,
+  });
   assert.throws(() => parseLoaderArgs(['--database', 'staging']), /development or production/);
 
   // 5. buildTimelinesLoadPlan with staged JSONL files + missing directory + starter seed
   const missingPlan = await buildTimelinesLoadPlan(join(tmpdir(), 'nonexistent-timelines-dir-xyz'));
   assert.equal(missingPlan.tracks.length, 11);
+  assert.equal(missingPlan.works.length, 0);
+  assert.equal(missingPlan.editions.length, 0);
+  assert.equal(missingPlan.citations.length, 0);
   assert.equal(missingPlan.placeSnapshots.length, 0);
 
   const starterSeedPlan = await buildTimelinesLoadPlan(join(process.cwd(), 'datasets/hadith-data/timelines-grid'));
+  assert.equal(starterSeedPlan.citationsSkipped, 0);
+  assert.ok(starterSeedPlan.works.length >= 10);
+  assert.ok(starterSeedPlan.editions.length >= 10);
+  assert.ok(starterSeedPlan.citations.length >= 15);
   assert.equal(starterSeedPlan.placeSnapshotsSkipped, 0);
   assert.equal(starterSeedPlan.externalTraditionParallelsSkipped, 0);
   assert.ok(starterSeedPlan.placeSnapshots.length >= 3);

@@ -1,0 +1,119 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t02-eligible-p2-02",
+  "reviews": [
+    {
+      "id": "cr1-8839d1",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The nominative form of Abu Mu'awiyah shows that Waki', Ya'la, and Abu Mu'awiyah are coordinate subjects of «حدثنا» under Ali ibn Muhammad, not narrators under Waki'.",
+          "source": "text",
+          "quote": "حدثنا علي بن محمد، حدثنا وكيع، عن ابن أبي ليلى، وخالي، يعلى عن عبد الملك، وأبو معاوية عن حجاج"
+        },
+        {
+          "claim": "All three parallel branches from Ali ibn Muhammad (via Waki' from Ibn Abi Layla, via Ya'la from Abd al-Malik, and via Abu Mu'awiyah from Hajjaj) meet at Ata' and end at Zayd ibn Khalid al-Juhani.",
+          "source": "text",
+          "quote": "كلهم عن عطاء، عن زيد بن خالد الجهني"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-8839d1",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "وكيع",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن أبي ليلى",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "يعلى",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الملك",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبو معاوية",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حجاج",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عطاء",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "زيد بن خالد الجهني",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Three parallel routes from علي بن محمد: وكيع عن ابن أبي ليلى، ويعلى (خالي) عن عبد الملك، وأبو معاوية عن حجاج، meeting at «كلهم عن عطاء»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

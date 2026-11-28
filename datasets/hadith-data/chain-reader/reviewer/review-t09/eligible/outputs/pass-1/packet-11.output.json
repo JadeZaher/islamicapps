@@ -1,0 +1,285 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t09-eligible-p1-11",
+  "reviews": [
+    {
+      "id": "cr1-19e05f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report has a single linear chain of seven narrators ending at Adi ibn Hatim, who asks the Prophet and relays his answer.",
+          "source": "text",
+          "quote": "أخبرنا عمرو بن يحيى بن الحارث، قال حدثنا أحمد بن أبي شعيب، قال حدثنا موسى بن أعين، عن معمر، عن عاصم بن سليمان، عن عامر الشعبي، عن عدي بن حاتم، أنه سأل رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-87126a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from al-Saduq through Muhammad ibn Muslim to an unnamed Imam («أَحَدِهِمَا»), with the blessing excluded.",
+          "source": "text",
+          "quote": "وَ رَوَى مُحَمَّدُ بْنُ مُسْلِمٍ عَنْ أَحَدِهِمَا عَلَيْهِمَا اَلسَّلاَمُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-8395ff",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two main branches join at Abu Mu'awiya with «ح» and «قالا».",
+          "source": "text",
+          "quote": "حدثنا محمد بن عبد الله بن نمير، حدثنا أبي وأبو معاوية ح وحدثنا أبو بكر بن أبي شيبة، وعلي بن محمد، قالا حدثنا أبو معاوية"
+        },
+        {
+          "claim": "The parenthetical «- قال أبو بكر وعبد الله بن نمير -» inside the isnad adds a genuine route from Abu Bakr ibn Abi Shayba via Abd Allah ibn Numayr to the shared tail starting at al-A'mash, which both readers wrongly omitted as a wording gloss.",
+          "source": "text",
+          "quote": "- قال أبو بكر وعبد الله بن نمير - عن الأعمش، عن شقيق، عن مسروق، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-8395ff",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن عبد الله بن نمير",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي",
+                  "kind": "relation",
+                  "occurrence": 1
+                },
+                {
+                  "surface": "أبو معاوية",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو بكر بن أبي شيبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبو معاوية",
+                  "kind": "narrator",
+                  "occurrence": 2
+                },
+                {
+                  "surface": "عبد الله بن نمير",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبو معاوية",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "الأعمش",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "شقيق",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "مسروق",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عائشة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«- قال أبو بكر وعبد الله بن نمير -» inside the isnad adds a real route from Abu Bakr ibn Abi Shayba through Abd Allah ibn Numayr to al-A'mash."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9d255a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain includes the unnamed gap «باسناده رفعه إلى» between Ahmad ibn Muhammad al-Sayyari and Abi Hamza al-Thumali, and ends at Ali ibn al-Husayn.",
+          "source": "text",
+          "quote": "أحمد بن محمد السياري باسناده رفعه إلى أبي حمزة الثمالي، عن علي بن الحسين عليهما السلام"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9ced39",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two «ح» branches (the second with co-transmitters Abd al-Rahman ibn Mahdi and Muhammad ibn Ja'far) converge at Shu'ba and share the tail through al-Hakam, Ibn Abi Layla, and Ka'b ibn Ujra.",
+          "source": "text",
+          "quote": "حدثنا علي بن محمد، حدثنا وكيع، حدثنا شعبة، ح وحدثنا محمد بن بشار، حدثنا عبد الرحمن بن مهدي، ومحمد بن جعفر، قالا حدثنا شعبة، عن الحكم، قال سمعت ابن أبي ليلى، قال لقيني كعب بن عجرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-26fc7c",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain opens with the relation link «أبي» (excluding the blessing) and branches across three co-transmitters marked by «كلهم».",
+          "source": "text",
+          "quote": "حدثنا أبي - رحمه الله - قال: حدثنا سعد بن عبد الله، عن أحمد بن محمد بن عيسى، والحسن بن علي الكوفي، وإبراهيم بن هاشم كلهم، عن الحسين بن يوسف"
+        },
+        {
+          "claim": "Zayd ibn Arqam is the last link because the Prophet ends the chain.",
+          "source": "text",
+          "quote": "عن زيد بن أرقم، عن النبي صلى الله عليه وآله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-466b71",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«مولى ابن عباس» is a description of Kurayb rather than a link, and the second «ابن عباس» is the last link relaying the Prophet's act.",
+          "source": "text",
+          "quote": "عن كريب، مولى ابن عباس عن ابن عباس، قال صليت مع النبي صلى الله عليه وسلم"
+        },
+        {
+          "claim": "Al-Tirmidhi's closing remark about another report in the chapter is not a route of this saying.",
+          "source": "text",
+          "quote": "قال أبو عيسى وفي الباب عن أنس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a32e5e",
+      "decision": "no_chain",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report is a standalone statement of advice with no transmitter or isnad before it.",
+          "source": "text",
+          "quote": "2186 - وَ مَنْ دَعَا لِأَرْبَعِينَ رَجُلاً مِنْ إِخْوَانِهِ قَبْلَ أَنْ يَدْعُوَ لِنَفْسِهِ اُسْتُجِيبَ لَهُ فِيهِمْ وَ فِي نَفْسِهِ »."
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f6b9d2",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Four «ح» branches (yielding five routes) converge at «كلهم عن شعبة» and share the tail through Abi Imran al-Jawni ending in the back reference «بإسناد حماد بن زيد».",
+          "source": "text",
+          "quote": "كلهم عن شعبة، عن أبي عمران الجوني، بإسناد حماد بن زيد"
+        },
+        {
+          "claim": "The wording comparison that follows is a remark about wording differences rather than a new route.",
+          "source": "text",
+          "quote": "بمثل حديثه غير أن في، حديثهم عن شعبة غير عبد الصمد ويحبه الناس عليه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-40e951",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report has a single linear chain of eight links including the relation «أبي» and «أبا الأسود», ending at Abu Dhar who heard the Prophet.",
+          "source": "text",
+          "quote": "وحدثني زهير بن حرب، حدثنا عبد الصمد بن عبد الوارث، حدثنا أبي، حدثنا حسين المعلم، عن ابن بريدة، عن يحيى بن يعمر، أن أبا الأسود، حدثه عن أبي ذر، أنه سمع رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

@@ -1,0 +1,244 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t01-eligible-p1-64",
+  "reviews": [
+    {
+      "id": "cr1-1e4289",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abu Bakr ibn Abi Shayba and Zuhayr ibn Harb are co-transmitters from Waki', followed by Talha ibn Yahya, Ubayd Allah ibn Abd Allah, and Aisha as the last link.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وزهير بن حرب، قال زهير حدثنا وكيع، حدثنا طلحة بن يحيى، عن عبيد الله بن عبد الله، قال سمعته عن عائشة، قالت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-728dac",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Abu al-Qasim Abd Allah ibn Muhammad through Ma'mar, an unnamed link, and ends at Wahb ibn Munabbih.",
+          "source": "text",
+          "quote": "حدثنا أبوالقاسم عبد الله بن محمد قال: حدثنا أبوعبد الله محمد بن سعيد قال: حدثنا الحسن، عن إسماعيل الطيان قال: حدثنا أبواسامة، عن ابن مبارك، عن معمر، عمن سمع وهب بن منبه يقول:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-d0d829",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Al-Shaybani asks Abd Allah ibn Abi Awfa, making both links and ending the chain at the Companion who answers.",
+          "source": "text",
+          "quote": "وحدثنا أبو بكر بن أبي شيبة، حدثنا علي بن مسهر، عن الشيباني، قال سألت عبد الله بن أبي أوفى عن لحوم الحمر الأهلية، فقال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-43cec6",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Qutayba to Ibn Abbas, and the compiler's grading at the end is not part of the chain.",
+          "source": "text",
+          "quote": "حدثنا قتيبة، حدثنا يحيى بن زكريا بن أبي زائدة، عن داود بن أبي هند، عن عكرمة، عن ابن عباس، قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-394c5c",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first-person formula 'قراءة عليه وأنا أسمع' shows al-Harith ibn Miskin is a direct shaykh of the compiler opening a second route via Ibn al-Qasim from Malik, not a co-transmitter with Malik under Ma'n.",
+          "source": "text",
+          "quote": "أخبرني هارون بن عبد الله، قال حدثنا معن، قال حدثنا مالك، والحارث بن مسكين، قراءة عليه وأنا أسمع، عن ابن القاسم، قال حدثني مالك، عن عبد الله بن أبي بكر، عن عمرة، عن عائشة، قالت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-394c5c",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "هارون بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "معن",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "الحارث بن مسكين",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن القاسم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عبد الله بن أبي بكر",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عمرة",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عائشة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Two parallel routes from the compiler meet at Malik and share the tail from Abd Allah ibn Abi Bakr to Aisha."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9210fb",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Anas narrates an encounter in which his uncle speaks, so the bare relation 'عمه' is the last link while figures who do not speak stay out.",
+          "source": "text",
+          "quote": "أخبرنا حسان بن حسان، حدثنا محمد بن طلحة، حدثنا حميد، عن أنس  رضى الله عنه  أن عمه، غاب عن بدر فقال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-82c910",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Mahmud ibn Ghaylan through Abd Allah ibn Abi Qatada to his father ('أبيه'), ending before the Prophet.",
+          "source": "text",
+          "quote": "أخبرنا محمود بن غيلان، قال حدثنا أبو داود، قال أنبأنا شعبة، قال أخبرني عثمان بن عبد الله بن موهب، قال سمعت عبد الله بن أبي قتادة، يحدث عن أبيه،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0dc481",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Ahmad ibn Uthman al-Nawfali through Hilal ibn Usama and Abu Salama ibn Abd al-Rahman to Abu Hurayra, ending before the Prophet.",
+          "source": "text",
+          "quote": "وحدثنا أحمد بن عثمان النوفلي، حدثنا أبو عاصم الضحاك بن مخلد، حدثنا ابن جريج، أخبرني زياد بن سعد، أن هلال بن أسامة، أخبره أن أبا سلمة بن عبد الرحمن أخبره أنه، سمع أبا هريرة، يقول قال رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b1f7aa",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Muhammad ibn Ubayd al-Ghubari through Ja'far ibn Sulayman and Thabit al-Bunani to Anas ibn Malik, ending before the Prophet.",
+          "source": "text",
+          "quote": "حدثناه محمد بن عبيد الغبري، حدثنا جعفر بن سليمان، حدثنا ثابت البناني، عن أنس بن مالك، عن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3e8506",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain branches at Abu Asim and Abd al-Razzaq and again at Uthman's father ('أبي') and Umm Abd al-Malik ibn Abi Mahdhura, all ending at Abu Mahdhura before the Prophet.",
+          "source": "text",
+          "quote": "حدثنا الحسن بن علي، حدثنا أبو عاصم، وعبد الرزاق، عن ابن جريج، قال أخبرني عثمان بن السائب، أخبرني أبي وأم عبد الملك بن أبي محذورة، عن أبي محذورة، عن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

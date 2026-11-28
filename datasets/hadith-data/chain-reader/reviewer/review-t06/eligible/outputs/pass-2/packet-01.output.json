@@ -1,0 +1,634 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t06-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-e3dd9c",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abu Bakr introduces Waki' from Isra'il as his own second teacher, so Abu Bakr and Waki' are sequential links rather than co-transmitters.",
+          "source": "text",
+          "quote": "قال أبو بكر ووكيع عن إسرائيل، كلهم عن سماك بن حرب، بهذا الإسناد"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-e3dd9c",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "محمد بن المثنى", "kind": "narrator"},
+                {"surface": "ابن، بشار", "kind": "narrator"}
+              ],
+              [
+                {"surface": "محمد بن جعفر", "kind": "narrator"}
+              ],
+              [
+                {"surface": "شعبة", "kind": "narrator"}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "أبو بكر بن أبي شيبة", "kind": "narrator"}
+              ],
+              [
+                {"surface": "حسين بن علي", "kind": "narrator"}
+              ],
+              [
+                {"surface": "زائدة", "kind": "narrator"}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "أبو بكر", "kind": "narrator", "occurrence": 2}
+              ],
+              [
+                {"surface": "وكيع", "kind": "narrator"}
+              ],
+              [
+                {"surface": "إسرائيل", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {"surface": "سماك بن حرب", "kind": "narrator"}
+          ],
+          [
+            {"surface": "بهذا الإسناد", "kind": "back_reference"}
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«قال أبو بكر ووكيع عن إسرائيل» gives Abu Bakr's second route through Waki' from Isra'il, not Abu Bakr and Waki' as co-transmitters.",
+          "All three branches meet at «كلهم عن سماك بن حرب، بهذا الإسناد»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-62cede",
+      "decision": "refer_to_human",
+      "question": "a source known only by a title («أمير المؤمنين») speaking in a second saying without its own isnad",
+      "reasons": [
+        {
+          "claim": "In the narrated encounter, al-Husayn b. Ali speaks inside the story, making him the last link of the first saying under ruling 9.",
+          "source": "text",
+          "quote": "دخل الحسين بن علي عليهما السلام، على معاوية فقال له:"
+        },
+        {
+          "claim": "A second saying follows inside the report with a speaker known only by the title Amir al-Mu'minin, which is unruled.",
+          "source": "text",
+          "quote": "وقيل لأمير المؤمنين عليه السلام لما أراد قتال الخوارج:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-62cede",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "حمزة بن محمد بن أحمد بن جعفر بن محمد بن زيد بن علي بن الحسين ابن علي بن أبي طالب", "kind": "narrator"},
+                {"surface": "أحمد بن الحسن القطان", "kind": "narrator"},
+                {"surface": "محمد بن إبراهيم بن أحمد المعاذي", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أحمد بن محمد بن سعيد الهمداني", "kind": "narrator"}
+              ],
+              [
+                {"surface": "يحيى بن إسماعيل الجريري", "kind": "narrator"}
+              ],
+              [
+                {"surface": "الحسين بن إسماعيل", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عمرو بن جميع", "kind": "narrator"}
+              ],
+              [
+                {"surface": "جعفر بن محمد", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبي", "kind": "relation", "occurrence": 2}
+              ],
+              [
+                {"surface": "أبيه", "kind": "relation"}
+              ],
+              [
+                {"surface": "جده", "kind": "relation"}
+              ],
+              [
+                {"surface": "الحسين بن علي", "kind": "imam_in_text"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": true,
+        "notes": [
+          "Al-Husayn b. Ali speaks in the narrated encounter and is added as the last link under ruling 9.",
+          "The second saying («وقيل لأمير المؤمنين») names the speaker only by a title, which is unruled."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Ruling 9 adds al-Husayn b. Ali for the first saying, but the second saying names its speaker only by the title Amir al-Mu'minin."
+    },
+    {
+      "id": "cr1-b482f3",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two branches joined by «ح» share the final back reference «بإسناد يونس», which belongs in shared_tail rather than only in the second branch.",
+          "source": "text",
+          "quote": "حدثني عقيل بن، خالد ح وحدثنا عمرو الناقد، والحلواني، وعبد بن حميد، عن يعقوب بن إبراهيم بن سعد، حدثنا أبي، عن صالح، بإسناد يونس نحو حديثه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-b482f3",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "عبد الملك بن شعيب بن الليث", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبي", "kind": "relation", "occurrence": 1}
+              ],
+              [
+                {"surface": "جدي", "kind": "relation"}
+              ],
+              [
+                {"surface": "عقيل بن، خالد", "kind": "narrator"}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "عمرو الناقد", "kind": "narrator"},
+                {"surface": "الحلواني", "kind": "narrator"},
+                {"surface": "عبد بن حميد", "kind": "narrator"}
+              ],
+              [
+                {"surface": "يعقوب بن إبراهيم بن سعد", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبي", "kind": "relation", "occurrence": 2}
+              ],
+              [
+                {"surface": "صالح", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {"surface": "بإسناد يونس", "kind": "back_reference"}
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«بإسناد يونس» is written once after the «ح» branch and shared by both branches."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-ea0c9f",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abd Allah b. Muhammad b. Abi Bakr informed Abd Allah b. Umar from Aisha, so Abd Allah b. Umar is the one informed and commenting, not a link between Abd Allah b. Muhammad and Aisha.",
+          "source": "text",
+          "quote": "عن سالم بن عبد الله، أن عبد الله بن محمد بن أبي بكر الصديق، أخبر عبد الله بن عمر، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-ea0c9f",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "محمد بن سلمة", "kind": "narrator"},
+                {"surface": "الحارث بن مسكين", "kind": "narrator"}
+              ],
+              [
+                {"surface": "ابن القاسم", "kind": "narrator"}
+              ],
+              [
+                {"surface": "مالك", "kind": "narrator"}
+              ],
+              [
+                {"surface": "ابن شهاب", "kind": "narrator"}
+              ],
+              [
+                {"surface": "سالم بن عبد الله", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عبد الله بن محمد بن أبي بكر الصديق", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عائشة", "kind": "narrator", "occurrence": 1}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Abd Allah b. Muhammad informed Abd Allah b. Umar from Aisha; Abd Allah b. Umar is not a link between Abd Allah b. Muhammad and Aisha."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Abd Allah b. Umar was the one informed by Abd Allah b. Muhammad (not a link between him and Aisha), though Salim may have heard the report through him."
+    },
+    {
+      "id": "cr1-8831a6",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Sahl b. Sa'd sat beside Marwan b. al-Hakam and Marwan informed them from Zayd b. Thabit, making Marwan a link between Sahl and Zayd.",
+          "source": "text",
+          "quote": "أنه رأى مروان بن الحكم في المسجد، فأقبلت حتى جلست إلى جنبه، فأخبرنا أن زيد بن ثابت أخبره"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-8831a6",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "إسماعيل بن عبد الله", "kind": "narrator"}
+              ],
+              [
+                {"surface": "إبراهيم بن سعد", "kind": "narrator"}
+              ],
+              [
+                {"surface": "صالح بن كيسان", "kind": "narrator"}
+              ],
+              [
+                {"surface": "ابن شهاب", "kind": "narrator"}
+              ],
+              [
+                {"surface": "سهل بن سعد الساعدي", "kind": "narrator"}
+              ],
+              [
+                {"surface": "مروان بن الحكم", "kind": "narrator"}
+              ],
+              [
+                {"surface": "زيد بن ثابت", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Marwan b. al-Hakam is the one who informed Sahl («فأخبرنا أن زيد بن ثابت أخبره»), so he is a link between Sahl and Zayd."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-64a09b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Aisha relays the words of Abu Bakr al-Siddiq («قال لقد علم قومي»), making Abu Bakr the last link under rulings 2 and 9.",
+          "source": "text",
+          "quote": "قالت لما استخلف أبو بكر الصديق قال لقد علم قومي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-64a09b",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "إسماعيل بن عبد الله", "kind": "narrator"}
+              ],
+              [
+                {"surface": "ابن وهب", "kind": "narrator"}
+              ],
+              [
+                {"surface": "يونس", "kind": "narrator"}
+              ],
+              [
+                {"surface": "ابن شهاب", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عروة بن الزبير", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عائشة", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبو بكر الصديق", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Abu Bakr al-Siddiq is the speaker whose words Aisha relays, so he is the last link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-58f8bd",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The text states that only Ibn Husayn included Abu Hurayra in his narration.",
+          "source": "text",
+          "quote": "- قال ابن حسين في حديثه - عن أبي هريرة"
+        },
+        {
+          "claim": "Abu Dawud explicitly notes that Hafs did not mention Abu Hurayra, so Abu Hurayra belongs only to the second route.",
+          "source": "text",
+          "quote": "قال أبو داود ولم يذكر حفص أبا هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-58f8bd",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "حفص بن عمر", "kind": "narrator"}
+              ],
+              [
+                {"surface": "شعبة", "kind": "narrator", "occurrence": 1}
+              ],
+              [
+                {"surface": "خبيب بن عبد الرحمن", "kind": "narrator"}
+              ],
+              [
+                {"surface": "حفص بن عاصم", "kind": "narrator"}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "محمد بن الحسين", "kind": "narrator"}
+              ],
+              [
+                {"surface": "علي بن حفص", "kind": "narrator"}
+              ],
+              [
+                {"surface": "شعبة", "kind": "narrator", "occurrence": 2}
+              ],
+              [
+                {"surface": "خبيب بن عبد الرحمن", "kind": "narrator"}
+              ],
+              [
+                {"surface": "حفص بن عاصم", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبي هريرة", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Hafs b. Umar's route stops at Hafs b. Asim; only Muhammad b. al-Husayn's route through Ali b. Hafs includes Abu Hurayra."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-d36195",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abu Ishaq's statement inside the isnad that he heard it both from Abd Allah b. Abi Basir and directly from his father adds a second route bypassing Abd Allah.",
+          "source": "text",
+          "quote": "- قال شعبة وقال أبو إسحاق وقد سمعته منه، ومن أبيه -"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-d36195",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "إسماعيل بن مسعود", "kind": "narrator"}
+              ],
+              [
+                {"surface": "خالد بن الحارث", "kind": "narrator"}
+              ],
+              [
+                {"surface": "شعبة", "kind": "narrator", "occurrence": 1}
+              ],
+              [
+                {"surface": "أبي إسحاق", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عبد الله بن أبي بصير", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبيه", "kind": "relation", "occurrence": 1}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "إسماعيل بن مسعود", "kind": "narrator"}
+              ],
+              [
+                {"surface": "خالد بن الحارث", "kind": "narrator"}
+              ],
+              [
+                {"surface": "شعبة", "kind": "narrator", "occurrence": 1}
+              ],
+              [
+                {"surface": "أبي إسحاق", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبيه", "kind": "relation", "occurrence": 2}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {"surface": "أبى بن كعب", "kind": "narrator"}
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«وقد سمعته منه، ومن أبيه» adds a second route where Abu Ishaq narrates directly from Abd Allah's father."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-865b53",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both routes meet at Ibn Shihab al-Zuhri and share the tail through Urwa from Aisha, which should be in shared_tail so the first route does not stop at Ibn Shihab.",
+          "source": "text",
+          "quote": "عن ابن شهاب،‏.‏ وحدثني عبد الله بن محمد، حدثنا عبد الرزاق، حدثنا معمر، قال الزهري فأخبرني عروة، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-865b53",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "يحيى بن بكير", "kind": "narrator"}
+              ],
+              [
+                {"surface": "الليث", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عقيل", "kind": "narrator"}
+              ],
+              [
+                {"surface": "ابن شهاب", "kind": "narrator"}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "عبد الله بن محمد", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عبد الرزاق", "kind": "narrator"}
+              ],
+              [
+                {"surface": "معمر", "kind": "narrator"}
+              ],
+              [
+                {"surface": "الزهري", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {"surface": "عروة", "kind": "narrator"}
+          ],
+          [
+            {"surface": "عائشة", "kind": "narrator"}
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Both branches share the tail «عروة، عن عائشة»; Ibn Abbas at the end is a commentator, not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-faa0de",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abu Bakr al-Siddiq is the Companion who speaks on the pulpit and relays the Prophet's words, making him the last link under rulings 2 and 9.",
+          "source": "text",
+          "quote": "قال قام أبو بكر الصديق على المنبر ثم بكى فقال قام رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-faa0de",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "محمد بن بشار", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبو عامر العقدي", "kind": "narrator"}
+              ],
+              [
+                {"surface": "زهير", "kind": "narrator"}
+              ],
+              [
+                {"surface": "عبد الله بن محمد بن عقيل", "kind": "narrator"}
+              ],
+              [
+                {"surface": "معاذ بن رفاعة", "kind": "narrator"}
+              ],
+              [
+                {"surface": "أبيه", "kind": "relation"}
+              ],
+              [
+                {"surface": "أبو بكر الصديق", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Abu Bakr al-Siddiq speaks in the narrated encounter and relays the Prophet's words, so he is the last link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

@@ -1,0 +1,252 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t05-eligible-p1-67",
+ "reviews": [
+  {
+   "id": "cr1-55cdaf",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs linearly from Abu al-Rabi al-Zahrani through Fulayh, al-Zuhri, and Salim b. Abd Allah b. Umar to his father as a bare relation.",
+     "source": "text",
+     "quote": "وحدثنيه أبو الربيع الزهراني، حدثنا فليح، عن الزهري، عن سالم بن عبد الله، بن عمر عن أبيه"
+    },
+    {
+     "claim": "The closing phrase refers to the meaning of the report rather than a chain link.",
+     "source": "text",
+     "quote": "بهذا المعنى"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-cab586",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The singular relation belongs only to Anas b. Muhammad, and both branches meet at Ja'far b. Muhammad as marked by «جميعا عن جعفر بن محمد», so Hammad b. Amr should not pass through «أبيه».",
+     "source": "text",
+     "quote": "رَوَى حَمَّادُ بْنُ عَمْرٍو وَ أَنَسُ بْنُ مُحَمَّدٍ عَنْ أَبِيهِ جَمِيعاً عَنْ جَعْفَرِ بْنِ مُحَمَّدٍ عَنْ أَبِيهِ عَنْ جَدِّهِ ، عَنْ عَلِيِّ بْنِ أَبِي طَالِبٍ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-cab586",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "حَمَّادُ بْنُ عَمْرٍو",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "أَنَسُ بْنُ مُحَمَّدٍ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أَبِيهِ",
+         "kind": "relation",
+         "occurrence": 1
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "جَعْفَرِ بْنِ مُحَمَّدٍ",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أَبِيهِ",
+       "kind": "relation",
+       "occurrence": 2
+      }
+     ],
+     [
+      {
+       "surface": "جَدِّهِ",
+       "kind": "relation"
+      }
+     ],
+     [
+      {
+       "surface": "عَلِيِّ بْنِ أَبِي طَالِبٍ",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "Hammad b. Amr transmits directly from Ja'far b. Muhammad, while Anas b. Muhammad transmits from his father from Ja'far b. Muhammad; both meet at Ja'far («جميعا عن جعفر بن محمد»)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-23120c",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three co-transmitters share the single tail from Abd al-Salam b. Harb al-Mula'i down to Ibn Abbas, excluding the glosses and compiler notes.",
+     "source": "text",
+     "quote": "حدثنا إسماعيل بن موسى، - كوفي - وهناد ومحمد بن عبيد المحاربي المعنى واحد قالوا حدثنا عبد السلام بن حرب الملائي، عن أبي خالد الدالاني، عن قتادة، عن أبي العالية، عن ابن عباس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-a01712",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The isnad is a single linear chain ending at Anas, who narrates the Prophet's words.",
+     "source": "text",
+     "quote": "حدثنا يوسف بن حماد البصري، حدثنا عبد الأعلى بن عبد الأعلى، عن سعيد، عن قتادة، عن أنس"
+    },
+    {
+     "claim": "The compiler's closing remark about parallel reports in the chapter is not a route of this saying.",
+     "source": "text",
+     "quote": "وفي الباب عن ابن عمر"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-154c4e",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs linearly from Ishaq b. Ibrahim down to Aisha, with the Prophet as the end and «بمثله» referring only to the wording.",
+     "source": "text",
+     "quote": "حدثناه إسحاق بن إبراهيم، أخبرنا عيسى بن يونس، حدثنا زكرياء، عن عامر، حدثني شريح بن هانئ، أن عائشة، أخبرته أن رسول الله صلى الله عليه وسلم قال بمثله"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-ebd3f0",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs linearly from Muhammad b. Umar al-Ji'abi through Abu Ja'far Muhammad b. Ali and the named and relational links down to Ali.",
+     "source": "text",
+     "quote": "حَدَّثَنا مُحَمَّدِ بْنِ عُمَرَ الجِعابِيُّ الحافِظُ البَغدْاديقالَ: حَدَّثَني أَبُو جَعْفَرٍ مُحَمَّد بْن عَلِىِّ بْنِ الحُسَيْن بْنِ زَيْدَ بْنِ عَلِىِّ بْنِ الحُسَيْن بْنِ عَلِىِّ بْنِ أَبِي طالِب‏"
+    },
+    {
+     "claim": "Under ruling 5 the Prophet ends the chain and is never a link, so stopping at Ali before the Prophet, Jibril, and God is settled.",
+     "source": "text",
+     "quote": "عَنِ الحُسَيْنِ بْنِ عَلِى، عَن عَلِيٍ‏ عَلَيْهِمُ السَّلاَمُ، عَن النَّبِيُ‏ صَلَّى اللهُ عَلَيْهِ وَآلِهِ، عَنْ جِبْرَئِيل، عَن اللَّه تَعالى‏"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-3c998e",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The passive opening names no asker, leaving al-Sadiq as the sole link under the compiler.",
+     "source": "text",
+     "quote": "وَ سُئِلَ اَلصَّادِقُ عَلَيْهِ اَلسَّلاَمُ عَنْ مُكَاتَبٍ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-567541",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs linearly from Zakariyya b. Yahya through Abu Usama, Hisham, and his father as a relation to Aisha.",
+     "source": "text",
+     "quote": "حدثنا زكرياء بن يحيى، حدثنا أبو أسامة، قال هشام حدثنا عن أبيه، عن عائشة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-01b874",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs linearly from Ali b. Abd Allah through Sufyan, Amr, and Abu al-Sha'tha Jabir (one man with kunya, comma, and name) to Ibn Abbas.",
+     "source": "text",
+     "quote": "حدثنا علي بن عبد الله، قال حدثنا سفيان، عن عمرو، قال سمعت أبا الشعثاء، جابرا قال سمعت ابن عباس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-ac5d14",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Abd al-Rahman b. Abi Sa'id al-Khudri is asked and answers, making him a link after Abu Salama b. Abd al-Rahman.",
+     "source": "text",
+     "quote": "حدثني محمد بن حاتم، حدثنا يحيى بن سعيد، عن حميد الخراط، قال سمعت أبا سلمة بن عبد الرحمن، قال مر بي عبد الرحمن بن أبي سعيد الخدري"
+    },
+    {
+     "claim": "Abd al-Rahman relays the saying from his father, who is the last link as a bare relation before the Prophet.",
+     "source": "text",
+     "quote": "قال قال أبي دخلت على رسول الله صلى الله عليه وسلم"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

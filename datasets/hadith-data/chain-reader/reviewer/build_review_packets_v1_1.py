@@ -117,8 +117,8 @@ def agreed_ids(data: dict) -> list[str]:
 
 
 def applied_b001() -> tuple[list[str], dict]:
-    """The readings applied on production from batch 001: state.json (derived by chain-fix-decide.ts) fixes with database == "applied", their reading ids through the stored submissions,
-    cross-checked against queue.json's awaiting_final_review. Read only."""
+    """The readings applied on production from batch 001: state.json (derived by chain-fix-decide.ts) fixes with database == "applied", their earliest submission reading ids
+    through the stored submissions (matching computeStates earliest-first representative selection), cross-checked against queue.json's awaiting_final_review, scoped to b1-*. Read only."""
     state = json.loads((FIX_STORE / "state.json").read_text(encoding="utf-8"))["fixes"]
     queue = json.loads((FIX_STORE / "queue.json").read_text(encoding="utf-8"))
     fix_to_reading = {}
@@ -126,13 +126,14 @@ def applied_b001() -> tuple[list[str], dict]:
         for line in path.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 row = json.loads(line)
-                fix_to_reading.setdefault(row["fix_id"], set()).add(row["reading"]["id"])
+                fix_to_reading.setdefault(row["fix_id"], row["reading"]["id"])
     applied = sorted(f["fix_id"] for f in state if f.get("database") == "applied")
     assert set(applied) == set(queue["awaiting_final_review"]), "state.json and queue.json disagree on the applied set"
-    assert all(len(fix_to_reading.get(f, ())) == 1 for f in applied), "an applied fix has no unique reading id"
-    ids = sorted(next(iter(fix_to_reading[f])) for f in applied)
-    return ids, {"applied_from": ["reviews/ai/records/chain-fixes/state.json (fixes with database == applied)", "reviews/ai/records/chain-fixes/queue.json (awaiting_final_review, same 348 fix ids)",
-                                  "reviews/ai/records/chain-fixes/submissions/*.jsonl (fix id to reading id)"], "state_fixes": len(state), "applied_fixes": len(applied)}
+    assert all(f in fix_to_reading for f in applied), "an applied fix has no submission reading id"
+    ids = sorted(fix_to_reading[f] for f in applied if fix_to_reading[f].startswith("b1-"))
+    return ids, {"applied_from": ["reviews/ai/records/chain-fixes/state.json (fixes with database == applied)", "reviews/ai/records/chain-fixes/queue.json (awaiting_final_review, same fix ids)",
+                                  "reviews/ai/records/chain-fixes/submissions/*.jsonl (earliest submission reading id per fix id, scoped to b1-*)"],
+                 "state_fixes": len(state), "applied_fixes": len(applied), "b001_applied_fixes": len(ids)}
 
 
 def sets(prompt: dict) -> int:
@@ -147,20 +148,24 @@ def sets(prompt: dict) -> int:
                     {"source": "v3/batch-001", "triage": data["triage"].relative_to(ROOT).as_posix(), **provenance})
     (out / "private" / "applied_ids.txt").write_text("\n".join(ids) + "\n", encoding="utf-8", newline="\n")
     summary["review-applied-b001"] = {"readings": len(ids), "jobs": len(doc["jobs"]), **doc["expected"]}
-    # B: tranche 01 and 02, every agreed reading, split eligible / held
-    for number in ("01", "02"):
+    # B: tranches 01 through 10, every agreed reading, split eligible / held
+    for number in [f"{n:02d}" for n in range(1, 11)]:
         source = ROOT / "tranches" / f"tranche-{number}"
         data = load(source, None)
-        eligible = set((data["triage"] / "eligible_v3_3.txt").read_text(encoding="utf-8").split())
-        withheld = {line.split()[0] for line in (data["triage"] / "withheld_by_judge.txt").read_text(encoding="utf-8").splitlines() if line.strip()}
+        eligible_path = data["triage"] / "eligible_v3_3.txt"
+        if not eligible_path.is_file():
+            eligible_path = data["triage"] / "eligible.txt"
+        eligible = set(eligible_path.read_text(encoding="utf-8").split())
+        withheld_path = data["triage"] / "withheld_by_judge.txt"
+        withheld = {line.split()[0] for line in withheld_path.read_text(encoding="utf-8").splitlines() if line.strip()} if withheld_path.is_file() else set()
         agreed = agreed_ids(data)
-        assert eligible <= set(agreed), "an apply-list reading is not agreed"
+        assert eligible <= set(agreed), f"tranche-{number}: an apply-list reading is not agreed"
         lists = {"eligible": [(i, "pending", ()) for i in sorted(eligible)],
                  "held": [(i, "held", ("withheld_by_earlier_check",) if i in withheld else ()) for i in sorted(agreed) if i not in eligible]}
         for name, chosen in lists.items():
             batch = f"review-t{number}-{name}"
             out = HERE / f"review-t{number}" / name
-            doc = build_set(out, batch, chosen, data, prompt, f"B: tranche {number}, agreed readings, {name} ({'cleared by the v3.3 triage and on the apply list' if name == 'eligible' else 'every other agreed reading, with its holds'})",
+            doc = build_set(out, batch, chosen, data, prompt, f"B: tranche {number}, agreed readings, {name} ({'cleared by triage and on the apply list' if name == 'eligible' else 'every other agreed reading, with its holds'})",
                             {"source": f"tranches/tranche-{number}", "triage": data["triage"].relative_to(ROOT).as_posix(), "list": name, "withheld_by_earlier_check": sorted(withheld & {i for i, _, _ in chosen})})
             summary[f"review-t{number}/{name}"] = {"readings": len(chosen), "jobs": len(doc["jobs"]), **doc["expected"],
                                                    "not_clearable": sum(1 for r in json.loads((out / "private" / "manifest.json").read_text(encoding="utf-8"))["items"].values() if r["not_clearable"])}
@@ -176,6 +181,11 @@ def sets(prompt: dict) -> int:
 
 
 def load(source: Path, triage: Path | None) -> dict:
+    if triage is None and source.resolve() != (ROOT / "v3" / "batch-001").resolve():
+        for candidate in (source / "triage-v3_4", source / "triage-v3_3", source / "triage-v3_2"):
+            if (candidate / "triage.tsv").is_file():
+                triage = candidate
+                break
     return v1.load_source(source, triage)
 
 

@@ -1,0 +1,271 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t03-eligible-p1-37",
+  "reviews": [
+    {
+      "id": "cr1-6a706d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs cleanly through five links to Aisha, with «أبيه» as a bare relation.",
+          "source": "text",
+          "quote": "حدثنا عبيد بن إسماعيل، حدثنا أبو أسامة، عن هشام، عن أبيه، عن عائشة"
+        },
+        {
+          "claim": "Usayd ibn Hudayr speaks inside the narrated scene rather than introducing a new isnad, so he is not a link.",
+          "source": "text",
+          "quote": "فقال أسيد بن حضير جزاك الله خيرا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3033bb",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Muhammad ibn Sinan to Jabir ibn Abd Allah, who relays the Prophet's words.",
+          "source": "text",
+          "quote": "حدثنا محمد بن سنان، قال حدثنا هشيم، قال حدثنا سيار  هو أبو الحكم  قال حدثنا يزيد الفقير، قال حدثنا جابر بن عبد الله، قال قال رسول الله صلى الله عليه وسلم"
+        },
+        {
+          "claim": "«هو أبو الحكم» is an editor's gloss on سيار and is properly omitted from the surface.",
+          "source": "text",
+          "quote": "سيار  هو أبو الحكم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-fa1011",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two branches meet at Abd Allah ibn Yazid (named as «عبد الله بن يزيد المقرئ» in the first branch and «أبي» of «محمد بن عبد الله بن يزيد» in the second), so both branches continue through «حيوة» and the unnamed co-transmitter «ذكر، آخر».",
+          "source": "text",
+          "quote": "قال أنبأنا عبد الله بن يزيد المقرئ، ح وأنبأنا محمد بن عبد الله بن يزيد، قال حدثنا أبي قال، حدثنا حيوة، وذكر، آخر قالا حدثنا أبو الأسود"
+        },
+        {
+          "claim": "Both readers placed «حيوة» and «ذكر، آخر» inside group 2 only, wrongly dropping them from the first branch.",
+          "source": "reader_b",
+          "quote": "Group 1 ends at عبد الله بن يزيد المقرئ and the text names no teacher for it; the shared tail after «قالا» follows the pair حيوة وذكر آخر that only group 2 writes (rule 3)"
+        },
+        {
+          "claim": "Marwan ibn al-Hakam asks Abu Hurayra and Abu Hurayra answers, so Abu Hurayra is the last link.",
+          "source": "text",
+          "quote": "عن مروان بن الحكم، أنه سأل أبا هريرة هل صليت مع رسول الله صلى الله عليه وسلم صلاة الخوف فقال أبو هريرة نعم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-fa1011",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبيد الله بن فضالة بن إبراهيم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الله بن يزيد المقرئ",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن عبد الله بن يزيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي",
+                  "kind": "relation"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "حيوة",
+              "kind": "narrator"
+            },
+            {
+              "surface": "ذكر، آخر",
+              "kind": "unnamed"
+            }
+          ],
+          [
+            {
+              "surface": "أبو الأسود",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عروة بن الزبير",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "مروان بن الحكم",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبا هريرة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "The two branches meet at Abd Allah ibn Yazid (named as «عبد الله بن يزيد المقرئ» in branch 1 and «أبي» in branch 2), so «حيوة» and «ذكر، آخر» belong in shared_tail for both branches."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f0ba11",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs through six links to Aisha, with the gloss «هو ذكوان» properly omitted from «أبي عمرو».",
+          "source": "text",
+          "quote": "حدثنا محمد بن يوسف، حدثنا سفيان، عن ابن جريج، عن ابن أبي مليكة، عن أبي عمرو  هو ذكوان  عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-185dca",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Yahya ibn Musa asks Abd al-Rahim ibn Harun al-Ghassani about the report and he confirms it, making him a link in his place.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن موسى، قال قلت لعبد الرحيم بن هارون الغساني حدثكم عبد العزيز بن أبي رواد، عن نافع، عن ابن عمر"
+        },
+        {
+          "claim": "Abd al-Rahim's confirmation establishes his transmission, and Abu Isa's closing grading remark is not a link.",
+          "source": "text",
+          "quote": "قال يحيى فأقر به عبد الرحيم بن هارون فقال نعم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1da1f8",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs cleanly through five links ending at Anas, without absorbing the matn.",
+          "source": "text",
+          "quote": "حدثني محمد بن بشار، حدثنا غندر، حدثنا شعبة، سمعت قتادة، عن أنس،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b02491",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through five links, with «أبي» as a bare relation and «أبي، مجلز» as one man (kunya with comma).",
+          "source": "text",
+          "quote": "حدثنا هريم بن عبد الأعلى، حدثنا المعتمر، قال سمعت أبي يحدث، عن أبي، مجلز عن جندب بن عبد الله البجلي،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c1777f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs through six links to Ubada ibn al-Samit, with «أبي» as a bare relation and without the verb «يحدث».",
+          "source": "text",
+          "quote": "أخبرنا أبو الأشعث، قال حدثنا المعتمر، قال سمعت أبي يحدث، عن قتادة، عن أنس بن مالك، عن عبادة بن الصامت،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-94b3cc",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«أبو بشر، بكر بن خلف» is one man (kunya, comma, name) and «طاوسا، وعكرمة» are co-transmitters at one level before Ibn Abbas.",
+          "source": "text",
+          "quote": "حدثنا أبو بشر، بكر بن خلف حدثنا أبو عاصم، عن ابن جريج، أخبرني أبو الزبير، أنه سمع طاوسا، وعكرمة، يحدثان عن ابن عباس،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0e44c6",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Four co-transmitters meet at Abu Mu'awiya («جميعا عن أبي معاوية»), giving four routes ending at Abu Musa.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وأبو كريب وابن نمير وإسحاق الحنظلي جميعا عن أبي معاوية، عن الأعمش، عن شقيق، عن أبي موسى، عن النبي صلى الله عليه وسلم بمثله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

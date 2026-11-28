@@ -1,0 +1,475 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t08-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-c9c659",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first isnad stops at al-Barqi without a saying of its own, and the second isnad also reaches al-Barqi before continuing to Ja'far b. Najiya and Abu Abd Allah, so both routes share that tail.",
+          "source": "text",
+          "quote": "عَنْ مُحَمَّدِ بْنِ خَالِدٍ الْبَرْقِيِّ وَ حَدَّثَنِي مُحَمَّدُ بْنُ عَبْدِ اللَّهِ عَنْ أَبِيهِ عَبْدِ اللَّهِ بْنِ جَعْفَرٍ الْحِمْيَرِيِّ عَنْ أَبِي عَبْدِ اللَّهِ الْبَرْقِيِّ عَنْ جَعْفَرِ بْنِ نَاجِيَةَ عَنْ أَبِي عَبْدِ اللَّهِ (ع)"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-c9c659",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "أَبِي", "kind": "relation", "occurrence": 1},
+                {"surface": "جَمَاعَةُ مَشَايِخِي", "kind": "unnamed"}
+              ],
+              [{"surface": "سَعْدِ بْنِ عَبْدِ اللَّهِ", "kind": "narrator"}],
+              [{"surface": "أَحْمَدَ بْنِ مُحَمَّدِ بْنِ عِيسَى", "kind": "narrator"}],
+              [{"surface": "مُحَمَّدِ بْنِ خَالِدٍ الْبَرْقِيِّ", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "مُحَمَّدُ بْنُ عَبْدِ اللَّهِ", "kind": "narrator"}],
+              [{"surface": "عَبْدِ اللَّهِ بْنِ جَعْفَرٍ الْحِمْيَرِيِّ", "kind": "narrator"}],
+              [{"surface": "أَبِي عَبْدِ اللَّهِ الْبَرْقِيِّ", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "جَعْفَرِ بْنِ نَاجِيَةَ", "kind": "narrator"}],
+          [{"surface": "أَبِي عَبْدِ اللَّهِ", "kind": "narrator", "occurrence": 2}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Both routes meet at al-Barqi and share the tail from Ja'far b. Najiya to Abu Abd Allah."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3efe15",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Al-Harith b. Miskin is the compiler's own shaykh (read to him while the compiler listened), heading a second branch through Ibn al-Qasim to Malik, not a co-transmitter with Malik under Ma'n.",
+          "source": "text",
+          "quote": "أخبرني هارون بن عبد الله، قال حدثنا معن، قال حدثنا مالك، والحارث بن مسكين، قراءة عليه وأنا أسمع، - واللفظ له - عن ابن القاسم، قال حدثنا مالك، عن ابن شهاب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-3efe15",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "هارون بن عبد الله", "kind": "narrator"}],
+              [{"surface": "معن", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "الحارث بن مسكين", "kind": "narrator"}],
+              [{"surface": "ابن القاسم", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "ابن شهاب", "kind": "narrator"}],
+          [
+            {"surface": "حمزة", "kind": "narrator"},
+            {"surface": "سالم", "kind": "narrator"}
+          ],
+          [{"surface": "عبد الله بن عمر", "kind": "narrator", "occurrence": 2}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Two separate branches from the compiler meet at Malik and share the tail from Ibn Shihab to Abd Allah b. Umar."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6acac0",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The word «بهذا» stands after «عن النبي صلى الله عليه وسلم» and refers to the text of the previous report rather than a transmitter, so the chain ends at «جده».",
+          "source": "text",
+          "quote": "عن أبيه، عن جده، عن النبي صلى الله عليه وسلم بهذا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-6acac0",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "موسى بن إسماعيل", "kind": "narrator"}],
+              [{"surface": "حماد", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "ابن العلاء", "kind": "narrator"}],
+              [{"surface": "ابن إدريس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "ابن إسحاق", "kind": "narrator"}],
+          [{"surface": "عمرو بن شعيب", "kind": "narrator"}],
+          [{"surface": "أبيه", "kind": "relation"}],
+          [{"surface": "جده", "kind": "relation"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«بهذا» after the Prophet refers to the matn and is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-ff8b7e",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In the first narrated encounter, the Imam who speaks is al-Rida, not Abu al-Hasan al-Awwal, so al-Rida is the last link of the first saying.",
+          "source": "text",
+          "quote": "فَسَأَلَنَا أَنْ نَسْتَأْذِنَ لَهُ عَلَى الرِّضَا عَلَيْهِ السَّلامُ فَفَعَلْنَا فَلَمَّا صَارَ بَيْنَ يَدَيْهِ قَالَ لَهُ أَنْتَ إِمَامٌ قَالَ نَعَمْ"
+        },
+        {
+          "claim": "At the end of the report, Abd al-Rahman b. Abi Najran narrates a second encounter in which Abu al-Hasan al-Awwal speaks, forming a second saying with its own route.",
+          "source": "text",
+          "quote": "قَالَ وَكَانَ الْحُسَيْنُ بْنُ قِيَامَا هَذَا وَاقِفاً فِي الطَّوَافِ فَنَظَرَ إِلَيْهِ أَبُو الْحَسَنِ الأَوَّلُ‏ عَلَيْهِ السَّلامُ فَقَالَ لَهُ مَا لَكَ حَيَّرَكَ اللَّهُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-ff8b7e",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "فَسَأَلَنَا أَنْ نَسْتَأْذِنَ لَهُ عَلَى الرِّضَا",
+            "levels": [
+              [{"surface": "حَمْزَة بْنِ مُحَمَّدِ بْنِ أَحْمَدِ بْنِ جَعْفَرِ بْنِمُحَمَّدِ بْنِ زِيْد بْنِ عَلِىِّ بْنِ الحُسَيْن بْنِ‏أَبي طالِب‏", "kind": "narrator"}],
+              [{"surface": "عَلِىِّ بْنِ‏هاشِم", "kind": "narrator"}],
+              [{"surface": "مُحَمَّدِ بْنِ عِيسَى بْنِ عُبِيْد", "kind": "narrator"}],
+              [
+                {"surface": "عَبْدُ الرَّحْمن بْنِ أَبي نَجْرانَ", "kind": "narrator"},
+                {"surface": "صَفْوانَ بْنِ يَحْيَى", "kind": "narrator"}
+              ],
+              [{"surface": "الْحُسَيْنُ بْنُ قِيَامَا", "kind": "narrator"}],
+              [{"surface": "الرِّضَا", "kind": "imam_in_text"}]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "وَكَانَ الْحُسَيْنُ بْنُ قِيَامَا هَذَا وَاقِفاً",
+            "levels": [
+              [{"surface": "حَمْزَة بْنِ مُحَمَّدِ بْنِ أَحْمَدِ بْنِ جَعْفَرِ بْنِمُحَمَّدِ بْنِ زِيْد بْنِ عَلِىِّ بْنِ الحُسَيْن بْنِ‏أَبي طالِب‏", "kind": "narrator"}],
+              [{"surface": "عَلِىِّ بْنِ‏هاشِم", "kind": "narrator"}],
+              [{"surface": "مُحَمَّدِ بْنِ عِيسَى بْنِ عُبِيْد", "kind": "narrator"}],
+              [{"surface": "عَبْدُ الرَّحْمن بْنِ أَبي نَجْرانَ", "kind": "narrator"}],
+              [{"surface": "أَبُو الْحَسَنِ الأَوَّلُ‏", "kind": "imam_in_text"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Two narrated encounters with two different Imams speaking (al-Rida and Abu al-Hasan al-Awwal) are stored as two sayings under rulings 9 and 10."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "The bare «قَالَ» introducing the second encounter most naturally continues Abd al-Rahman b. Abi Najran's remark, though both co-transmitters could be meant."
+    },
+    {
+      "id": "cr1-271634",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Hushaym first heard the report via Ibn Abi Layla from al-Ajlah and then met al-Ajlah directly («فلقيت الأجلح فحدثني»), creating two routes from Hushaym to al-Ajlah.",
+          "source": "text",
+          "quote": "قال حدثنا هشيم، قال أخبرني ابن أبي ليلى، عن الأجلح، فلقيت الأجلح فحدثني عن ابن بريدة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-271634",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن عبد الرحمن بن أشعث", "kind": "narrator"}],
+              [{"surface": "محمد بن عيسى", "kind": "narrator"}],
+              [{"surface": "هشيم", "kind": "narrator"}],
+              [{"surface": "ابن أبي ليلى", "kind": "narrator"}],
+              [{"surface": "الأجلح", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "محمد بن عبد الرحمن بن أشعث", "kind": "narrator"}],
+              [{"surface": "محمد بن عيسى", "kind": "narrator"}],
+              [{"surface": "هشيم", "kind": "narrator"}],
+              [{"surface": "الأجلح", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "ابن بريدة", "kind": "narrator"}],
+          [{"surface": "أبي الأسود الديلي", "kind": "narrator"}],
+          [{"surface": "أبي ذر", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«فلقيت الأجلح فحدثني» adds a direct route from Hushaym to al-Ajlah alongside the route through Ibn Abi Layla."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1cf22d",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Al-Ma'mun is not merely present in the scene: he is the one who spoke with al-Rida and relayed al-Rida's words to Muhammad b. Abd Allah b. al-Aftas, so he is a link between them.",
+          "source": "text",
+          "quote": "دخلت على المأمون فقربني وحياني،ثم قال: رحم الله الرضا عليه السلام ما كان أعلمه. لقد أخبرني بعجب. سألته ليلة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-1cf22d",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن عبد الله بن الأفطس", "kind": "narrator"}],
+              [{"surface": "المأمون", "kind": "narrator"}],
+              [{"surface": "الرضا", "kind": "imam_in_text"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Al-Ma'mun transmits al-Rida's words to Ibn al-Aftas and is a link in the chain."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a888fc",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Abd Allah b. Muhammad b. Abi Bakr informed Abd Allah b. Umar from Aisha, so Abd Allah b. Umar is the recipient and commenter rather than a transmitter between Abd Allah b. Muhammad and Aisha.",
+          "source": "text",
+          "quote": "أن عبد الله بن محمد بن أبي بكر الصديق، أخبر عبد الله بن عمر، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-a888fc",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "يحيى بن يحيى", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator"}],
+              [{"surface": "ابن شهاب", "kind": "narrator"}],
+              [{"surface": "سالم بن عبد، الله", "kind": "narrator"}],
+              [{"surface": "عبد الله بن محمد بن أبي بكر الصديق", "kind": "narrator"}],
+              [{"surface": "عائشة", "kind": "narrator", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Abd Allah b. Umar is the one informed by Abd Allah b. Muhammad and only comments at the end, so he is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-ac9ff8",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Ata' relays the words of Ibn al-Zubayr, who speaks inside the report, so Ibn al-Zubayr is the last link after Ata' under rulings 2 and 9.",
+          "source": "text",
+          "quote": "قال قال عطاء اجتمع يوم جمعة ويوم فطر على عهد ابن الزبير فقال عيدان اجتمعا في يوم واحد"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-ac9ff8",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "يحيى بن خلف", "kind": "narrator"}],
+              [{"surface": "أبو عاصم", "kind": "narrator"}],
+              [{"surface": "ابن جريج", "kind": "narrator"}],
+              [{"surface": "عطاء", "kind": "narrator"}],
+              [{"surface": "ابن الزبير", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Ibn al-Zubayr speaks inside Ata's report and is the last link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Ata' introduces the report with «على عهد ابن الزبير» rather than an explicit transmission verb, though Ibn al-Zubayr is the speaker whose words are relayed."
+    },
+    {
+      "id": "cr1-9ffdbd",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In «- واللفظ لعمرو - قال حدثنا إسماعيل بن إبراهيم», the speaker of «قال حدثنا» is Amr al-Naqid giving his own wording from his shaykh, so Ibn Ulayya is not a transmitter above Isma'il b. Ibrahim.",
+          "source": "text",
+          "quote": "وحدثني يحيى بن أيوب، وعمرو الناقد، وزهير بن حرب، جميعا عن ابن علية، - واللفظ لعمرو - قال حدثنا إسماعيل بن إبراهيم، عن أيوب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-9ffdbd",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "يحيى بن أيوب", "kind": "narrator"},
+                {"surface": "زهير بن حرب", "kind": "narrator"}
+              ],
+              [{"surface": "ابن علية", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "عمرو الناقد", "kind": "narrator"}],
+              [{"surface": "إسماعيل بن إبراهيم", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "أيوب", "kind": "narrator"}],
+          [{"surface": "محمد", "kind": "narrator"}],
+          [{"surface": "أنس", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Amr's «قال حدثنا إسماعيل بن إبراهيم» is his own wording from his shaykh rather than a link below Ibn Ulayya."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Without identifying two different surface names as one person, Amr's route through Isma'il b. Ibrahim is separated from the other two co-transmitters' route through Ibn Ulayya."
+    },
+    {
+      "id": "cr1-117683",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In the first narrated encounter, Harthama relays the words of Ali b. Abi Talib, making Ali b. Abi Talib the last link of the first saying under ruling 9.",
+          "source": "text",
+          "quote": "غزونا مع علي بن أبي طالب (عليه السلام) صفين، فلما انصرفنا نزل كربلاء فصلى بها الغداة، ثم رفع إليه من تربتها فشمها، ثم قال: واها لك أيتها التربة"
+        },
+        {
+          "claim": "In the second narrated encounter, Harthama relays the words of al-Husayn, making al-Husayn the last link of the second saying under rulings 9 and 10.",
+          "source": "text",
+          "quote": "ثم صرت إلى الحسين (عليه السلام)، فسلمت عليه وأخبرته بما سمعت من أبيه في ذلك المنزل الذي نزل به الحسين (عليه السلام) فقال: معنا أنت أم علينا؟"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-117683",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "غزونا مع علي بن أبي طالب",
+            "levels": [
+              [{"surface": "أحمد بن الحسن القطان", "kind": "narrator"}],
+              [{"surface": "الحسن بن علي السكري", "kind": "narrator"}],
+              [{"surface": "محمد بن زكريا", "kind": "narrator"}],
+              [{"surface": "قيس بن حفص الدارمي", "kind": "narrator"}],
+              [{"surface": "حسين الاشقر", "kind": "narrator"}],
+              [{"surface": "منصور بن أبي الاسود", "kind": "narrator"}],
+              [{"surface": "أبي حسان التيمي", "kind": "narrator"}],
+              [{"surface": "نشيط بن عبيد", "kind": "narrator"}],
+              [{"surface": "رجل منهم", "kind": "unnamed"}],
+              [{"surface": "جرداء بنت سمين", "kind": "narrator"}],
+              [{"surface": "هرثمة بن أبي مسلم", "kind": "narrator"}],
+              [{"surface": "علي بن أبي طالب", "kind": "imam_in_text"}]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "فلما قدم الحسين (عليه السلام) قال هرثمة",
+            "levels": [
+              [{"surface": "أحمد بن الحسن القطان", "kind": "narrator"}],
+              [{"surface": "الحسن بن علي السكري", "kind": "narrator"}],
+              [{"surface": "محمد بن زكريا", "kind": "narrator"}],
+              [{"surface": "قيس بن حفص الدارمي", "kind": "narrator"}],
+              [{"surface": "حسين الاشقر", "kind": "narrator"}],
+              [{"surface": "منصور بن أبي الاسود", "kind": "narrator"}],
+              [{"surface": "أبي حسان التيمي", "kind": "narrator"}],
+              [{"surface": "نشيط بن عبيد", "kind": "narrator"}],
+              [{"surface": "رجل منهم", "kind": "unnamed"}],
+              [{"surface": "جرداء بنت سمين", "kind": "narrator"}],
+              [{"surface": "هرثمة بن أبي مسلم", "kind": "narrator"}],
+              [{"surface": "الحسين", "kind": "imam_in_text", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Two narrated encounters in which Ali b. Abi Talib and al-Husayn speak are stored as two sayings under rulings 9 and 10."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

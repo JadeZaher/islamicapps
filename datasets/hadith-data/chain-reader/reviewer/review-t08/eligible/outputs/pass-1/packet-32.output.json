@@ -1,0 +1,274 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t08-eligible-p1-32",
+ "reviews": [
+  {
+   "id": "cr1-bd7bb3",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The isnad runs linearly from Ismail b. Mas'ud through Khalid, Shu'ba, and Sulayman al-Shaybani to al-Sha'bi.",
+     "source": "text",
+     "quote": "أخبرنا إسماعيل بن مسعود، قال حدثنا خالد، عن شعبة، عن سليمان الشيباني، عن الشعبي"
+    },
+    {
+     "claim": "The unnamed source in al-Sha'bi's report is explicitly identified in the text as Ibn Abbas, making him the last link while Abu Amr is only the vocative address.",
+     "source": "text",
+     "quote": "أخبرني من، مر مع رسول الله صلى الله عليه وسلم على قبر منتبذ، فأمهم وصف خلفه، قلت ‏:‏ من هو يا أبا عمرو قال ‏:‏ ابن عباس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-271634",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Hushaym reports the hadith first via Ibn Abi Layla from al-Ajlah and then directly from al-Ajlah after meeting him, creating two routes from Hushaym to al-Ajlah that share the tail to Abu Dharr.",
+     "source": "text",
+     "quote": "أخبرنا محمد بن عبد الرحمن بن أشعث، قال حدثني محمد بن عيسى، قال حدثنا هشيم، قال أخبرني ابن أبي ليلى، عن الأجلح، فلقيت الأجلح فحدثني عن ابن بريدة، عن أبي الأسود الديلي، عن أبي ذر"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-271634",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن عبد الرحمن بن أشعث",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن عيسى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "هشيم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن أبي ليلى",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن عبد الرحمن بن أشعث",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن عيسى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "هشيم",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "الأجلح",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن بريدة",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي الأسود الديلي",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي ذر",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "Hushaym transmits from al-Ajlah both via Ibn Abi Layla and directly («فلقيت الأجلح فحدثني»), yielding two routes that meet at al-Ajlah."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "medium",
+   "uncertainty_note": "The wording «عن الأجلح، فلقيت الأجلح فحدثني» states direct transmission from al-Ajlah to Hushaym alongside the route through Ibn Abi Layla, though it could alternatively be read as a single corroborating narrative."
+  },
+  {
+   "id": "cr1-469737",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs cleanly through Yahya b. Yahya al-Tamimi, Yusuf b. al-Majishun, Salih b. Ibrahim b. Abd al-Rahman b. Awf, his father, and Abd al-Rahman b. Awf, who narrates the eyewitness account.",
+     "source": "text",
+     "quote": "حدثنا يحيى بن يحيى التميمي، أخبرنا يوسف بن الماجشون، عن صالح بن إبراهيم، بن عبد الرحمن بن عوف عن أبيه، عن عبد الرحمن بن عوف، أنه قال"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-cfae66",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The tahwil separates Qutayba b. Sa'id from Jarir and the co-transmitters Ibn Numayr and Ishaq b. Ibrahim from Ibn Fudayl, all meeting at al-Mukhtar from Anas.",
+     "source": "text",
+     "quote": "حدثنا قتيبة بن سعيد، حدثنا جرير، ح وحدثنا ابن نمير، وإسحاق بن إبراهيم، عن ابن فضيل، جميعا عن المختار، عن أنس"
+    },
+    {
+     "claim": "The closing note about Jarir's narration is a wording remark rather than a separate route.",
+     "source": "text",
+     "quote": "وليس في حديث جرير ‏\"‏ ولا بالانصراف ‏\"‏"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-d4bdf0",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs from Ubayd Allah b. Sa'd b. Ibrahim b. Sa'd through his uncle, his father, Ibn Ishaq, Yazid b. Abi Habib, Bukayr b. Abd Allah b. al-Ashajj, Sulayman b. Yasar, and Amra bint Abd al-Rahman to Aisha.",
+     "source": "text",
+     "quote": "حدثنا عبيد الله بن سعد بن إبراهيم بن سعد، قال حدثنا عمي، قال حدثنا أبي، عن ابن إسحاق، عن يزيد بن أبي حبيب، أن بكير بن عبد الله بن الأشج، حدثه أن سليمان بن يسار حدثه أن عمرة ابنة عبد الرحمن حدثته أنها، سمعت عائشة، تقول"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-c6c1a1",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report opens with an unnamed speaker back-reference.",
+     "source": "text",
+     "quote": "وَ قَالَ عَلَيْهِ اَلسَّلاَمُ:"
+    },
+    {
+     "claim": "The immediately preceding report names al-Sadiq as the speaker, so al-Sadiq is inherited as the link.",
+     "source": "prev1",
+     "quote": "وَ قَالَ اَلصَّادِقُ عَلَيْهِ اَلسَّلاَمُ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-1041d8",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs through Yahya b. Yahya, Khalid b. Abd Allah, Khalid, Abu Ma'shar, Ibrahim, and the co-transmitters Alqama and al-Aswad to Aisha, who speaks inside the narrated encounter while the unnamed guest is only in the scene.",
+     "source": "text",
+     "quote": "وحدثنا يحيى بن يحيى، أخبرنا خالد بن عبد الله، عن خالد، عن أبي معشر، عن إبراهيم، عن علقمة، والأسود، أن رجلا، نزل بعائشة فأصبح يغسل ثوبه فقالت عائشة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-ff14bc",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs from Zuhayr b. Harb through Affan and Hammad to the three co-transmitters Qatada, Thabit, and Humayd, all from Anas.",
+     "source": "text",
+     "quote": "وحدثني زهير بن حرب، حدثنا عفان، حدثنا حماد، أخبرنا قتادة، وثابت، وحميد، عن أنس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-c791b4",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs through Abu al-Yaman al-Hakam b. Nafi, Shu'ayb, al-Zuhri, and Abu Salama b. Abd al-Rahman b. Awf to Hassan b. Thabit al-Ansari, who appeals to Abu Hurayra.",
+     "source": "text",
+     "quote": "حدثنا أبو اليمان الحكم بن نافع، قال أخبرنا شعيب، عن الزهري، قال أخبرني أبو سلمة بن عبد الرحمن بن عوف، أنه سمع حسان بن ثابت الأنصاري، يستشهد أبا هريرة"
+    },
+    {
+     "claim": "Abu Hurayra answers in the affirmative, making both the asker Hassan and the respondent Abu Hurayra links.",
+     "source": "text",
+     "quote": "قال أبو هريرة نعم‏."
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-fef4d2",
+   "decision": "no_chain",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report is a compiler cross-reference to another hadith with no transmitter named.",
+     "source": "text",
+     "quote": "3-125 وفي حديث آخر: أنه إن زاد العاطس على ثلاث"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

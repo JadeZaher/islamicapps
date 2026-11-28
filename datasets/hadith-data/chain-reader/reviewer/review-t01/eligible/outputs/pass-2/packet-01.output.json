@@ -1,0 +1,450 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t01-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-9a5b71",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The second and third isnads open with «قال وحدثنا», so they keep the head up to Ya'qub b. Humayd b. Kasib rather than starting directly from Ibn Majah.",
+          "source": "text",
+          "quote": "حدثنا يعقوب بن حميد بن كاسب، حدثنا عبد العزيز بن أبي حازم، عن سهيل بن أبي صالح، عن أبيه، عن أبي هريرة، قال وحدثنا المغيرة بن عبد الرحمن"
+        },
+        {
+          "claim": "The third isnad likewise opens with «قال وحدثنا» from the same shaykh and has co-transmitters Muhammad b. Ka'b and Musa b. Yasar.",
+          "source": "text",
+          "quote": "قال وحدثنا أنس بن عياض، عن أبي معشر، عن محمد بن كعب، وموسى بن يسار، عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-9a5b71",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "يعقوب بن حميد بن كاسب", "kind": "narrator"}],
+              [{"surface": "عبد العزيز بن أبي حازم", "kind": "narrator"}],
+              [{"surface": "سهيل بن أبي صالح", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation", "occurrence": 1}],
+              [{"surface": "أبي هريرة", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "يعقوب بن حميد بن كاسب", "kind": "narrator"}],
+              [{"surface": "المغيرة بن عبد الرحمن", "kind": "narrator"}],
+              [{"surface": "ابن عجلان", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation", "occurrence": 2}],
+              [{"surface": "أبي هريرة", "kind": "narrator", "occurrence": 2}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "يعقوب بن حميد بن كاسب", "kind": "narrator"}],
+              [{"surface": "أنس بن عياض", "kind": "narrator"}],
+              [{"surface": "أبي معشر", "kind": "narrator"}],
+              [
+                {"surface": "محمد بن كعب", "kind": "narrator"},
+                {"surface": "موسى بن يسار", "kind": "narrator"}
+              ],
+              [{"surface": "أبي هريرة", "kind": "narrator", "occurrence": 3}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«قال وحدثنا» in the second and third isnads continues from يعقوب بن حميد بن كاسب, so he heads all three groups."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-d691c5",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In Abu Bakr b. 'Abd al-Rahman's narrated encounter, both Aisha and Umm Salama speak and attest to the same saying, so both are last links while the father who does not speak stays out.",
+          "source": "text",
+          "quote": "حتى دخلنا على عائشة  رضى الله عنها  قالت أشهد على رسول الله صلى الله عليه وسلم إن كان ليصبح جنبا من جماع غير احتلام، ثم يصومه‏.‏ ثم دخلنا على أم سلمة، فقالت مثل ذلك."
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-d691c5",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "إسماعيل", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator"}],
+              [{"surface": "سمى", "kind": "narrator"}],
+              [{"surface": "أبا بكر بن عبد الرحمن", "kind": "narrator"}],
+              [
+                {"surface": "عائشة", "kind": "narrator"},
+                {"surface": "أم سلمة", "kind": "narrator"}
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Both Aisha and Umm Salama speak in Abu Bakr's narrated encounter and relay the same report; Abu Bakr's father does not speak and is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-91760a",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Malik b. Aws narrates an encounter in which Umar speaks and relays the Prophet's saying, so Umar is the last link under the narrated-encounter ruling.",
+          "source": "text",
+          "quote": "فدخلت على مالك فسألته فقال انطلقت حتى أدخل على عمر"
+        },
+        {
+          "claim": "Umar is the speaker who relays the saying of the Prophet inside the encounter.",
+          "source": "text",
+          "quote": "فأقبل عمر على علي وعباس فقال أنشدكما بالله هل تعلمان أن رسول الله صلى الله عليه وسلم قال ذلك‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-91760a",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبد الله بن يوسف", "kind": "narrator"}],
+              [{"surface": "الليث", "kind": "narrator"}],
+              [{"surface": "عقيل", "kind": "narrator"}],
+              [{"surface": "ابن شهاب", "kind": "narrator"}],
+              [{"surface": "مالك بن أوس النصري", "kind": "narrator"}],
+              [{"surface": "عمر", "kind": "narrator", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Muhammad b. Jubayr b. Mut'im only prompted Ibn Shihab's inquiry and is not a link; Umar speaks inside Malik b. Aws's narrated encounter and relays the Prophet's words."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "In a long multi-party dialogue narrated by Malik b. Aws, stopping at Malik b. Aws as the eyewitness narrator is a possible alternative, though Umar is the primary speaker relaying the saying."
+    },
+    {
+      "id": "cr1-a64360",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Nafi' heard 'Abd Allah b. Abi Bakr b. Abi Quhafah narrating from Aisha to 'Abd Allah b. 'Umar, so 'Abd Allah b. 'Umar is only the listener present and not a link in the chain.",
+          "source": "text",
+          "quote": "قال سمعت نافعا، مولى ابن عمر يقول سمعت عبد الله بن أبي بكر بن أبي قحافة، يحدث عبد الله بن عمر عن عائشة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-a64360",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "أبو الطاهر", "kind": "narrator"}],
+              [{"surface": "عبد الله بن وهب", "kind": "narrator"}],
+              [{"surface": "مخرمة", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "هارون، بن سعيد الأيلي", "kind": "narrator"}],
+              [{"surface": "ابن وهب", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "مخرمة بن بكير", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "أبيه", "kind": "relation"}],
+          [{"surface": "نافعا", "kind": "narrator"}],
+          [{"surface": "عبد الله بن أبي بكر بن أبي قحافة", "kind": "narrator"}],
+          [{"surface": "عائشة", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«يحدث عبد الله بن عمر» names the listener to whom 'Abd Allah b. Abi Bakr spoke while Nafi' heard him, so Ibn 'Umar is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-173bd9",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Sa'id b. Jubayr answers al-Qasim b. Abi Bazzah by relaying Ibn 'Abbas's statement, so Ibn 'Abbas is the last link.",
+          "source": "text",
+          "quote": "فقال سعيد قرأتها على ابن عباس كما قرأتها على‏.‏ فقال هذه مكية نسختها آية مدنية، التي في سورة النساء‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-173bd9",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "إبراهيم بن موسى", "kind": "narrator"}],
+              [{"surface": "هشام بن يوسف", "kind": "narrator"}],
+              [{"surface": "ابن جريج", "kind": "narrator"}],
+              [{"surface": "القاسم بن أبي بزة", "kind": "narrator"}],
+              [{"surface": "سعيد بن جبير", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Sa'id b. Jubayr relays Ibn 'Abbas's ruling on the verse, making Ibn 'Abbas the last link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-8ad279",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report opens with the back reference «وَ سَأَلَهُ:», which inherits both the asker and the one asked from the previous report.",
+          "source": "text",
+          "quote": "777 - وَ سَأَلَهُ: عَنِ اَلْخَلاَخِلِ"
+        },
+        {
+          "claim": "The previous report supplies both the asker 'Ali b. Ja'far and the one asked Musa b. Ja'far.",
+          "source": "prev1",
+          "quote": "وَ سَأَلَ عَلِيُّ بْنُ جَعْفَرٍ أَخَاهُ مُوسَى بْنَ جَعْفَرٍ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-8ad279",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عَلِيُّ بْنُ جَعْفَرٍ", "kind": "inherited", "from": "prev1"}],
+              [{"surface": "مُوسَى بْنَ جَعْفَرٍ", "kind": "inherited", "from": "prev1"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«وَ سَأَلَهُ:» inherits both the asker and the one asked from prev1."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-fdfbd4",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In the first branch «عن جدي» is already the grandfather al-Layth, so putting «الليث» in the shared tail duplicates him in the first route; the shared tail begins at 'Uqayl.",
+          "source": "text",
+          "quote": "حدثنا عبد الملك بن شعيب بن الليث، قال حدثني أبي، عن جدي، ح وحدثنا حجاج بن أبي يعقوب، قال حدثني حجين، قال حدثنا الليث، عن عقيل،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-fdfbd4",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبد الملك بن شعيب بن الليث", "kind": "narrator"}],
+              [{"surface": "أبي", "kind": "relation", "occurrence": 1}],
+              [{"surface": "جدي", "kind": "relation"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "حجاج بن أبي يعقوب", "kind": "narrator"}],
+              [{"surface": "حجين", "kind": "narrator"}],
+              [{"surface": "الليث", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عقيل", "kind": "narrator"}],
+          [{"surface": "ابن شهاب", "kind": "narrator"}],
+          [{"surface": "سالم", "kind": "narrator"}],
+          [{"surface": "عبد الله بن عمر", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«جدي» in the first branch and «الليث» in the second are the meeting point; the shared tail begins at «عقيل»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0326b3",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Malik b. Aws narrates an encounter with Umar in which Umar speaks and relays the Prophet's saying, so Umar is the last link.",
+          "source": "text",
+          "quote": "عن مالك بن أوس بن الحدثان، قال أرسل إلى عمر حين تعالى النهار فجئته"
+        },
+        {
+          "claim": "Umar is the speaker who relays the Prophet's words inside the encounter.",
+          "source": "text",
+          "quote": "فقال عمر رحمه الله اتئدا ‏.‏ ثم أقبل على أولئك الرهط فقال أنشدكم بالله الذي بإذنه تقوم السماء والأرض هل تعلمون أن رسول الله صلى الله عليه وسلم قال ‏\"‏ لا نورث ما تركنا صدقة ‏\"‏ ‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-0326b3",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "الحسن بن علي", "kind": "narrator"},
+                {"surface": "محمد بن يحيى بن فارس", "kind": "narrator"}
+              ],
+              [{"surface": "بشر بن عمر الزهراني", "kind": "narrator"}],
+              [{"surface": "مالك بن أنس", "kind": "narrator"}],
+              [{"surface": "ابن شهاب", "kind": "narrator"}],
+              [{"surface": "مالك بن أوس بن الحدثان", "kind": "narrator"}],
+              [{"surface": "عمر", "kind": "narrator", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«المعنى» is a gloss; «قال أبو داود» is the compiler's remark; Umar speaks inside Malik b. Aws's narrated encounter and relays the Prophet's saying."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "In a multi-party dialogue narrated by Malik b. Aws, stopping at Malik b. Aws as the eyewitness narrator is a possible alternative, though Umar is the primary speaker relaying the saying."
+    },
+    {
+      "id": "cr1-b35a0d",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The tahwil joins the first branch ending at al-Zuhri with the second branch ending at Muhammad, so «عروة» and «عائشة» written once after them form the shared tail for both branches.",
+          "source": "text",
+          "quote": "عن الزهري، ح وقال الليث حدثني عقيل، قال محمد أخبرني عروة، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-b35a0d",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبد الله بن محمد", "kind": "narrator"}],
+              [{"surface": "عبد الرزاق", "kind": "narrator"}],
+              [{"surface": "معمر", "kind": "narrator"}],
+              [{"surface": "الزهري", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "الليث", "kind": "narrator"}],
+              [{"surface": "عقيل", "kind": "narrator"}],
+              [{"surface": "محمد", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عروة", "kind": "narrator"}],
+          [{"surface": "عائشة", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Both tahwil branches share the tail «عروة» -> «عائشة»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-e36743",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Shurahbil b. al-Simt relays that he asked Umar and Umar answered with the Prophet's practice, so Umar is the last link after Shurahbil.",
+          "source": "text",
+          "quote": "فقلت له فقال رأيت عمر صلى بذي الحليفة ركعتين فقلت له فقال إنما أفعل كما رأيت رسول الله صلى الله عليه وسلم يفعل ‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-e36743",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "زهير بن حرب", "kind": "narrator"},
+                {"surface": "محمد بن بشار", "kind": "narrator"}
+              ],
+              [{"surface": "ابن مهدي", "kind": "narrator"}],
+              [{"surface": "شعبة", "kind": "narrator"}],
+              [{"surface": "يزيد بن خمير", "kind": "narrator"}],
+              [{"surface": "حبيب بن عبيد", "kind": "narrator"}],
+              [{"surface": "جبير بن نفير", "kind": "narrator"}],
+              [{"surface": "شرحبيل بن السمط", "kind": "narrator"}],
+              [{"surface": "عمر", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«- قال زهير حدثنا عبد الرحمن بن مهدي، -» is a gloss naming Ibn Mahdi; Shurahbil asked Umar and relays Umar's words about the Prophet's practice, so Umar is the last link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

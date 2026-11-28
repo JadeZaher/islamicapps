@@ -1,0 +1,214 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t05-eligible-p1-62",
+ "reviews": [
+  {
+   "id": "cr1-9fbfa1",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single six-link chain from Qutaybah b. Sa'id through al-Layth, Yazid b. Abi Habib, 'Irak b. Malik, and 'Urwah to 'A'ishah, ending before the Prophet.",
+     "source": "text",
+     "quote": "حدثنا قتيبة بن سعيد، حدثنا الليث، عن يزيد بن أبي حبيب، أن عراك بن مالك، حدثه أن عروة أخبره عن عائشة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-57a16c",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text pairs two co-transmitters at the first level and two at the fourth level, producing four routes ending at Hakim b. Hizam.",
+     "source": "text",
+     "quote": "حدثنا أبو بكر بن أبي شيبة، وعمرو الناقد، قالا حدثنا سفيان، عن الزهري، عن عروة بن الزبير، وسعيد، عن حكيم بن حزام"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-63e0f3",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report opens passively from Abu Hamzah al-Thumali and names the Imam 'Ali b. al-Husayn in the text after the chain, making him the last link under ruling 2.",
+     "source": "text",
+     "quote": "وَ رُوِيَ عَنْ أَبِي حَمْزَةَ اَلثُّمَالِيِّ قَالَ: كَانَ عَلِيُّ بْنُ اَلْحُسَيْنِ عَلَيْهِمَا اَلسَّلاَمُ يَقُولُ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-f31558",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The back reference inherits the full seven-link chain from prev1, ending at Jabir b. 'Abd Allah al-Ansari before the Prophet.",
+     "source": "text",
+     "quote": "وبهذا الاسناد، قال: قال رسول الله"
+    },
+    {
+     "claim": "The previous report prev1 writes all seven narrators from Ahmad b. Muhammad b. Yahya al-'Attar to Jabir b. 'Abd Allah al-Ansari.",
+     "source": "prev1",
+     "quote": "حدثنا أحمد بن محمد بن يحيى العطار (رحمه الله)، قال: حدثنا سعد بن عبد الله، قال: حدثنا عبد الصمد بن محمد، قال: حدثنا حنان بن سدير، قال: حدثنا سديف المكي، قال: حدثني محمد بن علي الباقر (عليه السلام) وما رأيت محمديا قط يعدله، قال: حدثنا جابر بن عبد الله الانصاري"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-68cbe7",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "There is no transmission particle before «شيخ له», so it is an appositive description of Abu 'Uthman rather than a separate unnamed transmitter between Abu 'Uthman and Anas.",
+     "source": "text",
+     "quote": "حدثنا أبو عوانة، حدثنا أبو عثمان، شيخ له عن أنس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-68cbe7",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن عبد الملك بن أبي الشوارب",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبو عوانة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبو عثمان",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "أنس",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "«شيخ له» has no «عن» before it and describes «أبو عثمان» as a shaykh of Abu 'Awanah; it is a gloss, not an unnamed link."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-dffddb",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs through five links ending at Umm Salamah, who is asked by Ya'la b. Mamlak and answers.",
+     "source": "text",
+     "quote": "أخبرنا قتيبة، قال حدثنا الليث بن سعد، عن عبد الله بن عبيد الله بن أبي مليكة، عن يعلى بن مملك، أنه سأل أم سلمة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-3bca43",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Abu Bakr b. Abi Shaybah and 'Amr al-Naqid are co-transmitters from Sufyan, with the parenthetical «قال أبو بكر حدثنا ابن عيينة» noting Abu Bakr's wording rather than adding a link, and the chain continues through 'Ubayd Allah b. Abi Yazid to Ibn 'Abbas.",
+     "source": "text",
+     "quote": "حدثنا أبو بكر بن أبي شيبة، وعمرو الناقد، جميعا عن سفيان، - قال أبو بكر حدثنا ابن عيينة، - عن عبيد الله بن أبي يزيد، سمع ابن عباس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-c16944",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single four-link chain from Yahya b. Yahya through Malik and Nafi' to Ibn 'Umar, ending before the Prophet.",
+     "source": "text",
+     "quote": "حدثنا يحيى بن يحيى، قال قرأت على مالك عن نافع، عن ابن عمر"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-d41ea8",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single seven-link chain in which «عمتي، قريبة بنت عبد الله» and «أمها، كريمة بنت المقداد بن عمرو» are each one named link, ending at al-Miqdad b. 'Amr.",
+     "source": "text",
+     "quote": "حدثنا محمد بن بشار، حدثنا محمد بن خالد بن عثمة، حدثني موسى بن يعقوب الزمعي، حدثتني عمتي، قريبة بنت عبد الله أن أمها، كريمة بنت المقداد بن عمرو أخبرتها عن ضباعة بنت الزبير، عن المقداد بن عمرو"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-89409d",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three co-transmitters head the chain and converge on Isma'il b. Ja'far, continuing through 'Abd Allah b. Dinar to 'Abd Allah b. 'Umar.",
+     "source": "text",
+     "quote": "وحدثنا يحيى بن أيوب، وقتيبة، وابن، حجر قال ابن أيوب حدثنا إسماعيل بن، جعفر أخبرني عبد الله بن دينار، أنه سمع عبد الله بن عمر"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

@@ -1,0 +1,224 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t09-eligible-p1-49",
+  "reviews": [
+    {
+      "id": "cr1-b8e998",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Yahya b. Yahya through Malik (read to him), Abu al-Zubayr, and Sa'id b. Jubayr to Ibn Abbas, who reports the Prophet's action.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن يحيى، قال قرأت على مالك عن أبي الزبير، عن سعيد بن جبير، عن ابن عباس، قال صلى رسول الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-7d0f76",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad runs through five transmitters ending at Anas b. Malik, who narrates the event and speaks, while Ubayd Allah b. Ziyad is only in the scene.",
+          "source": "text",
+          "quote": "حدثني محمد بن الحسين بن إبراهيم، قال حدثني حسين بن محمد، حدثنا جرير، عن محمد، عن أنس بن مالك"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6413b9",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain lists six named transmitters ending with Abu Sa'id al-Mada'ini, followed by «يرفعه» as an unnamed raised link with no named source after it.",
+          "source": "text",
+          "quote": "حدثني أبو سعيد المدائني يرفعه في قول الله عز وجل:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-074852",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad consists of five transmitters ending at Abu Hurayra, who narrates the encounter with the Prophet, and the closing remark is the compiler's grading.",
+          "source": "text",
+          "quote": "حدثنا هناد، حدثنا يونس بن بكير، حدثني عمر بن ذر، حدثنا مجاهد، عن أبي هريرة، قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-7d5e97",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both readers wrongly added «بهذا» as a back_reference link after Mujahid, whereas «عن مجاهد بهذا» refers to the saying just quoted and not to an earlier isnad.",
+          "source": "text",
+          "quote": "عن النضر بن عربي عن مجاهد بهذا"
+        },
+        {
+          "claim": "The report opens passively with Mujahid as the speaker and then supplies a full chain from Abu Kurayb Muhammad b. al-Ala' through Waki' and al-Nadr b. Arabi to Mujahid.",
+          "source": "text",
+          "quote": "حدثنا بذلك أبو كريب محمد بن العلاء حدثنا وكيع عن النضر بن عربي عن مجاهد"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-7d5e97",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "مجاهد",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو كريب محمد بن العلاء",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "وكيع",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "النضر بن عربي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مجاهد",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«بهذا» at the end of the second chain refers to the saying just quoted, not to another isnad, so it is not a back_reference link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b1e0d9",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Sulayman b. Sayf through Ya'qub b. Ibrahim, his father, Salih, Ibn Shihab, Salim, and Abd Allah b. Umar to Umar, who relays the Prophet's saying.",
+          "source": "text",
+          "quote": "قال قال سالم سمعت عبد الله بن عمر، يقول قال عمر قال رسول الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-de7e1d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two tahwil branches meet at «قالا حدثنا شعبة», giving three routes that share the tail from Shu'ba through Ya'la b. Ata' and Ali al-Azdi to Ibn Umar.",
+          "source": "text",
+          "quote": "ح وحدثنا محمد بن بشار، وأبو بكر بن خلاد قالا حدثنا محمد بن جعفر، قالا حدثنا شعبة، عن يعلى بن عطاء، أنه سمع عليا الأزدي، يحدث أنه سمع ابن عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-bb6cee",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain has six links ending at Aisha, with «عمته، صفية بنت شيبة» rightly read as one narrator link.",
+          "source": "text",
+          "quote": "عن عبد الحميد بن جبير، عن عمته، صفية بنت شيبة قالت حدثتنا عائشة، قالت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a1e068",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single isnad has five links from Qutayba b. Sa'id to Aisha, with «فيما قرئ عليه» properly excluded as the mode of transmission.",
+          "source": "text",
+          "quote": "حدثنا قتيبة بن سعيد، عن مالك بن أنس، فيما قرئ عليه عن هشام بن عروة، عن عباد بن عبد الله بن الزبير، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-050441",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Harun b. Ma'ruf and Harun b. Sa'id al-Ayli co-transmit from Ibn Wahb, and the shared chain continues through Abu Sakhr and Abu Hazim to Sahl b. Sa'd al-Sa'idi.",
+          "source": "text",
+          "quote": "حدثنا هارون بن معروف، وهارون بن سعيد الأيلي، قالا حدثنا ابن وهب، حدثني  أبو صخر، أن أبا حازم، حدثه قال سمعت سهل بن سعد الساعدي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

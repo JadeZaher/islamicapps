@@ -1,0 +1,272 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t09-eligible-p1-58",
+  "reviews": [
+    {
+      "id": "cr1-1055cd",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The three co-transmitters at the first level share the rest of the chain from Muhammad b. Yahya onward.",
+          "source": "text",
+          "quote": "حَدَّثَنِي أَبِي وَ أَخِي وَ جَمَاعَةُ مَشَايِخِي عَنْ مُحَمَّدِ بْنِ يَحْيَى"
+        },
+        {
+          "claim": "Ja'far b. Muhammad speaks inside Jabir's narrated encounter, making him the last link.",
+          "source": "text",
+          "quote": "دَخَلْتُ عَلَى جَعْفَرِ بْنِ مُحَمَّدٍ (ع) فِي يَوْمِ عَاشُورَاءَ فَقَالَ لِي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-bb985e",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Muhammad b. Ali Majiluwayh through Imran b. Isma'il (named after his relation) to Muhammad b. Ja'far al-Tamimi.",
+          "source": "text",
+          "quote": "حدثني محمد بن عمران، عن أبيه عمران بن إسماعيل"
+        },
+        {
+          "claim": "Al-Sadiq Ja'far b. Muhammad is the speaker whose words the report relays, so he is the last link.",
+          "source": "text",
+          "quote": "قال: قال الصادق جعفر بن محمد (عليه السلام):"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-884291",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report attributes the saying directly to Abu al-Hasan Musa b. Ja'far with no intermediate transmitter, giving a single-link chain under the compiler.",
+          "source": "text",
+          "quote": "وَقَالَ أَبُو اَلْحَسَنِ مُوسَى بْنُ جَعْفَرٍ عَلَيْهِ اَلسَّلاَمُ:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f3f8d5",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both readers placed Malik b. Anas and al-Harith b. Miskin as co-teachers of Utba b. Abd Allah before Ibn al-Qasim and Malik, whereas the first branch is from Utba b. Abd Allah directly from Malik b. Anas.",
+          "source": "text",
+          "quote": "أخبرنا عتبة بن عبد الله، قال قرأت على مالك بن أنس"
+        },
+        {
+          "claim": "The first-person reading formula introduces a second branch from the compiler via al-Harith b. Miskin, from Ibn al-Qasim, from Malik.",
+          "source": "text",
+          "quote": "والحارث بن مسكين قراءة عليه وأنا أسمع، عن ابن القاسم، قال حدثني مالك"
+        },
+        {
+          "claim": "Both branches meet at Malik and share the remaining chain through Sumayy, Abu Salih, and Abu Hurayra.",
+          "source": "text",
+          "quote": "عن سمى، عن أبي صالح، عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-f3f8d5",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عتبة بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك بن أنس",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "الحارث بن مسكين",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن القاسم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "سمى",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي صالح",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي هريرة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«والحارث بن مسكين قراءة عليه وأنا أسمع» is a second branch from the compiler, parallel to «أخبرنا عتبة بن عبد الله», meeting the first branch at Malik before the shared tail «عن سمى، عن أبي صالح، عن أبي هريرة»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-4b8334",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Musa b. Sa'id through Nafi' to Ibn Umar.",
+          "source": "text",
+          "quote": "أخبرنا موسى بن سعيد، قال حدثنا أحمد بن عبد الله بن يونس، قال حدثنا زهير، قال حدثنا الحسن بن الحر، قال حدثنا نافع، أن ابن عمر"
+        },
+        {
+          "claim": "The unnamed man who asked the Prophet is part of the scene Ibn Umar narrates, not a link in the chain.",
+          "source": "text",
+          "quote": "أخبرهم أن رجلا سأل رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-fba926",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Adam through Mus'ab to Sa'd, who relays the five invocations from the Prophet as the last link.",
+          "source": "text",
+          "quote": "حدثنا آدم، حدثنا شعبة، حدثنا عبد الملك، عن مصعب، كان سعد يأمر بخمس ويذكرهن عن النبي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-659104",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Musaddad through Jasra bt. Dajaja to Aisha, who relays the Prophet's words.",
+          "source": "text",
+          "quote": "حدثنا مسدد، حدثنا عبد الواحد بن زياد، حدثنا الأفلت بن خليفة، قال حدثتني جسرة بنت دجاجة، قالت سمعت عائشة"
+        },
+        {
+          "claim": "Abu Dawud's closing remark is a compiler gloss on a narrator's name, not a link or route.",
+          "source": "text",
+          "quote": "قال أبو داود وهو فليت العامري"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-95eb41",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Harmala b. Yahya and Ahmad b. Isa are co-transmitters at the first level who both narrate from Ibn Wahb.",
+          "source": "text",
+          "quote": "وحدثني حرملة بن يحيى، وأحمد بن عيسى، قال أحمد حدثنا وقال، حرملة أخبرنا ابن وهب"
+        },
+        {
+          "claim": "The shared chain continues through Yunus, Ibn Shihab, and Ubayd Allah b. Abd Allah b. Umar to Abd Allah b. Umar.",
+          "source": "text",
+          "quote": "أن عبيد الله بن عبد الله بن عمر، أخبره عن عبد الله بن عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c3e42b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Abu al-Walid through Shu'ba, Waqid b. Abd Allah, and his unnamed father to Abd Allah b. Umar.",
+          "source": "text",
+          "quote": "حدثنا أبو الوليد، حدثنا شعبة، قال واقد بن عبد الله أخبرني عن أبيه، سمع عبد الله بن عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0a9192",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Hannad b. al-Sari through Abu al-Ahwas, Ash'ath b. Abi al-Sha'tha', his unnamed father, and Masruq to Aisha.",
+          "source": "text",
+          "quote": "أخبرنا هناد بن السري، في حديثه عن أبي الأحوص، عن أشعث بن أبي الشعثاء، عن أبيه، عن مسروق، قال قالت عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

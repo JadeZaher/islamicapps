@@ -1,0 +1,704 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t04-eligible-p2-01",
+ "reviews": [
+  {
+   "id": "cr1-64d1f5",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report has two parallel routes from the compiler that meet at Malik, not a single route putting Malik and al-Harith ibn Miskin under Qutaybah.",
+     "source": "text",
+     "quote": "أخبرنا قتيبة، عن مالك، والحارث بن مسكين، قراءة عليه وأنا أسمع، - واللفظ له - عن ابن القاسم، قال حدثني مالك، عن نافع، عن ابن عمر"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-64d1f5",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "قتيبة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "مالك",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "الحارث بن مسكين",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن القاسم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "مالك",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "نافع",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "ابن عمر",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "Two routes from the compiler: Qutaybah from Malik, and al-Harith ibn Miskin from Ibn al-Qasim from Malik, sharing Nafi' from Ibn Umar."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-569d2e",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Abu Abd Allah narrates an encounter in which he asks Abu Ja'far and Abu Ja'far answers, so Abu Ja'far is the last link under rulings 3 and 9.",
+     "source": "text",
+     "quote": "أَعْتَقَ أَبُو جَعْفَرٍ عَلَيْهِ اَلسَّلاَمُ مِنْ غِلْمَانِهِ عِنْدَ مَوْتِهِ شِرَارَهُمْ وَ أَمْسَكَ خِيَارَهُمْ فَقُلْتُ لَهُ يَا أَبَتِ تُعْتِقُ هَؤُلاَءِ وَ تُمْسِكُ هَؤُلاَءِ فَقَالَ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-569d2e",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "مُحَمَّدُ بْنُ يَعْقُوبَ اَلْكُلَيْنِيُّ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حُمَيْدِ بْنِ زِيَادٍ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "اَلْحَسَنِ بْنِ مُحَمَّدِ بْنِ سَمَاعَةَ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عَبْدِ اَللَّهِ بْنِ جَبَلَةَ",
+         "kind": "narrator"
+        },
+        {
+         "surface": "غَيْرِهِ",
+         "kind": "unnamed"
+        }
+       ],
+       [
+        {
+         "surface": "إِسْحَاقَ بْنِ عَمَّارٍ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أَبِي بَصِيرٍ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أَبِي عَبْدِ اَللَّهِ",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أَبُو جَعْفَرٍ",
+         "kind": "imam_in_text"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Abu Ja'far speaks and answers inside Abu Abd Allah's narrated encounter, making him the last link (rulings 3 and 9)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-9f7a65",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report opens with an unnamed Imam back reference, which inherits from the immediately preceding report naming Abu Ja'far rather than skipping to prev2.",
+     "source": "text",
+     "quote": "56 - وَقَالَ عَلَيْهِ اَلسَّلاَمُ:"
+    },
+    {
+     "claim": "Report 55 (prev1) immediately precedes report 56 and explicitly names Abu Ja'far as the speaker.",
+     "source": "prev1",
+     "quote": "55 - وَقَالَ أَبُو جَعْفَرٍ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-9f7a65",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أَبُو جَعْفَرٍ",
+         "kind": "inherited",
+         "from": "prev1"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Inherits Abu Ja'far from prev1 (report 55), the nearest preceding report naming a speaker."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-994327",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The dual verb refers to the two co-transmitters Musa ibn Marwan al-Raqqi and Kathir ibn Ubayd al-Madhhiji, so Muhammad ibn Harb belongs only to their branch and the two branches meet at Muhammad ibn Ziyad.",
+     "source": "text",
+     "quote": "ح وحدثنا موسى بن مروان الرقي، وكثير بن عبيد المذحجي، قالا حدثنا محمد بن حرب، - المعنى - عن محمد بن زياد"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-994327",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "عبد الوهاب بن نجدة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "بقية",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "موسى بن مروان الرقي",
+         "kind": "narrator"
+        },
+        {
+         "surface": "كثير بن عبيد المذحجي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن حرب",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "محمد بن زياد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عبد الله بن أبي قيس",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عائشة",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "Muhammad ibn Harb is the teacher of Musa ibn Marwan and Kathir ibn Ubayd ('qala'), and both branches converge at Muhammad ibn Ziyad."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "medium",
+   "uncertainty_note": "The dual verb grammatically binds Muhammad ibn Harb to Musa and Kathir so the branches meet at Muhammad ibn Ziyad, though tahwil convergence points without an explicit plural marker can occasionally be ambiguous."
+  },
+  {
+   "id": "cr1-b7b6dd",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Malik ibn Aws ibn al-Hadathan narrates an encounter in which Umar ibn al-Khattab speaks, making Umar ibn al-Khattab the last link under ruling 9.",
+     "source": "text",
+     "quote": "عن مالك بن أوس، بن الحدثان قال أرسل إلى عمر بن الخطاب فقال إنه قد حضر أهل أبيات من قومك"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-b7b6dd",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "إسحاق بن إبراهيم",
+         "kind": "narrator"
+        },
+        {
+         "surface": "محمد بن رافع",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عبد بن حميد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبد الرزاق",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "معمر",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "الزهري",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "مالك بن أوس، بن الحدثان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عمر بن الخطاب",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Umar ibn al-Khattab speaks inside Malik ibn Aws's narrated encounter and is therefore the last link (ruling 9)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-7ad94f",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Musa ibn Ja'far enters and speaks inside Najma's narrated encounter, making him the last link under ruling 9.",
+     "source": "text",
+     "quote": "فَدَخَلَ إِلىَّ أَبُوه مُوسَى بْنُ جَعْفَرٍعَلَيْهِمَا السَّلاَمُ فَقالَ لي"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-7ad94f",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "تَمِيمُ بْنُ عَبْدِاللَّه بْنِ تَمِيمٍ القُرَشِي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أَبي",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "أَحْمَدَ بْنِ عَلِى الأَنْصارِي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عَلِىِّ بْنِ مِيْثَم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أَبيهِ",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "اُمِّي",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "نَجْمَة اُمِّ الرِّضا",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "مُوسَى بْنُ جَعْفَرٍ",
+         "kind": "imam_in_text"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Musa ibn Ja'far speaks inside Najma's narrated encounter and is therefore the last link (ruling 9)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-003d76",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Ibn Abbas narrates an encounter in which he asks Umar a question and Umar answers, making Umar the last link under rulings 3 and 9.",
+     "source": "text",
+     "quote": "سمعت ابن عباس، يقول أردت أن أسأل، عمر عن المرأتين اللتين، تظاهرتا على رسول الله صلى الله عليه وسلم"
+    },
+    {
+     "claim": "Umar answers Ibn Abbas's question directly in the encounter.",
+     "source": "text",
+     "quote": "فقلت يا أمير المؤمنين من المرأتان اللتان تظاهرتا قال ابن عباس فما أتممت كلامي حتى قال عائشة وحفصة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-003d76",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "الحميدي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سفيان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "يحيى بن سعيد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبيد بن حنين",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن عباس",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "عمر",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Umar is asked and answers inside Ibn Abbas's narrated encounter, making Umar the last link (rulings 3 and 9)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-d586dc",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The closing word refers to the content of what Gabriel asked the Prophet, not to a chain back reference, so it is not a link after Mu'adh ibn Rifa'ah ibn Rafi'.",
+     "source": "text",
+     "quote": "قال سأل جبريل النبي صلى الله عليه وسلم‏.‏ بهذا‏.‏"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-d586dc",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "سليمان بن حرب",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حماد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "يحيى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "معاذ بن رفاعة بن رافع",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "The closing 'bihadha' refers to the matn of the previous report, not to a chain back reference; the chain ends at Mu'adh ibn Rifa'ah ibn Rafi'."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-176eb2",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The opening verb with object pronoun inherits both the asker and the one asked from prev1 under rulings 3 and 7.",
+     "source": "text",
+     "quote": "761 - وَ سَأَلَهُ:"
+    },
+    {
+     "claim": "Prev1 names both the asker Ali ibn Ja'far and the one asked Musa ibn Ja'far.",
+     "source": "prev1",
+     "quote": "760 - وَ سَأَلَ عَلِيُّ بْنُ جَعْفَرٍ أَخَاهُ مُوسَى بْنَ جَعْفَرٍ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-176eb2",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "عَلِيُّ بْنُ جَعْفَرٍ",
+         "kind": "inherited",
+         "from": "prev1"
+        }
+       ],
+       [
+        {
+         "surface": "مُوسَى بْنَ جَعْفَرٍ",
+         "kind": "inherited",
+         "from": "prev1"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Both the asker (Ali ibn Ja'far) and the one asked (Musa ibn Ja'far) are inherited from prev1."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-0fdbee",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Abu Qatadah speaks inside Kabsha's narrated encounter and relays the Prophet's saying, making Abu Qatadah the last link under rulings 2 and 9.",
+     "source": "text",
+     "quote": "أنها صبت لأبي قتادة ماء يتوضأ به فجاءت هرة تشرب فأصغى لها الإناء فجعلت أنظر إليه فقال يا ابنة أخي أتعجبين قال رسول الله"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-0fdbee",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أبو بكر بن أبي شيبة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "زيد بن الحباب",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "مالك بن أنس",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إسحاق بن عبد الله بن أبي طلحة الأنصاري",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حميدة بنت عبيد بن رفاعة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "كبشة بنت كعب",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي قتادة",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Abu Qatadah speaks inside Kabsha's narrated encounter and quotes the Prophet, making him the last link (rulings 2 and 9)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

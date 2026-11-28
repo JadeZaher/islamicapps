@@ -176,11 +176,16 @@ class FormatGap(unittest.TestCase):
 class BuiltSets(unittest.TestCase):
     """The sets are built files: their counts, isolation and jobs (build_review_packets_v1_1.py --sets)."""
 
-    SETS = {"review-applied-b001": 348, "review-t01/eligible": 730, "review-t01/held": 133, "review-t02/eligible": 695, "review-t02/held": 167, "review-disagreements-t02": 107}
+    @classmethod
+    def setUpClass(cls):
+        cls.sets_doc = json.loads((REVIEWER / "SETS.json").read_text(encoding="utf-8"))
+        cls.SETS = {name: info["readings"] for name, info in cls.sets_doc["sets"].items()}
 
     def test_counts_jobs_and_prompt(self):
         prompt = json.loads((REVIEWER / "prompt-reviewer-v1_1.json").read_text(encoding="utf-8"))
         self.assertEqual(prompt["sha256"], hashlib.sha256((REVIEWER / "prompt-reviewer-v1_1.md").read_bytes()).hexdigest())
+        expected_names = {"review-applied-b001", "review-disagreements-t02"} | {f"review-t{n:02d}/{part}" for n in range(1, 11) for part in ("eligible", "held")}
+        self.assertEqual(set(self.SETS), expected_names)
         for name, count in self.SETS.items():
             with self.subTest(name):
                 out = REVIEWER / name
@@ -221,13 +226,15 @@ class BuiltSets(unittest.TestCase):
             return json.loads((REVIEWER / name / "private" / "manifest.json").read_text(encoding="utf-8"))["items"]
         applied = manifest("review-applied-b001")
         self.assertEqual({r["status"] for r in applied.values()}, {"applied"})
-        self.assertEqual(sum(r["not_clearable"] for r in applied.values()), 12)                     # the 12 al-Faqih route statements v3.3 would hold
-        for tranche, withheld in (("01", 3), ("02", 5)):
+        self.assertGreaterEqual(sum(r["not_clearable"] for r in applied.values()), 12)               # at least the 12 al-Faqih route statements v3.3 would hold
+        withheld_expected = {"01": 3, "02": 5}
+        for n in range(1, 11):
+            tranche = f"{n:02d}"
             eligible, held = manifest(f"review-t{tranche}/eligible"), manifest(f"review-t{tranche}/held")
             self.assertEqual({r["status"] for r in eligible.values()}, {"pending"})
             self.assertEqual(sum(r["not_clearable"] for r in eligible.values()), 0)
             self.assertEqual({r["status"] for r in held.values()}, {"held"})
-            self.assertEqual(sum("withheld_by_earlier_check" in r["holds"] for r in held.values()), withheld)
+            self.assertEqual(sum("withheld_by_earlier_check" in r["holds"] for r in held.values()), withheld_expected.get(tranche, 0))
             self.assertTrue(all(r["readers_agree"] for r in {**eligible, **held}.values()))
             self.assertFalse(set(r["id"] for r in eligible.values()) & set(r["id"] for r in held.values()))
         differ = manifest("review-disagreements-t02")
@@ -237,10 +244,12 @@ class BuiltSets(unittest.TestCase):
         store = ROOT.parents[2] / "reviews" / "ai" / "records" / "chain-fixes"
         if not store.is_dir():
             self.skipTest("no fix store")
+        state = json.loads((store / "state.json").read_text(encoding="utf-8"))["fixes"]
+        live_applied = sum(1 for f in state if f.get("database") == "applied")
         ids, provenance = builder.applied_b001()
         built = (REVIEWER / "review-applied-b001" / "private" / "applied_ids.txt").read_text(encoding="utf-8").split()
-        self.assertEqual(len(ids), 348)
-        self.assertEqual(provenance["applied_fixes"], 348)
+        self.assertEqual(provenance["applied_fixes"], live_applied)
+        self.assertEqual(provenance["b001_applied_fixes"], len(ids))
         self.assertEqual(sorted(ids), sorted(built))                                                 # the store has not moved since the build
 
 

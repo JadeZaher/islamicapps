@@ -1,0 +1,202 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t01-eligible-p1-34",
+ "reviews": [
+  {
+   "id": "cr1-674ed3",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single route runs from Yahya b. Yahya through Malik (by reading), Ibn Shihab, and Abu Bakr b. Abd al-Rahman to the Companion Abu Mas'ud al-Ansari, ending before the Prophet.",
+     "source": "text",
+     "quote": "حدثنا يحيى بن يحيى، قال قرأت على مالك عن ابن شهاب، عن أبي بكر بن، عبد الرحمن عن أبي مسعود الأنصاري، أن رسول الله صلى الله عليه وسلم نهى"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-173bd9",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs from Ibrahim b. Musa through Hisham b. Yusuf, Ibn Jurayj, and the asker al-Qasim b. Abi Bazza to Sa'id b. Jubayr.",
+     "source": "text",
+     "quote": "حدثنا إبراهيم بن موسى، أخبرنا هشام بن يوسف، أن ابن جريج، أخبرهم قال أخبرني القاسم بن أبي بزة، أنه سأل سعيد بن جبير"
+    },
+    {
+     "claim": "Sa'id narrates his own encounter with Ibn Abbas in which Ibn Abbas speaks the ruling, so Ibn Abbas is the last link under ruling 9, which both readers omitted.",
+     "source": "text",
+     "quote": "فقال سعيد قرأتها على ابن عباس كما قرأتها على‏.‏ فقال هذه مكية نسختها آية مدنية"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-173bd9",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "إبراهيم بن موسى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "هشام بن يوسف",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن جريج",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "القاسم بن أبي بزة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "سعيد بن جبير",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن عباس",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Sa'id b. Jubayr narrates an encounter with Ibn Abbas in which Ibn Abbas speaks the answer («فقال هذه مكية نسختها آية مدنية»), making Ibn Abbas the last link (ruling 9)."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-a079f0",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Four co-transmitters share the first level («كلهم عن») and converge on Isma'il b. Ja'far, then Abd Allah b. Dinar, ending at Ibn Umar before the Prophet, with no second branch after the trailing «ح.».",
+     "source": "text",
+     "quote": "وحدثنا يحيى بن يحيى، ويحيى بن أيوب، وقتيبة بن سعيد، وابن، حجر كلهم عن إسماعيل بن جعفر، عن عبد الله بن دينار، عن ابن عمر، قال قال رسول الله صلى الله عليه وسلم ح."
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-56da8e",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Al-Hasan b. Mahbub transmits via two alternatives («أَوْ»), Jamil b. Darraj or Jamil b. Salih, from al-Fudayl b. Yasar, who asks Abu Abd Allah, making the Imam the last link.",
+     "source": "text",
+     "quote": "وَ رَوَى اَلْحَسَنُ بْنُ مَحْبُوبٍ عَنْ جَمِيلِ بْنِ دَرَّاجٍ أَوْ جَمِيلِ بْنِ صَالِحٍ عَنِ اَلْفُضَيْلِ بْنِ يَسَارٍ قَالَ : سَأَلْتُ أَبَا عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-c1b9b6",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Hasan al-Hulwani and Abd b. Humayd are co-transmitters («جميعا») meeting at Ya'qub b. Ibrahim b. Sa'd, followed by his father («أبي»), Salih, and Abd al-Rahman b. Humayd.",
+     "source": "text",
+     "quote": "وحدثنا حسن الحلواني، وعبد بن حميد، جميعا عن يعقوب بن إبراهيم بن سعد، حدثنا أبي، عن صالح، عن عبد الرحمن بن حميد"
+    },
+    {
+     "claim": "Umar b. Abd al-Aziz only asks inside the scene witnessed by Abd al-Rahman, while al-Sa'ib answers directly from al-Ala' b. al-Hadrami, who heard the Prophet.",
+     "source": "text",
+     "quote": "أنه سمع عمر بن عبد العزيز، يسأل السائب بن يزيد فقال السائب سمعت العلاء بن الحضرمي، يقول سمعت رسول الله صلى الله عليه وسلم"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-18051b",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs from Yahya b. Yahya through Malik (by reading) and Nafi' to Ibn Umar, ending before the Prophet and excluding the blessing.",
+     "source": "text",
+     "quote": "وحدثنا يحيى بن يحيى، قال قرأت على مالك عن نافع، عن ابن عمر، - رضى الله عنهما - أن رسول الله صلى الله عليه وسلم قال"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-d2ad17",
+   "decision": "no_chain",
+   "question": "the Prophet speaking a one-sentence report with no transmitter",
+   "reasons": [
+    {
+     "claim": "The report is a single-sentence saying with no transmitter before it, so it has no isnad regardless of the unruled question since the Prophet is never a link.",
+     "source": "text",
+     "quote": "5763 - اَلْيَدُ اَلْعُلْيَا خَيْرٌ مِنَ اَلْيَدِ اَلسُّفْلَى\"."
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-8bbaef",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report's chain runs from Abu al-Walid al-Dimashqi through al-Walid b. Muslim, Ibn Abi Dhi'b, Sa'id al-Maqburi, and Abu Murra (excluding his description «مولى عقيل بن أبي طالب») to Umm Hani'.",
+     "source": "text",
+     "quote": "حدثنا أبو الوليد الدمشقي، حدثنا الوليد بن مسلم، أخبرني ابن أبي ذئب، عن سعيد المقبري، عن أبي مرة، مولى عقيل بن أبي طالب عن أم هانئ"
+    },
+    {
+     "claim": "The passive «وقد روي عن» citations appear inside al-Tirmidhi's post-hadith commentary and are not a second isnad from the compiler.",
+     "source": "text",
+     "quote": "وقد روي عن علي بن أبي طالب وعبد الله بن عمرو عن النبي صلى الله عليه وسلم"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "The passive citation of a second Prophetic saying inside al-Tirmidhi's commentary is treated as commentary rather than a second saying with its own isnad."
+  }
+ ]
+}

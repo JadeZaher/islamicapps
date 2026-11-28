@@ -1,0 +1,245 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t07-eligible-p1-02",
+  "reviews": [
+    {
+      "id": "cr1-015580",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two branches separated by taḥwīl meet at «قالا حدثنا ابن لهيعة» and share the remaining tail to Umar ibn al-Khattab.",
+          "source": "text",
+          "quote": "حدثنا حرملة بن يحيى، حدثنا ابن وهب، ح وحدثنا ابن حميد، حدثنا زيد بن الحباب، قالا حدثنا ابن لهيعة، عن أبي الزبير، عن جابر، عن عمر بن الخطاب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-42f761",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two co-transmitters both read to Malik, followed by a single chain ending at Abu Hurayra.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن يحيى، وعبد الأعلى بن حماد، قالا كلاهما قرأت على مالك عن ابن شهاب، عن سعيد بن المسيب، عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-edf6b6",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs through a bare relation «أبيه» and ends at Maymuna, excluding her descriptor «زوج النبي».",
+          "source": "text",
+          "quote": "أخبرنا محمد بن خالد بن خلي، قال حدثنا بشر بن شعيب، عن أبيه، عن الزهري، قال أخبرني ابن السباق، عن ابن عباس، قال أخبرتني ميمونة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6423a6",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The dual «قالا جميعا حدثنا وكيع» belongs to the two co-transmitters Ali ibn Muhammad and Amr ibn Abd Allah, so Waki belongs to the second branch rather than the shared tail.",
+          "source": "text",
+          "quote": "ح وحدثنا علي بن محمد، وعمرو بن عبد الله، قالا جميعا حدثنا وكيع، عن عبد العزيز بن سياه"
+        },
+        {
+          "claim": "The first branch via Ubayd Allah ibn Musa meets the second branch at Abd al-Aziz ibn Siyah and continues to A'isha.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، حدثنا عبيد الله بن موسى، ح"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-6423a6",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو بكر بن أبي شيبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبيد الله بن موسى",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن محمد",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "عمرو بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "وكيع",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عبد العزيز بن سياه",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "حبيب بن أبي ثابت",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عطاء بن يسار",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "عائشة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«قالا جميعا حدثنا وكيع» is dual for علي بن محمد and عمرو بن عبد الله; both branches meet at عن عبد العزيز بن سياه."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b1e56b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain continues past Abu Abd Allah al-Sadiq through two bare relations before ending at the Prophet, who is not a link.",
+          "source": "text",
+          "quote": "عن أبي عبد الله الصادق (عليه السلام)، قال: سمعت أبي يحدث عن أبيه (عليهما السلام)، قال: قال النبي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-4e9145",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Abd Allah ibn Maslama to Umm Hani bint Abi Talib, omitting the client descriptors and the non-transmitting figures in the scene.",
+          "source": "text",
+          "quote": "حدثنا عبد الله بن مسلمة، عن مالك، عن أبي النضر، مولى عمر بن عبيد الله أن أبا مرة، مولى أم هانئ بنت أبي طالب أخبره أنه، سمع أم هانئ بنت أبي طالب، تقول"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9e77c4",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three taḥwīl branches (with Abu Bakr ibn Abi Shayba and Abu Kurayb as co-transmitters in the second) converge at «كلهم عن هشام بن عروة» and share the tail to Ibn Abbas.",
+          "source": "text",
+          "quote": "حدثني إبراهيم بن موسى الرازي، أخبرنا عيسى يعني ابن يونس، ح وحدثنا أبو بكر بن أبي شيبة، وأبو كريب قالا حدثنا وكيع، ح وحدثنا أبو كريب، حدثنا ابن نمير، كلهم عن هشام بن عروة، عن أبيه، عن ابن عباس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-138e89",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Ibn al-Sarh to Ka'b ibn Malik, excluding the parenthetical glosses between dashes.",
+          "source": "text",
+          "quote": "حدثنا ابن السرح، أخبرنا ابن وهب، قال أخبرنا يونس، عن ابن شهاب، قال فأخبرني عبد الرحمن بن عبد الله بن كعب بن مالك، أن عبد الله بن كعب، - وكان قائد كعب من بنيه حين عمي - قال سمعت كعب بن مالك"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0c4daf",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs through the bare relation «أبي» to Muhammad ibn Ishaq, whose explanation is relayed.",
+          "source": "text",
+          "quote": "حدثنا الحسن بن علي، حدثنا يعقوب بن إبراهيم، قال سمعت أبي يقول، عن محمد بن إسحاق"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0b6752",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Mu'awiya ibn Ammar to Abu Abd Allah, who delivers the saying.",
+          "source": "text",
+          "quote": "وَ رَوَى مُعَاوِيَةُ بْنُ عَمَّارٍ عَنْ أَبِي عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ قَالَ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

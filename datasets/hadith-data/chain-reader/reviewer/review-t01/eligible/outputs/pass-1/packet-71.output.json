@@ -1,0 +1,274 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t01-eligible-p1-71",
+ "reviews": [
+  {
+   "id": "cr1-e478a1",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report opens with a back reference naming no speaker, so it inherits the speaker from the nearest earlier report that supplies one.",
+     "source": "text",
+     "quote": "وَ قَالَ عَلَيْهِ اَلسَّلاَمُ"
+    },
+    {
+     "claim": "The earlier report prev2 supplies Amir al-Mu'minin as the speaker, matching both readers.",
+     "source": "prev2",
+     "quote": "قَالَ أَمِيرُ اَلْمُؤْمِنِينَ عَلَيْهِ اَلسَّلاَمُ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-477d06",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The chain runs from Tamim through his father, Ahmad b. Ali al-Ansari, and Sulayman b. Ja'far al-Basri to Umar [w] b. Waqid, keeping the bracketed editorial letter as written.",
+     "source": "text",
+     "quote": "حَدَّثَنا تَمِيمُ بْنُ عَبْدِ اللَّه بْنِ تَمِيمٍ القُرَشِيُ‏ رَضِىَ اللهُ عَنْهُ قالَ: حَدَّثَني أَبي عَنْ أَحْمَدَ بْنِ عَلِىٍّ الأَنْصارِيِّ، عَنْ سُلَيْمانَ بْنِ جَعْفَرٍ البَصَرِيِّ، عَنْ عُمَرَ [وَ] بْنِ واقِدٍ قالَ:"
+    },
+    {
+     "claim": "Umar [w] b. Waqid is the last link because the rest of the text is his third-person narrative about Harun al-Rashid, Musa b. Ja'far, and al-Musayyab.",
+     "source": "text",
+     "quote": "عَنْ عُمَرَ [وَ] بْنِ واقِدٍ قالَ: إِنَّ هارُونَ الرَّشِيدِ"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-418e44",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The isnad has two co-transmitters at the first level and two co-transmitters after Shu'ba, yielding four routes through Ibrahim and Abd al-Rahman b. Yazid.",
+     "source": "text",
+     "quote": "أخبرنا الحسن بن محمد الزعفراني، ومالك بن الخليل، قالا حدثنا ابن أبي عدي، عن شعبة، عن الحكم، ومنصور، عن إبراهيم، عن عبد الرحمن بن يزيد"
+    },
+    {
+     "claim": "Both readers stopped at Abd al-Rahman b. Yazid, but Abd Allah speaks inside the report and his words are relayed, making him the last link under rulings 2 and 9.",
+     "source": "text",
+     "quote": "قال رمى عبد الله الجمرة بسبع حصيات جعل البيت عن يساره وعرفة عن يمينه وقال ها هنا مقام الذي أنزلت عليه سورة البقرة"
+    },
+    {
+     "claim": "The closing statement by Abu Abd al-Rahman is the compiler's own remark and not a link or route.",
+     "source": "text",
+     "quote": "قال أبو عبد الرحمن ما أعلم أحدا قال في هذا الحديث منصور غير ابن أبي عدي"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-418e44",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "الحسن بن محمد الزعفراني",
+         "kind": "narrator"
+        },
+        {
+         "surface": "مالك بن الخليل",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن أبي عدي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "شعبة",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الحكم",
+         "kind": "narrator"
+        },
+        {
+         "surface": "منصور",
+         "kind": "narrator",
+         "occurrence": 1
+        }
+       ],
+       [
+        {
+         "surface": "إبراهيم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبد الرحمن بن يزيد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبد الله",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Added «عبد الله» as the last link because his words («وقال ها هنا مقام الذي أنزلت عليه سورة البقرة») are relayed by Abd al-Rahman b. Yazid."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "medium",
+   "uncertainty_note": "The report begins by describing Abd Allah's action before quoting his words, so both readers treated him as only the subject, though his spoken statement makes him the last link under rulings 2 and 9."
+  },
+  {
+   "id": "cr1-f377fd",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Two pairs of co-transmitters joined by «قالا» and «جميعا» produce four routes through Muhammad b. Ahmad b. Yahya and Muhammad b. Isa.",
+     "source": "text",
+     "quote": "حدثنا أبي، ومحمد بن الحسن رضي الله عنهما قالا: حدثنا محمد بن يحيى العطار، وأحمد بن إدريس جميعا، عن محمد بن أحمد بن يحيى، عن محمد بن عيسى"
+    },
+    {
+     "claim": "The gap phrase «بإسناده يرفعه إلى» is an unnamed link followed by Abu Ja'far as the last link.",
+     "source": "text",
+     "quote": "عن محمد بن عيسى بإسناده يرفعه إلى أبي جعفر عليه السلام أنه قال"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-b20309",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Two branches joined by «ح» meet at Amr b. al-Harith.",
+     "source": "text",
+     "quote": "وحدثني هارون بن معروف، حدثنا ابن وهب، عن عمرو بن الحارث، ح وحدثني أبو الطاهر، أخبرنا عبد الله بن وهب، أخبرنا عمرو بن الحارث"
+    },
+    {
+     "claim": "The shared tail continues through Abu al-Nadr and Sulayman b. Yasar to Aisha, ending before the Prophet.",
+     "source": "text",
+     "quote": "أن أبا النضر، حدثه عن سليمان بن يسار، عن عائشة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-004645",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs from Abu Kurayb, Abu Usama, Hisham, and his bare father relation to Aisha, whose own statement is relayed.",
+     "source": "text",
+     "quote": "حدثنا أبو كريب، حدثنا أبو أسامة، أخبرنا هشام، عن أبيه، عن عائشة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-feeadc",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three branches joined by «ح» converge on Shu'ba, Abu al-Tayyah, and Anas b. Malik, who relays the Prophet's saying.",
+     "source": "text",
+     "quote": "حدثنا عبيد الله بن معاذ العنبري، حدثنا أبي، حدثنا شعبة، عن أبي التياح، عن أنس، ح. وحدثنا أبو بكر بن أبي شيبة، حدثنا عبيد الله بن سعيد، ح وحدثنا محمد بن، الوليد حدثنا محمد بن جعفر، كلاهما عن شعبة، عن أبي التياح، قال سمعت أنس بن مالك"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-0aa74a",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The first isnad has four co-transmitters from Abu Kurayb to Ibn An'am, and «قال أبو كريب وحدثنا وكيع» opens a second isnad from Abu Kurayb through Waki' and Sufyan to Ibn An'am.",
+     "source": "text",
+     "quote": "حدثنا أبو كريب، حدثنا رشدين بن سعد، وعبد الرحمن المحاربي، وأبو أسامة وجعفر بن عون عن ابن أنعم، قال أبو كريب وحدثنا وكيع، عن سفيان، عن ابن أنعم"
+    },
+    {
+     "claim": "Both groups share the tail through Imran b. Abd al-Ma'afiri to Abd Allah b. Amr, ending before the Prophet.",
+     "source": "text",
+     "quote": "عن ابن أنعم، عن عمران بن عبد المعافري، عن عبد الله بن عمرو"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-5c92ce",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three co-transmitters after Muhammad b. Bashshar joined by «قالوا حدثنا» yield three routes through Abd Allah b. Bakr al-Muzani and Ata b. Abi Maymuna to Anas b. Malik.",
+     "source": "text",
+     "quote": "أخبرنا محمد بن بشار، قال حدثنا عبد الرحمن بن مهدي، وبهز بن أسد، وعفان بن مسلم، قالوا حدثنا عبد الله بن بكر المزني، قال حدثنا عطاء بن أبي ميمونة، ولا أعلمه إلا عن أنس بن مالك"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-6a0a7e",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs through Qutayba b. Sa'id, al-Layth, Yazid b. Abi Habib, Abu al-Tufayl Amir b. Wathila as one link, and Mu'adh b. Jabal, ending before the Prophet.",
+     "source": "text",
+     "quote": "حدثنا قتيبة بن سعيد، أخبرنا الليث، عن يزيد بن أبي حبيب، عن أبي الطفيل، عامر بن واثلة عن معاذ بن جبل"
+    },
+    {
+     "claim": "The closing note by Abu Dawud is the compiler's own remark and not a link.",
+     "source": "text",
+     "quote": "قال أبو داود ولم يرو هذا الحديث إلا قتيبة وحده"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

@@ -1,0 +1,208 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t02-eligible-p1-62",
+  "reviews": [
+    {
+      "id": "cr1-8839d1",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The nominative «وأبو معاوية» coordinates with «وكيع» as shaykhs of «علي بن محمد», so the three routes branch after «علي بن محمد» rather than after «وكيع».",
+          "source": "text",
+          "quote": "حدثنا علي بن محمد، حدثنا وكيع، عن ابن أبي ليلى، وخالي، يعلى عن عبد الملك، وأبو معاوية عن حجاج، كلهم عن عطاء، عن زيد بن خالد الجهني"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-8839d1",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "علي بن محمد", "kind": "narrator"}],
+              [{"surface": "وكيع", "kind": "narrator"}],
+              [{"surface": "ابن أبي ليلى", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "علي بن محمد", "kind": "narrator"}],
+              [{"surface": "يعلى", "kind": "narrator"}],
+              [{"surface": "عبد الملك", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "علي بن محمد", "kind": "narrator"}],
+              [{"surface": "أبو معاوية", "kind": "narrator"}],
+              [{"surface": "حجاج", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عطاء", "kind": "narrator"}],
+          [{"surface": "زيد بن خالد الجهني", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Three routes branch from «علي بن محمد»: «وكيع» from «ابن أبي ليلى», «يعلى» («وخالي، يعلى» is one man) from «عبد الملك», and «أبو معاوية» (nominative, parallel to «وكيع») from «حجاج», all meeting at «كلهم عن عطاء، عن زيد بن خالد الجهني»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f9bba5",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs in order through both distinct occurrences of «محمد» to «أبي هريرة», with the Prophet as the end of the chain.",
+          "source": "text",
+          "quote": "حدثني محمد، أخبرنا عبد الوهاب الثقفي، عن أيوب، عن محمد، عن أبي هريرة  رضى الله عنه  عن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-8d2268",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The tahwil «ح» splits two branches that converge at «قالا، حدثنا سفيان» and share the tail through «جابر», while the closing note on Ibn al-Muthanna's wording is not a route.",
+          "source": "text",
+          "quote": "وحدثنا محمد بن المثنى، حدثنا عبد الرحمن بن مهدي، ح وحدثنا محمد بن عبد، الله بن نمير حدثنا أبي قالا، حدثنا سفيان، عن أبي الزبير، عن جابر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b3d470",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from «يحيى بن يحيى» through «مالك» («قرأت على مالك») to «جابر بن عبد الله», keeping the stray comma in «أبي سلمة بن، عبد الرحمن» as written.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن يحيى، قال قرأت على مالك عن ابن شهاب، عن أبي سلمة بن، عبد الرحمن عن جابر بن عبد الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-eb428c",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The opening back reference «وَ عَنْهُ بِهَذَا الْإِسْنَادِ» inherits the three transmitters before «صَالِحِ بْنِ عُقْبَةَ» from prev1, then continues through «الْحَرْثِ بْنِ الْمُغِيرَةِ» to «أَبِي عَبْدِ اللَّهِ».",
+          "source": "text",
+          "quote": "3 وَ عَنْهُ بِهَذَا الْإِسْنَادِ عَنْ صَالِحِ بْنِ عُقْبَةَ عَنِ الْحَرْثِ بْنِ الْمُغِيرَةِ عَنْ أَبِي عَبْدِ اللَّهِ (ع)"
+        },
+        {
+          "claim": "The previous report supplies the three inherited links preceding «صَالِحِ بْنِ عُقْبَةَ».",
+          "source": "prev1",
+          "quote": "حَدَّثَنِي مُحَمَّدُ بْنُ جَعْفَرٍ الرَّزَّازُ عَنْ مُحَمَّدِ بْنِ الْحُسَيْنِ بْنِ أَبِي الْخَطَّابِ عَنْ مُحَمَّدِ بْنِ إِسْمَاعِيلَ عَنْ صَالِحِ بْنِ عُقْبَةَ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6ff477",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters at the first level converge on «معاذ بن هشام» and continue through «أبي» to «عياض بن حمار المجاشعي», with the wording glosses excluded.",
+          "source": "text",
+          "quote": "حدثني أبو غسان المسمعي، ومحمد بن المثنى، ومحمد بن بشار بن عثمان، - واللفظ لأبي غسان وابن المثنى - قالا حدثنا معاذ بن هشام، حدثني أبي، عن قتادة، عن  مطرف بن عبد الله بن الشخير، عن عياض بن حمار المجاشعي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6f862a",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from «يحيى بن يحيى» through «مالك» («قرأت على مالك») and the named links to «حفصة», who reports the Prophet's practice.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن يحيى، قال قرأت على مالك عن ابن شهاب، عن السائب بن يزيد، عن المطلب بن أبي وداعة السهمي، عن حفصة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-4474a2",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs through four transmitters ending at «أميمة بنت رقيقة», who relays the Prophet's words.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، حدثنا سفيان بن عيينة، أنه سمع محمد بن المنكدر، قال سمعت أميمة بنت رقيقة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a6a741",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two co-transmitters («أبو بكر بن أبي شيبة» and «ابن، نمير») converge at «قالا حدثنا سفيان», continuing through «عمرو» and «عمرو بن أوس» to «عبد الرحمن بن أبي بكر».",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وابن، نمير قالا حدثنا سفيان، عن عمرو، أخبره عمرو بن أوس، أخبرني عبد الرحمن بن أبي بكر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-735b86",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three co-transmitters at the first level converge on «ابن وهب» and continue through «مخرمة» and «أبيه» to «عائشة», excluding the wording gloss.",
+          "source": "text",
+          "quote": "وحدثني أبو الطاهر، وهارون بن سعيد الأيلي، وأحمد بن عيسى، - واللفظ لهارون وأحمد - قال أبو الطاهر أخبرنا وقال الآخران، حدثنا ابن وهب، أخبرني مخرمة، عن أبيه، عن سليمان بن يسار، عن عمرة، أنها سمعت عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

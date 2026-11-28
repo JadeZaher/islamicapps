@@ -1,0 +1,222 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t06-eligible-p1-64",
+  "reviews": [
+    {
+      "id": "cr1-1f0e33",
+      "decision": "confirm_with_correction",
+      "question": "Working rule 11: a fully written chain after the text ending «بهذا» (like «مثله»/«نحوه») is treated as a route of this saying.",
+      "reasons": [
+        {
+          "claim": "The opening chain runs from Ubayd b. Isma'il through Abu Usama, Ubayd Allah, and Sa'id b. Abi Sa'id to Abu Hurayra, with the Prophet not a link.",
+          "source": "text",
+          "quote": "حدثني عبيد بن إسماعيل، عن أبي أسامة، عن عبيد الله، قال أخبرني سعيد بن أبي سعيد، عن أبي هريرة"
+        },
+        {
+          "claim": "The second chain after the matn is fully written all the way to Abu Hurayra and the Prophet, so under working rule 11 it is a second route of this saying, and «بهذا» refers to the matn rather than an earlier isnad and must not be a back_reference link.",
+          "source": "text",
+          "quote": "حدثني محمد بن سلام أخبرنا عبدة عن عبيد الله عن سعيد عن أبي هريرة رضي الله عنه عن النبي صلى الله عليه وسلم بهذا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-1f0e33",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبيد بن إسماعيل", "kind": "narrator"}],
+              [{"surface": "أبي أسامة", "kind": "narrator"}],
+              [{"surface": "عبيد الله", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "سعيد بن أبي سعيد", "kind": "narrator"}],
+              [{"surface": "أبي هريرة", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "محمد بن سلام", "kind": "narrator"}],
+              [{"surface": "عبدة", "kind": "narrator"}],
+              [{"surface": "عبيد الله", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "سعيد", "kind": "narrator", "occurrence": 3}],
+              [{"surface": "أبي هريرة", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "The second chain after the matn is a full route under working rule 11; «بهذا» refers to the matn, not to an earlier isnad, so it is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-7ce182",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from the compiler's father through Sa'd b. Abd Allah, Muhammad b. Isa b. Ubayd, and Sulayman b. Hafs al-Marwazi to Abu al-Hasan as the Imam named in the text, kept as a bare kunya.",
+          "source": "text",
+          "quote": "حَدَّثَنا أَبي رَضِىَ اللهُ عَنْهُ قالَ: حَدَّثَنا سَعْدِ بْنِ عَبْدِ اللَّه، عَن مُحَمَّدِ بْنِ عِيسَى بْنِ عُبِيْد، عَن سُلَيْمان بن حَفْصٍ الْمَرْوَزِيِّ قالَ كَتَبَ إِلَيَّ أَبُو الْحَسَنِ‏ عَلَيْهِ السَّلامُ"
+        },
+        {
+          "claim": "The compiler's closing remark about which Imam is meant is commentary rather than a route.",
+          "source": "text",
+          "quote": "قالَ مُصَنِّفُ هذا الْكِتاب: لَقِي سُلَيْمان بْنِ حَفْصِ مُوسَى بْنِ جَعْفَر عَلَيْهِ السَّلامُ وَالرِّضا عَلَيْهِ السَّلامُ جَمِيعاً"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-325dea",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Ahmad b. Abd al-Rahman b. Bakkar b. Abd al-Malik b. al-Walid b. Busr b. Abi Artat through al-Walid, Shayban, al-A'mash, and Abi Salih to Ibn Abbas, ending at the Prophet who is not a link.",
+          "source": "text",
+          "quote": "حدثنا أحمد بن عبد الرحمن بن بكار بن عبد الملك بن الوليد بن بسر بن أبي أرطاة، حدثنا الوليد، حدثني شيبان، عن الأعمش، عن أبي صالح، عن ابن عباس، عن النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-121741",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Muhammad b. Bashshar through Muhammad b. Ja'far, Shu'ba, Mansur, and Rib'i b. Hirash to Abi Bakra, ending at the Prophet who is not a link.",
+          "source": "text",
+          "quote": "حدثنا محمد بن بشار، حدثنا محمد بن جعفر، حدثنا شعبة، عن منصور، عن ربعي بن حراش، عن أبي بكرة، عن النبي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-04f3ee",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report has two full chains separated by «ح», each running to Ibn Abbas.",
+          "source": "text",
+          "quote": "حدثنا عثمان بن أبي شيبة، حدثنا سفيان بن عيينة، عن الزهري، عن عبيد الله بن عبد الله، عن ابن عباس، قال جئت على حمار ح وحدثنا القعنبي، عن مالك، عن ابن شهاب، عن عبيد الله بن عبد الله بن عتبة، عن ابن عباس،"
+        },
+        {
+          "claim": "Abu Dawud's wording remark and Malik's own opinion at the end are not transmission links.",
+          "source": "text",
+          "quote": "قال أبو داود وهذا لفظ القعنبي وهو أتم ‏.‏ قال مالك وأنا أرى ذلك واسعا إذا قامت الصلاة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-295592",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Amr b. Khalid through Zuhayr, Abu Ishaq, and al-Bara to the unnamed group of Companions who witnessed Badr.",
+          "source": "text",
+          "quote": "حدثنا عمرو بن خالد، حدثنا زهير، حدثنا أبو إسحاق، قال سمعت البراء  رضى الله عنه  يقول حدثني أصحاب، محمد صلى الله عليه وسلم ممن شهد بدرا"
+        },
+        {
+          "claim": "Al-Bara's closing remark is commentary, not a separate isnad.",
+          "source": "text",
+          "quote": "قال البراء لا والله ما جاوز معه النهر إلا مؤمن"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-039b20",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three tahwil branches (with co-transmitters in the first two) converge at al-A'mash and the back reference «بهذا الإسناد», yielding five routes.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وأبو كريب قالا حدثنا أبو معاوية، ح وحدثنا إسحاق، بن إبراهيم وعلي بن خشرم قالا أخبرنا عيسى بن يونس، ح وحدثنا عثمان بن أبي، شيبة حدثنا جرير، كلهم عن الأعمش، بهذا الإسناد"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-eef78c",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two tahwil branches (with Ibn al-Muthanna and Ibn Bashshar as co-transmitters in the second) meet at Mu'adh b. Hisham and continue through his father, Qatada, Salih b. Abi Maryam Abi al-Khalil, and Abd Allah b. al-Harith to Umm al-Fadl.",
+          "source": "text",
+          "quote": "وحدثني أبو غسان المسمعي، حدثنا معاذ، ح وحدثنا ابن المثنى، وابن، بشار قالا حدثنا معاذ بن هشام، حدثني أبي، عن قتادة، عن صالح بن أبي مريم أبي الخليل، عن عبد الله بن الحارث، عن أم الفضل،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b72813",
+      "decision": "confirm_reading",
+      "question": "the author of a cited book («الكافي:»)",
+      "reasons": [
+        {
+          "claim": "The quoted chain runs from Ali b. Ibrahim through his father, Ibn Abi Umayr, Ibrahim b. Abd al-Hamid, and Ishaq b. Ghalib to Abu Abd Allah as imam_in_text, which is right as it stands if the cited book's author is not added (and would only prepend the author of al-Kafi if the owner ruled to add cited-book authors).",
+          "source": "text",
+          "quote": "الكافي: علي بن إبراهيم، عن أبيه، عن ابن أبي عمير، عن إبراهيم بن عبدالحميد عن إسحاق بن غالب قال: قال أبوعبدالله عليه السلام:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-fd3c4b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Hajjaj b. Abi Ya'qub al-Thaqafi through Mu'alla b. Mansur, Ibn al-Mubarak, Ma'mar, al-Zuhri, and Urwa to Umm Habiba.",
+          "source": "text",
+          "quote": "حدثنا حجاج بن أبي يعقوب الثقفي، حدثنا معلى بن منصور، حدثنا ابن المبارك، حدثنا معمر، عن الزهري، عن عروة، عن أم حبيبة،"
+        },
+        {
+          "claim": "Abu Dawud's closing gloss on Hasana is a compiler remark, not a link.",
+          "source": "text",
+          "quote": "قال أبو داود حسنة هي أمه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

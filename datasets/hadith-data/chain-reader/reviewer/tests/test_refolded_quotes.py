@@ -32,8 +32,10 @@ def pass_one() -> tuple[dict, dict]:
     for packet_path in sorted((BATCH / "packets").glob("packet-*.json")):
         packet = json.loads(packet_path.read_text(encoding="utf-8"))
         items.update({i["id"]: i for i in packet["items"]})
-        output = json.loads((io.outputs_dir(BATCH, "1") / packet_path.name.replace(".json", ".output.json")).read_text(encoding="utf-8"))
-        reviews.update({r["id"]: r for r in output["reviews"]})
+        output_path = io.outputs_dir(BATCH, "1") / packet_path.name.replace(".json", ".output.json")
+        if output_path.is_file():
+            output = json.loads(output_path.read_text(encoding="utf-8"))
+            reviews.update({r["id"]: r for r in output["reviews"]})
     return items, reviews
 
 
@@ -101,6 +103,8 @@ class QuoteRule(unittest.TestCase):
         """Over every reason quote of pass 1: whatever is accepted equals what the reviewer wrote letter for letter (marks and whitespace aside)."""
         checked = 0
         for opaque, review in self.reviews.items():
+            if opaque not in self.items:
+                continue
             for reason in review["reasons"]:
                 pool = v.quote_pool(self.items[opaque], reason["source"])
                 found = v.find_quote(reason["quote"], pool)

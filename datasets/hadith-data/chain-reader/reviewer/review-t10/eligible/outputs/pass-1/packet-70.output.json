@@ -1,0 +1,193 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t10-eligible-p1-70",
+ "reviews": [
+  {
+   "id": "cr1-b02dbf",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text states a single seven-link chain from Yahya b. Bukayr through Abu Salama b. Abd al-Rahman to Abu Hurayra.",
+     "source": "text",
+     "quote": "حدثنا يحيى بن بكير، حدثنا الليث، عن خالد بن يزيد، عن سعيد بن أبي هلال، عن هلال بن أسامة، أن أبا سلمة بن عبد الرحمن، أخبره عن أبي هريرة،"
+    },
+    {
+     "claim": "The Prophet ends the chain and is not a link.",
+     "source": "text",
+     "quote": "أن النبي صلى الله عليه وسلم كان يدعو في الصلاة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-5d5296",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three branches separated by tahwil meet at the shared tail beginning with Usama b. Zayd, with the gloss between dashes excluded.",
+     "source": "text",
+     "quote": "حدثنا هشام بن عمار، حدثنا حاتم بن إسماعيل، ح وحدثنا سليمان بن داود المهري، أخبرنا ابن وهب، أخبرني عبد العزيز بن محمد، ح وحدثنا نصر بن علي، حدثنا صفوان بن عيسى، - وهذا لفظ حديثه - كلهم عن أسامة بن زيد، عن الزهري، عن مالك بن أوس بن الحدثان،"
+    },
+    {
+     "claim": "Malik b. Aws relays Umar's direct speech as the matn, so Umar is the last link after Malik b. Aws under rulings 2 and 9.",
+     "source": "text",
+     "quote": "قال كان فيما احتج به عمر رضى الله عنه أنه قال كانت لرسول الله صلى الله عليه وسلم ثلاث صفايا"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-5d5296",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "هشام بن عمار",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حاتم بن إسماعيل",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "سليمان بن داود المهري",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "ابن وهب",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "عبد العزيز بن محمد",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "نصر بن علي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "صفوان بن عيسى",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "أسامة بن زيد",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "الزهري",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "مالك بن أوس بن الحدثان",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "عمر",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "Three tahwil branches share the tail from Usama b. Zayd through Malik b. Aws to Umar, whose words the report relays."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "medium",
+   "uncertainty_note": "The wording relays Umar's direct speech as the matn, making him the last link under rulings 2 and 9, though both readers stopped at Malik b. Aws."
+  },
+  {
+   "id": "cr1-22fb8a",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Harun b. Sa'id al-Ayli and Ahmad b. Isa are co-transmitters at the first level, followed by Ibn Wahb, Amr, Bukayr, Asim b. Umar b. Qatada, Ubayd Allah al-Khawlani, and Uthman b. Affan.",
+     "source": "text",
+     "quote": "حدثني هارون بن سعيد الأيلي، وأحمد بن عيسى، قالا حدثنا ابن وهب، أخبرني عمرو، أن بكيرا، حدثه أن عاصم بن عمر بن قتادة حدثه أنه، سمع عبيد الله الخولاني، يذكر أنه سمع عثمان بن عفان،"
+    },
+    {
+     "claim": "Bukayr's parenthetical doubt and Ibn Isa's wording note do not add new routes.",
+     "source": "text",
+     "quote": "وقال ابن عيسى في روايته"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-79e54f",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three co-transmitters share the chain from Abd al-Wahhab through Khalid al-Hadhdha and Abu Qilaba to al-Nu'man b. Bashir.",
+     "source": "text",
+     "quote": "حدثنا محمد بن المثنى، وأحمد بن ثابت، وجميل بن الحسن، قالوا حدثنا عبد الوهاب، حدثنا خالد الحذاء، عن أبي قلابة، عن النعمان بن بشير،"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-f7ab07",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single chain from Muhammad b. Rafi' through Hammam b. Munabbih to Abu Hurayra, with the Prophet ending the chain.",
+     "source": "text",
+     "quote": "حدثنا محمد بن رافع، حدثنا عبد الرزاق، حدثنا معمر، عن همام بن منبه، قال هذا ما حدثنا أبو هريرة، عن رسول الله صلى الله عليه وسلم"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

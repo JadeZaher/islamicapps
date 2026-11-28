@@ -1,0 +1,317 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t05-eligible-p1-18",
+ "reviews": [
+  {
+   "id": "cr1-368452",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Three co-transmitters converge on Ibn Abi Za'ida, and the parenthetical remark repeats the same narrator rather than adding a new link.",
+     "source": "text",
+     "quote": "وحدثنا هارون بن معروف، وسريج بن يونس، وأبو كريب جميعا عن ابن أبي زائدة، - قال هارون حدثنا ابن أبي زائدة، -"
+    },
+    {
+     "claim": "The shared tail continues through Asim al-Ahwal and Abd Allah b. Shaqiq to Ibn Umar, who relays the Prophet's saying.",
+     "source": "text",
+     "quote": "أخبرني عاصم الأحول، عن عبد الله بن شقيق، عن ابن عمر، أن النبي صلى الله عليه وسلم قال"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-4be297",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Muslim b. Ibrahim transmits from two co-transmitters, Hisham al-Dastawa'i and Aban b. Yazid, with an editor gloss omitted.",
+     "source": "text",
+     "quote": "حدثنا مسلم بن إبراهيم، أن هشاما الدستوائي، وأبان بن يزيد، حدثاهم - المعنى، -"
+    },
+    {
+     "claim": "Both routes share the tail through Yahya, Abu Qilaba, and Abu al-Muhallab to Imran b. Husayn, and the later notes on Aban's wording are not new routes.",
+     "source": "text",
+     "quote": "عن يحيى، عن أبي قلابة، عن أبي المهلب، عن عمران بن حصين"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-e1f211",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Both readers end the chain at the pronoun «عنه» as a back_reference, but «عنه» refers to the Companion Abu Kahil who is explicitly named in this report and whose words are relayed.",
+     "source": "text",
+     "quote": "عن إسماعيل بن أبي خالد، قال رأيت أبا كاهل وكانت له صحبة فحدثني أخي، عنه قال رأيت النبي"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-e1f211",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "محمد بن عبد الله بن نمير",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "وكيع",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "إسماعيل بن أبي خالد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أخي",
+         "kind": "relation"
+        }
+       ],
+       [
+        {
+         "surface": "أبا كاهل",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Isma'il b. Abi Khalid heard the report from his brother («أخي») from Abu Kahil («عنه» refers to «أبا كاهل» named just before), so «أبا كاهل» is the last link."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-f084f2",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "Both readers omit Jarir al-Razi, whom Uthman cites as an additional source alongside Abu Mu'awiya.",
+     "source": "text",
+     "quote": "حدثنا أبو بكر، وعثمان، ابنا أبي شيبة - المعنى قالا حدثنا أبو معاوية، قال عثمان وجرير الرازي ح"
+    },
+    {
+     "claim": "Both readers also omit al-A'mash and Abu Salih from the Abu Bakr and Uthman routes, whereas «عن الأعمش، عن أبي صالح» is written once after the tahwil and shared by all branches converging on Abu Hurayra.",
+     "source": "text",
+     "quote": "ح وحدثنا واصل بن عبد الأعلى، حدثنا أسباط، عن الأعمش، عن أبي صالح، - وقال واصل قال حدثت عن أبي صالح، ثم اتفقوا - عن أبي هريرة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-f084f2",
+    "status": "read",
+    "groups": [
+     {
+      "levels": [
+       [
+        {
+         "surface": "أبو بكر",
+         "kind": "narrator"
+        },
+        {
+         "surface": "عثمان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبو معاوية",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "عثمان",
+         "kind": "narrator",
+         "occurrence": 2
+        }
+       ],
+       [
+        {
+         "surface": "جرير الرازي",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     },
+     {
+      "levels": [
+       [
+        {
+         "surface": "واصل بن عبد الأعلى",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أسباط",
+         "kind": "narrator"
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": [
+     [
+      {
+       "surface": "الأعمش",
+       "kind": "narrator"
+      }
+     ],
+     [
+      {
+       "surface": "أبي صالح",
+       "kind": "narrator",
+       "occurrence": 1
+      }
+     ],
+     [
+      {
+       "surface": "أبي هريرة",
+       "kind": "narrator"
+      }
+     ]
+    ],
+    "needs_ruling": false,
+    "notes": [
+     "Uthman adds Jarir al-Razi alongside Abu Mu'awiya; all routes meet at al-A'mash -> Abu Salih -> Abu Hurayra."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "medium",
+   "uncertainty_note": "Wasil's parenthetical remark «وقال واصل قال حدثت عن أبي صالح» could alternatively represent an unnamed intermediary between al-A'mash and Abu Salih on Wasil's branch alone."
+  },
+  {
+   "id": "cr1-7f2ce8",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs cleanly through all seven named transmitters to Abu Hurayra, and «بمثله سواء» refers only to the saying's wording.",
+     "source": "text",
+     "quote": "وحدثني محمد بن حاتم، حدثنا مكي بن إبراهيم، حدثنا ابن جريج، عن زياد، عن ابن شهاب، أن أبا سلمة بن عبد الرحمن، أخبره أنه، سمع أبا هريرة، يقول قال رسول الله صلى الله عليه وسلم بمثله سواء"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-bd8f27",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs from Qutayba to Abu Hurayra, with «عن أخيه، عباد بن أبي سعيد» properly read as one link named by his name.",
+     "source": "text",
+     "quote": "أخبرنا قتيبة، قال حدثنا الليث، عن سعيد بن أبي سعيد، عن أخيه، عباد بن أبي سعيد أنه سمع أبا هريرة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-757bf2",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs through seven links to Umar, excluding the filler «يعني», keeping the bare relation «أبيه», and reading «عن جده، عمر» as one link.",
+     "source": "text",
+     "quote": "عن عمر بن عبد الله بن عمر يعني، عن أبيه، عن جده، عمر أنه تصدق بفرس"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-5c7521",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs from Ahmad b. Sulayman through Ya'la, Qudama, and Jasra to Aisha, with the honorific gloss omitted.",
+     "source": "text",
+     "quote": "أخبرنا أحمد بن سليمان، قال حدثنا يعلى، قال حدثنا قدامة، عن جسرة، قالت حدثتني عائشة، - رضى الله عنها - قالت"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-bb84e1",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The single chain runs from Amr b. Awn through Hammad (omitting the gloss «هو ابن زيد») and Thabit to Anas.",
+     "source": "text",
+     "quote": "حدثنا عمرو بن عون، حدثنا حماد  هو ابن زيد  عن ثابت، عن أنس، قال"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-cc3756",
+   "decision": "refer_to_human",
+   "question": "a source known only by a title: whether النجاشي, who speaks inside the narrated encounter, should be the last link after عامر بن شهر",
+   "reasons": [
+    {
+     "claim": "The chain up to Amir b. Shahr is clear and agreed by both readers, with the editor gloss «- يعني الشعبي -» omitted.",
+     "source": "text",
+     "quote": "حدثنا إسماعيل بن عمر، أخبرنا إبراهيم بن موسى، أخبرنا ابن أبي زائدة، عن مجالد، عن عامر، - يعني الشعبي - عن عامر بن شهر"
+    },
+    {
+     "claim": "In the narrated encounter, al-Najashi speaks the closing words, so whether he is the last link turns on the unruled question of a source known only by a title.",
+     "source": "text",
+     "quote": "كنت عند النجاشي فقرأ ابن له آية من الإنجيل فضحكت فقال ‏:‏ أتضحك من كلام الله"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "medium",
+   "uncertainty_note": "Both readers' chain up to عامر بن شهر is right if النجاشي is not a link, whereas ruling 9 would add النجاشي as the last link if a source known only by a title counts."
+  }
+ ]
+}

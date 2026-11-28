@@ -1,0 +1,938 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t05-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-126fbe",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first saying is transmitted from Abu al-Walid through Ishaq ibn Sa'id and his father to Umm Khalid bint Khalid.",
+          "source": "text",
+          "quote": "حدثنا أبو الوليد، حدثنا إسحاق بن سعيد بن عمرو بن سعيد بن العاص، قال حدثني أبي قال، حدثتني أم خالد بنت خالد"
+        },
+        {
+          "claim": "A second saying with its own isnad follows the matn, keeping the head up to Ishaq and ending at an unnamed woman of his family.",
+          "source": "text",
+          "quote": "قال إسحاق حدثتني امرأة من أهلي أنها رأته على أم خالد"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-126fbe",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "أتي رسول الله صلى الله عليه وسلم",
+            "levels": [
+              [
+                {
+                  "surface": "أبو الوليد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "إسحاق بن سعيد بن عمرو بن سعيد بن العاص",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي",
+                  "kind": "relation"
+                }
+              ],
+              [
+                {
+                  "surface": "أم خالد بنت خالد",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "أنها رأته على أم خالد",
+            "levels": [
+              [
+                {
+                  "surface": "أبو الوليد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "إسحاق بن سعيد بن عمرو بن سعيد بن العاص",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "امرأة من أهلي",
+                  "kind": "unnamed"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Two sayings in one report (ruling 10): the closing sighting reported by Ishaq from an unnamed woman of his family is stored as saying 2."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f084f2",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Uthman adds Jarir al-Razi as a second source alongside Abu Mu'awiyah before the tahwil.",
+          "source": "text",
+          "quote": "قالا حدثنا أبو معاوية، قال عثمان وجرير الرازي ح"
+        },
+        {
+          "claim": "The branches meet at al-A'mash, continuing through Abi Salih to Abi Hurayrah as the shared tail.",
+          "source": "text",
+          "quote": "عن الأعمش، عن أبي صالح، - وقال واصل قال حدثت عن أبي صالح، ثم اتفقوا - عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-f084f2",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو بكر",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "عثمان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبو معاوية",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عثمان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "جرير الرازي",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "واصل بن عبد الأعلى",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أسباط",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "الأعمش",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي صالح",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي هريرة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Uthman's route through Jarir al-Razi is restored, and all branches share the tail from al-A'mash through Abi Salih to Abi Hurayrah."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Wasil's parenthetical wording remark («قال حدثت عن أبي صالح») could alternatively be read as adding an unnamed link before Abi Salih in Wasil's branch."
+    },
+    {
+      "id": "cr1-f31e78",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two isnads lead to Abd al-Salam ibn Salih al-Harawi, who narrates an encounter with Imam al-Rida.",
+          "source": "text",
+          "quote": "عَن عَبْد السَّلامُ بْنِ صالِح الهَرَوِيِّ قالَ: رُفِعَ إِلَى الْمَأْمُونِ"
+        },
+        {
+          "claim": "Imam Abu al-Hasan al-Rida speaks inside the narrated encounter, so he is the last link under ruling 9.",
+          "source": "text",
+          "quote": "فَخَرَجَ أَبُو الْحَسَنِ الرِّضَا عَلَيْهِ السَّلامُ مَنْ عِنْدِهِ مُغْضَباً وَهُوَ يُدَمْدِمُ بِشَفَتَيْهِ وَيَقُـولُ:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-f31e78",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عَلِىِّ بْنِ عَبْدِ اللَّه بْنِ الوَرَّاقُ",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "الحُسَيْنِبْنِ إِبْراهيمِ بْنِ أَحْمَدِ بْنِ هِشامِ المُؤَدِّبُ",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "حَمْزَة بْنِ مُحَمَّدِ بْنِ أحْمَد العَلَوِي",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "أَحْمَدِ بْنِ زِيادِ بْنِ جَعْفَر الْهَمَذانيّ",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عَلِىِّ بْنِ إِبراهِيمِ بْنِ هاشِم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أَبيهِ",
+                  "kind": "relation"
+                }
+              ],
+              [
+                {
+                  "surface": "عَبْد السَّلامُ بْنِ صالِح الهَرَوِيِّ",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "مُحَمَّد جَعْفَرِ بْنِ نُعَيْم بن شاذان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أَحْمَدِ بْنِ إِدْرِيس",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "إِبْراهيمِ بْنِ هاشِم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عَبْد السَّلامُ بْنِ صالِح الهَرَوِيِّ",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "أَبُو الْحَسَنِ الرِّضَا",
+              "kind": "imam_in_text"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Added Imam Abu al-Hasan al-Rida as the last link (imam_in_text) under ruling 9 because he speaks in the narrated encounter."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-240a9c",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The father of Iyad ibn Iyad narrates an encounter in which Salman speaks, making Salman the last link under ruling 9.",
+          "source": "text",
+          "quote": "عن عياض بن عياض ، عن أبيه قال: مر علي بن أبي طالب عليه السلام بملا فيهم سلمان رحمة الله عليه فقال لهم سلمان:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-240a9c",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو الحسن علي بن خالد المراغي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "القاسم ابن محمد الدلال",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "إسماعيل بن محمد المزني",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عثمان بن سعيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "علي بن غراب",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "موسى بن قيس الحضرمي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سلمة بن كهيل",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عياض بن عياض",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبيه",
+                  "kind": "relation"
+                }
+              ],
+              [
+                {
+                  "surface": "سلمان",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Salman speaks inside the narrated encounter and is therefore the last link (ruling 9); Ali only passes by and is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-96cd95",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The word «أو» in «حدثنا أو، سمعت» is the conjunction 'or' between transmission verbs, not a narrator link.",
+          "source": "text",
+          "quote": "حدثنا سعيد بن ميناء، حدثنا أو، سمعت جابر بن عبد الله"
+        },
+        {
+          "claim": "The closing «تابعه قتيبة» is a variant remark about another version, not a route of this saying (ruling 6).",
+          "source": "text",
+          "quote": "تابعه قتيبة عن ليث، عن خالد، عن سعيد بن أبي هلال، عن جابر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-96cd95",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن عبادة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "يزيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سليم بن حيان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سعيد بن ميناء",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "جابر بن عبد الله",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "variant": true,
+            "levels": [
+              [
+                {
+                  "surface": "قتيبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ليث",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "خالد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سعيد بن أبي هلال",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "جابر",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Removed «أو» (conjunction 'or' in «حدثنا أو، سمعت») and marked «تابعه قتيبة» as a variant remark (ruling 6)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-4a2f9f",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The second isnad «وحدثنا عاصم، عن زر» is Sufyan's second route, so it keeps the head Ali ibn Abd Allah -> Sufyan.",
+          "source": "text",
+          "quote": "حدثنا علي بن عبد الله، حدثنا سفيان، حدثنا عبدة بن أبي لبابة، عن زر بن حبيش، وحدثنا عاصم، عن زر"
+        },
+        {
+          "claim": "Both routes meet at Zirr, who asks Ubayy ibn Ka'b, making Ubayy the shared tail.",
+          "source": "text",
+          "quote": "قال سألت أبى بن كعب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-4a2f9f",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سفيان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبدة بن أبي لبابة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "زر بن حبيش",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سفيان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عاصم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "زر",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "أبى بن كعب",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Kept the shared head Ali ibn Abd Allah -> Sufyan on the second route before Asim -> Zirr."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-b83801",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three branches are stated and meet at «جميعا عن يحيى بن أبي كثير» through Ikrimah to Ibn Abbas.",
+          "source": "text",
+          "quote": "حدثنا مسدد، حدثنا يحيى بن سعيد، وحدثنا إسماعيل، عن هشام، وحدثنا عثمان بن أبي شيبة، حدثنا يعلى بن عبيد، حدثنا حجاج الصواف، جميعا عن يحيى بن أبي كثير، عن عكرمة، عن ابن عباس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "medium",
+      "uncertainty_note": "The phrase «عن هشام» could alternatively apply to both Yahya ibn Sa'id and Isma'il rather than Isma'il alone."
+    },
+    {
+      "id": "cr1-e2fac0",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The dual «قالا حدثنا وكيع» belongs only to Abu Bakr ibn Abi Shaybah and Ali ibn Muhammad, not to Hammad ibn Zayd.",
+          "source": "text",
+          "quote": "حدثنا عبد الله بن الجراح، حدثنا حماد بن زيد، ح وحدثنا أبو بكر بن أبي شيبة، وعلي بن محمد، قالا حدثنا وكيع، عن هشام بن عروة"
+        },
+        {
+          "claim": "The two branches meet at Hisham ibn Urwah, continuing through his father to A'ishah.",
+          "source": "text",
+          "quote": "عن هشام بن عروة، عن أبيه، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-e2fac0",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبد الله بن الجراح",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حماد بن زيد",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو بكر بن أبي شيبة",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "علي بن محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "وكيع",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "هشام بن عروة",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبيه",
+              "kind": "relation"
+            }
+          ],
+          [
+            {
+              "surface": "عائشة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Moved Waki' into group 2 so Hammad ibn Zayd meets Waki' at Hisham ibn Urwah."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-949485",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The dual «كلاهما عن ابن جريج، أخبرني زياد» joins both Rawh (branch 3) and Abu Asim (branch 4) through Ibn Jurayj and Ziyad.",
+          "source": "text",
+          "quote": "حدثنا روح، ح وحدثنا عقبة بن مكرم، وأحمد بن عثمان النوفلي، قالا حدثنا أبو عاصم، كلاهما عن ابن جريج، أخبرني زياد"
+        },
+        {
+          "claim": "All four branches meet at «كلهم عن ابن شهاب، بإسناد مالك» as the shared tail.",
+          "source": "text",
+          "quote": "كلهم عن ابن شهاب، بإسناد مالك"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-949485",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو الطاهر",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "حرملة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن وهب",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "يونس",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبد بن حميد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الرزاق",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "معمر",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن عبد الله بن نمير",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "روح",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن جريج",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "زياد",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عقبة بن مكرم",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "أحمد بن عثمان النوفلي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبو عاصم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن جريج",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "زياد",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "ابن شهاب",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "بإسناد مالك",
+              "kind": "back_reference"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Added Ibn Jurayj -> Ziyad to branch 3 (Rawh) as required by «كلاهما عن ابن جريج، أخبرني زياد»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-74c3c9",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Al-Husayn ibn Ali narrates an encounter in which his father Ali speaks and relays the Prophet's practice, making Ali the last link under rulings 2 and 9.",
+          "source": "text",
+          "quote": "أن الحسين بن علي، قال دعاني أبي علي بوضوء"
+        },
+        {
+          "claim": "Ali explicitly states that he saw the Prophet perform this ablution.",
+          "source": "text",
+          "quote": "فلما رآني قال لا تعجب فإني رأيت أباك النبي صلى الله عليه وسلم يصنع مثل ما رأيتني صنعت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-74c3c9",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "إبراهيم بن الحسن المقسمي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حجاج",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن جريج",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "شيبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد بن علي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "علي",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ],
+              [
+                {
+                  "surface": "الحسين بن علي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "علي",
+                  "kind": "narrator",
+                  "occurrence": 4
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added Ali (occurrence 4) as the last link because he speaks and relays the Prophet's practice inside al-Husayn's narrated encounter (rulings 2 and 9)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

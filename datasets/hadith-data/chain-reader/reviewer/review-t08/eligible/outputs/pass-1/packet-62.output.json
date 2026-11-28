@@ -1,0 +1,376 @@
+{
+ "format": "shura-chain-review-output/1",
+ "specialist_id": "chain-reviewer",
+ "prompt_version": "1.1.0",
+ "packet_id": "review-t08-eligible-p1-62",
+ "reviews": [
+  {
+   "id": "cr1-bb9210",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single linear chain of seven named transmitters from Abu al-Hasan Ali b. Khalid al-Maraghi to Wathila b. al-Asqa.",
+     "source": "text",
+     "quote": "أخبرني أبو الحسن علي بن خالد المراغي قال: حدثنا عبد الكريم ابن محمد البجلي قال: حدثنا عثمان بن أبي شيبة قال: حدثنا محمد بن مصعب القرقساني قال: حدثنا الأوزاعي قال: حدثنا شداد أبو عمار، عن واثلة بن الأسقع"
+    },
+    {
+     "claim": "The Prophet ends the chain and is not a link.",
+     "source": "text",
+     "quote": "قال رسول الله صلى الله عليه وآله:"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-7c1e2c",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single chain of six links ending at Ali, with the bare second Muhammad kept as written and the Prophet ending the chain.",
+     "source": "text",
+     "quote": "أخبرنا محمد بن بشار، قال حدثنا محمد، قال حدثنا شعبة، عن عاصم بن كليب، عن أبي بردة، قال سمعت عليا، يقول نهاني نبي الله صلى الله عليه وسلم"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-4ed31d",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The opening chain has five named transmitters, with the gloss identifying Umara omitted from his surface.",
+     "source": "text",
+     "quote": "أخبرنا محمد بن العلاء، قال حدثنا أبو معاوية، عن الأعمش، عن عمارة، هو ابن عمير عن عبد الرحمن بن يزيد،"
+    },
+    {
+     "claim": "In this narrated encounter, Abd Allah speaks inside Abd al-Rahman's account and is therefore the last link.",
+     "source": "text",
+     "quote": "قال أكثروا على عبد الله ذات يوم فقال عبد الله"
+    },
+    {
+     "claim": "The closing remark by Abu Abd al-Rahman is a compiler comment, not a link.",
+     "source": "text",
+     "quote": "قال أبو عبد الرحمن هذا الحديث جيد جيد"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-117683",
+   "decision": "confirm_with_correction",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The opening chain runs through eleven links from Ahmad b. al-Hasan al-Qattan to Harthama b. Abi Muslim, including an unnamed transmitter.",
+     "source": "text",
+     "quote": "حدثنا أحمد بن الحسن القطان، قال: حدثنا الحسن بن علي السكري، قال: حدثنا محمد بن زكريا، قال: حدثنا قيس بن حفص الدارمي، قال: حدثني حسين الاشقر، قال: حدثنا منصور بن أبي الاسود (3)، عن أبي حسان التيمي، عن نشيط بن عبيد، عن رجل منهم، عن جرداء بنت سمين، عن زوجها هرثمة بن أبي مسلم،"
+    },
+    {
+     "claim": "Both readers stopped at Harthama, but under the narrated-encounter ruling Ali b. Abi Talib speaks in the first part of Harthama's story and is the last link of that saying.",
+     "source": "text",
+     "quote": "غزونا مع علي بن أبي طالب (عليه السلام) صفين، فلما انصرفنا نزل كربلاء فصلى بها الغداة، ثم رفع إليه من تربتها فشمها، ثم قال: واها لك أيتها التربة، ليحشرن منك أقوام يدخلون الجنة بغير حساب."
+    },
+    {
+     "claim": "Al-Husayn speaks in the second encounter inside Harthama's story, so his saying keeps its own route ending at al-Husayn.",
+     "source": "text",
+     "quote": "ثم صرت إلى الحسين (عليه السلام)، فسلمت عليه وأخبرته بما سمعت من أبيه في ذلك المنزل الذي نزل به الحسين (عليه السلام) فقال: معنا أنت أم علينا؟"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": {
+    "id": "cr1-117683",
+    "status": "read",
+    "groups": [
+     {
+      "saying": 1,
+      "saying_opens": "واها لك أيتها التربة، ليحشرن منك",
+      "levels": [
+       [
+        {
+         "surface": "أحمد بن الحسن القطان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الحسن بن علي السكري",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن زكريا",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "قيس بن حفص الدارمي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حسين الاشقر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "منصور بن أبي الاسود",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي حسان التيمي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "نشيط بن عبيد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "رجل منهم",
+         "kind": "unnamed"
+        }
+       ],
+       [
+        {
+         "surface": "جرداء بنت سمين",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "هرثمة بن أبي مسلم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "علي بن أبي طالب",
+         "kind": "imam_in_text"
+        }
+       ]
+      ]
+     },
+     {
+      "saying": 2,
+      "saying_opens": "معنا أنت أم علينا؟",
+      "levels": [
+       [
+        {
+         "surface": "أحمد بن الحسن القطان",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الحسن بن علي السكري",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "محمد بن زكريا",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "قيس بن حفص الدارمي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "حسين الاشقر",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "منصور بن أبي الاسود",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "أبي حسان التيمي",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "نشيط بن عبيد",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "رجل منهم",
+         "kind": "unnamed"
+        }
+       ],
+       [
+        {
+         "surface": "جرداء بنت سمين",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "هرثمة بن أبي مسلم",
+         "kind": "narrator"
+        }
+       ],
+       [
+        {
+         "surface": "الحسين",
+         "kind": "imam_in_text",
+         "occurrence": 1
+        }
+       ]
+      ]
+     }
+    ],
+    "shared_tail": null,
+    "needs_ruling": false,
+    "notes": [
+     "Two Imams speak in Harthama's narrated encounter (Ali b. Abi Talib and al-Husayn), so each saying keeps its own route ending at the Imam who speaks."
+    ],
+    "fixes": []
+   },
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-501c79",
+   "decision": "no_chain",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The report consists only of a bracketed heading and ritual instructions with no transmitter or isnad.",
+     "source": "text",
+     "quote": "[دخول الكعبة] وإن أحببت أن تدخل الكعبة فأدخلها"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-30dc31",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The opening chain has five named transmitters down to Ubayd Allah al-Bazzaz al-Naysaburi, with the aside about his age omitted.",
+     "source": "text",
+     "quote": "حَدَّثَنا أَبُو الحَسَنِ أَحْمَدُ بْنُ مُحَمَّدِ بْنِ الحُسَيْنِ البَزَّازِ قالَ: حَدَّثَنا أَبُو طاهِرٍ السَّامانِيُّ قالَ: حَدَّثَنا أَبُو القاسِمِ بِشرُ بْنِ مُحَمَّدِ بْنِ بَشِيرٍ قالَ: حَدَّثَني أَبُو الحُسَيْنِ أَحْمَدُ بْنُ ماهانَ قالَ: حَدَّثَني عُبِيْدُ اللَّهِ البَزَّازُ النِيْسابُوريُّ وَكانَ مُسِنّاً"
+    },
+    {
+     "claim": "Ubayd Allah narrates an encounter with Humayd b. Qahtaba al-Ta'i al-Tusi, who speaks inside the story and is therefore the last link.",
+     "source": "text",
+     "quote": "فَقالَ حَمِيدٌ: ما لَكَ لا تَأكُلُ؟"
+    },
+    {
+     "claim": "The closing remark of the book's author is a compiler comment and not a link.",
+     "source": "text",
+     "quote": "قالَ مُصَنِّفُ هذا الْكِتابِ:"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-102921",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single chain of six links ending at Samura b. Jundab before the Prophet, with the hedge between al-Hasan and Samura excluded.",
+     "source": "text",
+     "quote": "حدثنا محمد بن عبد الله بن نمير، حدثنا عبدة بن سليمان، عن سعيد، عن قتادة، عن الحسن، إن شاء الله عن سمرة بن جندب، قال قال رسول الله"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-3a6a45",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text gives a single linear chain of six named transmitters ending at Abu Mas'ud.",
+     "source": "text",
+     "quote": "حدثني بشر بن خالد أبو محمد، أخبرنا محمد بن جعفر، عن شعبة، عن سليمان، عن أبي وائل، عن أبي مسعود، قال لما أمرنا بالصدقة"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-90ec71",
+   "decision": "confirm_reading",
+   "question": "implicit transmission in Shu'ba's follow-up meetings («ثم لقيته بعد فسألته»)",
+   "reasons": [
+    {
+     "claim": "The opening chain has six links ending at Abu Barza, with Sayyar's father as the asker and Abu Barza as the one asked who answers.",
+     "source": "text",
+     "quote": "وحدثنا يحيى بن حبيب الحارثي، حدثنا خالد بن الحارث، حدثنا شعبة، أخبرني سيار بن سلامة، قال سمعت أبي يسأل أبا برزة،"
+    },
+    {
+     "claim": "Shu'ba's later follow-up meetings refer back to the same transmitter, so the single route is right regardless of how implicit transmission is ruled.",
+     "source": "text",
+     "quote": "قال شعبة ثم لقيته بعد فسألته فقال"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  },
+  {
+   "id": "cr1-51d884",
+   "decision": "confirm_reading",
+   "question": null,
+   "reasons": [
+    {
+     "claim": "The text names only Hudba and Hammam before the saying, with no further transmitter named.",
+     "source": "text",
+     "quote": "حدثنا هدبة، حدثنا همام، وقال، اعتمر أربع عمر"
+    }
+   ],
+   "variant_verdicts": [],
+   "corrected_reading": null,
+   "uncertainty": "low",
+   "uncertainty_note": ""
+  }
+ ]
+}

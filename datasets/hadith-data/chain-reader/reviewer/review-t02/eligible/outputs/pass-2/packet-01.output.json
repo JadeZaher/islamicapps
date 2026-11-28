@@ -1,0 +1,468 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t02-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-52e1c4",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from al-Saduq through eleven links to «أبيه», omitting the glosses «يقال» and «قراءة», and then «أمير المؤمنين» speaks inside the narrated encounter so he is the last link (imam_in_text) under rulings 2 and 9.",
+          "source": "text",
+          "quote": "عن أبيه عليهم السلام قال: بينا أمير المؤمنين صلوات الله عليه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-52e1c4",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن إبراهيم بن إسحاق", "kind": "narrator"}],
+              [{"surface": "أحمد بن محمد الهمدان", "kind": "narrator"}],
+              [{"surface": "الحسن بن القاسم", "kind": "narrator"}],
+              [{"surface": "علي بن إبراهيم المعلى", "kind": "narrator"}],
+              [{"surface": "أبو عبد الله محمد بن خالد", "kind": "narrator"}],
+              [{"surface": "عبد الله بن بكر المرادي", "kind": "narrator"}],
+              [{"surface": "موسى بن جعفر", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation", "occurrence": 1}],
+              [{"surface": "جده", "kind": "relation"}],
+              [{"surface": "علي بن الحسين", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation", "occurrence": 2}],
+              [{"surface": "أمير المؤمنين", "kind": "imam_in_text", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added «أمير المؤمنين» as imam_in_text last link because he is the Imam who speaks in the narrated encounter."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-67039c",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In Shaqiq b. Salama's narrated encounter, Abu Mas'ud speaks first and is the last link of the first saying under ruling 9.",
+          "source": "text",
+          "quote": "كنت جالسا مع أبي مسعود وأبي موسى وعمار فقال أبو مسعود"
+        },
+        {
+          "claim": "Ammar also speaks in the same encounter, so his saying keeps its own chain under rulings 9 and 10, while Abu Musa does not speak and stays out.",
+          "source": "text",
+          "quote": "قال عمار يا أبا مسعود"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-67039c",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "ما من أصحابك أحد إلا لو شئت",
+            "levels": [
+              [{"surface": "عبدان", "kind": "narrator"}],
+              [{"surface": "أبي حمزة", "kind": "narrator"}],
+              [{"surface": "الأعمش", "kind": "narrator"}],
+              [{"surface": "شقيق بن سلمة", "kind": "narrator"}],
+              [{"surface": "أبو مسعود", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "يا أبا مسعود وما رأيت منك",
+            "levels": [
+              [{"surface": "عبدان", "kind": "narrator"}],
+              [{"surface": "أبي حمزة", "kind": "narrator"}],
+              [{"surface": "الأعمش", "kind": "narrator"}],
+              [{"surface": "شقيق بن سلمة", "kind": "narrator"}],
+              [{"surface": "عمار", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Two speakers (Abu Mas'ud and Ammar) in Shaqiq's narrated encounter each keep their own chain; Abu Musa is merely present and does not speak."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-665587",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The dual verb «قالا حدثنا وكيع» attaches Waki' to the two co-transmitters Ali b. Muhammad and Amr b. Abd Allah, so the two taḥwīl branches meet at Ibrahim b. Yazid al-Makki rather than Waki'.",
+          "source": "text",
+          "quote": "ح وحدثنا علي بن محمد، وعمرو بن عبد الله، قالا حدثنا وكيع، حدثنا إبراهيم بن يزيد المكي"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-665587",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "هشام بن عمار", "kind": "narrator"}],
+              [{"surface": "مروان بن معاوية", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "علي بن محمد", "kind": "narrator"},
+                {"surface": "عمرو بن عبد الله", "kind": "narrator"}
+              ],
+              [{"surface": "وكيع", "kind": "narrator", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "إبراهيم بن يزيد المكي", "kind": "narrator"}],
+          [{"surface": "محمد بن عباد بن جعفر المخزومي", "kind": "narrator"}],
+          [{"surface": "ابن عمر", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«قالا حدثنا وكيع» belongs to the second group; both Marwan b. Mu'awiya and Waki' meet at Ibrahim b. Yazid al-Makki."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "The dual «قالا» clearly attaches Waki' to the second branch, though the wording does not repeat «قالا» before Ibrahim b. Yazid."
+    },
+    {
+      "id": "cr1-d4bb0e",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Sa'id b. Jubayr first relays a saying from Abd Allah b. Umar.",
+          "source": "text",
+          "quote": "قال سمعت عبد الله بن عمر، يقول"
+        },
+        {
+          "claim": "Sa'id then visits Ibn Abbas and asks him, and Ibn Abbas confirms the saying and explains it, forming a second saying with Ibn Abbas as last link under rulings 3, 9, and 10.",
+          "source": "text",
+          "quote": "فدخلت على ابن عباس فقلت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-d4bb0e",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "حرم رسول الله صلى الله عليه وسلم",
+            "levels": [
+              [
+                {"surface": "موسى بن إسماعيل", "kind": "narrator"},
+                {"surface": "مسلم بن إبراهيم", "kind": "narrator"}
+              ],
+              [{"surface": "جرير", "kind": "narrator"}],
+              [{"surface": "يعلى", "kind": "narrator"}],
+              [{"surface": "سعيد بن جبير", "kind": "narrator"}],
+              [{"surface": "عبد الله بن عمر", "kind": "narrator"}]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "صدق حرم رسول الله صلى الله عليه وسلم",
+            "levels": [
+              [
+                {"surface": "موسى بن إسماعيل", "kind": "narrator"},
+                {"surface": "مسلم بن إبراهيم", "kind": "narrator"}
+              ],
+              [{"surface": "جرير", "kind": "narrator"}],
+              [{"surface": "يعلى", "kind": "narrator"}],
+              [{"surface": "سعيد بن جبير", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Both Ibn Umar's saying and Ibn Abbas's confirmation/explanation in Sa'id b. Jubayr's encounter are stored as separate sayings."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a50a3f",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Malik b. Aws narrates an encounter in which Umar speaks and relays the Prophet's saying, making Umar the last link under ruling 9.",
+          "source": "text",
+          "quote": "فقال مالك انطلقت حتى أدخل على عمر"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-a50a3f",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "سعيد بن عفير", "kind": "narrator"}],
+              [{"surface": "الليث", "kind": "narrator"}],
+              [{"surface": "عقيل", "kind": "narrator"}],
+              [{"surface": "ابن شهاب", "kind": "narrator"}],
+              [{"surface": "مالك بن أوس بن الحدثان", "kind": "narrator"}],
+              [{"surface": "عمر", "kind": "narrator", "occurrence": 1}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added «عمر» as the last link because he is the source who speaks and quotes the Prophet in Malik's narrated encounter."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-36d34b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The second branch «وابن، جريج عن عطاء» is conjoined to Amr under Sufyan, so it keeps the head Abd al-Jabbar and Sufyan rather than starting directly from al-Nasa'i.",
+          "source": "text",
+          "quote": "عن سفيان، عن عمرو، عن عطاء، عن صفوان بن يعلى، عن يعلى، وابن، جريج عن عطاء"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-36d34b",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبد الجبار", "kind": "narrator"}],
+              [{"surface": "سفيان", "kind": "narrator"}],
+              [{"surface": "عمرو", "kind": "narrator"}],
+              [{"surface": "عطاء", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "صفوان بن يعلى", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "يعلى", "kind": "narrator", "occurrence": 2}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "عبد الجبار", "kind": "narrator"}],
+              [{"surface": "سفيان", "kind": "narrator"}],
+              [{"surface": "ابن، جريج", "kind": "narrator"}],
+              [{"surface": "عطاء", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "صفوان بن يعلى", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "يعلى", "kind": "narrator", "occurrence": 4}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "The second branch retains the shared head «عبد الجبار» and «سفيان» before «ابن، جريج»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-28b9b1",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The singular «قال حدثنا ابن علية» belongs to Ya'qub b. Ibrahim in the second branch, so the two taḥwīl branches meet at Abd al-Aziz b. Suhayb rather than Ibn Ulayya.",
+          "source": "text",
+          "quote": "ح وحدثنا يعقوب بن إبراهيم، - المعنى - قال حدثنا ابن علية، عن عبد العزيز بن صهيب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-28b9b1",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "داود بن معاذ", "kind": "narrator"}],
+              [{"surface": "عبد الوارث", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "يعقوب بن إبراهيم", "kind": "narrator"}],
+              [{"surface": "ابن علية", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عبد العزيز بن صهيب", "kind": "narrator"}],
+          [{"surface": "أنس", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«قال حدثنا ابن علية» is singular for Ya'qub b. Ibrahim; both branches meet at Abd al-Aziz b. Suhayb."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3b7a23",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Ibn Umar asks Bilal whether and where the Prophet prayed inside the Ka'ba and Bilal answers, making Bilal the last link after Ibn Umar under rulings 3 and 9.",
+          "source": "text",
+          "quote": "فقلت لبلال هل صلى فيه رسول الله صلى الله عليه وسلم قال نعم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-3b7a23",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "أبو الربيع الزهراني", "kind": "narrator"},
+                {"surface": "قتيبة بن سعيد", "kind": "narrator"},
+                {"surface": "أبو كامل الجحدري", "kind": "narrator"}
+              ],
+              [{"surface": "حماد بن زيد", "kind": "narrator"}],
+              [{"surface": "أيوب", "kind": "narrator"}],
+              [{"surface": "نافع", "kind": "narrator"}],
+              [{"surface": "ابن عمر", "kind": "narrator"}],
+              [{"surface": "بلال", "kind": "narrator", "occurrence": 3}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added «بلال» as the last link because Ibn Umar asks him and he answers."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a212e9",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In this Imami report, al-Hasan al-Basri narrates a scene in which «أمير المؤمنين» speaks from the pulpit of Basra, making «أمير المؤمنين» the last link (imam_in_text) under rulings 2 and 9.",
+          "source": "text",
+          "quote": "عن الحسن البصري، قال: صعد أمير المؤمنين عليه السلام منبر البصرة فقال:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-a212e9",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "علي بن عيسى المجاور", "kind": "narrator"}],
+              [{"surface": "علي بن محمد بن بندار", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation"}],
+              [{"surface": "محمد بن علي المقري", "kind": "narrator"}],
+              [{"surface": "محمد بن سنان", "kind": "narrator"}],
+              [{"surface": "مالك ابن عطية", "kind": "narrator"}],
+              [{"surface": "ثوير بن سعيد", "kind": "narrator"}],
+              [{"surface": "سعيد بن علاقة", "kind": "narrator"}],
+              [{"surface": "الحسن البصري", "kind": "narrator"}],
+              [{"surface": "أمير المؤمنين", "kind": "imam_in_text"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added «أمير المؤمنين» as imam_in_text last link because he speaks in the scene narrated by al-Hasan al-Basri."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-61bb4b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Qatada explicitly assigns the first part of the report to Anas and the second part («هنيئا مريئا») to Ikrima, so both sayings keep their own route under ruling 10.",
+          "source": "text",
+          "quote": "وأما هنيئا مريئا فعن عكرمة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-61bb4b",
+        "status": "read",
+        "groups": [
+          {
+            "saying": 1,
+            "saying_opens": "إنا فتحنا لك فتحا مبينا",
+            "levels": [
+              [{"surface": "أحمد بن إسحاق", "kind": "narrator"}],
+              [{"surface": "عثمان بن عمر", "kind": "narrator"}],
+              [{"surface": "شعبة", "kind": "narrator"}],
+              [{"surface": "قتادة", "kind": "narrator"}],
+              [{"surface": "أنس بن مالك", "kind": "narrator"}]
+            ]
+          },
+          {
+            "saying": 2,
+            "saying_opens": "قال أصحابه هنيئا مريئا فما لنا",
+            "levels": [
+              [{"surface": "أحمد بن إسحاق", "kind": "narrator"}],
+              [{"surface": "عثمان بن عمر", "kind": "narrator"}],
+              [{"surface": "شعبة", "kind": "narrator"}],
+              [{"surface": "قتادة", "kind": "narrator"}],
+              [{"surface": "عكرمة", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Qatada splits the attribution between Anas (saying 1) and Ikrima (saying 2); both routes are stored."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

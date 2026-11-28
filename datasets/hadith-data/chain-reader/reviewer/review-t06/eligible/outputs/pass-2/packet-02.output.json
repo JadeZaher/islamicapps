@@ -1,0 +1,323 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t06-eligible-p2-02",
+  "reviews": [
+    {
+      "id": "cr1-180eff",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two branches joined by «ح» meet at «قالا حدثنا شعبة» and share the tail through أبي التياح to أنس.",
+          "source": "text",
+          "quote": "وحدثنا عبيد الله بن معاذ، حدثنا أبي ح، وحدثنا محمد بن الوليد، حدثنا محمد، بن جعفر قالا حدثنا شعبة، عن أبي التياح، عن أنس"
+        },
+        {
+          "claim": "«بهذا» follows the Prophet and refers to the matn of the preceding report rather than an isnad, so it is not a link and both routes end at أنس.",
+          "source": "text",
+          "quote": "عن أنس، عن النبي صلى الله عليه وسلم بهذا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-180eff",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبيد الله بن معاذ",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي",
+                  "kind": "relation",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن الوليد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد، بن جعفر",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "شعبة",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي التياح",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أنس",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Two branches joined by «ح» share the tail after «قالا» ending at أنس.",
+          "«بهذا» after the Prophet refers to the matn, not a transmitter or isnad, so it is omitted."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1f0e33",
+      "decision": "confirm_with_correction",
+      "question": "Working rule 11 (unruled): a fully written chain after the text ending «بهذا» is treated as a route of this saying.",
+      "reasons": [
+        {
+          "claim": "The opening chain runs from عبيد بن إسماعيل through أبي أسامة, عبيد الله, and سعيد بن أبي سعيد to أبي هريرة.",
+          "source": "text",
+          "quote": "حدثني عبيد بن إسماعيل، عن أبي أسامة، عن عبيد الله، قال أخبرني سعيد بن أبي سعيد، عن أبي هريرة"
+        },
+        {
+          "claim": "The second fully written chain after the matn is a route ending at أبي هريرة under working rule 11, and «بهذا» after the Prophet refers to the matn rather than an isnad so it is not a link.",
+          "source": "text",
+          "quote": "حدثني محمد بن سلام أخبرنا عبدة عن عبيد الله عن سعيد عن أبي هريرة رضي الله عنه عن النبي صلى الله عليه وسلم بهذا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-1f0e33",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبيد بن إسماعيل",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي أسامة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبيد الله",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "سعيد بن أبي سعيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي هريرة",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن سلام",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبدة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبيد الله",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ],
+              [
+                {
+                  "surface": "سعيد",
+                  "kind": "narrator",
+                  "occurrence": 3
+                }
+              ],
+              [
+                {
+                  "surface": "أبي هريرة",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Second fully written chain after the matn is included as a route under working rule 11.",
+          "«بهذا» after the Prophet refers to the matn, not a link, so the second route ends at أبي هريرة."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-589147",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "إسماعيل بن إبراهيم transmits from four co-transmitters: أيوب, ابن، عون, سلمة بن علقمة, and هشام بن حسان.",
+          "source": "text",
+          "quote": "عن أيوب، وابن، عون وسلمة بن علقمة وهشام بن حسان"
+        },
+        {
+          "claim": "The text explicitly separates سلمة's route, which has an unnamed intermediary («نبئت») between ابن سيرين and أبي العجفاء, from the other three who transmit directly from محمد بن سيرين to أبي العجفاء, all ending at عمر بن الخطاب.",
+          "source": "text",
+          "quote": "قال سلمة عن ابن سيرين، نبئت عن أبي العجفاء، - وقال الآخرون عن محمد بن سيرين، عن أبي العجفاء، - قال قال عمر بن الخطاب"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-589147",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن حجر بن إياس بن مقاتل بن مشمرخ بن خالد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "إسماعيل بن إبراهيم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أيوب",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "ابن، عون",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "هشام بن حسان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد بن سيرين",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "أبي العجفاء",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "علي بن حجر بن إياس بن مقاتل بن مشمرخ بن خالد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "إسماعيل بن إبراهيم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سلمة بن علقمة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن سيرين",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "نبئت",
+                  "kind": "unnamed"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي العجفاء",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "عمر بن الخطاب",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Salama's route is separated because «نبئت عن أبي العجفاء» marks an unnamed gap between Ibn Sirin and Abu al-Ajfa, whereas the other three transmit directly."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "«نبئت» is a passive transmission verb indicating an unnamed intermediary, though one could alternatively treat it as a wording difference rather than an unnamed link."
+    }
+  ]
+}

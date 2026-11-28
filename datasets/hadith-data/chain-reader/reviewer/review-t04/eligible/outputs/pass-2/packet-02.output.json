@@ -1,0 +1,80 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t04-eligible-p2-02",
+  "reviews": [
+    {
+      "id": "cr1-b348a4",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs linearly from Ja'far ibn Musafir through Bishr ibn Bakr, al-Awza'i, and 'Ata' ibn Abi Rabah to Jabir ibn 'Abd Allah.",
+          "source": "text",
+          "quote": "حدثنا جعفر بن مسافر، حدثنا بشر بن بكر، أخبرنا الأوزاعي، حدثني عطاء بن أبي رباح، حدثني جابر بن عبد الله"
+        },
+        {
+          "claim": "The word «بهذا» after Jabir ibn 'Abd Allah refers to the matn of the preceding report rather than an isnad back-reference, and the Prophet is not a link, so the chain ends at Jabir ibn 'Abd Allah.",
+          "source": "text",
+          "quote": "حدثني جابر بن عبد الله، بهذا زاد وقال - يعني النبي صلى الله عليه وسلم -"
+        },
+        {
+          "claim": "Both readers erroneously included «بهذا» as a trailing back_reference link after Jabir ibn 'Abd Allah.",
+          "source": "reader_a",
+          "quote": "بهذا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-b348a4",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "جعفر بن مسافر",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "بشر بن بكر",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأوزاعي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عطاء بن أبي رباح",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "جابر بن عبد الله",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«بهذا» refers to the matn of the preceding report, not an isnad back-reference; the chain ends at «جابر بن عبد الله».",
+          "«- يعني النبي صلى الله عليه وسلم -» is an editor's gloss; the Prophet is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

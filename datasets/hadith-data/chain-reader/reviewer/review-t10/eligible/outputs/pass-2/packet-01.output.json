@@ -1,0 +1,392 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t10-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-7c4a73",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report contains two chains ending at Hammad b. Salama with no matn, and both readers capture both routes in the text's order while excluding the opening speaker gloss and the epithet.",
+          "source": "text",
+          "quote": "قال أبو الحسن وحدثنا خازم بن يحيى، حدثنا إبراهيم بن الحجاج السامي، حدثنا حماد بن سلمة،"
+        },
+        {
+          "claim": "The second route runs through Ibrahim b. Nasr al-Hamadani and Musa b. Isma'il to Hammad b. Salama, leaving out the epithet «صاحب القفيز».",
+          "source": "text",
+          "quote": "قال أبو الحسن وحدثنا إبراهيم بن نصر الهمداني، صاحب القفيز حدثنا موسى بن إسماعيل، حدثنا حماد بن سلمة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-7e9d88",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Al-Bara' narrates an encounter in which Azib asks Abu Bakr about the Prophet's journey and Abu Bakr speaks the entire account, so under ruling 9 Abu Bakr is the last link after al-Bara'.",
+          "source": "text",
+          "quote": "ابتاع أبو بكر من عازب رحلا فحملته معه قال فسأله عازب عن مسير رسول الله صلى الله عليه وسلم قال أخذ علينا بالرصد،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-7e9d88",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "أحمد بن عثمان", "kind": "narrator"}],
+              [{"surface": "شريح بن مسلمة", "kind": "narrator"}],
+              [{"surface": "إبراهيم بن يوسف", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation"}],
+              [{"surface": "أبي إسحاق", "kind": "narrator"}],
+              [{"surface": "البراء", "kind": "narrator"}],
+              [{"surface": "أبو بكر", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Al-Bara' narrates the encounter in which Abu Bakr is asked and speaks the account of the journey, so Abu Bakr is the last link (rulings 3 and 9)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-397bb4",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first branch stops at Umar b. Nafi before «ح» without naming his source, so the final «بإسناد عبيد الله» belongs to both branches as a shared tail, confirmed by the dual verb «وألحقا».",
+          "source": "text",
+          "quote": "عن عمر بن، نافع بإسناد عبيد الله ‏.‏ مثله وألحقا التفسير في الحديث"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-397bb4",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن المثنى", "kind": "narrator"}],
+              [{"surface": "عثمان بن عثمان الغطفاني", "kind": "narrator"}],
+              [{"surface": "عمر بن نافع", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "أمية بن بسطام", "kind": "narrator"}],
+              [{"surface": "يزيد", "kind": "narrator"}],
+              [{"surface": "روح", "kind": "narrator"}],
+              [{"surface": "عمر بن، نافع", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "بإسناد عبيد الله", "kind": "back_reference"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Both branches end at Umar b. Nafi and share «بإسناد عبيد الله» as their tail; «- يعني ابن زريع -» is a gloss and left out."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-38524d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The report attributes a saying directly to Amir al-Mu'minin with no transmitter before him, so the single-link route to the Imam as imam_in_text is right.",
+          "source": "text",
+          "quote": "258 - وَقَالَ أَمِيرُ اَلْمُؤْمِنِينَ عَلَيْهِ اَلسَّلاَمُ:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-ee0d94",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«جميعا عن ابن عيينة» belongs only to the two co-transmitters Ishaq b. Ibrahim and Ibn Abi Umar in the fourth branch, while all four branches meet at «عن الأعمش، بهذا الإسناد».",
+          "source": "text",
+          "quote": "ح وحدثنا إسحاق بن إبراهيم، وابن أبي عمر، جميعا عن ابن عيينة، عن الأعمش، بهذا الإسناد"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-ee0d94",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عثمان بن أبي شيبة", "kind": "narrator"}],
+              [{"surface": "جرير", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "إسحاق بن إبراهيم", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "عيسى بن يونس", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "منجاب بن الحارث التميمي", "kind": "narrator"}],
+              [{"surface": "علي بن مسهر", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "إسحاق بن إبراهيم", "kind": "narrator", "occurrence": 2},
+                {"surface": "ابن أبي عمر", "kind": "narrator"}
+              ],
+              [{"surface": "ابن عيينة", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "الأعمش", "kind": "narrator"}],
+          [{"surface": "بهذا الإسناد", "kind": "back_reference"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«جميعا عن ابن عيينة» applies to the fourth branch's two co-transmitters, and all four branches share «عن الأعمش، بهذا الإسناد»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6bc981",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Ikrima is not merely a place of telling because «فقال قال ابن عباس» makes him the speaker who transmits Ibn Abbas's report to Ayyub, so Ikrima is a link between Ayyub and Ibn Abbas.",
+          "source": "text",
+          "quote": "ذكر الأشر الثلاثة عند عكرمة فقال قال ابن عباس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-6bc981",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن بشار", "kind": "narrator"}],
+              [{"surface": "عبد الوهاب", "kind": "narrator"}],
+              [{"surface": "أيوب", "kind": "narrator"}],
+              [{"surface": "عكرمة", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Ikrima speaks («فقال قال ابن عباس») and transmits from Ibn Abbas, so he is a link between Ayyub and Ibn Abbas."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1ba8dd",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Jarir b. Hazim first narrates from Ayyub from Zayd b. Aslam and then says «فلقيت زيد بن أسلم فحدثني», giving a second direct route from Jarir b. Hazim to Zayd b. Aslam that shares the tail from Ata' b. Yasar.",
+          "source": "text",
+          "quote": "قال حدثنا جرير بن حازم، قال حدثنا أيوب، عن زيد بن أسلم، فلقيت زيد بن أسلم فحدثني عن عطاء بن يسار،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-1ba8dd",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن معمر", "kind": "narrator"}],
+              [{"surface": "حبان بن هلال", "kind": "narrator"}],
+              [{"surface": "جرير بن حازم", "kind": "narrator"}],
+              [{"surface": "أيوب", "kind": "narrator"}],
+              [{"surface": "زيد بن أسلم", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "محمد بن معمر", "kind": "narrator"}],
+              [{"surface": "حبان بن هلال", "kind": "narrator"}],
+              [{"surface": "جرير بن حازم", "kind": "narrator"}],
+              [{"surface": "زيد بن أسلم", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عطاء بن يسار", "kind": "narrator"}],
+          [{"surface": "أبي سعيد الخدري", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Jarir b. Hazim narrates from Zayd b. Aslam both via Ayyub and directly («فلقيت زيد بن أسلم فحدثني»), sharing the tail from Ata' b. Yasar to Abu Sa'id al-Khudri."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "«فلقيت زيد بن أسلم فحدثني» is best read as Jarir b. Hazim's second direct route to Zayd b. Aslam, though it could also be read as a single chain confirming the hearing."
+    },
+    {
+      "id": "cr1-28c3b6",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Ibn Abi Mulayka narrates his encounter with Ibn Abbas in which he asks Ibn Abbas and Ibn Abbas answers, so under rulings 3 and 9 Ibn Abbas is the last link after Ibn Abi Mulayka.",
+          "source": "text",
+          "quote": "فغدوت على ابن عباس فقلت أتريد أن تقاتل ابن الزبير، فتحل حرم الله‏.‏ فقال معاذ الله،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-28c3b6",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبد الله بن محمد", "kind": "narrator"}],
+              [{"surface": "يحيى بن معين", "kind": "narrator"}],
+              [{"surface": "حجاج", "kind": "narrator"}],
+              [{"surface": "ابن جريج", "kind": "narrator"}],
+              [{"surface": "ابن أبي مليكة", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Ibn Abbas is asked and speaks inside Ibn Abi Mulayka's narrated encounter, so Ibn Abbas is the last link (rulings 3 and 9)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-0be011",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«أخبرنيه يعلى بن مسلم عن سعيد بن جبير عن ابن عباس» is Ibn Jurayj's continuation of the single chain after the matn, not a separate chain from al-Tirmidhi, as al-Tirmidhi's closing remark confirms.",
+          "source": "text",
+          "quote": "أخبرنيه يعلى بن مسلم عن سعيد بن جبير عن ابن عباس ‏.‏ قال أبو عيسى هذا حديث حسن صحيح غريب لا نعرفه إلا من حديث ابن جريج"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-0be011",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن يحيى النيسابوري", "kind": "narrator"}],
+              [{"surface": "الحجاج بن محمد", "kind": "narrator"}],
+              [{"surface": "ابن جريج", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "يعلى بن مسلم", "kind": "narrator"}],
+              [{"surface": "سعيد بن جبير", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«أخبرنيه يعلى بن مسلم عن سعيد بن جبير عن ابن عباس» continues Ibn Jurayj's single chain after the matn; Abdullah b. Hudhafa is the subject of the report, not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-5d5296",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Malik b. Aws relays Umar's spoken argument («أنه قال كانت لرسول الله صلى الله عليه وسلم ثلاث صفايا»), so under rulings 2 and 9 Umar is the last link after Malik b. Aws.",
+          "source": "text",
+          "quote": "عن مالك بن أوس بن الحدثان، قال كان فيما احتج به عمر رضى الله عنه أنه قال كانت لرسول الله صلى الله عليه وسلم ثلاث صفايا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-5d5296",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "هشام بن عمار", "kind": "narrator"}],
+              [{"surface": "حاتم بن إسماعيل", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "سليمان بن داود المهري", "kind": "narrator"}],
+              [{"surface": "ابن وهب", "kind": "narrator"}],
+              [{"surface": "عبد العزيز بن محمد", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "نصر بن علي", "kind": "narrator"}],
+              [{"surface": "صفوان بن عيسى", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "أسامة بن زيد", "kind": "narrator"}],
+          [{"surface": "الزهري", "kind": "narrator"}],
+          [{"surface": "مالك بن أوس بن الحدثان", "kind": "narrator"}],
+          [{"surface": "عمر", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Three ح branches meet at «كلهم عن أسامة بن زيد» and end at Umar, whose spoken words Malik b. Aws relays (rulings 2 and 9)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

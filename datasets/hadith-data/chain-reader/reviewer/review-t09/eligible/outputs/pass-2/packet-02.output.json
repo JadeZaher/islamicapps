@@ -1,0 +1,469 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t09-eligible-p2-02",
+  "reviews": [
+    {
+      "id": "cr1-7d5e97",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The passive opening introduces the saying before the compiler gives his full connected chain to Mujahid, so it is not a separate direct route from the compiler.",
+          "source": "text",
+          "quote": "ويروى عن مجاهد، في هذه الآية"
+        },
+        {
+          "claim": "The closing word «بهذا» refers to the wording of the saying just quoted, not to a prior isnad, so it is not a back_reference link and the chain ends at Mujahid.",
+          "source": "text",
+          "quote": "حدثنا بذلك أبو كريب محمد بن العلاء حدثنا وكيع عن النضر بن عربي عن مجاهد بهذا"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-7d5e97",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو كريب محمد بن العلاء",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "وكيع",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "النضر بن عربي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مجاهد",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«ويروى عن مجاهد» introduces the saying passively before the compiler's full chain «حدثنا بذلك ... عن مجاهد بهذا».",
+          "«بهذا» refers to the saying just quoted, not an isnad, so it is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-481e2d",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first branch ends at Hudhayfa after Talha b. Yazid, so Hudhayfa is not a co-transmitter with al-A'mash.",
+          "source": "text",
+          "quote": "أخبرنا محمد بن آدم، عن حفص بن غياث، عن العلاء بن المسيب، عن عمرو بن مرة، عن طلحة بن يزيد، عن حذيفة،"
+        },
+        {
+          "claim": "«والأعمش» opens a second branch from Hafs b. Ghiyath running through Sa'd b. Ubayda, al-Mustawrid b. al-Ahnaf, and Sila b. Zufar to Hudhayfa.",
+          "source": "text",
+          "quote": "والأعمش، عن سعد بن عبيدة، عن المستورد بن الأحنف، عن صلة بن زفر، عن حذيفة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-481e2d",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن آدم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حفص بن غياث",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "العلاء بن المسيب",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عمرو بن مرة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "طلحة بن يزيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حذيفة",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن آدم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حفص بن غياث",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأعمش",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سعد بن عبيدة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "المستورد بن الأحنف",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "صلة بن زفر",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "حذيفة",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Two branches from حفص بن غياث: one via العلاء بن المسيب to حذيفة (occurrence 1), and one via الأعمش to حذيفة (occurrence 2)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-cf7870",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first three branches converge at Shu'ba then al-A'mash without naming any further link before the second family.",
+          "source": "text",
+          "quote": "كلهم عن شعبة، عن الأعمش،"
+        },
+        {
+          "claim": "The closing back reference «بإسناد جرير» applies to all routes converging at al-A'mash, not only to the two Sufyan branches, so it belongs in shared_tail.",
+          "source": "text",
+          "quote": "كلاهما عن سفيان، عن الأعمش، بإسناد جرير مثل حديثه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-cf7870",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبيد الله بن معاذ",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "أبي",
+                  "kind": "relation",
+                  "occurrence": 1
+                }
+              ],
+              [
+                {
+                  "surface": "شعبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأعمش",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "ابن المثنى",
+                  "kind": "narrator"
+                },
+                {
+                  "surface": "ابن، بشار",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن أبي عدي",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "شعبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأعمش",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "بشر بن خالد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "محمد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "شعبة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأعمش",
+                  "kind": "narrator",
+                  "occurrence": 1
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أبو بكر بن نافع",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عبد الرحمن",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سفيان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأعمش",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "ابن، نمير",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مصعب بن المقدام",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "سفيان",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "الأعمش",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "بإسناد جرير",
+              "kind": "back_reference"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "All five groups (six routes) converge at الأعمش and share the closing back_reference «بإسناد جرير»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f3f8d5",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first route runs from the compiler through Utba b. Abd Allah directly to Malik b. Anas.",
+          "source": "text",
+          "quote": "أخبرنا عتبة بن عبد الله، قال قرأت على مالك بن أنس"
+        },
+        {
+          "claim": "«والحارث بن مسكين قراءة عليه وأنا أسمع» opens a second route from the compiler through al-Harith b. Miskin and Ibn al-Qasim to Malik, after which both routes share Sumayy, Abu Salih, and Abu Hurayra.",
+          "source": "text",
+          "quote": "والحارث بن مسكين قراءة عليه وأنا أسمع، عن ابن القاسم، قال حدثني مالك، عن سمى، عن أبي صالح، عن أبي هريرة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-f3f8d5",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عتبة بن عبد الله",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك بن أنس",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "الحارث بن مسكين",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ابن القاسم",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator",
+                  "occurrence": 2
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "سمى",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي صالح",
+              "kind": "narrator"
+            }
+          ],
+          [
+            {
+              "surface": "أبي هريرة",
+              "kind": "narrator"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Two routes from al-Nasa'i meeting at Malik: عتبة بن عبد الله -> مالك بن أنس, and الحارث بن مسكين -> ابن القاسم -> مالك, sharing سمى -> أبي صالح -> أبي هريرة."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

@@ -1,0 +1,429 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t09-eligible-p2-01",
+  "reviews": [
+    {
+      "id": "cr1-fd2e3b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The two branches meet at عطاء بن السائب and share the tail through أبي ظبيان.",
+          "source": "text",
+          "quote": "حدثنا هناد، عن أبي الأحوص، ح وحدثنا عثمان بن أبي شيبة، حدثنا جرير، - المعنى - عن عطاء بن السائب، عن أبي ظبيان"
+        },
+        {
+          "claim": "Under ruling 9 (narrated encounter), علي is the last link because he speaks inside the story and relays the Prophet's saying.",
+          "source": "text",
+          "quote": "فجاء علي رضى الله عنه فقال يا أمير المؤمنين لقد علمت أن رسول الله صلى الله عليه وسلم قال"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-fd2e3b",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "هناد", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "أبي الأحوص", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "عثمان بن أبي شيبة", "kind": "narrator"}],
+              [{"surface": "جرير", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عطاء بن السائب", "kind": "narrator"}],
+          [{"surface": "أبي ظبيان", "kind": "narrator"}],
+          [{"surface": "علي", "kind": "narrator", "occurrence": 2}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Added علي as last link under ruling 9 because he speaks and relays the Prophet's words in the narrated encounter."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Umar also speaks briefly in the encounter, though Ali is the speaker who relays the prophetic saying."
+    },
+    {
+      "id": "cr1-853fdc",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«رجلا من أصحاب النبي» is an accusative appositive describing أبا سعيد, not a separate unnamed link after him.",
+          "source": "text",
+          "quote": "سمع أبا سعيد، رجلا من أصحاب النبي صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-853fdc",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "معاذ", "kind": "narrator"}],
+              [{"surface": "شعبة", "kind": "narrator"}],
+              [{"surface": "خبيب", "kind": "narrator"}],
+              [{"surface": "حفصا", "kind": "narrator"}],
+              [{"surface": "أبا سعيد", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Removed «رجلا من أصحاب النبي» as a separate unnamed link because it is an appositive describing أبا سعيد."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-8395ff",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The parenthetical «- قال أبو بكر وعبد الله بن نمير -» inside the isnad adds a genuine route from أبو بكر بن أبي شيبة through عبد الله بن نمير to the shared tail.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وعلي بن محمد، قالا حدثنا أبو معاوية، - قال أبو بكر وعبد الله بن نمير - عن الأعمش"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-8395ff",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن عبد الله بن نمير", "kind": "narrator"}],
+              [
+                {"surface": "أبي", "kind": "relation", "occurrence": 1},
+                {"surface": "أبو معاوية", "kind": "narrator", "occurrence": 1}
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {"surface": "أبو بكر بن أبي شيبة", "kind": "narrator"},
+                {"surface": "علي بن محمد", "kind": "narrator"}
+              ],
+              [{"surface": "أبو معاوية", "kind": "narrator", "occurrence": 2}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "أبو بكر بن أبي شيبة", "kind": "narrator"}],
+              [{"surface": "عبد الله بن نمير", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "الأعمش", "kind": "narrator"}],
+          [{"surface": "شقيق", "kind": "narrator"}],
+          [{"surface": "مسروق", "kind": "narrator"}],
+          [{"surface": "عائشة", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Added the route from أبو بكر بن أبي شيبة via عبد الله بن نمير from «- قال أبو بكر وعبد الله بن نمير -»."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-3fe7cf",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«والحارث بن مسكين، قراءة عليه وأنا أسمع» opens a second route directly from the compiler al-Nasa'i meeting the first route at مالك, not a co-transmitter under معن.",
+          "source": "text",
+          "quote": "والحارث بن مسكين، قراءة عليه وأنا أسمع، عن ابن القاسم، قال حدثني مالك"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-3fe7cf",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "هارون بن عبد الله", "kind": "narrator"}],
+              [{"surface": "معن", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "الحارث بن مسكين", "kind": "narrator"}],
+              [{"surface": "ابن القاسم", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "نافع", "kind": "narrator"}],
+          [{"surface": "نبيه بن وهب", "kind": "narrator"}],
+          [{"surface": "أبان بن عثمان", "kind": "narrator"}],
+          [{"surface": "عثمان بن عفان", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Separated الحارث بن مسكين into a second group from the compiler, meeting the first route at مالك with shared tail from نافع to عثمان بن عفان."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-6f0b2a",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«والوليد، عن الأوزاعي، عن الزهري» is a second branch under عمرو بن عثمان بن سعيد بن كثير meeting the first branch at الزهري, not a co-transmitter with الزهري under الزبيدي.",
+          "source": "text",
+          "quote": "قال حدثنا محمد بن حرب، عن الزبيدي، عن الزهري، والوليد، عن الأوزاعي، عن الزهري"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-6f0b2a",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عمرو بن عثمان بن سعيد بن كثير", "kind": "narrator"}],
+              [{"surface": "محمد بن حرب", "kind": "narrator"}],
+              [{"surface": "الزبيدي", "kind": "narrator"}],
+              [{"surface": "الزهري", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "عمرو بن عثمان بن سعيد بن كثير", "kind": "narrator"}],
+              [{"surface": "الوليد", "kind": "narrator"}],
+              [{"surface": "الأوزاعي", "kind": "narrator"}],
+              [{"surface": "الزهري", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "أبي سلمة", "kind": "narrator"}],
+          [{"surface": "أبي هريرة", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Split into two branches under عمرو بن عثمان بن سعيد بن كثير meeting at الزهري with shared tail أبي سلمة -> أبي هريرة."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-dabdf7",
+      "decision": "confirm_with_correction",
+      "question": "Working rule 11: fully written chain ending «نحوه»",
+      "reasons": [
+        {
+          "claim": "«حدثنا بذلك أبو كريب، محمد بن العلاء حدثنا عبيد الله الأشجعي...» gives the compiler's single connected route for the narration summarized in the opening «وروى» clause, rather than two separate routes.",
+          "source": "text",
+          "quote": "حدثنا بذلك أبو كريب، محمد بن العلاء حدثنا عبيد الله الأشجعي، عن سفيان، عن ثوير، عن مجاهد، عن ابن عمر، نحوه ولم يرفعه"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-dabdf7",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "أبو كريب، محمد بن العلاء", "kind": "narrator"}],
+              [{"surface": "عبيد الله الأشجعي", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "سفيان", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "ثوير", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "مجاهد", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "ابن عمر", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Kept only the single connected route via أبو كريب، محمد بن العلاء; the opening «وروى عبيد الله الأشجعي» summarizes the same transmission."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "The opening «وروى عبيد الله الأشجعي...» could alternatively be treated as a separate suspended route, though «حدثنا بذلك» connects it to أبو كريب."
+    },
+    {
+      "id": "cr1-ed21f1",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "سعيد بن أبي الحسن is the source whose explanation of the verse is relayed by the report, so he is the last link under ruling 2.",
+          "source": "text",
+          "quote": "قال قال سعيد بن أبي الحسن غفور لهن المكرهات"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-ed21f1",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "عبيد الله بن معاذ", "kind": "narrator"}],
+              [{"surface": "معتمر", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation"}],
+              [{"surface": "سعيد بن أبي الحسن", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Added سعيد بن أبي الحسن as the last link because his words are the saying relayed by the report."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-1d8a24",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«عن أبي حازم، عن أبي هريرة» is written once after the last «ح» and is the shared tail for all branches, including the routes stopping at فضيل بن غزوان.",
+          "source": "text",
+          "quote": "جميعا عن فضيل بن غزوان، ح وحدثنا أبو كريب، محمد بن العلاء - واللفظ له - حدثنا ابن فضيل، عن أبيه، عن أبي حازم، عن أبي هريرة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-1d8a24",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {"surface": "أبو بكر بن أبي شيبة", "kind": "narrator"},
+                {"surface": "زهير بن حرب", "kind": "narrator", "occurrence": 1}
+              ],
+              [{"surface": "وكيع", "kind": "narrator"}],
+              [{"surface": "فضيل بن غزوان", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "زهير بن حرب", "kind": "narrator", "occurrence": 2}],
+              [{"surface": "إسحاق بن يوسف الأزرق", "kind": "narrator"}],
+              [{"surface": "فضيل بن غزوان", "kind": "narrator"}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "أبو كريب، محمد بن العلاء", "kind": "narrator"}],
+              [{"surface": "ابن فضيل", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation"}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "أبي حازم", "kind": "narrator"}],
+          [{"surface": "أبي هريرة", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Moved أبي حازم and أبي هريرة to shared_tail so all four routes continue to the Companion."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-639075",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "«وعن عبد الرحمن بن القاسم، عن أبيه، عن عائشة» branches from محمد بن إسحاق and keeps the head أبو سلمة، يحيى بن خلف -> عبد الأعلى -> محمد بن إسحاق rather than starting directly from the compiler.",
+          "source": "text",
+          "quote": "عن محمد بن إسحاق، عن عبد الله بن أبي بكر، عن عمرة، عن عائشة، ‏.‏ وعن عبد الرحمن بن القاسم، عن أبيه، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-639075",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "أبو سلمة، يحيى بن خلف", "kind": "narrator"}],
+              [{"surface": "عبد الأعلى", "kind": "narrator"}],
+              [{"surface": "محمد بن إسحاق", "kind": "narrator"}],
+              [{"surface": "عبد الله بن أبي بكر", "kind": "narrator"}],
+              [{"surface": "عمرة", "kind": "narrator"}],
+              [{"surface": "عائشة", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "أبو سلمة، يحيى بن خلف", "kind": "narrator"}],
+              [{"surface": "عبد الأعلى", "kind": "narrator"}],
+              [{"surface": "محمد بن إسحاق", "kind": "narrator"}],
+              [{"surface": "عبد الرحمن بن القاسم", "kind": "narrator"}],
+              [{"surface": "أبيه", "kind": "relation"}],
+              [{"surface": "عائشة", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Attached the second branch «وعن عبد الرحمن بن القاسم» under the shared head أبو سلمة، يحيى بن خلف -> عبد الأعلى -> محمد بن إسحاق."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-ef2ea5",
+      "decision": "refer_to_human",
+      "question": "Ambiguous placement of «وذكر، آخر قبله»: whether the unnamed narrator is a co-transmitter with محمد بن المنكدر or a link before him between شعيب بن أبي حمزة and محمد بن المنكدر (both readers placed it after محمد بن المنكدر).",
+      "reasons": [
+        {
+          "claim": "The phrase «وذكر، آخر قبله» indicates an unnamed narrator mentioned before محمد بن المنكدر, making both readers' placement of «آخر قبله» after محمد بن المنكدر suspect while leaving it unclear whether it is a co-transmitter or an intervening link.",
+          "source": "text",
+          "quote": "عن محمد بن المنكدر، وذكر، آخر قبله عن عبد الرحمن بن هرمز الأعرج"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "high",
+      "uncertainty_note": "The text does not make clear whether «آخر قبله» is a co-transmitter alongside محمد بن المنكدر or an unnamed link between شعيب بن أبي حمزة and محمد بن المنكدر."
+    }
+  ]
+}

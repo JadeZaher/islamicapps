@@ -1,0 +1,238 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t03-eligible-p1-67",
+  "reviews": [
+    {
+      "id": "cr1-a6d667",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad runs in a single line from Uthman b. Abi Shayba through Abda, Hisham, his father, and Zaynab bint Umm Salama to Umm Salama, who speaks.",
+          "source": "text",
+          "quote": "حدثنا عثمان بن أبي شيبة، حدثنا عبدة، عن هشام، عن أبيه، عن زينب ابنة أم سلمة، ‏{‏عن أم سلمة،‏}‏ قالت قلت يا رسول الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9fc4aa",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad runs in a single chain from Ishaq b. Mansur through Abd al-Samad b. Abd al-Warith, Ibrahim b. Sa'd, Sa'd, and his father to Sa'd b. Abi Waqqas, who speaks.",
+          "source": "text",
+          "quote": "وحدثني إسحاق بن منصور، أخبرنا عبد الصمد بن عبد الوارث، حدثنا إبراهيم، بن سعد حدثنا سعد، عن أبيه، عن سعد بن أبي وقاص، قال لقد رأيت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-103a78",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Abd Allah b. Maslama through Malik and Rabi'a b. Abi Abd al-Rahman to an unnamed group of their scholars.",
+          "source": "text",
+          "quote": "حدثنا عبد الله بن مسلمة، عن مالك، عن ربيعة بن أبي عبد الرحمن، عن غير، واحد، من علمائهم"
+        },
+        {
+          "claim": "Umar speaks the saying relayed by the report, so under rulings 2 and 9 he is the last link, while Abu Musa who is addressed and does not speak is not a link.",
+          "source": "text",
+          "quote": "فقال عمر لأبي موسى أما إني لم أتهمك"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-103a78",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "عبد الله بن مسلمة",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "مالك",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "ربيعة بن أبي عبد الرحمن",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "غير، واحد، من علمائهم",
+                  "kind": "unnamed"
+                }
+              ],
+              [
+                {
+                  "surface": "عمر",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«فقال عمر لأبي موسى»: Umar speaks the saying relayed by the report, so he is the last link under rulings 2 and 9; Abu Musa does not speak and is not a link."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-271d23",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad runs in a single chain from Muhammad b. Ali Majilawayh through Ali b. Ibrahim b. Hashim, his father, and Abd al-Salam b. Salih al-Harawi to al-Rida, who is named in the text after the chain as the speaker.",
+          "source": "text",
+          "quote": "حَدَّثَنا مُحَمَّدِ بْنِ عَلِى ماجِيلوَيْه رَضِىَ اللهُ عَنْهُقالَ حَدَّثَنا عَلِىِّ بْنِ إِبراهِيمِ بْنِ هاشِم عَنْ أَبيهِ عَنْ عَبْد السَّلامُ بْنِ صالِح الهَرَوِيِّ قالَ سَمِعْتُ الرِّضا عَلَيْهِ السَّلامُ يَقُولُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-2f8e3f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Three tahwil branches—two co-transmitters via Abu Mu'awiya, Muhammad b. Rafi' via Abd al-Razzaq and Sufyan, and Ishaq b. Ibrahim via two co-transmitters—all meet at al-A'mash and end with the back reference to Jarir's isnad.",
+          "source": "text",
+          "quote": "حدثنا أبو بكر بن أبي شيبة، وأبو كريب قالا حدثنا أبو معاوية، ح وحدثني  محمد بن رافع، حدثنا عبد الرزاق، حدثنا سفيان، ح وحدثنا إسحاق بن إبراهيم، أخبرنا  عيسى بن يونس، ويحيى بن عبد الملك بن أبي غنية، كلهم عن الأعمش، بإسناد جرير"
+        },
+        {
+          "claim": "The note about Abu Mu'awiya's wording addition is a wording remark rather than a separate route.",
+          "source": "text",
+          "quote": "نحو حديثه وزاد في حديث أبي معاوية"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-bfe20b",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Zuhayr b. Harb transmits from Hushaym, who transmits from seven co-transmitters all reporting from al-Sha'bi.",
+          "source": "text",
+          "quote": "حدثني زهير بن حرب، حدثنا هشيم، أخبرنا سيار، وحصين، ومغيرة، وأشعث، ومجالد وإسماعيل بن أبي خالد وداود كلهم عن الشعبي"
+        },
+        {
+          "claim": "Al-Sha'bi enters upon Fatima bint Qays and asks her, and she answers, making her the last link under rulings 2 and 3.",
+          "source": "text",
+          "quote": "قال دخلت على فاطمة بنت قيس فسألتها عن قضاء، رسول الله صلى الله عليه وسلم عليها فقالت"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-e7e616",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Abd Allah b. Yusuf through Malik and Nafi' to Abd Allah b. Umar, whose answer is relayed.",
+          "source": "text",
+          "quote": "حدثنا عبد الله بن يوسف، حدثنا مالك، عن نافع، أن عبد الله بن عمر  رضى الله عنهما  كان إذا سئل عن صلاة الخوف قال"
+        },
+        {
+          "claim": "The closing statement by Malik from Nafi' is a remark about attribution to the Prophet, not a new route.",
+          "source": "text",
+          "quote": "قال مالك قال نافع لا أرى عبد الله بن عمر ذكر ذلك إلا عن رسول الله صلى الله عليه وسلم"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c19011",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The isnad runs from al-Husayn b. Muhammad b. Amir through al-Mu'alla b. Muhammad al-Basri, Ali b. Asbat, and al-Hasan b. al-Jahm to Abu al-Hasan al-Rida, who is asked and answers in the text.",
+          "source": "text",
+          "quote": "حَدَّثَنِي الْحُسَيْنُ بْنُ مُحَمَّدِ بْنِ عَامِرٍ عَنِ الْمُعَلَّى بْنِ مُحَمَّدٍ الْبَصْرِيِّ عَنْ عَلِيِّ بْنِ أَسْبَاطٍ عَنِ الْحَسَنِ بْنِ الْجَهْمِ قَالَ قُلْتُ لِأَبِي الْحَسَنِ الرِّضَا (ع)"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f8e47d",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The chain runs from Ali b. Abd Allah al-Warraq through Muhammad b. Ja'far b. Batta to three co-transmitters, then continues through Ahmad b. Muhammad b. Isa, al-Husayn b. Sa'id, Hammad b. Isa al-Juhani, and Hariz b. Abd Allah to Abu Abd Allah.",
+          "source": "text",
+          "quote": "حدثنا علي بن عبد الله الوراق رحمه الله، قال: حدثنا محمد بن جعفر ابن بطة، قال: حدثنا محمد بن الحسن الصفار، ومحمد بن علي بن محبوب، ومحمد بن الحسين بن عبد العزيز، عن أحمد بن محمد بن عيسى، عن الحسين بن سعيد، عن حماد ابن عيسى الجهني، عن حريز بن عبد الله، عن أبي عبد الله عليه السلام، قال:"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-4a6bda",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Two tahwil branches—Abu Kamil al-Jahdari via Abd al-Wahid, and co-transmitters Abu Bakr b. Abi Shayba and Abu Kurayb via Abu Mu'awiya—both reach al-A'mash and share the tail through Ibrahim al-Taymi and his father to Abu Dharr.",
+          "source": "text",
+          "quote": "حدثني أبو كامل الجحدري، حدثنا عبد الواحد، حدثنا الأعمش، ح قال وحدثنا أبو بكر بن أبي شيبة، وأبو كريب قالا حدثنا أبو معاوية، عن الأعمش، عن إبراهيم التيمي، عن أبيه، عن أبي ذر، قال قلت يا رسول الله"
+        },
+        {
+          "claim": "The closing note about Abu Kamil's wording is a wording variant of a narrator already in the chain, not a separate route.",
+          "source": "text",
+          "quote": "وفي حديث أبي كامل"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

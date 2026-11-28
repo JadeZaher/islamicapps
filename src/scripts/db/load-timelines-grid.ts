@@ -24,7 +24,7 @@ import { connectionOptions } from '../../db/connection-options';
 import { resolveTargetDatabase } from '../../db/target-database';
 import * as schema from '../../db/schema';
 import { hadiths } from '../../db/schema/corpus';
-import { citations } from '../../db/schema/evidence';
+import { bibliographicWorks, citations, editions } from '../../db/schema/evidence';
 import { historicalEvents, locations } from '../../db/schema/history';
 import { narrators } from '../../db/schema/narrators';
 import { datasetVersions } from '../../db/schema/operations';
@@ -109,6 +109,11 @@ export const VALID_REVIEW_STATES = new Set([
   'lexicon_unverified',
 ] as const);
 export type EvidenceReviewState = typeof VALID_REVIEW_STATES extends Set<infer T> ? T : never;
+
+export const VALID_RIGHTS = new Set(['cleared', 'pending', 'restricted'] as const);
+export type RightsStatus = typeof VALID_RIGHTS extends Set<infer T> ? T : never;
+
+const SHA256_RE = /^[0-9a-f]{64}$/;
 
 export interface CoreTimelineTrack {
   id: string;
@@ -261,8 +266,49 @@ export interface StagedExternalTraditionParallel {
   reviewState: EvidenceReviewState;
 }
 
+export interface StagedWork {
+  id: string;
+  title: string;
+  titleAr: string | null;
+  author: string | null;
+  authorDeathYearHijri: number | null;
+  openitiUri: string | null;
+}
+
+export interface StagedEdition {
+  id: string;
+  workId: string;
+  editor: string | null;
+  publisher: string | null;
+  place: string | null;
+  year: string | null;
+  locatorScheme: string | null;
+  url: string | null;
+  rightsStatus: RightsStatus;
+}
+
+export interface StagedCitation {
+  id: string;
+  workId: string;
+  editionId: string | null;
+  volume: string | null;
+  page: string | null;
+  locator: string | null;
+  url: string | null;
+  quoteAr: string | null;
+  quoteEn: string | null;
+  reviewState: EvidenceReviewState;
+  sourceSpan: Record<string, unknown> | null;
+  sourceSha256: string | null;
+  sourceFile: string | null;
+}
+
 export interface TimelinesLoadPlan {
   tracks: readonly CoreTimelineTrack[];
+  works: StagedWork[];
+  editions: StagedEdition[];
+  citations: StagedCitation[];
+  citationsSkipped: number;
   placeSnapshots: StagedPlaceSnapshot[];
   placeSnapshotsSkipped: number;
   narratorResidences: StagedNarratorResidence[];
@@ -310,6 +356,82 @@ export function normalizeReviewState(value: unknown): EvidenceReviewState {
     return value as EvidenceReviewState;
   }
   return 'candidate_only';
+}
+
+export function normalizeRights(value: unknown): RightsStatus {
+  if (typeof value === 'string' && VALID_RIGHTS.has(value as RightsStatus)) {
+    return value as RightsStatus;
+  }
+  return 'pending';
+}
+
+export function normalizeSha256(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim().toLowerCase();
+  return SHA256_RE.test(trimmed) ? trimmed : null;
+}
+
+export function parseWorkRow(row: Record<string, unknown>): StagedWork | null {
+  const id = normalizeNonEmpty(row.id ?? row.work_id ?? row.workId);
+  const title = normalizeNonEmpty(row.title);
+  if (!id || !title) return null;
+
+  return {
+    id,
+    title,
+    titleAr: normalizeNonEmpty(row.title_ar ?? row.titleAr),
+    author: normalizeNonEmpty(row.author),
+    authorDeathYearHijri: normalizeInt(row.author_death_year_hijri ?? row.authorDeathYearHijri),
+    openitiUri: normalizeNonEmpty(row.openiti_uri ?? row.openitiUri),
+  };
+}
+
+export function parseEditionRow(row: Record<string, unknown>, fallbackWorkId?: string): StagedEdition | null {
+  const id = normalizeNonEmpty(row.id ?? row.edition_id ?? row.editionId);
+  const workId = normalizeNonEmpty(row.work_id ?? row.workId) ?? fallbackWorkId ?? null;
+  if (!id || !workId) return null;
+
+  return {
+    id,
+    workId,
+    editor: normalizeNonEmpty(row.editor),
+    publisher: normalizeNonEmpty(row.publisher),
+    place: normalizeNonEmpty(row.place),
+    year: normalizeNonEmpty(row.year),
+    locatorScheme: normalizeNonEmpty(row.locator_scheme ?? row.locatorScheme),
+    url: normalizeNonEmpty(row.url ?? row.library_url),
+    rightsStatus: normalizeRights(row.rights_status ?? row.rightsStatus),
+  };
+}
+
+export function parseCitationRow(row: Record<string, unknown>): StagedCitation | null {
+  const id = normalizeNonEmpty(row.id ?? row.citation_id ?? row.citationId);
+  const workObj = normalizePlainObject(row.work);
+  const workId =
+    normalizeNonEmpty(row.work_id ?? row.workId) ??
+    normalizeNonEmpty(workObj?.id ?? workObj?.work_id ?? workObj?.workId);
+  if (!id || !workId) return null;
+
+  const editionObj = normalizePlainObject(row.edition);
+  const editionId =
+    normalizeNonEmpty(row.edition_id ?? row.editionId) ??
+    normalizeNonEmpty(editionObj?.id ?? editionObj?.edition_id ?? editionObj?.editionId);
+
+  return {
+    id,
+    workId,
+    editionId,
+    volume: row.volume != null ? normalizeNonEmpty(String(row.volume)) : null,
+    page: row.page != null ? normalizeNonEmpty(String(row.page)) : null,
+    locator: normalizeNonEmpty(row.locator ?? row.locator_text),
+    url: normalizeNonEmpty(row.url),
+    quoteAr: normalizeNonEmpty(row.quote_ar ?? row.quoteAr),
+    quoteEn: normalizeNonEmpty(row.quote_en ?? row.quoteEn),
+    reviewState: normalizeReviewState(row.review_state ?? row.reviewState),
+    sourceSpan: normalizePlainObject(row.source_span ?? row.sourceSpan),
+    sourceSha256: normalizeSha256(row.source_sha256 ?? row.sourceSha256),
+    sourceFile: normalizeNonEmpty(row.source_file ?? row.sourceFile),
+  };
 }
 
 export function isValidYearRange(yearMin: number | null, yearMax: number | null): boolean {
@@ -510,6 +632,11 @@ async function readJsonlIfPresent(
 }
 
 export async function buildTimelinesLoadPlan(dataDir: string): Promise<TimelinesLoadPlan> {
+  const worksMap = new Map<string, StagedWork>();
+  const editionsMap = new Map<string, StagedEdition>();
+  const citationsMap = new Map<string, StagedCitation>();
+  let citationsSkipped = 0;
+
   const placeSnapshotsList: StagedPlaceSnapshot[] = [];
   let placeSnapshotsSkipped = 0;
   const narratorResidencesList: StagedNarratorResidence[] = [];
@@ -520,6 +647,35 @@ export async function buildTimelinesLoadPlan(dataDir: string): Promise<Timelines
   let externalTraditionParallelsSkipped = 0;
 
   if (existsSync(dataDir)) {
+    await readJsonlIfPresent(dataDir, 'works', (row) => {
+      const parsed = parseWorkRow(row);
+      if (parsed) worksMap.set(parsed.id, parsed);
+    });
+
+    await readJsonlIfPresent(dataDir, 'editions', (row) => {
+      const parsed = parseEditionRow(row);
+      if (parsed) editionsMap.set(parsed.id, parsed);
+    });
+
+    await readJsonlIfPresent(dataDir, 'citations', (row) => {
+      const workObj = normalizePlainObject(row.work);
+      if (workObj) {
+        const parsedWork = parseWorkRow(workObj);
+        if (parsedWork) worksMap.set(parsedWork.id, parsedWork);
+      }
+      const parsedCitation = parseCitationRow(row);
+      if (!parsedCitation) {
+        citationsSkipped += 1;
+        return;
+      }
+      const editionObj = normalizePlainObject(row.edition);
+      if (editionObj) {
+        const parsedEdition = parseEditionRow(editionObj, parsedCitation.workId);
+        if (parsedEdition) editionsMap.set(parsedEdition.id, parsedEdition);
+      }
+      citationsMap.set(parsedCitation.id, parsedCitation);
+    });
+
     await readJsonlIfPresent(dataDir, 'place_snapshots', (row) => {
       const parsed = parsePlaceSnapshotRow(row);
       if (parsed) placeSnapshotsList.push(parsed);
@@ -547,6 +703,10 @@ export async function buildTimelinesLoadPlan(dataDir: string): Promise<Timelines
 
   return {
     tracks: CORE_TIMELINE_TRACKS,
+    works: Array.from(worksMap.values()),
+    editions: Array.from(editionsMap.values()),
+    citations: Array.from(citationsMap.values()),
+    citationsSkipped,
     placeSnapshots: placeSnapshotsList,
     placeSnapshotsSkipped,
     narratorResidences: narratorResidencesList,
@@ -572,11 +732,16 @@ export function parseLoaderArgs(argv: readonly string[]): LoaderArgs {
     throw new Error(`--database must be development or production, not "${database}".`);
   }
 
-  const dirIdx = argv.indexOf('--data-dir');
+  const dirFlagIdx = argv.indexOf('--dir');
+  const dataDirFlagIdx = argv.indexOf('--data-dir');
   const dataDir =
-    dirIdx >= 0
-      ? (argv[dirIdx + 1] ?? null)
-      : (argv.find((v) => v.startsWith('--data-dir='))?.slice('--data-dir='.length) ?? null);
+    dirFlagIdx >= 0
+      ? (argv[dirFlagIdx + 1] ?? null)
+      : dataDirFlagIdx >= 0
+        ? (argv[dataDirFlagIdx + 1] ?? null)
+        : (argv.find((v) => v.startsWith('--dir='))?.slice('--dir='.length) ??
+          argv.find((v) => v.startsWith('--data-dir='))?.slice('--data-dir='.length) ??
+          null);
 
   return { dryRun, database, dataDir, reclassifyEvents };
 }
@@ -613,11 +778,12 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
   const target = resolveConnectionForScript(argv, args.dryRun);
   const dataDir = args.dataDir
     ? resolve(process.cwd(), args.dataDir)
-    : resolve(process.cwd(), 'datasets/hadith-data/timelines/output');
+    : resolve(process.cwd(), 'datasets/hadith-data/timelines-grid');
 
   console.log(
     `[load-timelines-grid] Target: ${target.name} (${args.dryRun ? 'DRY RUN — no writes' : 'LIVE WRITE'})`,
   );
+  console.log(`[load-timelines-grid] Data directory: ${dataDir}`);
 
   const plan = await buildTimelinesLoadPlan(dataDir);
   const sqlClient = postgres(target.url, connectionOptions(target.url, 5));
@@ -681,7 +847,7 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
     ];
     const allHadithIds = plan.externalTraditionParallels.map((r) => r.hadithId);
 
-    const [validCitations, validLocations, validNarrators, validHadiths] = await Promise.all([
+    const [existingCitations, validLocations, validNarrators, validHadiths] = await Promise.all([
       fetchExistingIds(allCitationIds, (b) =>
         db.select({ id: citations.id }).from(citations).where(inArray(citations.id, b)),
       ),
@@ -695,6 +861,9 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
         db.select({ id: hadiths.id }).from(hadiths).where(inArray(hadiths.id, b)),
       ),
     ]);
+
+    const validCitations = new Set<string>(existingCitations);
+    for (const c of plan.citations) validCitations.add(c.id);
 
     const readyPlaceSnapshots = plan.placeSnapshots.filter(
       (r) => validLocations.has(r.locationId) && validCitations.has(r.citationId),
@@ -714,6 +883,11 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
 
     console.log(`[load-timelines-grid] Current dataset_version_id: ${datasetVersionId}`);
     console.log(`[load-timelines-grid] Plan summary:`);
+    console.log(`  bibliographic_works          : ${plan.works.length}`);
+    console.log(`  editions                     : ${plan.editions.length}`);
+    console.log(
+      `  citations                    : ${plan.citations.length} ready (parse-skipped: ${plan.citationsSkipped})`,
+    );
     console.log(`  timeline_tracks              : ${plan.tracks.length}`);
     console.log(`  historical_events to classify: ${eventTrackAssignments.length}`);
     console.log(
@@ -729,12 +903,136 @@ export async function executeLoad(argv: readonly string[]): Promise<void> {
       `  external_tradition_parallels : ${readyParallels.length} ready (parse-skipped: ${plan.externalTraditionParallelsSkipped}, fk-skipped: ${plan.externalTraditionParallels.length - readyParallels.length})`,
     );
 
+    const missingLocs = Array.from(
+      new Set(plan.placeSnapshots.filter((r) => !validLocations.has(r.locationId)).map((r) => r.locationId)),
+    );
+    const missingHads = Array.from(
+      new Set(plan.externalTraditionParallels.filter((r) => !validHadiths.has(r.hadithId)).map((r) => r.hadithId)),
+    );
+    if (missingLocs.length > 0) {
+      console.log(`  [fk-missing] locations       : ${missingLocs.join(', ')}`);
+    }
+    if (missingHads.length > 0) {
+      console.log(`  [fk-missing] hadiths         : ${missingHads.join(', ')}`);
+    }
+
     if (args.dryRun) {
       console.log(`[load-timelines-grid] Dry-run complete. 0 rows written.`);
       return;
     }
 
     const now = new Date();
+
+    // 0a. Upsert bibliographic_works
+    await runBatched(plan.works, BATCH_SIZE, async (batch) => {
+      await db
+        .insert(bibliographicWorks)
+        .values(
+          batch.map((w) => ({
+            id: w.id,
+            title: w.title,
+            titleAr: w.titleAr,
+            author: w.author,
+            authorDeathYearHijri: w.authorDeathYearHijri,
+            openitiUri: w.openitiUri,
+            firstSeenDatasetVersionId: datasetVersionId,
+            changedInDatasetVersionId: datasetVersionId,
+            updatedAt: now,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: bibliographicWorks.id,
+          set: {
+            title: sql`excluded.title`,
+            titleAr: sql`excluded.title_ar`,
+            author: sql`excluded.author`,
+            authorDeathYearHijri: sql`excluded.author_death_year_hijri`,
+            openitiUri: sql`excluded.openiti_uri`,
+            changedInDatasetVersionId: sql`excluded.changed_in_dataset_version_id`,
+            updatedAt: now,
+          },
+        });
+    });
+
+    // 0b. Upsert editions
+    await runBatched(plan.editions, BATCH_SIZE, async (batch) => {
+      await db
+        .insert(editions)
+        .values(
+          batch.map((e) => ({
+            id: e.id,
+            workId: e.workId,
+            editor: e.editor,
+            publisher: e.publisher,
+            place: e.place,
+            year: e.year,
+            locatorScheme: e.locatorScheme,
+            url: e.url,
+            rightsStatus: e.rightsStatus,
+            firstSeenDatasetVersionId: datasetVersionId,
+            changedInDatasetVersionId: datasetVersionId,
+            updatedAt: now,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: editions.id,
+          set: {
+            editor: sql`excluded.editor`,
+            publisher: sql`excluded.publisher`,
+            place: sql`excluded.place`,
+            year: sql`excluded.year`,
+            locatorScheme: sql`excluded.locator_scheme`,
+            url: sql`excluded.url`,
+            rightsStatus: sql`excluded.rights_status`,
+            changedInDatasetVersionId: sql`excluded.changed_in_dataset_version_id`,
+            updatedAt: now,
+          },
+        });
+    });
+
+    // 0c. Upsert citations
+    await runBatched(plan.citations, BATCH_SIZE, async (batch) => {
+      await db
+        .insert(citations)
+        .values(
+          batch.map((c) => ({
+            id: c.id,
+            workId: c.workId,
+            editionId: c.editionId,
+            volume: c.volume,
+            page: c.page,
+            locator: c.locator,
+            url: c.url,
+            quoteAr: c.quoteAr,
+            quoteEn: c.quoteEn,
+            reviewState: c.reviewState,
+            sourceSpan: c.sourceSpan,
+            sourceSha256: c.sourceSha256,
+            sourceFile: c.sourceFile,
+            firstSeenDatasetVersionId: datasetVersionId,
+            changedInDatasetVersionId: datasetVersionId,
+            updatedAt: now,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: citations.id,
+          set: {
+            editionId: sql`excluded.edition_id`,
+            volume: sql`excluded.volume`,
+            page: sql`excluded.page`,
+            locator: sql`excluded.locator`,
+            url: sql`excluded.url`,
+            quoteAr: sql`excluded.quote_ar`,
+            quoteEn: sql`excluded.quote_en`,
+            reviewState: sql`excluded.review_state`,
+            sourceSpan: sql`excluded.source_span`,
+            sourceSha256: sql`excluded.source_sha256`,
+            sourceFile: sql`excluded.source_file`,
+            changedInDatasetVersionId: sql`excluded.changed_in_dataset_version_id`,
+            updatedAt: now,
+          },
+        });
+    });
 
     // 1. Upsert core timeline_tracks
     await runBatched(plan.tracks, BATCH_SIZE, async (batch) => {

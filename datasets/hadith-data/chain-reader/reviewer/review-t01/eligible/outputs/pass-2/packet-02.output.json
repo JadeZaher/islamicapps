@@ -1,0 +1,189 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t01-eligible-p2-02",
+  "reviews": [
+    {
+      "id": "cr1-37142b",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In the second isnad, Ibn Abbas is not merely prayed behind but speaks inside the narrated encounter, making him the last link under ruling 9.",
+          "source": "text",
+          "quote": "عن طلحة بن عبد الله بن عوف، قال صليت خلف ابن عباس  رضى الله عنهما  على جنازة فقرأ بفاتحة الكتاب قال ليعلموا أنها سنة‏.‏"
+        },
+        {
+          "claim": "The first isnad is an abbreviated opening of the same narrated encounter with Ibn Abbas, so both routes end at Ibn Abbas.",
+          "source": "text",
+          "quote": "حدثنا محمد بن بشار، حدثنا غندر، حدثنا شعبة، عن سعد، عن طلحة، قال صليت خلف ابن عباس  رضى الله عنهما ‏.‏"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-37142b",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "محمد بن بشار", "kind": "narrator"}],
+              [{"surface": "غندر", "kind": "narrator"}],
+              [{"surface": "شعبة", "kind": "narrator"}],
+              [{"surface": "سعد", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "طلحة", "kind": "narrator", "occurrence": 1}],
+              [{"surface": "ابن عباس", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "محمد بن كثير", "kind": "narrator"}],
+              [{"surface": "سفيان", "kind": "narrator"}],
+              [{"surface": "سعد بن إبراهيم", "kind": "narrator"}],
+              [{"surface": "طلحة بن عبد الله بن عوف", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "Ibn Abbas speaks inside the narrated encounter («قال ليعلموا أنها سنة»), so he is the last link (ruling 9)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "medium",
+      "uncertainty_note": "Ibn Abbas's speech is explicit in the second isnad and implicit in the abbreviated first isnad."
+    },
+    {
+      "id": "cr1-394c5c",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The text gives two separate branches from the compiler that both meet at Malik, not a single chain putting Malik and al-Harith b. Miskin together under Ma'n and Ibn al-Qasim.",
+          "source": "text",
+          "quote": "أخبرني هارون بن عبد الله، قال حدثنا معن، قال حدثنا مالك، والحارث بن مسكين، قراءة عليه وأنا أسمع، عن ابن القاسم، قال حدثني مالك،"
+        },
+        {
+          "claim": "Both branches share the tail from Abd Allah b. Abi Bakr through Amra to A'isha.",
+          "source": "text",
+          "quote": "عن عبد الله بن أبي بكر، عن عمرة، عن عائشة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-394c5c",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "هارون بن عبد الله", "kind": "narrator"}],
+              [{"surface": "معن", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator", "occurrence": 1}]
+            ]
+          },
+          {
+            "levels": [
+              [{"surface": "الحارث بن مسكين", "kind": "narrator"}],
+              [{"surface": "ابن القاسم", "kind": "narrator"}],
+              [{"surface": "مالك", "kind": "narrator", "occurrence": 2}]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [{"surface": "عبد الله بن أبي بكر", "kind": "narrator"}],
+          [{"surface": "عمرة", "kind": "narrator"}],
+          [{"surface": "عائشة", "kind": "narrator"}]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "«والحارث بن مسكين، قراءة عليه وأنا أسمع» opens a second branch directly from al-Nasa'i that meets the first branch at Malik."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-2917e6",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "In the dialogue between Hilal b. Khabbab and Sa'id b. Jubayr, Sa'id is the subject of «فحدثني عن ابن عباس», so there is no unnamed link between Sa'id b. Jubayr and Ibn Abbas.",
+          "source": "text",
+          "quote": "قال سألت سعيد بن جبير عن الرجل، يحج يشترط قال الشرط بين الناس فحدثته حديثه - يعني عكرمة - فحدثني عن ابن عباس"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-2917e6",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "إبراهيم بن يعقوب", "kind": "narrator"}],
+              [{"surface": "أبو النعمان", "kind": "narrator"}],
+              [{"surface": "ثابت بن يزيد الأحول", "kind": "narrator"}],
+              [{"surface": "هلال بن خباب", "kind": "narrator"}],
+              [{"surface": "سعيد بن جبير", "kind": "narrator"}],
+              [{"surface": "ابن عباس", "kind": "narrator"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«فحدثني عن ابن عباس» is spoken by Sa'id b. Jubayr to Hilal b. Khabbab, so Sa'id transmits directly from Ibn Abbas with no unnamed gap."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-abf5fc",
+      "decision": "confirm_with_correction",
+      "question": "rescript from an Imam",
+      "reasons": [
+        {
+          "claim": "The opening «وَ كَتَبَ إِلَيْهِ» is a back reference whose subject and object both inherit from prev1.",
+          "source": "text",
+          "quote": "3885 - وَ كَتَبَ إِلَيْهِ"
+        },
+        {
+          "claim": "Report prev1 names both the writer (Muhammad b. al-Hasan al-Saffar) and the Imam written to (Abu Muhammad al-Hasan b. Ali), so both are inherited links under rulings 3 and 7.",
+          "source": "prev1",
+          "quote": "وَ كَتَبَ مُحَمَّدُ بْنُ اَلْحَسَنِ اَلصَّفَّارُ رَحِمَهُ اَللَّهُ إِلَى أَبِي مُحَمَّدٍ اَلْحَسَنِ بْنِ عَلِيٍّ عَلَيْهِ اَلسَّلاَمُ"
+        },
+        {
+          "claim": "The Imam's reply is a rescript («فَوَقَّعَ عَلَيْهِ اَلسَّلاَمُ»), which touches the unruled question of a rescript from an Imam, though the chain structure is settled by rulings 3 and 7 if rescripts are read like ordinary answers.",
+          "source": "text",
+          "quote": "فَوَقَّعَ عَلَيْهِ اَلسَّلاَمُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-abf5fc",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [{"surface": "مُحَمَّدُ بْنُ اَلْحَسَنِ اَلصَّفَّارُ", "kind": "inherited", "from": "prev1"}],
+              [{"surface": "أَبِي مُحَمَّدٍ اَلْحَسَنِ بْنِ عَلِيٍّ", "kind": "inherited", "from": "prev1"}]
+            ]
+          }
+        ],
+        "shared_tail": null,
+        "needs_ruling": false,
+        "notes": [
+          "«وَ كَتَبَ إِلَيْهِ» inherits both the writer and the Imam from prev1 (rulings 3 and 7)."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}

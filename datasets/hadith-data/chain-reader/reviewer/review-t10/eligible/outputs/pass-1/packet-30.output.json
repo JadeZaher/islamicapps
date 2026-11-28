@@ -1,0 +1,245 @@
+{
+  "format": "shura-chain-review-output/1",
+  "specialist_id": "chain-reviewer",
+  "prompt_version": "1.1.0",
+  "packet_id": "review-t10-eligible-p1-30",
+  "reviews": [
+    {
+      "id": "cr1-5137f3",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The opening lists three co-transmitters before 'قالوا' followed by Ismail, al-Ala, his father, and Abu Hurayra as the last link before the Prophet.",
+          "source": "text",
+          "quote": "حدثنا يحيى بن أيوب، وقتيبة، وابن، حجر قالوا حدثنا إسماعيل، عن العلاء، عن  أبيه، عن أبي هريرة،"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-a95727",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Under ruling 3, the opening question gives the asker al-Halabi followed by Abu Abd Allah as the last link, while the Prophet quoted inside the answer is not a link.",
+          "source": "text",
+          "quote": "وَ سَأَلَ اَلْحَلَبِيُّ أَبَا عَبْدِ اَللَّهِ عَلَيْهِ اَلسَّلاَمُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-e22304",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "Both readers trace the single linear chain from Muhammad b. Sallam through Yahya b. Urwa and Urwa to Aisha as the last link before the Prophet.",
+          "source": "text",
+          "quote": "حدثنا محمد بن سلام، أخبرنا مخلد بن يزيد، أخبرنا ابن جريج، قال ابن شهاب أخبرني يحيى بن عروة، أنه سمع عروة، يقول قالت عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-e69089",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single linear chain runs from Abd Allah b. Muhammad al-Sa'igh through the bare relation 'أبي' and Anas b. Malik to Salman al-Farisi as the last link before the Prophet.",
+          "source": "text",
+          "quote": "أنه سمع أنس بن مالك يقول: حدثني سلمان الفارسي (رحمه الله)، أنه سمع نبي الله"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-c6fb3f",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first two taḥwīl branches each run to their own father link, with the dash-bounded gloss left out and the Prophet ending each branch.",
+          "source": "text",
+          "quote": "عن ابن بريدة، أراه عن أبيه، - الشك من أبي خيثمة - عن النبي صلى الله عليه وسلم ح ."
+        },
+        {
+          "claim": "The third branch has three co-transmitters joined by 'جميعا' before Abd al-Razzaq, yielding five routes in total.",
+          "source": "text",
+          "quote": "وحدثنا ابن أبي عمر، ومحمد بن رافع، وعبد بن حميد، جميعا عن عبد الرزاق"
+        },
+        {
+          "claim": "The closing cross-reference to Abi Sinan's report is a variant remark under ruling 6, not a route.",
+          "source": "text",
+          "quote": "كلهم بمعنى حديث أبي سنان"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-397bb4",
+      "decision": "confirm_with_correction",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The first taḥwīl branch stops at Umar b. Nafi before 'ح', meeting the second branch which also reaches Umar b. Nafi.",
+          "source": "text",
+          "quote": "حدثنا عمر بن نافع، ح وحدثني أمية بن بسطام"
+        },
+        {
+          "claim": "The closing back-reference 'بإسناد عبيد الله' is written once after both branches reach Umar b. Nafi (confirmed by the dual 'وألحقا'), so it is a shared_tail for both routes rather than belonging only to the second branch.",
+          "source": "text",
+          "quote": "عن عمر بن، نافع بإسناد عبيد الله ‏.‏ مثله وألحقا التفسير في الحديث"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": {
+        "id": "cr1-397bb4",
+        "status": "read",
+        "groups": [
+          {
+            "levels": [
+              [
+                {
+                  "surface": "محمد بن المثنى",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عثمان بن عثمان الغطفاني",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عمر بن نافع",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          },
+          {
+            "levels": [
+              [
+                {
+                  "surface": "أمية بن بسطام",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "يزيد",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "روح",
+                  "kind": "narrator"
+                }
+              ],
+              [
+                {
+                  "surface": "عمر بن، نافع",
+                  "kind": "narrator"
+                }
+              ]
+            ]
+          }
+        ],
+        "shared_tail": [
+          [
+            {
+              "surface": "بإسناد عبيد الله",
+              "kind": "back_reference"
+            }
+          ]
+        ],
+        "needs_ruling": false,
+        "notes": [
+          "Both taḥwīl branches meet at Umar b. Nafi and share the back-reference 'بإسناد عبيد الله' as shared_tail; the gloss '- يعني ابن زريع -' and wording remark 'مثله وألحقا التفسير في الحديث' are excluded."
+        ],
+        "fixes": []
+      },
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-f43c10",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Abu Nu'aym through Urwa to Aisha as the last link, with Abd Allah b. Ubayy b. Salul named only inside her gloss.",
+          "source": "text",
+          "quote": "حدثنا أبو نعيم، حدثنا سفيان، عن معمر، عن الزهري، عن عروة، عن عائشة"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-022eec",
+      "decision": "no_chain",
+      "question": "a rescript from an Imam (and cited book) copied with no transmitter",
+      "reasons": [
+        {
+          "claim": "The compiler explicitly states that he found a copy of the rescript in some books and narrated it from no one, so there is no isnad; if the unruled question treated the Imam as a link without a transmitter, 'الرِّضَا عَلِيِّ بْنِ مُوسَى' would be the sole link, otherwise no_chain holds.",
+          "source": "text",
+          "quote": "وَلَمْ أَرْوَذَلِكَ عَنْ أَحَدٍ"
+        },
+        {
+          "claim": "The document is introduced as a copy of a rescript from al-Rida Ali b. Musa found in unnamed books.",
+          "source": "text",
+          "quote": "وَوَجَدْتُ فِي بَعْضِ الْكُتُبِ نُسْخَةَ كِتَابِ الْحِبَاءِوَالشَّرْطِ مِنَ الرِّضَا عَلِيِّ بْنِ مُوسَى‏ عَلَيْهِ السَّلامُ"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    },
+    {
+      "id": "cr1-9ca5f3",
+      "decision": "confirm_reading",
+      "question": null,
+      "reasons": [
+        {
+          "claim": "The single chain runs from Hannad through Abd Allah b. Dinar to Ibn Umar as the last link.",
+          "source": "text",
+          "quote": "حدثنا هناد، حدثنا وكيع، عن سفيان، عن عبد الله بن دينار، عن ابن عمر،"
+        },
+        {
+          "claim": "The closing 'وفي الباب عن' list and Abu Isa's grading remark are not routes of this report.",
+          "source": "text",
+          "quote": "وفي الباب عن عمرو بن عوف المزني وابن عمر وعمارة بن أوس وأنس بن مالك"
+        }
+      ],
+      "variant_verdicts": [],
+      "corrected_reading": null,
+      "uncertainty": "low",
+      "uncertainty_note": ""
+    }
+  ]
+}
